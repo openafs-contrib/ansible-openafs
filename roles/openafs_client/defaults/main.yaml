@@ -1,0 +1,12 @@
+---
+admin_name: admin
+cell: example.com
+openafs_org: Example
+realm: EXAMPLE.COM
+openafs_yum_repo: https://download.sinenomine.net/openafs/repo/sna-openafs-release-latest.noarch.rpm
+
+with_dkms: False
+cacheinfo_mount: /afs
+cacheinfo_cache: /usr/vice/cache
+cacheinfo_size: 50000
+opt_afsd: -dynroot -fakestat -afsdb

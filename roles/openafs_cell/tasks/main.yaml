@@ -1,0 +1,23 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}.yaml"
+    - "{{ ansible_os_family }}.yaml"
+    - defaults.yaml
+
+- name: Admin login
+  command: >
+    klog.krb5
+    -principal {{ admin_name }}
+    -password {{ admin_password }}
+    -cell {{ cell }}
+    -k {{ realm }}
+
+- command: tokens
+  register: tokens_result
+
+- debug:
+    msg: "{{ tokens_result }}"
+
+- include: volumes-{{ ('-dynroot' in opt_afsd) | ternary('dynroot','nodynroot') }}.yaml

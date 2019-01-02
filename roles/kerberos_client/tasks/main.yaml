@@ -1,0 +1,10 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}.yaml"
+    - "{{ ansible_os_family }}.yaml"
+    - defaults.yaml
+
+- include: CentOS.yaml
+  when: ansible_distribution == 'CentOS'

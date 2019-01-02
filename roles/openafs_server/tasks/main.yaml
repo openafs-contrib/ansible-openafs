@@ -1,0 +1,70 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}.yaml"
+    - "{{ ansible_os_family }}.yaml"
+    - defaults.yaml
+
+- include: CentOS.yaml
+  when: ansible_distribution == 'CentOS'
+
+- name: Update cell configuration
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ afsconfdir }}/{{ item }}"
+    mode: 0644
+    owner: root
+    group: root
+  with_items:
+    - CellServDB
+    - ThisCell
+    - UserList
+
+- name: Set authentication realm name
+  copy:
+    content: "{{ realm }}"
+    dest: "{{ afsconfdir }}/krb.conf"
+    mode: 0644
+    owner: root
+    group: root
+  when: realm != cell
+
+- name: Add service keys
+  include: setkey-rxkad-krb5.yaml
+
+- name: Add local server directory
+  file:
+    state: directory
+    path: "{{ afslocaldir }}"
+    mode: 0700
+    owner: root
+    group: root
+
+- name: Update local server configuration
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ afslocaldir }}/{{ item }}"
+    mode: 0644
+    owner: root
+    group: root
+  with_items:
+    - BosConfig.new
+    - NetInfo
+
+- name: Start the OpenAFS servers
+  service:
+    name: openafs-server
+    state: started
+
+#- name: Give the servers a moment to start
+#  command: sleep 20
+
+# The first admin user must be created with -localauth.
+- include: admin-user.yaml
+  when: inventory_hostname == ansible_play_hosts[0]
+
+# The root.afs volume must exist before non-dynroot clients can mount /afs.
+- include: root-afs-volume.yaml
+  when: inventory_hostname == ansible_play_hosts[0]
+

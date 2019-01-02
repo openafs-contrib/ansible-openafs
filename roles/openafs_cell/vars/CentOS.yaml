@@ -1,0 +1,5 @@
+---
+aklog: /usr/bin/aklog
+fs: /usr/bin/fs
+kinit: /usr/bin/kinit
+vos: /usr/sbin/vos

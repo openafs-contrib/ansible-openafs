@@ -1,0 +1,25 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}.yaml"
+    - "{{ ansible_os_family }}.yaml"
+    - defaults.yaml
+
+- include: CentOS.yaml
+  when: ansible_distribution == 'CentOS'
+
+- name: Update cell configuration
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ viceetcdir }}/{{ item }}"
+    mode: 0644
+  with_items:
+    - CellServDB.local
+    - ThisCell
+    - cacheinfo
+
+- name: Start OpenAFS client
+  service:
+    state: started
+    name: openafs-client

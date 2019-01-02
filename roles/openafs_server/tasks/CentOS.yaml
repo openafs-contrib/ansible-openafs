@@ -1,0 +1,47 @@
+---
+- name: Disable selinux
+  selinux:
+    state: disabled
+
+- name: Start firewall
+  systemd:
+    name: firewalld
+    enabled: yes
+    state: started
+
+- name: Permit afs3 traffic
+  firewalld:
+    port: 7000-7009/udp
+    immediate: yes
+    permanent: yes
+    state: enabled
+
+- name: Check vice partitions
+  include: vice-partition.yaml
+  with_items: "{{ vicep }}"
+  when: vicep is defined
+
+- name: Add epel yum repo
+  yum:
+    name: epel-release
+    state: present
+    update_cache: yes
+
+- name: Add OpenAFS yum repo
+  yum:
+    name: "{{ openafs_yum_repo }}"
+    state: present
+    update_cache: yes
+
+- name: Install OpenAFS server packages
+  yum:
+    state: present
+    name:
+      - openafs-server
+
+- name: Set bosserver options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: '^BOSSERVER_ARGS='
+    line: 'BOSSERVER_ARGS="{{ opt_bosserver }}"'
+    state: present

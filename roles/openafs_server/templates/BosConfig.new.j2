@@ -1,0 +1,27 @@
+restrictmode 0
+restarttime 16 0 0 0 0
+checkbintime 3 0 5 0 0
+{% if 'databases' in group_names %}
+bnode simple ptserver 1
+parm {{ afssrvdir }}/ptserver{{ ' ' if opt_ptserver else '' }}{{ opt_ptserver }}
+end
+bnode simple vlserver 1
+parm {{ afssrvdir }}/vlserver{{ ' ' if opt_vlserver else '' }}{{ opt_vlserver }}
+end
+{% endif %}
+{% if 'fileservers' in group_names %}
+{% if enable_dafs %}
+bnode dafs dafs 1
+parm /usr/afs/bin/dafileserver{{ ' ' if opt_dafileserver else '' }}{{ opt_dafileserver }}
+parm /usr/afs/bin/davolserver{{ ' ' if opt_davolserver else '' }}{{ opt_davolserver }}
+parm /usr/afs/bin/salvageserver{{ ' ' if opt_salvageserver else '' }}{{ opt_salvageserver }}
+parm /usr/afs/bin/dasalvager{{ ' ' if opt_dasalvager else '' }}{{ opt_dasalvager }}
+end
+{% else %}
+bnode fs fs 1
+parm /usr/afs/bin/fileserver{{ ' ' if opt_fileserver else '' }}{{ opt_fileserver }}
+parm /usr/afs/bin/volserver{{ ' ' if opt_volserver else '' }}{{ opt_volserver }}
+parm /usr/afs/bin/salvager{{ ' ' if opt_salvager else '' }}{{ opt_salvager }}
+end
+{% endif %}
+{% endif %}

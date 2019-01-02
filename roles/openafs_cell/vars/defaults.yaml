@@ -1,0 +1,5 @@
+---
+aklog: /usr/afsws/bin/aklog
+fs: /usr/afs/bin/fs
+kinit: /usr/bin/kinit
+vos: /usr/afs/bin/vos

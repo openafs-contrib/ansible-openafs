@@ -1,0 +1,11 @@
+---
+admin_name: admin
+cell: example.com
+openafs_org: Example
+realm: EXAMPLE.COM
+
+kdc: "{{ groups['kdc'][0] }}"
+root_server: "{{ groups['fileservers'][0] }}"
+root_part: a
+
+opt_afsd: -dynroot -fakestat -afsdb

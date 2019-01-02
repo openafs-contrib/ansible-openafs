@@ -1,0 +1,19 @@
+---
+admin_name: admin
+cell: example.com
+openafs_org: Example
+realm: EXAMPLE.COM
+openafs_yum_repo: https://download.sinenomine.net/openafs/repo/sna-openafs-release-latest.noarch.rpm
+
+enable_dafs: true
+opt_bosserver:
+opt_ptserver:
+opt_vlserver:
+opt_dafileserver: -L
+opt_davolserver:
+opt_salvageserver:
+opt_dasalvager:
+
+kdc: "{{ groups['kdc'][0] }}"
+root_server: "{{ groups['fileservers'][0] }}"
+root_part: a

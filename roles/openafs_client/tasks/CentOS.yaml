@@ -1,0 +1,68 @@
+---
+- name: Disable selinux
+  selinux:
+    state: disabled
+
+- name: Start firewall
+  systemd:
+    name: firewalld
+    enabled: yes
+    state: started
+
+- name: Permit afs3 traffic
+  firewalld:
+    port: 7000-7009/udp
+    state: enabled
+    immediate: yes
+    permanent: yes
+  when: False
+
+- name: Add epel yum repo
+  yum:
+    name: epel-release
+    state: present
+    update_cache: yes
+
+- name: Add OpenAFS yum repo
+  yum:
+    name: "{{ openafs_yum_repo }}"
+    state: present
+    update_cache: yes
+
+- name: Check cache directory
+  file:
+    state: directory
+    path: "{{ afscachedir }}"
+    mode: 0700
+    owner: root
+    group: root
+
+
+- name: Install OpenAFS client packages with prebuilt module
+  yum:
+    state: present
+    name:
+      - openafs
+      - openafs-client
+      - openafs-krb5
+      - kmod-openafs
+  when: not with_dkms
+
+- name: Install OpenAFS client packages with DKMS
+  yum:
+    state: present
+    name:
+      - openafs
+      - openafs-client
+      - openafs-krb5
+      - dkms
+      - kernel-devel
+      - dkms-openafs
+  when: with_dkms
+
+- name: Set client options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: "^AFSD_ARGS="
+    line: 'AFSD_ARGS="{{ opt_afsd }}"'
+    state: present

@@ -1,0 +1,7 @@
+---
+afsconfdir: /usr/afs/etc
+viceetcdir: /usr/vice/etc
+afssrvdir: /usr/afs/bin
+afslocaldir: /usr/afs/local
+afsdbdir: /usr/afs/db
+afslogdir: /usr/afs/logs

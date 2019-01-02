@@ -1,0 +1,4 @@
+>{{ cell }}	# {{ openafs_org }}
+{% for host in groups['databases'] %}
+{{ hostvars[host].ansible_default_ipv4.address }}  #{{ hostvars[host].inventory_hostname }}
+{% endfor %}

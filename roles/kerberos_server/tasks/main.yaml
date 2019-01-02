@@ -1,0 +1,65 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}.yaml"
+    - "{{ ansible_os_family }}.yaml"
+    - defaults.yaml
+
+- include: CentOS.yaml
+  when: ansible_distribution == 'CentOS'
+
+- name: Configure kerberos kdc
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ kerberos_localstatedir }}/krb5kdc/{{ item }}"
+    owner: root
+    group: root
+    mode: 0600
+  with_items:
+  - kdc.conf
+  - kadm5.acl
+  notifiy:
+    - restart kdc
+    - restart kadmin
+
+- name: Create kerberos kdc database
+  command: >
+    /sbin/kdb5_util
+    -P {{ lookup('password', '/dev/null chars=ascii_letters') }}
+    -r {{ realm }}
+    create -s
+  args:
+    creates: "{{ kerberos_localstatedir }}/krb5kdc/principal"
+  register: krb5_util_results
+
+- name: Start kerberos kdc
+  service:
+    name: krb5kdc
+    state: started
+
+- name: Start kadmin
+  service:
+    name: kadmin
+    state: started
+
+- name: Create admin principal
+  command: >
+    {{ kadmin_local }}
+    -r {{ realm }}
+    -q "add_principal -pw {{ admin_password }} {{ admin_principal }}@{{ realm }}"
+  register: kadmin_results
+  changed_when: >
+    kadmin_results.rc == 0
+    and not "already exists while creating" in kadmin_results.stderr
+
+- name: Create the afs service key
+  command: >
+    "{{ kadmin_local }}"
+    -r "{{ realm }}"
+    -q "add_principal -randkey afs/{{ cell }}@{{ realm }}"
+  register: kadmin_results
+  changed_when: >
+    kadmin_results.rc == 0
+    and not "already exists while creating" in kadmin_results.stderr
+  when: cell is defined

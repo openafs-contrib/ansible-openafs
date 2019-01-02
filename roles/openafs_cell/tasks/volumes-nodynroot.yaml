@@ -1,0 +1,66 @@
+---
+- name: Create the root volumes
+  command: "{{ vos }} create -server {{ root_server }} -partition {{ root_part }} -name {{ item }} -verbose"
+  register: vos_result
+  until: >
+    vos_result.rc == 0 or
+    'already exists' in vos_result.get('stderr','')
+  delay: 30
+  retries: 10
+  changed_when: vos_result.rc == 0
+  failed_when: >
+    vos_result.rc != 0 and
+    'already exists' not in vos_result.get('stderr','')
+  with_items:
+    - root.afs
+    - root.cell
+
+- name: Mount root.cell volume
+  command: "{{ fs }} mkmount -dir /afs/{{ cell }} -vol root.cell -cell {{ cell }}"
+  register: fs_result
+  changed_when: fs_result.rc == 0
+  failed_when: >
+    fs_result.rc != 0
+    and not
+      ( 'File exists' in fs_result.get('stderr','')
+      or 'You can not change a backup or readonly volume' in fs_result.get('stderr','') )
+
+- name: Mount root.cell read-write volume
+  command: "{{ fs }} mkmount -dir /afs/.{{ cell }} -vol root.cell -cell {{ cell }} -rw"
+  register: fs_result
+  changed_when: fs_result.rc == 0
+  failed_when: >
+    fs_result.rc != 0
+    and not
+      ( 'File exists' in fs_result.get('stderr','')
+      or 'You can not change a backup or readonly volume' in fs_result.get('stderr','') )
+
+- name: Grant world readable rights to root directories
+  command: "{{ fs }} setacl -dir {{ item }} -acl system:anyuser read"
+  register: fs_result
+  failed_when: >
+    fs_result.rc != 0
+    and 'You can not change a backup or readonly volume' not in fs_result.get('stderr','')
+  with_items:
+    - "/afs/."
+    - "/afs/{{ cell }}/."
+
+- name: Add root volume read-only sites
+  command: "{{ vos }} addsite -server {{ root_server }} -part {{ root_part }} -id {{ item }}"
+  register: vos_result
+  changed_when: vos_result.rc == 0
+  failed_when: >
+    vos_result.rc != 0
+    and 'RO already exists on partition' not in vos_result.get('stderr','')
+  with_items:
+    - root.afs
+    - root.cell
+
+- name: Release root volumes
+  command: "{{ vos }} release {{ item }} -verbose"
+  with_items:
+    - root.afs
+    - root.cell
+
+- name: Flush the volume cache on this host
+  command: "{{ fs }} checkvolumes"
