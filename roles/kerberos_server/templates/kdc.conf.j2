@@ -6,7 +6,6 @@
 
 [realms]
  {{ realm }} = {
-  #master_key_type = aes256-cts
   acl_file = {{ kerberos_localstatedir }}/krb5kdc/kadm5.acl
   dict_file = /usr/share/dict/words
   admin_keytab = {{ kerberos_localstatedir }}/krb5kdc/kadm5.keytab

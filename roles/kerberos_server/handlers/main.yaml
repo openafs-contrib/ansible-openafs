@@ -1,5 +1,5 @@
 ---
-- name: retart kdc
+- name: restart kdc
   service:
     name: krb5kdc
     state: restarted

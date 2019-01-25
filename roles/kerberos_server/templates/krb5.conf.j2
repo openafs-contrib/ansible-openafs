@@ -5,10 +5,10 @@
 
 [realms]
     {{ realm }} = {
-{% for host in groups['kdc'] %}
+{% for host in groups['kdcs'] %}
         kdc = {{ hostvars[host].inventory_hostname }}
 {% endfor %}
-        admin_server = {{ hostvars[groups['kdc'][0]].inventory_hostname }}
+        admin_server = {{ hostvars[groups['kdcs'][0]].inventory_hostname }}
     }
 
 [domain_realm]

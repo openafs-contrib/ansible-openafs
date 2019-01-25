@@ -9,7 +9,7 @@
 - name: Admin login
   command: >
     klog.krb5
-    -principal {{ admin_name }}
+    -principal {{ admin_principal }}
     -password {{ admin_password }}
     -cell {{ cell }}
     -k {{ realm }}

@@ -1,5 +1,4 @@
 ---
-admin_name: admin
 cell: example.com
 openafs_org: Example
 realm: EXAMPLE.COM
@@ -14,6 +13,6 @@ opt_davolserver:
 opt_salvageserver:
 opt_dasalvager:
 
-kdc: "{{ groups['kdc'][0] }}"
+kdc: "{{ groups['kdcs'][0] }}"
 root_server: "{{ groups['fileservers'][0] }}"
 root_part: a

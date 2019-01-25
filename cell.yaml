@@ -1,6 +1,6 @@
 ---
 - name: Create Kerberos realm
-  hosts: kdc[0]
+  hosts: kdcs
   become: yes
   roles:
     - kerberos_server

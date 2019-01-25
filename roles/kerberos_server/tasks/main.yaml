@@ -19,7 +19,7 @@
   with_items:
   - kdc.conf
   - kadm5.acl
-  notifiy:
+  notify:
     - restart kdc
     - restart kadmin
 

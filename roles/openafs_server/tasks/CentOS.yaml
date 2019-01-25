@@ -18,8 +18,8 @@
 
 - name: Check vice partitions
   include: vice-partition.yaml
-  with_items: "{{ vicep }}"
-  when: vicep is defined
+  with_items: "{{ partitions.split(',') }}"
+  when: partitions is defined
 
 - name: Add epel yum repo
   yum:
