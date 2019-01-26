@@ -28,7 +28,7 @@
     mode: 0644
     owner: root
     group: root
-  when: realm != cell
+  when: realm is defined and realm.lower() != cell
 
 - name: Add service keys
   include: setkey-rxkad-krb5.yaml
