@@ -6,8 +6,33 @@
     - "{{ ansible_os_family }}.yaml"
     - defaults.yaml
 
-- include: CentOS.yaml
-  when: ansible_distribution == 'CentOS'
+- name: Include OS specific tasks
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}.yaml"
+    - "{{ ansible_os_family }}.yaml"
+    - generic.yaml
+
+- name: Make partition directory
+  file:
+    path: /vicep{{ item }}
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+  with_items: "{{ partitions.split(',') }}"
+  when: partitions is defined
+
+- name: Enable always attach mode for partition
+  copy:
+    content: ""
+    dest: /vicep{{ item }}/AlwaysAttach
+    force: no
+    owner: root
+    group: root
+    mode: 0600
+  with_items: "{{ partitions.split(',') }}"
+  when: partitions is defined
 
 - name: Update cell configuration
   template:
@@ -56,9 +81,6 @@
   service:
     name: openafs-server
     state: started
-
-#- name: Give the servers a moment to start
-#  command: sleep 20
 
 # The first admin user must be created with -localauth.
 - include: admin-user.yaml
