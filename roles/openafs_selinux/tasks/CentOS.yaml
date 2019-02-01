@@ -1,0 +1,25 @@
+---
+
+- name: Install Setools
+  yum:
+    name: 
+      - policycoreutils-python
+      - setools-console
+    state: present
+
+- name: Copy the SELinux module for openafs server
+  copy:
+    dest: "/tmp/{{ item }}"
+    src: "files/{{ item }}"
+  with_items:
+    - openafs.te
+    - openafs.fc
+
+- name: Build SELinux module for openafs server
+  command: "{{ item }}"
+  args: 
+    chdir: "/tmp"
+  with_items:
+    - "checkmodule -M -m -o openafs.mod openafs.te"
+    - "semodule_package -o openafs.pp -m openafs.mod -f openafs.fc"
+    - "semodule -i openafs.pp"

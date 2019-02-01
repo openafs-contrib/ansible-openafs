@@ -77,6 +77,30 @@
     - BosConfig.new
     - NetInfo
 
+## Need to create at least the top level directory so
+## the SELInux context gets setup properly
+- name: Add server vice config dir
+  file:
+    state: directory
+    path: "{{ viceetcdir }}"
+    mode: 0700
+    owner: root
+    group: root
+
+## Patch up the contexts for the directories and files
+## that were created while in unconfined_t 
+- name: "Fix directory contexts for selinux"
+  command: restorecon -ir {{ item }} 
+  with_items:
+    -  /usr/afs
+    -  /usr/vice
+    
+## Same -- for the partitions
+- name: "Fix partition contexts for selinux"
+  command: restorecon /vicep{{ item }}
+  with_items: "{{ partitions.split(',') }}"
+  when: partitions is defined
+
 - name: Start the OpenAFS servers
   service:
     name: openafs-server

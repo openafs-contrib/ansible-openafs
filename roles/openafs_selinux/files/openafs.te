@@ -1,0 +1,22 @@
+module openafs 1.0;
+require {
+	type afs_fsserver_t;
+	type afs_bosserver_t;
+    type afs_files_t;
+    type afs_config_t;
+	type usr_t;
+	class unix_stream_socket connectto;
+	class lnk_file create;
+	class file { create getattr lock open read setattr write };
+	class dir { add_name create read write search };
+}
+
+#============= afs_bosserver_t ==============
+
+allow afs_bosserver_t afs_files_t:dir { add_name create write };
+allow afs_bosserver_t afs_files_t:lnk_file create;
+allow afs_bosserver_t afs_files_t:file { create getattr open write };
+allow afs_bosserver_t afs_config_t:lnk_file create;
+
+#============= afs_fsserver_t ==============
+allow afs_fsserver_t self:unix_stream_socket connectto;

@@ -1,0 +1,4 @@
+/usr/vice(/.*)?         system_u:object_r:afs_files_t:s0
+/usr/vice/etc(/.*)?     system_u:object_r:afs_config_t:s0
+/vicep[a-zA-Z]+(/.*)?   system_u:object_r:afs_files_t:s0
+                        

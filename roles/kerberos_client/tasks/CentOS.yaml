@@ -1,9 +1,9 @@
 ---
 # TODO: selinux labels
-- name: Disable selinux
-  selinux:
-    state: disabled
-
+#- name: Disable selinux
+#  selinux:
+#    state: disabled
+    
 - name: Start firewall
   systemd:
     name: firewalld

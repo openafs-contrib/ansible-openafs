@@ -1,0 +1,6 @@
+---
+- # Needs to process after files are added and before the server is started
+
+- include: CentOS.yaml
+  when: ansible_distribution == 'CentOS'
+
