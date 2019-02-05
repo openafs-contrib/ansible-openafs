@@ -83,7 +83,7 @@
   file:
     state: directory
     path: "{{ viceetcdir }}"
-    mode: 0700
+    mode: 0755
     owner: root
     group: root
 
