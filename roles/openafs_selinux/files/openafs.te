@@ -2,8 +2,11 @@ module openafs 1.0;
 require {
 	type afs_fsserver_t;
 	type afs_bosserver_t;
+    type afs_ptserver_t;
+    type afs_vlserver_t;
     type afs_files_t;
     type afs_config_t;
+    type afs_t;
 	type usr_t;
 	class unix_stream_socket connectto;
 	class lnk_file create;
@@ -20,3 +23,12 @@ allow afs_bosserver_t afs_config_t:lnk_file create;
 
 #============= afs_fsserver_t ==============
 allow afs_fsserver_t self:unix_stream_socket connectto;
+
+#============= afs_ptserver_t ==============
+allow afs_ptserver_t afs_files_t:dir search;
+
+#============= afs_t ==============
+allow afs_t afs_files_t:dir search;
+
+#============= afs_vlserver_t ==============
+allow afs_vlserver_t afs_files_t:dir search;
