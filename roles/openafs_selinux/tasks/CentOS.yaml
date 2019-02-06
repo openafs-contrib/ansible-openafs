@@ -1,4 +1,5 @@
 ---
+
 - name: Install Setools
   yum:
     name: 
@@ -6,9 +7,8 @@
       - setools-console
     state: present
 
-
 - name: Test for presence of openafs module in SELinux
-  shell: semanage module --list|grep -q openafs
+  shell: semodule -lstandard | grep -q -E '^openafs\s+{{ mod_ver }}$'
   register: module_result
   ignore_errors: True
   no_log: True

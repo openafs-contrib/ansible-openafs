@@ -1,0 +1,6 @@
+---
+mod_ver: "{{ lookup('file','files/openafs.te') | \
+             regex_search('^\\s*module\\s+openafs\\s+\\S+\\s*;',ignorecase=True) | \
+             regex_replace('^\\s*module\\s+openafs\\s+(\\S+)\\s*;','\\1') | \
+             regex_escape() }}"
+             
