@@ -1,17 +1,9 @@
 ---
 - name: Load OS specific variables
-  include_vars: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_distribution }}.yaml"
-    - "{{ ansible_os_family }}.yaml"
-    - defaults.yaml
+  include_vars: "{{ ansible_distribution }}.yaml"
 
 - name: Include OS specific tasks
-  include_tasks: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_distribution }}.yaml"
-    - "{{ ansible_os_family }}.yaml"
-    - generic.yaml
+  include_tasks: "{{ ansible_distribution }}.yaml"
 
 - name: Make partition directory
   file:
