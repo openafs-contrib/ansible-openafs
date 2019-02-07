@@ -1,13 +1,9 @@
 ---
 - name: Load OS specific variables
-  include_vars: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_distribution }}.yaml"
-    - "{{ ansible_os_family }}.yaml"
-    - defaults.yaml
+  include_vars: "{{ ansible_distribution }}.yaml"
 
-- include: CentOS.yaml
-  when: ansible_distribution == 'CentOS'
+- name: Include OS specific tasks
+  include_tasks: "{{ ansible_distribution }}.yaml"
 
 - name: Configure kerberos kdc
   template:
