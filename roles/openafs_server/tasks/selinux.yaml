@@ -7,16 +7,15 @@
     state: present
 
 - name: Test for presence of openafs module in SELinux
-  shell: semodule -lstandard | grep -q -E '^openafs\s+{{ mod_ver }}$'
+  shell: semodule -lstandard | grep -E '^openafs\s+{{ selinux_openafs_version }}$'
   register: module_result
   ignore_errors: True
-  no_log: True
   failed_when: no
 
 - name: Copy the SELinux module for openafs server
-  copy:
+  template:
     dest: "/tmp/{{ item }}"
-    src: "{{ role_path }}/files/{{ item }}"
+    src: "{{ role_path }}/templates/{{ item }}.j2"
   when: module_result.rc > 0
   with_items:
     - openafs.te
