@@ -1,5 +1,4 @@
 ---
-
 - name: Install Setools
   yum:
     name:
@@ -17,7 +16,7 @@
 - name: Copy the SELinux module for openafs server
   copy:
     dest: "/tmp/{{ item }}"
-    src: "files/{{ item }}"
+    src: "{{ role_path }}/files/{{ item }}"
   when: module_result.rc > 0
   with_items:
     - openafs.te

@@ -1,12 +1,4 @@
 ---
-- name: Set up SE Linux on OpenAFS servers
-  hosts:
-    - databases
-    - fileservers
-  become: yes
-  roles:
-    - openafs_selinux
-
 - name: Create Kerberos realm
   hosts: kdcs[0]
   become: yes

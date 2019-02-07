@@ -1,5 +1,0 @@
----
-
-- include: CentOS.yaml
-  when: ansible_distribution == 'CentOS'
-

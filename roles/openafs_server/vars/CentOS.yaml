@@ -5,3 +5,9 @@ afssrvdir: /usr/afs/bin
 afslocaldir: /usr/afs/local
 afsdbdir: /usr/afs/db
 afslogdir: /usr/afs/logs
+
+# SELinux module version
+mod_ver: "{{ lookup('file','{{ role_path }}/files/openafs.te') | \
+             regex_search('^\\s*module\\s+openafs\\s+\\S+\\s*;',ignorecase=True) | \
+             regex_replace('^\\s*module\\s+openafs\\s+(\\S+)\\s*;','\\1') | \
+             regex_escape() }}"

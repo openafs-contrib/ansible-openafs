@@ -13,6 +13,9 @@
     permanent: yes
     state: enabled
 
+- name: Setup SELinux policies
+  include_tasks: selinux.yaml
+
 - name: Add epel yum repo
   yum:
     name: epel-release
