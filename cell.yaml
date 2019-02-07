@@ -6,7 +6,7 @@
   become: yes
   roles:
     - openafs_selinux
-    
+
 - name: Create Kerberos realm
   hosts: kdcs[0]
   become: yes

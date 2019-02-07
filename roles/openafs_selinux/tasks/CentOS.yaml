@@ -2,7 +2,7 @@
 
 - name: Install Setools
   yum:
-    name: 
+    name:
       - policycoreutils-python
       - setools-console
     state: present
@@ -18,14 +18,14 @@
   copy:
     dest: "/tmp/{{ item }}"
     src: "files/{{ item }}"
-  when: module_result.rc > 0 
+  when: module_result.rc > 0
   with_items:
     - openafs.te
     - openafs.fc
 
 - name: Build SELinux module for openafs server
   command: "{{ item }}"
-  args: 
+  args:
     chdir: "/tmp"
   when: module_result.rc > 0
   with_items:
