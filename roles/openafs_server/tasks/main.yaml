@@ -81,17 +81,18 @@
 
 ## Patch up the contexts for the directories and files
 ## that were created while in unconfined_t
-- name: "Fix directory contexts for selinux"
+- name: "Restore directory contexts for selinux"
   command: restorecon -ir {{ item }}
   with_items:
     -  /usr/afs
     -  /usr/vice
+  when: selinux_mode == 'enforcing'
 
 ## Same -- for the partitions
-- name: "Fix partition contexts for selinux"
+- name: "Restore partition contexts for selinux"
   command: restorecon /vicep{{ item }}
   with_items: "{{ partitions.split(',') }}"
-  when: partitions is defined
+  when: partitions is defined and selinux_mode == 'enforcing'
 
 - name: Start the OpenAFS servers
   service:

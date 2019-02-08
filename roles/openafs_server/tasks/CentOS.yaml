@@ -13,8 +13,14 @@
     permanent: yes
     state: enabled
 
+- name: Setup SELinux mode
+  selinux:
+    state: "{{ selinux_mode }}"
+    policy: targeted
+
 - name: Setup SELinux policies
   include_tasks: selinux.yaml
+  when: selinux_mode == 'enforcing'
 
 - name: Add epel yum repo
   yum:

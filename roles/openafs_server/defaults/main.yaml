@@ -2,7 +2,9 @@
 cell: example.com
 openafs_org: Example
 realm: EXAMPLE.COM
+
 openafs_yum_repo: https://download.sinenomine.net/openafs/repo/sna-openafs-release-latest.noarch.rpm
+selinux_mode: enforcing
 
 enable_dafs: true
 opt_bosserver:
