@@ -14,10 +14,4 @@
     -cell {{ cell }}
     -k {{ realm }}
 
-- command: tokens
-  register: tokens_result
-
-- debug:
-    msg: "{{ tokens_result }}"
-
 - include: volumes-{{ ('-dynroot' in opt_afsd) | ternary('dynroot','nodynroot') }}.yaml
