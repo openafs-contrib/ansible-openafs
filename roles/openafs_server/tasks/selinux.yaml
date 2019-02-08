@@ -9,8 +9,8 @@
 - name: Test for presence of openafs module in SELinux
   shell: semodule -lstandard | grep -E '^openafs\s+{{ selinux_openafs_version }}$'
   register: module_result
-  ignore_errors: True
-  failed_when: no
+  changed_when: False
+  failed_when: False
 
 - name: Copy the SELinux module for openafs server
   template:
