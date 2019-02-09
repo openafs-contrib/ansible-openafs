@@ -12,7 +12,7 @@
     aklog -d -c {{ cell }}
 
 - name: Mount root volumes
-  include: volumes-{{ ('-dynroot' in opt_afsd) | ternary('dynroot','nodynroot') }}.yaml
+  include: root-{{ ('-dynroot' in opt_afsd) | ternary('dynamic','static') }}.yaml
 
 - name: Create principals
   shell: >
