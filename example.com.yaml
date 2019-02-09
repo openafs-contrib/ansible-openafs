@@ -1,0 +1,22 @@
+---
+afs:
+  volumes:
+    - name: test
+      dir: /test
+    - name: foobar
+      dir: /test/foobar
+
+  users:
+    - user1
+    - user2
+    - user3
+
+  groups:
+    - name: group1
+      members:
+        - user1
+        - user2
+    - name: group2
+      members:
+        - user2
+        - user3

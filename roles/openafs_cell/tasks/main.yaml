@@ -2,12 +2,84 @@
 - name: Load OS specific variables
   include_vars: "{{ ansible_distribution }}.yaml"
 
-- name: Admin login
-  command: >
-    klog.krb5
-    -principal {{ admin_principal }}
-    -password {{ admin_password }}
-    -cell {{ cell }}
-    -k {{ realm }}
+- name: Load cell variables
+  include_vars:
+    file: "{{ cell }}.yaml"
 
-- include: volumes-{{ ('-dynroot' in opt_afsd) | ternary('dynroot','nodynroot') }}.yaml
+- name: Admin login
+  shell: >
+    echo {{ admin_password }} | {{ kinit }} {{ admin_principal }}@{{ realm }} &&
+    aklog -d -c {{ cell }}
+
+- name: Mount root volumes
+  include: volumes-{{ ('-dynroot' in opt_afsd) | ternary('dynroot','nodynroot') }}.yaml
+
+- name: Create principals
+  shell: >
+    echo {{ admin_password }} |
+    {{ kadmin }} -p {{ admin_principal }}@{{ realm }}
+    -q "add_principal -randkey {{ item }}@{{ realm }}"
+  with_items: "{{ afs.users }}"
+
+- name: Create users
+  command: "{{ pts }} createuser -name {{ item|replace('/','.') }}"
+  register: pts_result
+  changed_when: pts_result.rc == 0
+  failed_when: >
+    pts_result.rc != 0
+    and 'Entry for name already exists' not in pts_result.get('stderr','')
+  with_items: "{{ afs.users }}"
+
+- name: Create groups
+  command: "{{ pts }} creategroup -name {{ item.name }}"
+  register: pts_result
+  changed_when: pts_result.rc == 0
+  failed_when: >
+    pts_result.rc != 0
+    and 'Entry for name already exists' not in pts_result.get('stderr','')
+  with_items: "{{ afs.groups }}"
+
+- name: Set group members
+  command: "{{ pts }} adduser -group {{ item.name }} -user {{ item.members|join(' ') }}"
+  register: pts_result
+  changed_when: pts_result.rc == 0
+  failed_when: >
+    pts_result.rc != 0
+    and 'Entry for id already exists' not in pts_result.get('stderr','')
+  with_items: "{{ afs.groups }}"
+
+- name: Create volumes
+  command: >
+    {{ vos }} create
+    -server {{ item.get('host', root_server) }}
+    -partition {{ item.get('part', root_part) }}
+    -name {{ item.name }}
+    -maxquota {{ item.get('quota', 0) }}
+  register: vos_result
+  changed_when: vos_result.rc == 0
+  failed_when: >
+    vos_result.rc != 0
+    and 'already exists' not in vos_result.get('stderr','')
+  with_items: "{{ afs.volumes }}"
+
+- name: Mount volumes
+  command: >
+    {{ fs }} mkmount
+    -dir /afs/.{{ cell }}/{{ item.dir }}
+    -vol {{ item.name }}
+    -cell {{ cell }}
+  register: fs_result
+  changed_when: fs_result.rc == 0
+  failed_when: >
+    fs_result.rc != 0
+    and 'File exists' not in fs_result.get('stderr','')
+  with_items: "{{ afs.volumes }}"
+
+- name: Release volumes
+  command: "{{ vos }} release {{ item }} -verbose"
+  with_items:
+    - root.cell
+
+- name: Flush the volume cache
+  command: "{{ fs }} checkvolumes"
+  changed_when: False

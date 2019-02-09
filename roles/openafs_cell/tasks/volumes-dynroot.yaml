@@ -66,5 +66,6 @@
     - root.afs
     - root.cell
 
-- name: Flush the volume cache on this host
+- name: Flush the volume cache
   command: "{{ fs }} checkvolumes"
+  changed_when: False
