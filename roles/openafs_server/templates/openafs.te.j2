@@ -11,6 +11,7 @@ require {
 	type usr_t;
 	class unix_stream_socket connectto;
 	class lnk_file create;
+    class sock_file { unlink write };
 	class file { create getattr lock open read setattr write };
 	class dir { add_name create read write search };
 }
@@ -24,6 +25,7 @@ allow afs_bosserver_t afs_config_t:lnk_file create;
 
 #============= afs_fsserver_t ==============
 allow afs_fsserver_t self:unix_stream_socket connectto;
+allow afs_fsserver_t afs_config_t:sock_file { unlink write };
 
 #============= afs_ptserver_t ==============
 allow afs_ptserver_t afs_files_t:dir search;
