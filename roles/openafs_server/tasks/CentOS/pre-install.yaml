@@ -1,0 +1,22 @@
+---
+- name: Start firewall
+  systemd:
+    name: firewalld
+    enabled: yes
+    state: started
+
+- name: Permit afs3 traffic
+  firewalld:
+    port: 7000-7009/udp
+    immediate: yes
+    permanent: yes
+    state: enabled
+
+- name: Setup SELinux mode
+  selinux:
+    state: "{{ selinux_mode }}"
+    policy: targeted
+
+- name: Setup SELinux policies
+  include_tasks: CentOS/selinux.yaml
+  when: selinux_mode == 'enforcing'

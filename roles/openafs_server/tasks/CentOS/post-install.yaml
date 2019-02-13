@@ -1,0 +1,7 @@
+---
+- name: Set bosserver options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: '^BOSSERVER_ARGS='
+    line: 'BOSSERVER_ARGS="{{ opt_bosserver }}"'
+    state: present

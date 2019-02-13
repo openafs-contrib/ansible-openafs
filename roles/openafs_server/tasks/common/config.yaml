@@ -1,0 +1,50 @@
+---
+- name: Update cell configuration
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ afsconfdir }}/{{ item }}"
+    mode: 0644
+    owner: root
+    group: root
+  with_items:
+    - CellServDB
+    - ThisCell
+    - UserList
+
+- name: Set authentication realm name
+  copy:
+    content: "{{ realm }}"
+    dest: "{{ afsconfdir }}/krb.conf"
+    mode: 0644
+    owner: root
+    group: root
+  when: realm is defined and realm.lower() != cell
+
+- name: Add local server directory
+  file:
+    state: directory
+    path: "{{ afslocaldir }}"
+    mode: 0700
+    owner: root
+    group: root
+
+- name: Update local server configuration
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ afslocaldir }}/{{ item }}"
+    mode: 0644
+    owner: root
+    group: root
+  with_items:
+    - BosConfig.new
+    - NetInfo
+
+# Need to create at least the top level directory so
+# the SELInux context gets setup properly
+- name: Add server vice config dir
+  file:
+    state: directory
+    path: "{{ viceetcdir }}"
+    mode: 0755
+    owner: root
+    group: root

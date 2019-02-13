@@ -1,0 +1,12 @@
+---
+- name: Add OpenAFS yum repo
+  yum:
+    name: "{{ openafs_yum_repo }}"
+    state: present
+    update_cache: yes
+
+- name: Install OpenAFS server packages
+  yum:
+    state: present
+    name:
+      - openafs-server

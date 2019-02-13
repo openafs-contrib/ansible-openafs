@@ -1,109 +1,17 @@
 ---
-- name: Load OS specific variables
-  include_vars: "{{ ansible_distribution }}.yaml"
-
-- name: Include OS specific tasks
-  include_tasks: "{{ ansible_distribution }}.yaml"
-
-- name: Make partition directory
-  file:
-    path: /vicep{{ item }}
-    state: directory
-    owner: root
-    group: root
-    mode: 0700
-  with_items: "{{ partitions.split(',') }}"
-  when: partitions is defined
-
-- name: Enable always attach mode for partition
-  copy:
-    content: ""
-    dest: /vicep{{ item }}/AlwaysAttach
-    force: no
-    owner: root
-    group: root
-    mode: 0600
-  with_items: "{{ partitions.split(',') }}"
-  when: partitions is defined
-
-- name: Update cell configuration
-  template:
-    src: "{{ item }}.j2"
-    dest: "{{ afsconfdir }}/{{ item }}"
-    mode: 0644
-    owner: root
-    group: root
-  with_items:
-    - CellServDB
-    - ThisCell
-    - UserList
-
-- name: Set authentication realm name
-  copy:
-    content: "{{ realm }}"
-    dest: "{{ afsconfdir }}/krb.conf"
-    mode: 0644
-    owner: root
-    group: root
-  when: realm is defined and realm.lower() != cell
-
-- name: Add service keys
-  include: setkey-rxkad-krb5.yaml
-
-- name: Add local server directory
-  file:
-    state: directory
-    path: "{{ afslocaldir }}"
-    mode: 0700
-    owner: root
-    group: root
-
-- name: Update local server configuration
-  template:
-    src: "{{ item }}.j2"
-    dest: "{{ afslocaldir }}/{{ item }}"
-    mode: 0644
-    owner: root
-    group: root
-  with_items:
-    - BosConfig.new
-    - NetInfo
-
-## Need to create at least the top level directory so
-## the SELInux context gets setup properly
-- name: Add server vice config dir
-  file:
-    state: directory
-    path: "{{ viceetcdir }}"
-    mode: 0755
-    owner: root
-    group: root
-
-## Patch up the contexts for the directories and files
-## that were created while in unconfined_t
-- name: "Restore directory contexts for selinux"
-  command: restorecon -ir {{ item }}
-  with_items:
-    -  /usr/afs
-    -  /usr/vice
-  when: selinux_mode == 'enforcing'
-
-## Same -- for the partitions
-- name: "Restore partition contexts for selinux"
-  command: restorecon /vicep{{ item }}
-  with_items: "{{ partitions.split(',') }}"
-  when: partitions is defined and selinux_mode == 'enforcing'
-
-- name: Start the OpenAFS servers
-  service:
-    name: openafs-server
-    state: started
+- include_vars: "{{ ansible_distribution }}.yaml"
+- include_tasks: "{{ ansible_distribution }}/pre-install.yaml"
+- include_tasks: "{{ ansible_distribution }}/install.yaml"
+- include_tasks: "{{ ansible_distribution }}/post-install.yaml"
+- include_tasks: common/partitions.yaml
+- include_tasks: common/config.yaml
+- include_tasks: common/setkey-rxkad-krb5.yaml
+- include_tasks: "{{ ansible_distribution }}/post-config.yaml"
 
 # The first admin user must be created with -localauth.
-- include: admin-user.yaml
+- include_tasks: common/admin-user.yaml
   when: inventory_hostname == ansible_play_hosts[0]
 
 # The root.afs volume must exist before non-dynroot clients can mount /afs.
-- include: root-afs-volume.yaml
+- include_tasks: common/root-afs-volume.yaml
   when: inventory_hostname == ansible_play_hosts[0]
-
