@@ -21,10 +21,11 @@
     update_cache: yes
 
 - name: Add OpenAFS yum repo
-  yum:
-    name: "{{ openafs_yum_repo }}"
-    state: present
-    update_cache: yes
+  yum_repository:
+    name: openafs
+    description: OpenAFS yum repo
+    baseurl: "{{ openafs_client_repourl }}"
+    gpgcheck: no
 
 - name: Check cache directory
   file:
@@ -33,7 +34,6 @@
     mode: 0700
     owner: root
     group: root
-
 
 - name: Install OpenAFS client packages with prebuilt module
   yum:

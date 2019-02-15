@@ -1,9 +1,10 @@
 ---
 - name: Add OpenAFS yum repo
-  yum:
-    name: "{{ openafs_yum_repo }}"
-    state: present
-    update_cache: yes
+  yum_repository:
+    name: openafs
+    description: OpenAFS yum repo
+    baseurl: "{{ openafs_server_repourl }}"
+    gpgcheck: no
 
 - name: Install OpenAFS server packages
   yum:

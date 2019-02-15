@@ -3,7 +3,7 @@ cell: example.com
 openafs_org: Example
 realm: EXAMPLE.COM
 
-openafs_yum_repo: https://download.sinenomine.net/openafs/repo/sna-openafs-release-latest.noarch.rpm
+openafs_server_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
 selinux_mode: enforcing
 
 enable_dafs: true
