@@ -1,7 +1,7 @@
 ---
 - include_vars: "{{ ansible_distribution }}.yaml"
 - include_tasks: "{{ ansible_distribution }}/pre-install.yaml"
-- include_tasks: "{{ ansible_distribution }}/install.yaml"
+- include_tasks: "{{ ansible_distribution }}/install-{{ server_install_method }}.yaml"
 - include_tasks: "{{ ansible_distribution }}/post-install.yaml"
 - include_tasks: common/partitions.yaml
 - include_tasks: common/config.yaml

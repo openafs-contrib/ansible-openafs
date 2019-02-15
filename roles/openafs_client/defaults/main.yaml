@@ -3,6 +3,7 @@ cell: example.com
 openafs_org: Example
 realm: EXAMPLE.COM
 openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
+client_install_method: yum
 with_dkms: False
 cacheinfo_mount: /afs
 cacheinfo_cache: /usr/vice/cache
