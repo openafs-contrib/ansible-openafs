@@ -1,0 +1,14 @@
+---
+- name: Start firewall
+  systemd:
+    name: firewalld
+    enabled: yes
+    state: started
+
+- name: Permit afs3 traffic
+  firewalld:
+    port: 7000-7009/udp
+    state: enabled
+    immediate: yes
+    permanent: yes
+  when: False

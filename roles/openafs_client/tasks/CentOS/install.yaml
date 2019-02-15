@@ -1,19 +1,4 @@
 ---
-
-- name: Start firewall
-  systemd:
-    name: firewalld
-    enabled: yes
-    state: started
-
-- name: Permit afs3 traffic
-  firewalld:
-    port: 7000-7009/udp
-    state: enabled
-    immediate: yes
-    permanent: yes
-  when: False
-
 - name: Add epel yum repo
   yum:
     name: epel-release
@@ -56,10 +41,3 @@
       - kernel-devel
       - dkms-openafs
   when: with_dkms
-
-- name: Set client options
-  lineinfile:
-    path: /etc/sysconfig/openafs
-    regexp: "^AFSD_ARGS="
-    line: 'AFSD_ARGS="{{ opt_afsd }}"'
-    state: present

@@ -1,0 +1,10 @@
+---
+- name: Update cell configuration
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ viceetcdir }}/{{ item }}"
+    mode: 0644
+  with_items:
+    - CellServDB.local
+    - ThisCell
+    - cacheinfo

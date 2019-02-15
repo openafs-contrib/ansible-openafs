@@ -1,0 +1,7 @@
+---
+# Fixup the contexts for the items created during
+# setup while unconfined_t
+- name: "Fix contexts for selinux"
+  command: restorecon -ir "{{ item }}"
+  with_items:
+    -  /usr/vice
