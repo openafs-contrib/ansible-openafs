@@ -1,4 +1,12 @@
 ---
+- name: Create cell configuation directory
+  file:
+    state: directory
+    path: "{{ afsconfdir }}"
+    mode: 0755
+    owner: root
+    group: root
+
 - name: Update cell configuration
   template:
     src: "{{ item }}.j2"
@@ -20,7 +28,7 @@
     group: root
   when: realm is defined and realm.lower() != cell
 
-- name: Add local server directory
+- name: Create local server directory
   file:
     state: directory
     path: "{{ afslocaldir }}"
