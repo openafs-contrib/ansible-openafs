@@ -1,12 +1,12 @@
 ---
 - name: Load OS specific variables
-  include_vars: "{{ ansible_distribution }}.yaml"
+  include_vars: "{{ ansible_os_family|lower }}.yaml"
 
-- include_tasks: "{{ ansible_distribution }}/pre-install.yaml"
-- include_tasks: "{{ ansible_distribution }}/install-{{ client_install_method }}.yaml"
-- include_tasks: "{{ ansible_distribution }}/post-install.yaml"
+- include_tasks: "{{ ansible_os_family|lower }}/pre-install.yaml"
+- include_tasks: "{{ ansible_os_family|lower }}/install-{{ client_install_method }}.yaml"
+- include_tasks: "{{ ansible_os_family|lower }}/post-install.yaml"
 - include_tasks: common/config.yaml
-- include_tasks: "{{ ansible_distribution }}/post-config.yaml"
+- include_tasks: "{{ ansible_os_family|lower }}/post-config.yaml"
 
 - name: Start OpenAFS client
   service:
