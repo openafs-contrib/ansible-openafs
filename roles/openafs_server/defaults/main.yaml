@@ -5,7 +5,16 @@ realm: EXAMPLE.COM
 
 openafs_server_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
 selinux_mode: enforcing
+
+# Installation method.
+#   values: yum, build
 server_install_method: yum
+
+# 'build' installatiom method path:
+server_build_path: /usr/local/src/openafs-server
+
+# 'build' installatiom method git reference:
+server_build_version: master
 
 enable_dafs: true
 opt_bosserver:

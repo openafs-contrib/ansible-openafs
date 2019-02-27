@@ -1,0 +1,96 @@
+---
+- name: Add epel yum repo
+  yum:
+    name: epel-release
+    state: present
+    update_cache: yes
+
+- name: Install devel packages
+  yum:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - bison
+      - flex
+      - fuse-devel
+      - gcc
+      - git
+      - glibc-devel
+      - krb5-devel
+      - libtool
+      - make
+      - ncurses-devel
+      - pam-devel
+      - perl-devel
+      - perl-ExtUtils-Embed
+      - redhat-rpm-config
+      - rpm-build
+      - swig
+      - wget
+
+- name: Create build directory
+  file:
+    state: directory
+    path: "{{ server_build_path }}"
+
+- name: Clone OpenAFS git repo
+  git:
+    repo: https://github.com/openafs/openafs.git
+    dest: "{{ server_build_path }}"
+    version: "{{ server_build_version }}"
+
+- name: Generate autoconf scripts
+  shell: ./regen.sh
+  args:
+    chdir: "{{ server_build_path }}"
+
+- name: Configure
+  shell: >
+    ./configure
+    --with-afs-sysname=amd64_linux26
+    --prefix=/usr
+    --libdir=/usr/lib64
+    --bindir=/usr/bin
+    --sbindir=/usr/sbin
+    --disable-strip-binaries
+    --enable-debug
+    --with-linux-kernel-packaging
+    --disable-kernel-module
+    --with-krb5
+    --with-swig
+    --enable-redhat-buildsys
+    --enable-transarc-paths
+  args:
+    chdir: "{{ server_build_path }}"
+
+- name: Make
+  make:
+    chdir: "{{ server_build_path }}"
+    target: install_nolibafs
+
+- name: Create asetkey symlink
+  file:
+    src: /usr/afs/bin/asetkey
+    dest: /usr/sbin/asetkey
+    state: link
+
+- name: Update shared library cache
+  shell: /sbin/ldconfig
+
+- name: Install systemd service
+  copy:
+    src: "{{ role_path }}/files/openafs-server.service"
+    dest: /usr/lib/systemd/system/openafs-server.service
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Install sysconf file
+  copy:
+    # This file has sections for the client and server.
+    # Use force:no to avoid clobbering if already installed by the client.
+    src: "{{ role_path }}/files/openafs.sysconfig"
+    dest: /etc/sysconfig/openafs
+    force: no
