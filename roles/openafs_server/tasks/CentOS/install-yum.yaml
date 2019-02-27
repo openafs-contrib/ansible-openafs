@@ -11,3 +11,4 @@
     state: present
     name:
       - openafs-server
+      - openafs-krb5

@@ -1,10 +1,4 @@
 ---
-- name: Install asetkey
-  yum:
-    state: present
-    name:
-    - openafs-krb5
-
 - name: Write keytab file
   command: >
     kadmin
