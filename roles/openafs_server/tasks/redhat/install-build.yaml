@@ -69,11 +69,11 @@
     chdir: "{{ server_build_path }}"
     target: install_nolibafs
 
-- name: Create asetkey symlink
-  file:
-    src: /usr/afs/bin/asetkey
-    dest: /usr/sbin/asetkey
-    state: link
+- name: Install commands
+  command: /bin/install /usr/afs/bin/{{ item }} /usr/sbin/{{ item }}
+  with_items:
+    - asetkey
+    - akeyconvert
 
 - name: Update shared library cache
   shell: /sbin/ldconfig
