@@ -36,7 +36,7 @@
 
 - name: Clone OpenAFS git repo
   git:
-    repo: https://github.com/openafs/openafs.git
+    repo: "{{ server_build_repo }}"
     dest: "{{ server_build_path }}"
     version: "{{ server_build_version }}"
 
