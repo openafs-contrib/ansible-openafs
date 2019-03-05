@@ -1,4 +1,11 @@
 ---
+- name: Ensure CellServDB.dist exists
+  copy:
+    content: ""
+    dest: "{{ viceetcdir }}/CellServDB.dist"
+    mode: 0644
+    force: no
+
 - name: Update cell configuration
   template:
     src: "{{ item }}.j2"

@@ -3,7 +3,20 @@ cell: example.com
 openafs_org: Example
 realm: EXAMPLE.COM
 openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
+
+# Installation method
+#   values: yum, build
 client_install_method: yum
+
+# 'build' installation git repo url
+client_build_repo: https://github.com/openafs/openafs.git
+
+# 'build' installation method path
+client_build_path: /usr/local/src/openafs-client
+
+# 'build' installation method git reference
+client_build_version: master
+
 with_dkms: False
 cacheinfo_mount: /afs
 cacheinfo_cache: /usr/vice/cache

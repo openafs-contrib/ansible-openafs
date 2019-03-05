@@ -1,0 +1,131 @@
+---
+- name: Add epel yum repo
+  yum:
+    name: epel-release
+    state: present
+    update_cache: yes
+
+- name: Install devel packages
+  yum:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - bison
+      - flex
+      - fuse-devel
+      - gcc
+      - git
+      - glibc-devel
+      - krb5-devel
+      - libtool
+      - make
+      - ncurses-devel
+      - pam-devel
+      - perl-devel
+      - perl-ExtUtils-Embed
+      - redhat-rpm-config
+      - rpm-build
+      - swig
+      - wget
+      - kernel-devel
+
+- name: Create build directory
+  file:
+    state: directory
+    path: "{{ client_build_path }}"
+
+- name: Clone OpenAFS git repo
+  git:
+    repo: "{{ client_build_repo }}"
+    dest: "{{ client_build_path }}"
+    version: "{{ client_build_version }}"
+
+- name: Generate autoconf scripts
+  shell: ./regen.sh
+  args:
+    chdir: "{{ client_build_path }}"
+
+- name: Configure
+  shell: >
+    ./configure
+    --with-afs-sysname=amd64_linux26
+    --prefix=/usr
+    --libdir=/usr/lib64
+    --bindir=/usr/bin
+    --sbindir=/usr/sbin
+    --disable-strip-binaries
+    --enable-debug
+    --with-linux-kernel-packaging
+    --enable-kernel-module
+    --with-krb5
+    --with-swig
+    --enable-redhat-buildsys
+    --enable-transarc-paths
+  args:
+    chdir: "{{ client_build_path }}"
+
+- name: Make build directory
+  file:
+    path: /tmp/openafs-client-build
+    state: directory
+
+- name: Make install
+  make:
+    chdir: "{{ client_build_path }}"
+    target: install
+    params:
+      DESTDIR: /tmp/openafs-client-build
+
+- name: Remove server files
+  command: rm -rf usr/afs/bin
+  args:
+    chdir: /tmp/openafs-client-build
+
+- name: Install files
+  shell: rsync -av * /
+  args:
+    chdir: /tmp/openafs-client-build
+
+- name: Install client configuration
+  copy:
+    src: "{{ role_path }}/files/openafs.sysconfig"
+    dest: /etc/sysconfig/openafs
+    # Avoid clobbering if already installed by server tasks.
+    force: no
+
+- name: Install module probe script
+  copy:
+    src: "{{ role_path }}/files/openafs-client.modules"
+    dest: /etc/sysconfig/openafs
+
+- name: Update shared library cache
+  command: /sbin/ldconfig
+
+- name: Update module depenencies
+  command: depmod -a
+
+- name: Make afs filesystem mount point
+  file:
+    path: /afs
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Make cache directory
+  file:
+    state: directory
+    path: "{{ afscachedir }}"
+    mode: 0700
+    owner: root
+    group: root
+
+- name: Install openafs client systemd unit file
+  copy:
+    src: "{{ role_path }}/files/openafs-client.service"
+    dest: /usr/lib/systemd/system/openafs-client.service
+
+- name: Reload the systemd daemon
+  systemd:
+    daemon_reload: yes
