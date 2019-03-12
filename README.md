@@ -13,7 +13,7 @@ up a Kerberos realm and OpenAFS cell.
 * Copy `hosts.example` to `hosts`.
 * Edit `hosts` to match the host names at your site and set
   the host variables to set the realm and cell info.
-* Copy `example.com.yaml` to <cellname>.yaml and configure as needed.
+* Copy `example.com.yaml` to `<cell>`.yaml and configure as needed.
 * Optionally, copy `ansible.cfg.example` to `ansible.cfg` and
   edit to taste.
 * Run `ansible-playbook cell.yaml`
@@ -39,7 +39,7 @@ KDC and create a kerberos realm.
 | `admin_principal` | admin       | kerberos admin principal |
 
 
-## `openafs_cell` role |
+## `openafs_cell` role
 
 Setup the top level volumes in the cell. To be run on a client after the
 server and client roles have executed.
