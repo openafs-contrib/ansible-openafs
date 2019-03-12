@@ -1,10 +1,15 @@
 ---
+# afs cell name
 cell: example.com
-openafs_org: Example
+
+# kerberos realm name
 realm: EXAMPLE.COM
 
+# primary kerberos kdc hostname
 kdc: "{{ groups['kdcs'][0] }}"
-root_server: "{{ groups['fileservers'][0] }}"
-root_part: a
 
-opt_afsd: -dynroot -fakestat -afsdb
+# primary fileserver hostname
+root_server: "{{ groups['fileservers'][0] }}"
+
+# primary fileserver afs partition id
+root_part: a

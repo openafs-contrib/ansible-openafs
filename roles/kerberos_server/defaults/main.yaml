@@ -1,3 +1,6 @@
 ---
+# kerberos realm name
 realm: EXAMPLE.COM
+
+# kerberos admin principal
 admin_principal: admin

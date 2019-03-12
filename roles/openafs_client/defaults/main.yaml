@@ -1,11 +1,18 @@
 ---
+
+# AFS cell name
 cell: example.com
-openafs_org: Example
+
+# cell organization name
+cell_description: Example
+
+# kerberos realm
 realm: EXAMPLE.COM
+
+# openafs yum repo for client packages
 openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
 
-# Installation method
-#   values: yum, build
+# Installation method, one of: yum, build
 client_install_method: yum
 
 # 'build' installation git repo url
@@ -17,8 +24,18 @@ client_build_path: /usr/local/src/openafs-client
 # 'build' installation method git reference
 client_build_version: master
 
+# install client with dkms when True
 with_dkms: False
+
+# afs filesystem mount point
 cacheinfo_mount: /afs
+
+# afs cache mount point
 cacheinfo_cache: /usr/vice/cache
+
+# afs cache size
+# TODO: create partition or autodecte
 cacheinfo_size: 50000
+
+# afsd options
 opt_afsd: -dynroot -fakestat -afsdb

@@ -1,13 +1,22 @@
 ---
+
+# afs cell name
 cell: example.com
-openafs_org: Example
+
+# cell organization name
+cell_description: Example
+
+# kerberos realm name
 realm: EXAMPLE.COM
 
+
+# openafs yum repo for server packages
 openafs_server_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
+
+# selinux mode
 selinux_mode: enforcing
 
-# Installation method
-#   values: yum, build
+# Installation method, one of: yum, build
 server_install_method: yum
 
 # 'build' installation git repo url
@@ -19,15 +28,44 @@ server_build_path: /usr/local/src/openafs-server
 # 'build' installation method git reference
 server_build_version: master
 
-enable_dafs: true
+# enable DAFS fileserver when True
+enable_dafs: True
+
+# bosserver options
 opt_bosserver:
+
+# ptserver options
 opt_ptserver:
+
+# vlserver options
 opt_vlserver:
+
+# DAFS fileserver options
 opt_dafileserver: -L
+
+# DAFS volume server options
 opt_davolserver:
+
+# DAFS salvage server options
 opt_salvageserver:
+
+# DAFS salvager options
 opt_dasalvager:
 
+# Legacy fileserver options
+opt_fileserver:
+
+# Legacy volume server options
+opt_volserver:
+
+# Legacy salvager options
+opt_salvager:
+
+# Master kerberos kdc
 kdc: "{{ groups['kdcs'][0] }}"
+
+# Primary fileserver hostname
 root_server: "{{ groups['fileservers'][0] }}"
+
+# Primary fileserver vice partition id
 root_part: a
