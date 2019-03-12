@@ -11,8 +11,8 @@ up a Kerberos realm and OpenAFS cell.
 *Setup:*
 
 * Copy `hosts.example` to `hosts`.
-* Edit `hosts` to match the host names for your site and set
-  the host variables to set the realm cell info.
+* Edit `hosts` to match the host names at your site and set
+  the host variables to set the realm and cell info.
 * Copy `example.com.yaml` to <cellname>.yaml and configure as needed.
 * Optionally, copy `ansible.cfg.example` to `ansible.cfg` and
   edit to taste.
@@ -23,7 +23,7 @@ up a Kerberos realm and OpenAFS cell.
 
 Install and configure the kerberos workstation packages.
 
-| variable   | default     | description |
+| Variable   | Default     | Description |
 | ---------- | ----------- | ------------- |
 | `realm`    | EXAMPLE.COM | kerberos realm name |
 
@@ -33,7 +33,7 @@ Install and configure the kerberos workstation packages.
 Install and configure the kerberos server packages on a single
 KDC and create a kerberos realm.
 
-| variable          | default     | description |
+| Variable          | Default     | Description |
 | ----------------- | ----------- | ------------- |
 | `realm`           | EXAMPLE.COM | kerberos realm name |
 | `admin_principal` | admin       | kerberos admin principal |
@@ -44,7 +44,7 @@ KDC and create a kerberos realm.
 Setup the top level volumes in the cell. To be run on a client after the
 server and client roles have executed.
 
-| variable      | default     | description                                |
+| Variable      | Default     | Description                                |
 | ------------- | ----------- | ------------------------------------------ |
 | `cell`        | example.com | afs cell name                              |
 | `realm`       | EXAMPLE.COM | kerberos realm name                        |
@@ -58,14 +58,14 @@ server and client roles have executed.
 Install and configure the OpenAFS client packages.  Optionally, build and install from
 a git source checkout.
 
-| variable                 | default         | description                                         |
+| Variable                 | Default         | Description                                         |
 | ------------------------ | --------------- | --------------------------------------------------- |
 | `cell`                   | example.com     | AFS cell name                                       |
 | `cell_description`       | Example         | cell organization name                              |
 | `realm`                  | EXAMPLE.COM     | kerberos realm                                      |
-| `openafs_client_repourl` | https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch | openafs yum repo for client packages |
+| `openafs_client_repourl` |                 | openafs yum repo for client packages                |
 | `client_install_method`  | yum             | Installation method, one of: yum, build             |
-| `client_build_repo`      | https://github.com/openafs/openafs.git | 'build' installation git repo url |
+| `client_build_repo`      |                 | 'build' installation git repo url                   |
 | `client_build_path`      | /usr/local/src/openafs-client | 'build' installation method path      |
 | `client_build_version`   | master          | 'build' installation method git reference           |
 | `with_dkms`              | False           | install client with dkms when True                  |
@@ -79,31 +79,31 @@ a git source checkout.
 Install and configure the OpenAFS server packages. Optionally, build and install from
 a git source checkout.
 
-| variable                 | default         | description                                         |
+| Variable                 | Default         | Description                                         |
 | ------------------------ | --------------- | --------------------------------------------------- |
 | `cell`                   | example.com     | afs cell name                                       |
 | `cell_description`       | Example         | cell organization name                              |
-| `realm`                  | EXAMPLE.COM     | kerberos realm name |
-| `openafs_server_repourl` | https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch | openafs yum repo for server packages |
-| `selinux_mode`           | enforcing       | selinux mode |
-| `server_install_method`  | yum             | Installation method, one of: yum, build |
-| `server_build_repo`      | https://github.com/openafs/openafs.git | 'build' installation git repo url |
-| `server_build_path`      | /usr/local/src/openafs-server | 'build' installation method path |
-| `server_build_version`   | master          | 'build' installation method git reference |
-| `enable_dafs`            | True            | enable DAFS fileserver when True |
-| `opt_bosserver`          |                 | bosserver options |
-| `opt_ptserver`           |                 | ptserver options |
-| `opt_vlserver`           |                 | vlserver options |
-| `opt_dafileserver`       | -L              | DAFS fileserver options |
-| `opt_davolserver`        |                 | DAFS volume server options |
-| `opt_salvageserver`      |                 | DAFS salvage server options |
-| `opt_dasalvager`         |                 | DAFS salvager options |
-| `opt_fileserver`         |                 | Legacy fileserver options |
-| `opt_volserver`          |                 | Legacy volume server options |
-| `opt_salvager`           |                 | Legacy salvager options |
-| `kdc`                    | first host in kdcs group | Master kerberos kdc |
-| `root_server`            | first host in fileservers group | Primary fileserver hostname |
-| `root_part`              | a               | Primary fileserver vice partition id |
+| `realm`                  | EXAMPLE.COM     | kerberos realm name                                 |
+| `openafs_server_repourl` |                 | openafs yum repo for server packages                |
+| `selinux_mode`           | enforcing       | selinux mode                                        |
+| `server_install_method`  | yum             | Installation method, one of: yum, build             |
+| `server_build_repo`      |                 | 'build' installation git repo url                   |
+| `server_build_path`      | /usr/local/src/openafs-server | 'build' installation method path      |
+| `server_build_version`   | master          | 'build' installation method git reference           |
+| `enable_dafs`            | True            | enable DAFS fileserver when True                    |
+| `opt_bosserver`          |                 | bosserver options                                   |
+| `opt_ptserver`           |                 | ptserver options                                    |
+| `opt_vlserver`           |                 | vlserver options                                    |
+| `opt_dafileserver`       | -L              | DAFS fileserver options                             |
+| `opt_davolserver`        |                 | DAFS volume server options                          |
+| `opt_salvageserver`      |                 | DAFS salvage server options                         |
+| `opt_dasalvager`         |                 | DAFS salvager options                               |
+| `opt_fileserver`         |                 | Legacy fileserver options                           |
+| `opt_volserver`          |                 | Legacy volume server options                        |
+| `opt_salvager`           |                 | Legacy salvager options                             |
+| `kdc`                    | first host in kdcs group | Master kerberos kdc                        |
+| `root_server`            | first host in fileservers group | Primary fileserver hostname         |
+| `root_part`              | a               | Primary fileserver vice partition id                |
 
 
 ## Example layout
@@ -136,10 +136,9 @@ AFS Partitions: a,b,c
 
 Root fileserver afs04, partition a
 
-* test
-** /test
-* foobar
-** /test/foobar
+Test volumes:
+* `test`, mount point /test
+* `foobar`, mount point /test/foobar
 
 ### AFS Users
 
