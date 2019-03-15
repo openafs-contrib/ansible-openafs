@@ -27,10 +27,13 @@ if [ "x$PASSWORD" == "x" ]; then
     exit 1
 fi
 
+MASTER=$(tr -c -d 'a-zA-Z0-9' < /dev/urandom | head -c64)
+
 mkdir -p `dirname $FILENAME`
 echo "---" > $FILENAME
 echo "admin_principal: $USER" >> $FILENAME
 echo "admin_password: $PASSWORD" >> $FILENAME
+echo "kerberos_master_password: $MASTER" >> $FILENAME
 echo ""
 
 if [ "$ENCRYPT" == "yes" ]; then

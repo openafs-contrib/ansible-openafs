@@ -22,7 +22,7 @@
 - name: Create kerberos kdc database
   command: >
     /sbin/kdb5_util
-    -P {{ lookup('password', '/dev/null chars=ascii_letters') }}
+    -P {{ kerberos_master_password }}
     -r {{ realm }}
     create -s
   args:

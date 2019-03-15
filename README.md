@@ -17,8 +17,8 @@ up a Kerberos realm and OpenAFS cell.
 * Optionally, copy `ansible.cfg.example` to `ansible.cfg` and
   edit to taste.
 * Run `./setup.sh` once to set the Kerberos and OpenAFS administrator user name
-  and password in an encrypted variable file. `ansible-vault` is used to encrypt
-  this information.
+  and password and the Kerberos database master password in an encrypted
+  variable file. `ansible-vault` is used to encrypt this information.
 * Run `ansible-playbook --ask-vault-pass cell.yaml` to create the Kerberos realm
   and OpenAFS cell.
 
