@@ -16,8 +16,6 @@ afs[01:06].example.com
 [all:vars]
 cell=example.com
 realm=EXAMPLE.COM
-admin_principal=admin
-# admin_password=
 
 [fileservers:vars]
 partitions=a,b,c

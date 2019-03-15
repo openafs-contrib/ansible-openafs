@@ -4,3 +4,6 @@ retry_files_enabled = no
 stdout_callback = yaml
 bin_ansible_callbacks = yes
 host_key_checking = False
+
+# Location of the vault password file, if one.
+# vault_password_file = ~/.ansible-vault-password
