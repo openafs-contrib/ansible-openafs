@@ -13,3 +13,7 @@ root_server: "{{ groups['fileservers'][0] }}"
 
 # primary fileserver afs partition id
 root_part: a
+
+# afsd options
+# TODO: should detect or get this from the client role.
+opt_afsd: -dynroot -fakestat -afsdb
