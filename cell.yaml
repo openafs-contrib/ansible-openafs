@@ -1,16 +1,4 @@
 ---
-- name: Create Kerberos realm
-  hosts: kdcs[0]
-  become: yes
-  roles:
-    - kerberos_server
-
-- name: Install Kerberos clients
-  hosts: all
-  become: yes
-  roles:
-    - kerberos_client
-
 - name: Install OpenAFS servers
   hosts:
     - databases
