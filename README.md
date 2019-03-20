@@ -6,7 +6,7 @@ up a Kerberos realm and OpenAFS cell.
 *Supported platforms:*
 
 * CentOS/RHEL 7
-* OpenAFS 1.8.x
+* OpenAFS 1.6.5+, 1.8.x
 
 *Setup:*
 
