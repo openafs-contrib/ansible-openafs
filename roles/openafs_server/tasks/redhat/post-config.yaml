@@ -18,3 +18,4 @@
   service:
     name: openafs-server
     state: started
+    enabled: yes

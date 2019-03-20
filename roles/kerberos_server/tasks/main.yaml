@@ -32,11 +32,13 @@
 - name: Start kerberos kdc
   service:
     name: krb5kdc
+    enabled: yes
     state: started
 
 - name: Start kadmin
   service:
     name: kadmin
+    enabled: yes
     state: started
 
 - name: Create admin principal

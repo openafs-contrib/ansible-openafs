@@ -11,4 +11,5 @@
 - name: Start OpenAFS client
   service:
     state: started
+    enabled: yes
     name: openafs-client
