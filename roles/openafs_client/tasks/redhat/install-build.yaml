@@ -78,9 +78,9 @@
       DESTDIR: /tmp/openafs-client-build
 
 - name: Remove server files
-  command: rm -rf usr/afs/bin
-  args:
-    chdir: /tmp/openafs-client-build
+  file:
+    path: /tmp/openafs-client-build/usr/afs
+    state: absent
 
 - name: Install files
   shell: rsync -av * /
