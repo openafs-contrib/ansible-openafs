@@ -69,11 +69,30 @@
     chdir: "{{ server_build_path }}"
     target: install_nolibafs
 
-- name: Install commands
-  command: /bin/install /usr/afs/bin/{{ item }} /usr/sbin/{{ item }}
-  with_items:
-    - asetkey
-    - akeyconvert
+- name: Install asetkey to a standard location
+  copy:
+    remote_src: true
+    src: /usr/afs/bin/asetkey
+    dest: /usr/sbin/asetkey
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Check for akeyconvert
+  stat:
+    path: /usr/afs/bin/akeyconvert
+  register: akeyconvert_stat
+
+- name: Install akeyconvert to a standard location
+  copy:
+    remote_src: true
+    src: /usr/afs/bin/akeyconvert
+    dest: /usr/sbin/akeyconvert
+    owner: root
+    group: root
+    mode: 0755
+  # akeyconvert is present as of OpenAFS 1.8.0.
+  when: akeyconvert_stat.stat.exists
 
 - name: Update shared library cache
   shell: /sbin/ldconfig
