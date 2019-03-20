@@ -1,12 +1,19 @@
 #!/bin/bash
 set -e
 
-FILENAME="group_vars/all/vault/password.yaml"
+VAULTDIR="group_vars/all/vault"
+FILENAME="$VAULTDIR/password.yaml"
+mkdir -p "$VAULTDIR"
 
 if [ "$1" == "--clear" ]; then
     ENCRYPT="no"
 else
     ENCRYPT="yes"
+fi
+
+if [ -f "$FILENAME" ]; then
+    echo "Info: $FILENAME file already exists."
+    exit 1
 fi
 
 read -p "Enter the admin username [default: admin]: " USER
@@ -29,7 +36,6 @@ fi
 
 MASTER=$(tr -c -d 'a-zA-Z0-9' < /dev/urandom | head -c64)
 
-mkdir -p `dirname $FILENAME`
 echo "---" > $FILENAME
 echo "admin_principal: $USER" >> $FILENAME
 echo "admin_password: $PASSWORD" >> $FILENAME
