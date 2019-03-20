@@ -1,3 +1,3 @@
-ansible.cfg
-hosts
-vault/
+/ansible.cfg
+/hosts
+group_vars/

@@ -10,15 +10,15 @@ up a Kerberos realm and OpenAFS cell.
 
 *Setup:*
 
-* Copy `hosts.example` to `hosts`.
-* Edit `hosts` to match the host names at your site and set
-  the host variables to set the realm and cell info.
-* Copy `example.com.yaml` to `<cell>`.yaml and configure as needed.
-* Optionally, copy `ansible.cfg.example` to `ansible.cfg` and
-  edit to taste.
-* Run `./setup.sh` once to set the Kerberos and OpenAFS administrator user name
-  and password and the Kerberos database master password in an encrypted
-  variable file. `ansible-vault` is used to encrypt this information.
+* Copy `examples/hosts` to `hosts` and edit to match the host names at your
+  site.
+* Copy `examples/cell.yaml` to `group_vars/all/cell.yaml` and configure as
+  needed.
+* Optionally, copy `examples/ansible.cfg` to `ansible.cfg` and edit to taste.
+* Run the `password-setup.sh` script once to set the Kerberos and OpenAFS
+  administrator user name and password and the Kerberos database master
+  password in an encrypted variable file. `ansible-vault` is used to encrypt this
+  information.
 * Run `ansible-playbook --ask-vault-pass site.yaml` to create the Kerberos realm
   and OpenAFS cell.
 
