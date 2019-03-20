@@ -24,6 +24,9 @@ client_build_path: /usr/local/src/openafs-client
 # 'build' installation method git reference
 client_build_version: master
 
+# openafs kmod package release prefix
+openafs_kmod_prefix: 1
+
 # install client with dkms when True
 with_dkms: False
 

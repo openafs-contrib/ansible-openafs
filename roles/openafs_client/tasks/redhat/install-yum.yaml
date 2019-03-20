@@ -20,23 +20,40 @@
     owner: root
     group: root
 
-- name: Install OpenAFS client packages with prebuilt module
+- name: Install OpenAFS base packages
   yum:
     state: present
     name:
       - openafs
-      - openafs-client
       - openafs-krb5
-      - kmod-openafs
+
+- name: Query installed OpenAFS version
+  shell: rpm -q --queryformat "%{VERSION}" openafs
+  args:
+    warn: False
+  register: rpm_query
+  changed_when: False
+  when: not with_dkms
+
+- name: Set kernel module package version
+  set_fact:
+    openafs_kmod_version: "{{ rpm_query.stdout }}"
+    openafs_kmod_release: "{{ openafs_kmod_prefix }}.{{ ansible_kernel | regex_replace('-','_') }}"
+  when: not with_dkms
+
+- name: Install OpenAFS kernel module
+  yum:
+    state: present
+    name:
+      - openafs-client
+      - kmod-openafs-{{ openafs_kmod_version }}-{{ openafs_kmod_release }}
   when: not with_dkms
 
 - name: Install OpenAFS client packages with DKMS
   yum:
     state: present
     name:
-      - openafs
       - openafs-client
-      - openafs-krb5
       - dkms
       - kernel-devel
       - dkms-openafs
