@@ -12,8 +12,8 @@ realm: EXAMPLE.COM
 # openafs yum repo for client packages
 openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
 
-# Installation method, one of: yum, build
-client_install_method: yum
+# Installation method, one of: yum-kmod, yum-dkms, build
+client_install_method: yum-kmod
 
 # 'build' installation git repo url
 client_build_repo: https://github.com/openafs/openafs.git
@@ -26,9 +26,6 @@ client_build_version: master
 
 # openafs kmod package release prefix
 openafs_kmod_prefix: 1
-
-# install client with dkms when True
-with_dkms: False
 
 # afs filesystem mount point
 cacheinfo_mount: /afs

@@ -11,4 +11,11 @@
     state: enabled
     immediate: yes
     permanent: yes
-  when: False
+
+- name: Check cache directory
+  file:
+    state: directory
+    path: "{{ afscachedir }}"
+    mode: 0700
+    owner: root
+    group: root

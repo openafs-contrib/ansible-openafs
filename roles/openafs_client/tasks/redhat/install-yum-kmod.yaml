@@ -1,24 +1,10 @@
 ---
-- name: Add epel yum repo
-  yum:
-    name: epel-release
-    state: present
-    update_cache: yes
-
 - name: Add OpenAFS yum repo
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
     baseurl: "{{ openafs_client_repourl }}"
     gpgcheck: no
-
-- name: Check cache directory
-  file:
-    state: directory
-    path: "{{ afscachedir }}"
-    mode: 0700
-    owner: root
-    group: root
 
 - name: Install OpenAFS base packages
   yum:
@@ -33,13 +19,11 @@
     warn: False
   register: rpm_query
   changed_when: False
-  when: not with_dkms
 
 - name: Set kernel module package version
   set_fact:
     openafs_kmod_version: "{{ rpm_query.stdout }}"
     openafs_kmod_release: "{{ openafs_kmod_prefix }}.{{ ansible_kernel | regex_replace('-','_') }}"
-  when: not with_dkms
 
 - name: Install OpenAFS kernel module
   yum:
@@ -47,14 +31,3 @@
     name:
       - openafs-client
       - kmod-openafs-{{ openafs_kmod_version }}-{{ openafs_kmod_release }}
-  when: not with_dkms
-
-- name: Install OpenAFS client packages with DKMS
-  yum:
-    state: present
-    name:
-      - openafs-client
-      - dkms
-      - kernel-devel
-      - dkms-openafs
-  when: with_dkms

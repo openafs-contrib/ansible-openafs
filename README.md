@@ -67,11 +67,10 @@ a git source checkout.
 | `cell_description`       | Example         | cell organization name                              |
 | `realm`                  | EXAMPLE.COM     | kerberos realm                                      |
 | `openafs_client_repourl` |                 | openafs yum repo for client packages                |
-| `client_install_method`  | yum             | Installation method, one of: yum, build             |
+| `client_install_method`  | yum-kmod        | Installation method: yum-kmod, yum-dkms, build      |
 | `client_build_repo`      |                 | 'build' installation git repo url                   |
 | `client_build_path`      | /usr/local/src/openafs-client | 'build' installation method path      |
 | `client_build_version`   | master          | 'build' installation method git reference           |
-| `with_dkms`              | False           | install client with dkms when True                  |
 | `cacheinfo_mount`        | /afs            | afs filesystem mount point                          |
 | `cacheinfo_cache`        | /usr/vice/cache | afs cache mount point                               |
 | `cacheinfo_size`         | 50000           | afs cache size                                      |
