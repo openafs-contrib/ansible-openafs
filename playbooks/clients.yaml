@@ -1,0 +1,6 @@
+---
+- name: Install OpenAFS clients
+  hosts: clients
+  become: yes
+  roles:
+    - openafs_client

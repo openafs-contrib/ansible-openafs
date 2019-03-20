@@ -1,0 +1,8 @@
+---
+- name: Install OpenAFS servers
+  hosts:
+    - databases
+    - fileservers
+  become: yes
+  roles:
+    - openafs_server
