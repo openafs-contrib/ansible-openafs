@@ -1,7 +1,7 @@
 restrictmode 0
 restarttime 16 0 0 0 0
 checkbintime 3 0 5 0 0
-{% if 'databases' in group_names %}
+{% if 'afs_databases' in group_names %}
 bnode simple ptserver 1
 parm {{ afssrvdir }}/ptserver{{ ' ' if opt_ptserver else '' }}{{ opt_ptserver }}
 end
@@ -9,7 +9,7 @@ bnode simple vlserver 1
 parm {{ afssrvdir }}/vlserver{{ ' ' if opt_vlserver else '' }}{{ opt_vlserver }}
 end
 {% endif %}
-{% if 'fileservers' in group_names %}
+{% if 'afs_fileservers' in group_names %}
 {% if enable_dafs %}
 bnode dafs dafs 1
 parm /usr/afs/bin/dafileserver{{ ' ' if opt_dafileserver else '' }}{{ opt_dafileserver }}

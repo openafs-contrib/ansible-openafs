@@ -72,7 +72,7 @@ or in a group variable, preferably encrypted with `ansible-vault`.
 
     kdc:
 
-The Kerberos KDC hostname. This host must be a member of the `kdcs` host group.
+The Kerberos KDC hostname. This host must be a member of the `afs_kdcs` host group.
 
     root_server:
     root_part: a

@@ -12,10 +12,10 @@ admin_principal: admin
 # admin_password:
 
 # primary kerberos kdc hostname
-kdc: "{{ groups['kdcs'][0] }}"
+kdc: "{{ groups['afs_kdcs'][0] }}"
 
 # primary fileserver hostname
-root_server: "{{ groups['fileservers'][0] }}"
+root_server: "{{ groups['afs_fileservers'][0] }}"
 
 # primary fileserver afs partition id
 root_part: a

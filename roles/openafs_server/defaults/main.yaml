@@ -67,10 +67,10 @@ opt_volserver:
 opt_salvager:
 
 # Master kerberos kdc
-kdc: "{{ groups['kdcs'][0] }}"
+kdc: "{{ groups['afs_kdcs'][0] }}"
 
 # Primary fileserver hostname
-root_server: "{{ groups['fileservers'][0] }}"
+root_server: "{{ groups['afs_fileservers'][0] }}"
 
 # Primary fileserver vice partition id
 root_part: a
