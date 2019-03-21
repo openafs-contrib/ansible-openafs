@@ -1,3 +1,2 @@
+*.retry
 /ansible.cfg
-/hosts
-group_vars/

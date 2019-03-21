@@ -6,7 +6,7 @@
     owner: root
     group: root
     mode: 0700
-  with_items: "{{ partitions.split(',') }}"
+  with_items: "{{ partitions }}"
   when: partitions is defined
 
 - name: Enable always attach mode for partition
@@ -17,6 +17,6 @@
     owner: root
     group: root
     mode: 0600
-  with_items: "{{ partitions.split(',') }}"
+  with_items: "{{ partitions }}"
   when: partitions is defined
 

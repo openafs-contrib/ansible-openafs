@@ -1,4 +1,7 @@
 ---
+cell: example.com
+realm: EXAMPLE.COM
+
 afs:
   volumes:
     - name: test

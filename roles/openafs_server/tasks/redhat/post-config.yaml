@@ -11,7 +11,7 @@
 ## Same -- for the partitions
 - name: "Restore partition contexts for selinux"
   command: restorecon /vicep{{ item }}
-  with_items: "{{ partitions.split(',') }}"
+  with_items: "{{ partitions }}"
   when: partitions is defined and selinux_mode == 'enforcing'
 
 - name: Start the OpenAFS servers

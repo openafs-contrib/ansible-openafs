@@ -12,10 +12,3 @@ afs05.example.com
 
 [clients]
 afs[01:06].example.com
-
-[all:vars]
-cell=example.com
-realm=EXAMPLE.COM
-
-[fileservers:vars]
-partitions=a,b,c
