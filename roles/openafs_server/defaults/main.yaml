@@ -9,6 +9,11 @@ cell_description: Example
 # kerberos realm name
 realm: EXAMPLE.COM
 
+# Kerberos and AFS admin principal
+admin_principal: admin
+
+# Kerberos and AFS admin password (no default)
+# admin_password:
 
 # openafs yum repo for server packages
 openafs_server_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch

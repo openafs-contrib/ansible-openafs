@@ -5,6 +5,12 @@ cell: example.com
 # kerberos realm name
 realm: EXAMPLE.COM
 
+# Kerberos and AFS admin principal
+admin_principal: admin
+
+# Kerberos and AFS admin password (no default)
+# admin_password:
+
 # primary kerberos kdc hostname
 kdc: "{{ groups['kdcs'][0] }}"
 

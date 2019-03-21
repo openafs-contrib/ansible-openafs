@@ -1,6 +1,12 @@
 ---
-# kerberos realm name
+# Kerberos realm name
 realm: EXAMPLE.COM
 
-# kerberos admin principal
+# Kerberos database master password (no default)
+# kerberos_master_password:
+
+# Kerberos admin principal
 admin_principal: admin
+
+# Kerberos admin password (no default)
+# admin_password:

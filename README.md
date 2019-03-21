@@ -37,14 +37,18 @@ Kerberos database, the administrator's principal, and the OpenAFS service key.
 
 The Kerberos realm name.
 
+    kerberos_master_password: (undefined by default)
+
+The secret Kerberos database master password. The password is not defined by
+default and must be set on the command line or in a group variable, preferably
+encrypted with `ansible-vault`.
+
     admin_principal: admin
+    admin_password: (undefined by default)
 
-A administrator principal to be created. This principal will be used to create
-the service keys and regular user principals.
-
-    admin_password:
-
-The administrator principal password. No default value is given.
+A administrator principal to be created by this role.
+The password is not defined by default and must be set on the command line
+or in a group variable, preferably encrypted with `ansible-vault`.
 
 ## OpenAFS Cell Role
 
@@ -57,6 +61,14 @@ client host.
     realm: EXAMPLE.COM
 
 Cell and realm names.
+
+    admin_principal: admin
+    admin_password:
+
+A administrator principal and password to be used to create the regular user
+Kerberos principals and AFS users.
+The password is not defined by default and must be set on the command line
+or in a group variable, preferably encrypted with `ansible-vault`.
 
     kdc:
 
@@ -135,6 +147,13 @@ enforcing mode.
 
 The Kerberos realm name, AFS cell name, and the cell organizational
 description.
+
+    admin_principal:
+    admin_password: (undefined by default)
+
+A administrator principal and password to be used to set the AFS service key.
+The password is not defined by default and must be set on the command line
+or in a group variable, preferably encrypted with `ansible-vault`.
 
     server_install_method: yum
 
