@@ -18,5 +18,5 @@
     policy: targeted
 
 - name: Setup SELinux policies
-  include_tasks: CentOS/selinux.yaml
+  include_tasks: "{{ ansible_os_family|lower }}/selinux.yaml"
   when: selinux_mode == 'enforcing'
