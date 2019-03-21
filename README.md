@@ -22,7 +22,7 @@ Install and configure the Kerberos workstation packages.
 
 ### Role Variables
 
-    realm: EXAMPLE.COM
+    afs_realm: EXAMPLE.COM
 
 The Kerberos realm name.
 
@@ -33,18 +33,18 @@ Kerberos database, the administrator's principal, and the OpenAFS service key.
 
 ### Role Variables
 
-    realm: EXAMPLE.COM
+    afs_realm: EXAMPLE.COM
 
 The Kerberos realm name.
 
-    kerberos_master_password: (undefined by default)
+    afs_kerberos_master_password: (undefined by default)
 
 The secret Kerberos database master password. The password is not defined by
 default and must be set on the command line or in a group variable, preferably
 encrypted with `ansible-vault`.
 
-    admin_principal: admin
-    admin_password: (undefined by default)
+    afs_admin_principal: admin
+    afs_admin_password: (undefined by default)
 
 A administrator principal to be created by this role.
 The password is not defined by default and must be set on the command line
@@ -57,25 +57,25 @@ client host.
 
 ### Role Variables
 
-    cell: example.com
-    realm: EXAMPLE.COM
+    afs_cell: example.com
+    afs_realm: EXAMPLE.COM
 
 Cell and realm names.
 
-    admin_principal: admin
-    admin_password:
+    afs_admin_principal: admin
+    afs_admin_password:
 
 A administrator principal and password to be used to create the regular user
 Kerberos principals and AFS users.
 The password is not defined by default and must be set on the command line
 or in a group variable, preferably encrypted with `ansible-vault`.
 
-    kdc:
+    afs_kdc:
 
 The Kerberos KDC hostname. This host must be a member of the `afs_kdcs` host group.
 
-    root_server:
-    root_part: a
+    afs_root_server:
+    afs_root_part: a
 
 The primary fileserver hostname and AFS fileserver partition id. The cell's
 top-level volumes will be created on this fileserver partition.
@@ -83,50 +83,49 @@ top-level volumes will be created on this fileserver partition.
 ## OpenAFS Client Role
 
 Install and configure the OpenAFS client packages.  Optionally, build and install from
-a git source checkout.
+source code.
 
 ### Role Variables
 
-    cell: example.com
-    cell_description: Example
-    realm:  EXAMPLE.COM
+    afs_cell: example.com
+    afs_cell_description: Example
+    afs_realm:  EXAMPLE.COM
 
 The Kerberos realm name, AFS cell name, and the cell organizational
 description.
 
-    client_install_method: yum-kmod
+    afs_client_install_method: yum-kmod
 
 The method used to install the OpenAFS client binaries. Values are:
 
 * `yum-kmod` :  Install client packages and a pre-built kernel module
                 with yum.
-                by `openafs_client_repourl`.
 * `yum-dkms`:   Install client packages and kernel module sources with yum
                 and build the kernel module using DKMS.
-* `build`:      Build the client binaries and kernel module from a source
+* `build`:      Build the client binaries and kernel module from source
                 code. Also, install development packages in order to
                 build the OpenAFS client binaries and kernel module.
 
-    openafs_client_repourl:
+    afs_openafs_client_repourl:
 
 The URL of a yum repo containing OpenAFS client packages.
 
-    client_build_repo:
-    client_build_version: master
-    client_build_path: /usr/local/src/openafs-client
+    afs_client_build_repo:
+    afs_client_build_version: master
+    afs_client_build_path: /usr/local/src/openafs-client
 
 The OpenAFS git repo URL, git reference, and build scratch directory for the
 `build` installation method.
 
-    cacheinfo_mount: /afs
-    cacheinfo_cache: /usr/vice/cache
-    cacheinfo_size: 50000
+    afs_cacheinfo_mount: /afs
+    afs_cacheinfo_cache: /usr/vice/cache
+    afs_cacheinfo_size: 50000
 
 The OpenAFS cache configuration parameters; the AFS filesystem mount point, the
 cache partition, and the cache manager cache size.  The cache partition should
 already exist.
 
-    opt_afsd: -dynroot -fakestat -afsdb
+    afs_afsd_opts: -dynroot -fakestat -afsdb
 
 The OpenAFS cache manager startup options.
 
@@ -134,76 +133,76 @@ The OpenAFS cache manager startup options.
 
 Install and configure the OpenAFS server packages. This role installs both the
 fileserver and the database servers, which can be installed on the same hosts
-or different hosts.  Optionally, build and install from a git source checkout.
+or different hosts.  Optionally, build and install from source code.
 
 This role enables OpenAFS servers to operate correctly with selinux set to
 enforcing mode.
 
 ### Role Variables
 
-    cell: example.com
-    cell_description: Example
-    realm:  EXAMPLE.COM
+    afs_cell: example.com
+    afs_cell_description: Example
+    afs_realm:  EXAMPLE.COM
 
 The Kerberos realm name, AFS cell name, and the cell organizational
 description.
 
-    admin_principal:
-    admin_password: (undefined by default)
+    afs_admin_principal:
+    afs_admin_password: (undefined by default)
 
 A administrator principal and password to be used to set the AFS service key.
 The password is not defined by default and must be set on the command line
 or in a group variable, preferably encrypted with `ansible-vault`.
 
-    server_install_method: yum
+    afs_server_install_method: yum
 
 The method used to install the OpenAFS server binaries. Values are:
 
 * `yum`:  Install OpenAFS server packages with yum.
 * `build`: Build and install server binaries from source code.
 
-    openafs_server_repourl:
+    afs_openafs_server_repourl:
 
 The URL of a yum repo containing OpenAFS server packages.
 
-    server_build_repo:
-    server_build_path: /usr/local/src/openafs-server
-    server_build_version: master
+    afs_server_build_repo:
+    afs_server_build_path: /usr/local/src/openafs-server
+    afs_server_build_version: master
 
 The OpenAFS git repo URL, git reference, and build scratch directory for the
 `build` installation method.
 
-    selinux_mode: enforcing
+    afs_selinux_mode: enforcing
 
 The selinux enforcing mode. May be one of `enforcing`, `passive`, or
 `disabled`.  When `enforcing`, update the required selinux bits to allow the
 servers to properly operate.
 
-    enable_dafs: True
+    afs_enable_dafs: True
 
 Install the newer Demand-Attach Filesystem (DAFS) fileserver variant when
 installing a fileserver.
 
-    opt_bosserver:
-    opt_ptserver:
-    opt_vlserver:
-    opt_dafileserver: -L
-    opt_davolserver:
-    opt_salvageserver:
-    opt_dasalvager:
-    opt_fileserver:
-    opt_volserver:
-    opt_salvager:
+    afs_bosserver_opts:
+    afs_ptserver_opts:
+    afs_vlserver_opts:
+    afs_dafileserver_opts: -L
+    afs_davolserver_opts:
+    afs_salvageserver_opts:
+    afs_dasalvager_opts:
+    afs_fileserver_opts:
+    afs_volserver_opts:
+    afs_salvager_opts:
 
 The OpenAFS server command line options. See the OpenAFS man pages for the
 server processes.
 
-    kdc:
+    afs_kdc:
 
 The Kerberos KDC hostname.
 
-    root_server:
-    root_part: a
+    afs_root_server:
+    afs_root_part: a
 
 The primary fileserver hostname and AFS fileserver partition id. The cell root
 volume (root.afs, root.cell) will be created on this fileserver partition.

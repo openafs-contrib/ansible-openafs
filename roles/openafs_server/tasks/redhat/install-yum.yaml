@@ -3,7 +3,7 @@
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
-    baseurl: "{{ openafs_server_repourl }}"
+    baseurl: "{{ afs_openafs_server_repourl }}"
     gpgcheck: no
 
 - name: Install OpenAFS server packages

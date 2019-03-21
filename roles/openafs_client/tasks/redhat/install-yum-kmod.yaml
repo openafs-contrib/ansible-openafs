@@ -3,7 +3,7 @@
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
-    baseurl: "{{ openafs_client_repourl }}"
+    baseurl: "{{ afs_openafs_client_repourl }}"
     gpgcheck: no
 
 - name: Install OpenAFS base packages
@@ -22,12 +22,12 @@
 
 - name: Set kernel module package version
   set_fact:
-    openafs_kmod_version: "{{ rpm_query.stdout }}"
-    openafs_kmod_release: "{{ openafs_kmod_prefix }}.{{ ansible_kernel | regex_replace('-','_') }}"
+    afs_openafs_kmod_version: "{{ rpm_query.stdout }}"
+    afs_openafs_kmod_release: "{{ afs_openafs_kmod_prefix }}.{{ ansible_kernel | regex_replace('-','_') }}"
 
 - name: Install OpenAFS kernel module
   yum:
     state: present
     name:
       - openafs-client
-      - kmod-openafs-{{ openafs_kmod_version }}-{{ openafs_kmod_release }}
+      - kmod-openafs-{{ afs_openafs_kmod_version }}-{{ afs_openafs_kmod_release }}

@@ -4,21 +4,21 @@
 
 - name: Admin login
   shell: >
-    echo {{ admin_password }} | {{ kinit }} {{ admin_principal }}@{{ realm }} &&
-    aklog -d -c {{ cell }}
+    echo {{ afs_admin_password }} | {{ afs_kinit }} {{ afs_admin_principal }}@{{ afs_realm }} &&
+    {{ afs_aklog }} -d -c {{ afs_cell }}
 
 - name: Mount root volumes
-  include: root-{{ ('-dynroot' in opt_afsd) | ternary('dynamic','static') }}.yaml
+  include: root-{{ ('-dynroot' in afs_afsd_opts) | ternary('dynamic','static') }}.yaml
 
 - name: Create principals
   shell: >
-    echo {{ admin_password }} |
-    {{ kadmin }} -p {{ admin_principal }}@{{ realm }}
-    -q "add_principal -randkey {{ item }}@{{ realm }}"
+    echo {{ afs_admin_password }} |
+    {{ afs_kadmin }} -p {{ afs_admin_principal }}@{{ afs_realm }}
+    -q "add_principal -randkey {{ item }}@{{ afs_realm }}"
   with_items: "{{ afs.users }}"
 
 - name: Create users
-  command: "{{ pts }} createuser -name {{ item|replace('/','.') }}"
+  command: "{{ afs_pts }} createuser -name {{ item|replace('/','.') }}"
   register: pts_result
   changed_when: pts_result.rc == 0
   failed_when: >
@@ -27,7 +27,7 @@
   with_items: "{{ afs.users }}"
 
 - name: Create groups
-  command: "{{ pts }} creategroup -name {{ item.name }}"
+  command: "{{ afs_pts }} creategroup -name {{ item.name }}"
   register: pts_result
   changed_when: pts_result.rc == 0
   failed_when: >
@@ -36,7 +36,7 @@
   with_items: "{{ afs.groups }}"
 
 - name: Set group members
-  command: "{{ pts }} adduser -group {{ item.name }} -user {{ item.members|join(' ') }}"
+  command: "{{ afs_pts }} adduser -group {{ item.name }} -user {{ item.members|join(' ') }}"
   register: pts_result
   changed_when: pts_result.rc == 0
   failed_when: >
@@ -46,9 +46,9 @@
 
 - name: Create volumes
   command: >
-    {{ vos }} create
-    -server {{ item.get('host', root_server) }}
-    -partition {{ item.get('part', root_part) }}
+    {{ afs_vos }} create
+    -server {{ item.get('host', afs_root_server) }}
+    -partition {{ item.get('part', afs_root_part) }}
     -name {{ item.name }}
     -maxquota {{ item.get('quota', 0) }}
   register: vos_result
@@ -60,10 +60,10 @@
 
 - name: Mount volumes
   command: >
-    {{ fs }} mkmount
-    -dir /afs/.{{ cell }}/{{ item.dir }}
+    {{ afs_fs }} mkmount
+    -dir /afs/.{{ afs_cell }}/{{ item.dir }}
     -vol {{ item.name }}
-    -cell {{ cell }}
+    -cell {{ afs_cell }}
   register: fs_result
   changed_when: fs_result.rc == 0
   failed_when: >
@@ -72,10 +72,10 @@
   with_items: "{{ afs.volumes }}"
 
 - name: Release volumes
-  command: "{{ vos }} release {{ item }} -verbose"
+  command: "{{ afs_vos }} release {{ item }} -verbose"
   with_items:
     - root.cell
 
 - name: Flush the volume cache
-  command: "{{ fs }} checkvolumes"
+  command: "{{ afs_fs }} checkvolumes"
   changed_when: False

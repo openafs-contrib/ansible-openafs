@@ -1,6 +1,6 @@
 ---
 - name: Create the root volumes
-  command: "{{ vos }} create -server {{ root_server }} -partition {{ root_part }} -name {{ item }} -verbose"
+  command: "{{ afs_vos }} create -server {{ afs_root_server }} -partition {{ afs_root_part }} -name {{ item }} -verbose"
   register: vos_result
   until: >
     vos_result.rc == 0 or
@@ -16,7 +16,7 @@
     - root.cell
 
 - name: Mount root.cell volume
-  command: "{{ fs }} mkmount -dir /afs/{{ cell }} -vol root.cell -cell {{ cell }}"
+  command: "{{ afs_fs }} mkmount -dir /afs/{{ afs_cell }} -vol root.cell -cell {{ afs_cell }}"
   register: fs_result
   changed_when: fs_result.rc == 0
   failed_when: >
@@ -26,7 +26,7 @@
       or 'You can not change a backup or readonly volume' in fs_result.get('stderr','') )
 
 - name: Mount root.cell read-write volume
-  command: "{{ fs }} mkmount -dir /afs/.{{ cell }} -vol root.cell -cell {{ cell }} -rw"
+  command: "{{ afs_fs }} mkmount -dir /afs/.{{ cell }} -vol root.cell -cell {{ afs_cell }} -rw"
   register: fs_result
   changed_when: fs_result.rc == 0
   failed_when: >
@@ -36,17 +36,17 @@
       or 'You can not change a backup or readonly volume' in fs_result.get('stderr','') )
 
 - name: Grant world readable rights to root directories
-  command: "{{ fs }} setacl -dir {{ item }} -acl system:anyuser read"
+  command: "{{ afs_fs }} setacl -dir {{ item }} -acl system:anyuser read"
   register: fs_result
   failed_when: >
     fs_result.rc != 0
     and 'You can not change a backup or readonly volume' not in fs_result.get('stderr','')
   with_items:
     - "/afs/."
-    - "/afs/{{ cell }}/."
+    - "/afs/{{ afs_cell }}/."
 
 - name: Add root volume read-only sites
-  command: "{{ vos }} addsite -server {{ root_server }} -part {{ root_part }} -id {{ item }}"
+  command: "{{ afs_vos }} addsite -server {{ afs_root_server }} -part {{ afs_root_part }} -id {{ item }}"
   register: vos_result
   changed_when: vos_result.rc == 0
   failed_when: >
@@ -57,10 +57,10 @@
     - root.cell
 
 - name: Release root volumes
-  command: "{{ vos }} release {{ item }} -verbose"
+  command: "{{ afs_vos }} release {{ item }} -verbose"
   with_items:
     - root.afs
     - root.cell
 
 - name: Flush the volume cache on this host
-  command: "{{ fs }} checkvolumes"
+  command: "{{ afs_fs }} checkvolumes"

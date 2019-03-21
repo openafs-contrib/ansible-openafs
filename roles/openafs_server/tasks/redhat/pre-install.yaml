@@ -14,9 +14,9 @@
 
 - name: Setup SELinux mode
   selinux:
-    state: "{{ selinux_mode }}"
+    state: "{{ afs_selinux_mode }}"
     policy: targeted
 
 - name: Setup SELinux policies
   include_tasks: "{{ ansible_os_family|lower }}/selinux.yaml"
-  when: selinux_mode == 'enforcing'
+  when: afs_selinux_mode == 'enforcing'

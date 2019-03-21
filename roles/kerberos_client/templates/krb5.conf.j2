@@ -1,10 +1,10 @@
 # {{ ansible_managed }}
 
 [libdefaults]
-    default_realm = {{ realm }}
+    default_realm = {{ afs_realm }}
 
 [realms]
-    {{ realm }} = {
+    {{ afs_realm }} = {
 {% for host in groups['afs_kdcs'] %}
         kdc = {{ hostvars[host].inventory_hostname }}
 {% endfor %}

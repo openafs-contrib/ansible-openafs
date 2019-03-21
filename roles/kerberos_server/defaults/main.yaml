@@ -1,12 +1,15 @@
 ---
 # Kerberos realm name
-realm: EXAMPLE.COM
+afs_realm: EXAMPLE.COM
+
+# AFS cell name for the service key.
+afs_cell: example.com
 
 # Kerberos database master password (no default)
-# kerberos_master_password:
+# afs_kerberos_master_password:
 
 # Kerberos admin principal
-admin_principal: admin
+afs_admin_principal: admin
 
 # Kerberos admin password (no default)
-# admin_password:
+# afs_admin_password:

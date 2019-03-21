@@ -1,76 +1,76 @@
 ---
 
 # afs cell name
-cell: example.com
+afs_cell: example.com
 
 # cell organization name
-cell_description: Example
+afs_cell_description: Example
 
 # kerberos realm name
-realm: EXAMPLE.COM
+afs_realm: EXAMPLE.COM
 
 # Kerberos and AFS admin principal
-admin_principal: admin
+afs_admin_principal: admin
 
 # Kerberos and AFS admin password (no default)
-# admin_password:
+# afs_admin_password:
 
 # openafs yum repo for server packages
-openafs_server_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
+afs_openafs_server_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
 
 # selinux mode
-selinux_mode: enforcing
+afs_selinux_mode: enforcing
 
 # Installation method, one of: yum, build
-server_install_method: yum
+afs_server_install_method: yum
 
 # 'build' installation git repo url
-server_build_repo: https://github.com/openafs/openafs.git
+afs_server_build_repo: https://github.com/openafs/openafs.git
 
 # 'build' installation method path
-server_build_path: /usr/local/src/openafs-server
+afs_server_build_path: /usr/local/src/openafs-server
 
 # 'build' installation method git reference
-server_build_version: master
+afs_server_build_version: master
 
 # enable DAFS fileserver when True
-enable_dafs: True
+afs_enable_dafs: True
 
 # bosserver options
-opt_bosserver:
+afs_bosserver_opts:
 
 # ptserver options
-opt_ptserver:
+afs_ptserver_opts:
 
 # vlserver options
-opt_vlserver:
+afs_vlserver_opts:
 
 # DAFS fileserver options
-opt_dafileserver: -L
+afs_dafileserver_opts: -L
 
 # DAFS volume server options
-opt_davolserver:
+afs_davolserver_opts:
 
 # DAFS salvage server options
-opt_salvageserver:
+afs_salvageserver_opts:
 
 # DAFS salvager options
-opt_dasalvager:
+afs_dasalvager_opts:
 
 # Legacy fileserver options
-opt_fileserver:
+afs_fileserver_opts:
 
 # Legacy volume server options
-opt_volserver:
+afs_volserver_opts:
 
 # Legacy salvager options
-opt_salvager:
+afs_salvager_opts:
 
 # Master kerberos kdc
-kdc: "{{ groups['afs_kdcs'][0] }}"
+afs_kdc: "{{ groups['afs_kdcs'][0] }}"
 
 # Primary fileserver hostname
-root_server: "{{ groups['afs_fileservers'][0] }}"
+afs_root_server: "{{ groups['afs_fileservers'][0] }}"
 
 # Primary fileserver vice partition id
-root_part: a
+afs_root_part: a

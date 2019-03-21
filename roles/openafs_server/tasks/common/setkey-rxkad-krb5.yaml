@@ -2,12 +2,12 @@
 - name: Write the keytab file
   command: >
     kadmin
-    -r "{{ realm }}"
-    -p "{{ admin_principal }}"
-    -w "{{ admin_password }}"
-    -q 'ktadd -norandkey -k {{ afsconfdir }}/rxkad.keytab afs/{{ cell }}@{{ realm }}'
+    -r "{{ afs_realm }}"
+    -p "{{ afs_admin_principal }}"
+    -w "{{ afs_admin_password }}"
+    -q 'ktadd -norandkey -k {{ afs_afsconfdir }}/rxkad.keytab afs/{{ afs_cell }}@{{ afs_realm }}'
   args:
-    creates: "{{ afsconfdir }}/rxkad.keytab"
+    creates: "{{ afs_afsconfdir }}/rxkad.keytab"
 
 - name: Get asetkey usage
   command: asetkey
@@ -17,10 +17,10 @@
 
 - name: Scan keytab for key versions and encryption types
   shell: >
-    klist -e -k {{ afsconfdir }}/rxkad.keytab |
+    klist -e -k {{ afs_afsconfdir }}/rxkad.keytab |
     sed '1,3d' |
     sed 's/[()]//g' |
-    awk '$2 == "afs/{{ cell }}@{{ realm }}" && $3 !~ /^des/
+    awk '$2 == "afs/{{ afs_cell }}@{{ afs_realm }}" && $3 !~ /^des/
     { printf("- kvno: %d\n  enc: %s\n", $1, $3) }'
   changed_when: False
   register: klist_result
@@ -30,8 +30,8 @@
   command: >
     asetkey add rxkad_krb5
     {{ item.kvno }}
-    {{ kerberos_eno[item.enc] }}
-    {{ afsconfdir }}/rxkad.keytab
-    afs/{{ cell }}@{{ realm }}
+    {{ afs_kerberos_eno[item.enc] }}
+    {{ afs_afsconfdir }}/rxkad.keytab
+    afs/{{ afs_cell }}@{{ afs_realm }}
   with_items: "{{ klist_result.stdout | from_yaml }}"
   when: "'asetkey add <type> <kvno> <subtype> <key>' in asetkey_usage.stderr"

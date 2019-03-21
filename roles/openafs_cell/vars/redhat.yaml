@@ -1,8 +1,8 @@
 ---
-aklog: /usr/bin/aklog
-fs: /usr/bin/fs
-kadmin: /usr/bin/kadmin
-kinit: /usr/bin/kinit
-klog_krb5: /usr/bin/klog.krb5
-pts: /usr/bin/pts
-vos: /usr/sbin/vos
+afs_aklog: /usr/bin/aklog
+afs_fs: /usr/bin/fs
+afs_kadmin: /usr/bin/kadmin
+afs_kinit: /usr/bin/kinit
+afs_klog_krb5: /usr/bin/klog.krb5
+afs_pts: /usr/bin/pts
+afs_vos: /usr/sbin/vos

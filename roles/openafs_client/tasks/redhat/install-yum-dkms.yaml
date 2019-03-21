@@ -3,7 +3,7 @@
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
-    baseurl: "{{ openafs_client_repourl }}"
+    baseurl: "{{ afs_openafs_client_repourl }}"
     gpgcheck: no
 
 - name: Install OpenAFS client packages with DKMS

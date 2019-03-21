@@ -3,5 +3,5 @@
   lineinfile:
     path: /etc/sysconfig/openafs
     regexp: '^BOSSERVER_ARGS='
-    line: 'BOSSERVER_ARGS="{{ opt_bosserver }}"'
+    line: 'BOSSERVER_ARGS="{{ afs_bosserver_opts }}"'
     state: present

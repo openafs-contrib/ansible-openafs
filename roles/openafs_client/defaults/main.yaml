@@ -1,41 +1,41 @@
 ---
 
 # AFS cell name
-cell: example.com
+afs_cell: example.com
 
 # cell organization name
-cell_description: Example
+afs_cell_description: Example
 
 # kerberos realm
-realm: EXAMPLE.COM
+afs_realm: EXAMPLE.COM
 
 # openafs yum repo for client packages
-openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
+afs_openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
 
 # Installation method, one of: yum-kmod, yum-dkms, build
-client_install_method: yum-kmod
+afs_client_install_method: yum-kmod
 
 # 'build' installation git repo url
-client_build_repo: https://github.com/openafs/openafs.git
+afs_client_build_repo: https://github.com/openafs/openafs.git
 
 # 'build' installation method path
-client_build_path: /usr/local/src/openafs-client
+afs_client_build_path: /usr/local/src/openafs-client
 
 # 'build' installation method git reference
-client_build_version: master
+afs_client_build_version: master
 
 # openafs kmod package release prefix
-openafs_kmod_prefix: 1
+afs_openafs_kmod_prefix: 1
 
 # afs filesystem mount point
-cacheinfo_mount: /afs
+afs_cacheinfo_mount: /afs
 
 # afs cache mount point
-cacheinfo_cache: /usr/vice/cache
+afs_cacheinfo_cache: /usr/vice/cache
 
 # afs cache size
 # TODO: create partition or autodecte
-cacheinfo_size: 50000
+afs_cacheinfo_size: 50000
 
 # afsd options
-opt_afsd: -dynroot -fakestat -afsdb
+afs_afsd_opts: -dynroot -fakestat -afsdb

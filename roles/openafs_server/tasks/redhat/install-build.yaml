@@ -32,18 +32,18 @@
 - name: Create build directory
   file:
     state: directory
-    path: "{{ server_build_path }}"
+    path: "{{ afs_server_build_path }}"
 
 - name: Clone OpenAFS git repo
   git:
-    repo: "{{ server_build_repo }}"
-    dest: "{{ server_build_path }}"
-    version: "{{ server_build_version }}"
+    repo: "{{ afs_server_build_repo }}"
+    dest: "{{ afs_server_build_path }}"
+    version: "{{ afs_server_build_version }}"
 
 - name: Generate autoconf scripts
   shell: ./regen.sh
   args:
-    chdir: "{{ server_build_path }}"
+    chdir: "{{ afs_server_build_path }}"
 
 - name: Configure
   shell: >
@@ -62,11 +62,11 @@
     --enable-redhat-buildsys
     --enable-transarc-paths
   args:
-    chdir: "{{ server_build_path }}"
+    chdir: "{{ afs_server_build_path }}"
 
 - name: Make
   make:
-    chdir: "{{ server_build_path }}"
+    chdir: "{{ afs_server_build_path }}"
     target: install_nolibafs
 
 - name: Install asetkey to a standard location

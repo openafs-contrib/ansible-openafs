@@ -1,10 +1,10 @@
 ---
-afsconfdir: /usr/afs/etc
-viceetcdir: /usr/vice/etc
-afssrvdir: /usr/afs/bin
-afslocaldir: /usr/afs/local
-afsdbdir: /usr/afs/db
-afslogdir: /usr/afs/logs
+afs_afsconfdir: /usr/afs/etc
+afs_viceetcdir: /usr/vice/etc
+afs_afssrvdir: /usr/afs/bin
+afs_afslocaldir: /usr/afs/local
+afs_afsdbdir: /usr/afs/db
+afs_afslogdir: /usr/afs/logs
 
 # SELinux module version
-selinux_openafs_version: 1.1
+afs_selinux_openafs_version: 1.1

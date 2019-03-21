@@ -8,7 +8,7 @@
 - name: Configure kerberos kdc
   template:
     src: "{{ item }}.j2"
-    dest: "{{ kerberos_localstatedir }}/krb5kdc/{{ item }}"
+    dest: "{{ afs_kerberos_localstatedir }}/krb5kdc/{{ item }}"
     owner: root
     group: root
     mode: 0600
@@ -22,11 +22,11 @@
 - name: Create kerberos kdc database
   command: >
     /sbin/kdb5_util
-    -P {{ kerberos_master_password }}
-    -r {{ realm }}
+    -P {{ afs_kerberos_master_password }}
+    -r {{ afs_realm }}
     create -s
   args:
-    creates: "{{ kerberos_localstatedir }}/krb5kdc/principal"
+    creates: "{{ afs_kerberos_localstatedir }}/krb5kdc/principal"
   register: krb5_util_results
 
 - name: Start kerberos kdc
@@ -43,9 +43,9 @@
 
 - name: Create admin principal
   command: >
-    {{ kadmin_local }}
-    -r {{ realm }}
-    -q "add_principal -pw {{ admin_password }} {{ admin_principal }}@{{ realm }}"
+    {{ afs_kadmin_local }}
+    -r {{ afs_realm }}
+    -q "add_principal -pw {{ afs_admin_password }} {{ afs_admin_principal }}@{{ afs_realm }}"
   register: kadmin_results
   changed_when: >
     kadmin_results.rc == 0
@@ -53,11 +53,11 @@
 
 - name: Create the afs service key
   command: >
-    "{{ kadmin_local }}"
-    -r "{{ realm }}"
-    -q "add_principal -randkey afs/{{ cell }}@{{ realm }}"
+    {{ afs_kadmin_local }}
+    -r "{{ afs_realm }}"
+    -q "add_principal -randkey afs/{{ afs_cell }}@{{ afs_realm }}"
   register: kadmin_results
   changed_when: >
     kadmin_results.rc == 0
     and not "already exists while creating" in kadmin_results.stderr
-  when: cell is defined
+  when: afs_cell is defined

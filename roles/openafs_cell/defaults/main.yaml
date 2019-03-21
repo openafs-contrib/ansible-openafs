@@ -1,25 +1,25 @@
 ---
 # afs cell name
-cell: example.com
+afs_cell: example.com
 
 # kerberos realm name
-realm: EXAMPLE.COM
+afs_realm: EXAMPLE.COM
 
 # Kerberos and AFS admin principal
-admin_principal: admin
+afs_admin_principal: admin
 
 # Kerberos and AFS admin password (no default)
-# admin_password:
+# afs_admin_password:
 
 # primary kerberos kdc hostname
-kdc: "{{ groups['afs_kdcs'][0] }}"
+afs_kdc: "{{ groups['afs_kdcs'][0] }}"
 
 # primary fileserver hostname
-root_server: "{{ groups['afs_fileservers'][0] }}"
+afs_root_server: "{{ groups['afs_fileservers'][0] }}"
 
 # primary fileserver afs partition id
-root_part: a
+afs_root_part: a
 
 # afsd options
 # TODO: should detect or get this from the client role.
-opt_afsd: -dynroot -fakestat -afsdb
+afs_afsd_opts: -dynroot -fakestat -afsdb

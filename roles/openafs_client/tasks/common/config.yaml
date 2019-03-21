@@ -2,14 +2,14 @@
 - name: Ensure CellServDB.dist exists
   copy:
     content: ""
-    dest: "{{ viceetcdir }}/CellServDB.dist"
+    dest: "{{ afs_viceetcdir }}/CellServDB.dist"
     mode: 0644
     force: no
 
 - name: Update cell configuration
   template:
     src: "{{ item }}.j2"
-    dest: "{{ viceetcdir }}/{{ item }}"
+    dest: "{{ afs_viceetcdir }}/{{ item }}"
     mode: 0644
   with_items:
     - CellServDB.local

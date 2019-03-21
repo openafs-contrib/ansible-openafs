@@ -33,18 +33,18 @@
 - name: Create build directory
   file:
     state: directory
-    path: "{{ client_build_path }}"
+    path: "{{ afs_client_build_path }}"
 
 - name: Clone OpenAFS git repo
   git:
-    repo: "{{ client_build_repo }}"
-    dest: "{{ client_build_path }}"
-    version: "{{ client_build_version }}"
+    repo: "{{ afs_client_build_repo }}"
+    dest: "{{ afs_client_build_path }}"
+    version: "{{ afs_client_build_version }}"
 
 - name: Generate autoconf scripts
   shell: ./regen.sh
   args:
-    chdir: "{{ client_build_path }}"
+    chdir: "{{ afs_client_build_path }}"
 
 - name: Configure
   shell: >
@@ -63,7 +63,7 @@
     --enable-redhat-buildsys
     --enable-transarc-paths
   args:
-    chdir: "{{ client_build_path }}"
+    chdir: "{{ afs_client_build_path }}"
 
 - name: Make build directory
   file:
@@ -72,7 +72,7 @@
 
 - name: Make install
   make:
-    chdir: "{{ client_build_path }}"
+    chdir: "{{ afs_client_build_path }}"
     target: install
     params:
       DESTDIR: /tmp/openafs-client-build
@@ -116,7 +116,7 @@
 - name: Make cache directory
   file:
     state: directory
-    path: "{{ afscachedir }}"
+    path: "{{ afs_afscachedir }}"
     mode: 0700
     owner: root
     group: root

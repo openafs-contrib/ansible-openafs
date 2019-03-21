@@ -1,6 +1,6 @@
 ---
-cell: example.com
-realm: EXAMPLE.COM
+afs_cell: example.com
+afs_realm: EXAMPLE.COM
 
 afs:
   volumes:

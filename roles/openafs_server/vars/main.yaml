@@ -1,7 +1,7 @@
 ---
 # Kerberos encryption type numbers
 # See https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml
-kerberos_eno:
+afs_kerberos_eno:
   des-cbc-crc: 1
   des-cbc-md4: 2
   des-cbc-md5: 3

@@ -15,7 +15,7 @@
 - name: Check cache directory
   file:
     state: directory
-    path: "{{ afscachedir }}"
+    path: "{{ afs_afscachedir }}"
     mode: 0700
     owner: root
     group: root

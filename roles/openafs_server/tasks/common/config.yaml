@@ -2,7 +2,7 @@
 - name: Create cell configuation directory
   file:
     state: directory
-    path: "{{ afsconfdir }}"
+    path: "{{ afs_afsconfdir }}"
     mode: 0755
     owner: root
     group: root
@@ -10,7 +10,7 @@
 - name: Update cell configuration
   template:
     src: "{{ item }}.j2"
-    dest: "{{ afsconfdir }}/{{ item }}"
+    dest: "{{ afs_afsconfdir }}/{{ item }}"
     mode: 0644
     owner: root
     group: root
@@ -21,17 +21,17 @@
 
 - name: Set authentication realm name
   copy:
-    content: "{{ realm }}"
-    dest: "{{ afsconfdir }}/krb.conf"
+    content: "{{ afs_realm }}"
+    dest: "{{ afs_afsconfdir }}/krb.conf"
     mode: 0644
     owner: root
     group: root
-  when: realm is defined and realm.lower() != cell
+  when: afs_realm is defined and afs_realm.lower() != afs_cell
 
 - name: Create local server directory
   file:
     state: directory
-    path: "{{ afslocaldir }}"
+    path: "{{ afs_afslocaldir }}"
     mode: 0700
     owner: root
     group: root
@@ -39,7 +39,7 @@
 - name: Update local server configuration
   template:
     src: "{{ item }}.j2"
-    dest: "{{ afslocaldir }}/{{ item }}"
+    dest: "{{ afs_afslocaldir }}/{{ item }}"
     mode: 0644
     owner: root
     group: root
@@ -52,7 +52,7 @@
 - name: Add server vice config dir
   file:
     state: directory
-    path: "{{ viceetcdir }}"
+    path: "{{ afs_viceetcdir }}"
     mode: 0755
     owner: root
     group: root

@@ -7,7 +7,7 @@
     state: present
 
 - name: Test for presence of openafs module in SELinux
-  shell: semodule -lstandard | grep -E '^openafs\s+{{ selinux_openafs_version }}$'
+  shell: semodule -lstandard | grep -E '^openafs\s+{{ afs_selinux_openafs_version }}$'
   register: module_result
   changed_when: False
   failed_when: False

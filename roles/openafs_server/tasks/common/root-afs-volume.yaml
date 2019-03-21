@@ -2,8 +2,8 @@
 - name: Create root.afs volume
   command: >
     vos create
-      -server {{ root_server }}
-      -partition {{ root_part }}
+      -server {{ afs_root_server }}
+      -partition {{ afs_root_part }}
       -name root.afs
       -verbose
       -localauth

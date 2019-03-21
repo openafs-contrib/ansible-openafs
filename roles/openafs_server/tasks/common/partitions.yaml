@@ -6,8 +6,8 @@
     owner: root
     group: root
     mode: 0700
-  with_items: "{{ partitions }}"
-  when: partitions is defined
+  with_items: "{{ afs_partitions }}"
+  when: afs_partitions is defined
 
 - name: Enable always attach mode for partition
   copy:
@@ -17,6 +17,6 @@
     owner: root
     group: root
     mode: 0600
-  with_items: "{{ partitions }}"
-  when: partitions is defined
+  with_items: "{{ afs_partitions }}"
+  when: afs_partitions is defined
 

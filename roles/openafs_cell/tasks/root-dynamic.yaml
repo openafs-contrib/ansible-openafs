@@ -1,6 +1,6 @@
 ---
 - name: Create the root volumes
-  command: "{{ vos }} create -server {{ root_server }} -partition {{ root_part }} -name {{ item }} -verbose"
+  command: "{{ afs_vos }} create -server {{ afs_root_server }} -partition {{ afs_root_part }} -name {{ item }} -verbose"
   register: vos_result
   until: >
     vos_result.rc == 0 or
@@ -17,10 +17,10 @@
 
 - name: Mount root.cell volume
   command: >
-    {{ fs }} mkmount
-    -dir /afs/.:mount/{{ cell }}:root.afs/{{ cell }}
+    {{ afs_fs }} mkmount
+    -dir /afs/.:mount/{{ afs_cell }}:root.afs/{{ afs_cell }}
     -vol root.cell
-    -cell {{ cell }}
+    -cell {{ afs_cell }}
   register: fs_result
   changed_when: fs_result.rc == 0
   failed_when: >
@@ -29,10 +29,10 @@
 
 - name: Mount root.cell read-write volume
   command: >
-    {{ fs }} mkmount
-    -dir /afs/.:mount/{{ cell }}:root.afs/.{{ cell }}
+    {{ afs_fs }} mkmount
+    -dir /afs/.:mount/{{ afs_cell }}:root.afs/.{{ afs_cell }}
     -vol root.cell
-    -cell {{ cell }}
+    -cell {{ afs_cell }}
     -rw
   register: fs_result
   changed_when: fs_result.rc == 0
@@ -42,15 +42,15 @@
 
 - name: Grant world readable rights to root directories
   command: >
-    {{ fs }} setacl
-    -dir /afs/.:mount/{{ cell }}:{{ item }}/.
+    {{ afs_fs }} setacl
+    -dir /afs/.:mount/{{ afs_cell }}:{{ item }}/.
     -acl system:anyuser read
   with_items:
     - root.afs
     - root.cell
 
 - name: Add root volume read-only sites
-  command: "{{ vos }} addsite -server {{ root_server }} -part {{ root_part }} -id {{ item }}"
+  command: "{{ afs_vos }} addsite -server {{ afs_root_server }} -part {{ afs_root_part }} -id {{ item }}"
   register: vos_result
   changed_when: vos_result.rc == 0
   failed_when: >
@@ -61,11 +61,11 @@
     - root.cell
 
 - name: Release root volumes
-  command: "{{ vos }} release {{ item }} -verbose"
+  command: "{{ afs_vos }} release {{ item }} -verbose"
   with_items:
     - root.afs
     - root.cell
 
 - name: Flush the volume cache
-  command: "{{ fs }} checkvolumes"
+  command: "{{ afs_fs }} checkvolumes"
   changed_when: False
