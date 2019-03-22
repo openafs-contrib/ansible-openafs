@@ -14,17 +14,19 @@
   shell: >
     echo {{ afs_admin_password }} |
     {{ afs_kadmin }} -p {{ afs_admin_principal }}@{{ afs_realm }}
-    -q "add_principal -randkey {{ item }}@{{ afs_realm }}"
-  with_items: "{{ afs.users }}"
+    -q "add_principal -randkey {{ item.name|replace('.','/') }}@{{ afs_realm }}"
+  with_items: "{{ afs_users }}"
+  when: afs_users
 
 - name: Create users
-  command: "{{ afs_pts }} createuser -name {{ item|replace('/','.') }}"
+  command: "{{ afs_pts }} createuser -name {{ item.name|replace('/','.') }}"
   register: pts_result
   changed_when: pts_result.rc == 0
   failed_when: >
     pts_result.rc != 0
     and 'Entry for name already exists' not in pts_result.get('stderr','')
-  with_items: "{{ afs.users }}"
+  with_items: "{{ afs_users }}"
+  when: afs_users
 
 - name: Create groups
   command: "{{ afs_pts }} creategroup -name {{ item.name }}"
@@ -33,7 +35,8 @@
   failed_when: >
     pts_result.rc != 0
     and 'Entry for name already exists' not in pts_result.get('stderr','')
-  with_items: "{{ afs.groups }}"
+  with_items: "{{ afs_groups }}"
+  when: afs_groups
 
 - name: Set group members
   command: "{{ afs_pts }} adduser -group {{ item.name }} -user {{ item.members|join(' ') }}"
@@ -42,7 +45,8 @@
   failed_when: >
     pts_result.rc != 0
     and 'Entry for id already exists' not in pts_result.get('stderr','')
-  with_items: "{{ afs.groups }}"
+  with_items: "{{ afs_groups }}"
+  when: afs_groups
 
 - name: Create volumes
   command: >
@@ -56,12 +60,13 @@
   failed_when: >
     vos_result.rc != 0
     and 'already exists' not in vos_result.get('stderr','')
-  with_items: "{{ afs.volumes }}"
+  with_items: "{{ afs_volumes }}"
+  when: afs_volumes
 
 - name: Mount volumes
   command: >
     {{ afs_fs }} mkmount
-    -dir /afs/.{{ afs_cell }}/{{ item.dir }}
+    -dir /afs/.{{ afs_cell }}/{{ item.get('mtpt', item.name) }}
     -vol {{ item.name }}
     -cell {{ afs_cell }}
   register: fs_result
@@ -69,7 +74,8 @@
   failed_when: >
     fs_result.rc != 0
     and 'File exists' not in fs_result.get('stderr','')
-  with_items: "{{ afs.volumes }}"
+  with_items: "{{ afs_volumes }}"
+  when: afs_volumes
 
 - name: Release volumes
   command: "{{ afs_vos }} release {{ item }} -verbose"

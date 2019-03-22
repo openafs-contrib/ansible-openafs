@@ -23,3 +23,30 @@ afs_root_part: a
 # afsd options
 # TODO: should detect or get this from the client role.
 afs_afsd_opts: -dynroot -fakestat -afsdb
+
+# Initial top level volumes.
+#
+#     afs_volumes:
+#       - name: volume_one
+#       - name: volume_two
+#         mtpt: test
+#
+afs_volumes:
+
+# Initial AFS users.
+#
+#     afs_users:
+#       - name: user1
+#       - name: user2
+#
+afs_users:
+
+# Initial AFS groups.
+#
+#    afs_groups:
+#      - name: group1
+#        members:
+#          - user1
+#          - user2
+#
+afs_groups:

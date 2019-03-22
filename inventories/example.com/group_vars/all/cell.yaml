@@ -2,24 +2,16 @@
 afs_cell: example.com
 afs_realm: EXAMPLE.COM
 
-afs:
-  volumes:
-    - name: test
-      dir: /test
-    - name: foobar
-      dir: /test/foobar
+afs_volumes:
+  - name: test
 
-  users:
-    - user1
-    - user2
-    - user3
+afs_users:
+  - name: user1
+  - name: user2
+  - name: user3
 
-  groups:
-    - name: group1
-      members:
-        - user1
-        - user2
-    - name: group2
-      members:
-        - user2
-        - user3
+afs_groups:
+  - name: group1
+    members:
+      - user1
+      - user2
