@@ -8,8 +8,8 @@
     group: root
 
 - name: Update cell configuration
-  template:
-    src: "{{ item }}.j2"
+  copy:
+    src: "{{ inventory_dir }}/files/{{ item }}"
     dest: "{{ afs_afsconfdir }}/{{ item }}"
     mode: 0644
     owner: root
@@ -19,7 +19,7 @@
     - ThisCell
     - UserList
 
-- name: Set authentication realm name
+- name: Set authentication realm
   copy:
     content: "{{ afs_realm }}"
     dest: "{{ afs_afsconfdir }}/krb.conf"
