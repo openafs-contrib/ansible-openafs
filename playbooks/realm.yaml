@@ -2,11 +2,13 @@
 - name: Create Kerberos realm
   hosts: afs_kdcs[0]
   become: yes
+  any_errors_fatal: true
   roles:
     - kerberos_server
 
 - name: Install Kerberos clients
   hosts: all
   become: yes
+  any_errors_fatal: true
   roles:
     - kerberos_client

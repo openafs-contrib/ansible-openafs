@@ -1,6 +1,6 @@
 ---
 - name: Create cell volumes
   hosts: afs_clients[0]
-  become: no
+  any_errors_fatal: true
   roles:
     - openafs_cell

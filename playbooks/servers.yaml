@@ -4,5 +4,6 @@
     - afs_databases
     - afs_fileservers
   become: yes
+  any_errors_fatal: true
   roles:
     - openafs_server
