@@ -37,18 +37,18 @@ Kerberos database, the administrator's principal, and the OpenAFS service key.
 
 The Kerberos realm name.
 
-    afs_kerberos_master_password: (undefined by default)
+    afs_kerberos_master_password: (random by default)
 
-The secret Kerberos database master password. The password is not defined by
-default and must be set on the command line or in a group variable, preferably
-encrypted with `ansible-vault`.
+The secret Kerberos database master password. The password is a random string
+by default. It should be set on the command line (-e) or in a group variable,
+preferably encrypted with `ansible-vault`.
 
     afs_admin_principal: admin
     afs_admin_password: (undefined by default)
 
 A administrator principal to be created by this role.
 The password is not defined by default and must be set on the command line
-or in a group variable, preferably encrypted with `ansible-vault`.
+(-e) or in a group variable, preferably encrypted with `ansible-vault`.
 
 ## OpenAFS Cell Role
 
@@ -67,7 +67,7 @@ Cell and realm names.
 
 A administrator principal and password to be used to create the regular user
 Kerberos principals and AFS users.
-The password is not defined by default and must be set on the command line
+The password is not defined by default and must be set on the command line (-e)
 or in a group variable, preferably encrypted with `ansible-vault`.
 
     afs_kdc:
@@ -194,7 +194,7 @@ description.
     afs_admin_password: (undefined by default)
 
 A administrator principal and password to be used to set the AFS service key.
-The password is not defined by default and must be set on the command line
+The password is not defined by default and must be set on the command line (-e)
 or in a group variable, preferably encrypted with `ansible-vault`.
 
     afs_server_install_method: yum

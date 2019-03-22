@@ -5,8 +5,8 @@ afs_realm: EXAMPLE.COM
 # AFS cell name for the service key.
 afs_cell: example.com
 
-# Kerberos database master password (no default)
-# afs_kerberos_master_password:
+# Kerberos database master password (random default)
+afs_kerberos_master_password: "{{ lookup('password', '/dev/null chars=ascii_letters') }}"
 
 # Kerberos admin principal
 afs_admin_principal: admin
