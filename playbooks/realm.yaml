@@ -4,11 +4,11 @@
   become: yes
   any_errors_fatal: true
   roles:
-    - kerberos_server
+    - openafs_kdc
 
 - name: Install Kerberos clients
   hosts: all
   become: yes
   any_errors_fatal: true
   roles:
-    - kerberos_client
+    - openafs_krb5

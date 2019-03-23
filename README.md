@@ -6,17 +6,12 @@ systems.
 
 ## Platforms Supported
 
-* CentOS 7
-* RHEL 7
-
-Requires Ansible 2.2 or greater.
-
-## Playbook Setup
-
-The playbooks can be setup by creating an inventory and group variables.
-Examples are available in the `examples` directory.
+* EL 7
+* Ansible 2.2 or greater
 
 ## Kerberos Client Role
+
+Name: `openafs_krb5`
 
 Install and configure the Kerberos workstation packages.
 
@@ -27,6 +22,8 @@ Install and configure the Kerberos workstation packages.
 The Kerberos realm name.
 
 ## Kerberos Server Role
+
+Name: `openafs_kdc`
 
 Install and configure the Kerberos master KDC on single host, create the
 Kerberos database, the administrator's principal, and the OpenAFS service key.
@@ -51,6 +48,8 @@ The password is not defined by default and must be set on the command line
 (-e) or in a group variable, preferably encrypted with `ansible-vault`.
 
 ## OpenAFS Cell Role
+
+Name: `openafs_cell`
 
 Setup the top level volumes in the cell. This role is to be run on a single
 client host.
@@ -127,6 +126,8 @@ Example initial cell configuration:
 
 ## OpenAFS Client Role
 
+Name: `openafs_client`
+
 Install and configure the OpenAFS client packages.  Optionally, build and install from
 source code.
 
@@ -175,6 +176,8 @@ already exist.
 The OpenAFS cache manager startup options.
 
 ## OpenAFS Server Role
+
+Name: `openafs_server`
 
 Install and configure the OpenAFS server packages. This role installs both the
 fileserver and the database servers, which can be installed on the same hosts
