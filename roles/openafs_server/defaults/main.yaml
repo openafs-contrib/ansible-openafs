@@ -33,8 +33,8 @@ afs_server_build_path: /usr/local/src/openafs-server
 # 'build' installation method git reference
 afs_server_build_version: master
 
-# enable DAFS fileserver when True
-afs_enable_dafs: True
+# fileserver variation, one of: fs, dafs
+afs_fileserver_type: dafs
 
 # bosserver options
 afs_bosserver_opts:

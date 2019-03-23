@@ -10,7 +10,7 @@ parm {{ afs_afssrvdir }}/vlserver{{ ' ' if afs_vlserver_opts else '' }}{{ afs_vl
 end
 {% endif %}
 {% if 'afs_fileservers' in group_names %}
-{% if afs_enable_dafs %}
+{% if afs_fileserver_type == 'dafs' %}
 bnode dafs dafs 1
 parm /usr/afs/bin/dafileserver{{ ' ' if afs_dafileserver_opts else '' }}{{ afs_dafileserver_opts }}
 parm /usr/afs/bin/davolserver{{ ' ' if afs_davolserver_opts else '' }}{{ afs_davolserver_opts }}

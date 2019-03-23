@@ -226,10 +226,12 @@ The selinux enforcing mode. May be one of `enforcing`, `passive`, or
 `disabled`.  When `enforcing`, update the required selinux bits to allow the
 servers to properly operate.
 
-    afs_enable_dafs: True
+    afs_fileserver_type: dafs
 
-Install the newer Demand-Attach Filesystem (DAFS) fileserver variant when
-installing a fileserver.
+Determines which fileserver variation is setup when the host is a member of the
+`afs_fileservers` group.  May be the legacy OpenAFS fileserver (`fs`), or the
+modern demand-attach fileserver (`dafs`). The demand-attach (`dafs`) variant is
+the default.
 
     afs_bosserver_opts:
     afs_ptserver_opts:
