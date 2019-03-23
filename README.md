@@ -63,12 +63,14 @@ client host.
 Cell and realm names.
 
     afs_admin_principal: admin
-    afs_admin_password:
+    afs_admin_password: (not defined)
+    afs_user_password:  (not defined)
 
-A administrator principal and password to be used to create the regular user
-Kerberos principals and AFS users.
-The password is not defined by default and must be set on the command line (-e)
-or in a group variable, preferably encrypted with `ansible-vault`.
+
+A administrator credentials to create the regular users listed in `afs_users`
+and the initial Kerberos password for those users.  The passwords are not
+defined by default and must be set on the command line (-e) or in group
+variables, preferably encrypted with `ansible-vault`.
 
     afs_kdc:
 

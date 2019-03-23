@@ -8,6 +8,15 @@
       the --extra-vars (-e) option.
   when: afs_admin_password is not defined
 
+- name: Verify the default user password is defined
+  fail:
+    msg: |
+      Please define afs_user_password before running this role.
+      It may be defined as a group variable (preferably encrypted
+      with ansible-vault) or provided on the command line with
+      the --extra-vars (-e) option.
+  when: afs_users and afs_user_password is not defined
+
 - name: Load OS specific variables
   include_vars: "{{ ansible_os_family|lower }}.yaml"
 
@@ -23,7 +32,7 @@
   shell: >
     echo {{ afs_admin_password }} |
     {{ afs_kadmin }} -p {{ afs_admin_principal }}@{{ afs_realm }}
-    -q "add_principal -randkey {{ item.name|replace('.','/') }}@{{ afs_realm }}"
+    -q "add_principal -pw {{ afs_user_password }} {{ item.name|replace('.','/') }}@{{ afs_realm }}"
   with_items: "{{ afs_users }}"
   when: afs_users
 

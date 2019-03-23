@@ -9,6 +9,7 @@ afs_users:
   - name: user1
   - name: user2
   - name: user3
+  - name: user4
 
 afs_groups:
   - name: group1

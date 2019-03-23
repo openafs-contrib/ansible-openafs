@@ -11,6 +11,10 @@ afs_admin_principal: admin
 # Kerberos and AFS admin password (no default)
 # afs_admin_password:
 
+# Initial password of created principals.
+# See afs_users below. (no default)
+# afs_user_password
+
 # primary kerberos kdc hostname
 afs_kdc: "{{ groups['afs_kdcs'][0] }}"
 
