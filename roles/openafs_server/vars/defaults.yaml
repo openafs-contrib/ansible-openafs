@@ -1,4 +1,6 @@
 ---
+afs_kadmin: /usr/bin/kadmin
+
 afs_afsconfdir: /usr/afs/etc
 afs_viceetcdir: /usr/vice/etc
 afs_afssrvdir: /usr/afs/bin

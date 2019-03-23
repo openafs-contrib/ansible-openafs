@@ -1,4 +1,15 @@
 ---
+- name: Verify the admin password is defined
+  fail:
+    msg: |
+      Please define afs_admin_password before running this role.
+      It may be defined as a group variable (preferably encrypted
+      with ansible-vault) or provided on the command line with
+      the --extra-vars (-e) option.
+  when: afs_admin_password is not defined
+
+- include_vars: "{{ ansible_os_family|lower }}.yaml"
+
 - name: Create cell-wide configuration files
   run_once: true
   local_action:
@@ -10,7 +21,19 @@
     - ThisCell
     - UserList
 
-- include_vars: "{{ ansible_os_family|lower }}.yaml"
+- name: Create the Kerberos service key
+  command: >
+    {{ afs_kadmin }}
+    -w {{ afs_admin_password }}
+    -p {{ afs_admin_principal }}@{{ afs_realm }}
+    -r "{{ afs_realm }}"
+    -q "add_principal -randkey afs/{{ afs_cell }}@{{ afs_realm }}"
+  register: kadmin_results
+  changed_when: >
+    kadmin_results.rc == 0
+    and not "already exists while creating" in kadmin_results.stderr
+  when: inventory_hostname == ansible_play_hosts[0]
+
 - include_tasks: "{{ ansible_os_family|lower }}/pre-install.yaml"
 - include_tasks: "{{ ansible_os_family|lower }}/install-{{ afs_server_install_method }}.yaml"
 - include_tasks: "{{ ansible_os_family|lower }}/post-install.yaml"

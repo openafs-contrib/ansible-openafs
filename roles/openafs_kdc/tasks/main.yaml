@@ -59,14 +59,3 @@
   changed_when: >
     kadmin_results.rc == 0
     and not "already exists while creating" in kadmin_results.stderr
-
-- name: Create the afs service key
-  command: >
-    {{ afs_kadmin_local }}
-    -r "{{ afs_realm }}"
-    -q "add_principal -randkey afs/{{ afs_cell }}@{{ afs_realm }}"
-  register: kadmin_results
-  changed_when: >
-    kadmin_results.rc == 0
-    and not "already exists while creating" in kadmin_results.stderr
-  when: afs_cell is defined
