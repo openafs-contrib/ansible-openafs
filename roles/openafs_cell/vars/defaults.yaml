@@ -1,5 +1,6 @@
 ---
 afs_aklog: /usr/afsws/bin/aklog
+afs_klog_krb5: /usr/afsws/bin/klog.krb5
 afs_fs: /usr/afs/bin/fs
 afs_kinit: /usr/bin/kinit
 afs_vos: /usr/afs/bin/vos

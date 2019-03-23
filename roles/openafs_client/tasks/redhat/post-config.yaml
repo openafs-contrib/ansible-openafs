@@ -5,3 +5,5 @@
   command: restorecon -ir "{{ item }}"
   with_items:
     -  /usr/vice
+  # todo: detect?
+  changed_when: false

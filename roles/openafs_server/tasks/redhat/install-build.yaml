@@ -41,12 +41,13 @@
     version: "{{ afs_server_build_version }}"
 
 - name: Generate autoconf scripts
-  shell: ./regen.sh
+  command: ./regen.sh
   args:
     chdir: "{{ afs_server_build_path }}"
+  changed_when: false
 
 - name: Configure
-  shell: >
+  command: >
     ./configure
     --with-afs-sysname=amd64_linux26
     --prefix=/usr
@@ -63,6 +64,7 @@
     --enable-transarc-paths
   args:
     chdir: "{{ afs_server_build_path }}"
+  changed_when: false
 
 - name: Make
   make:
@@ -95,7 +97,8 @@
   when: akeyconvert_stat.stat.exists
 
 - name: Update shared library cache
-  shell: /sbin/ldconfig
+  command: /sbin/ldconfig
+  changed_when: false
 
 - name: Install systemd service
   copy:

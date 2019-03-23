@@ -21,19 +21,25 @@
   include_vars: "{{ ansible_os_family|lower }}.yaml"
 
 - name: Admin login
-  shell: >
-    echo {{ afs_admin_password }} | {{ afs_kinit }} {{ afs_admin_principal }}@{{ afs_realm }} &&
-    {{ afs_aklog }} -d -c {{ afs_cell }}
+  command: >
+    {{ afs_klog_krb5 }}
+    -principal {{ afs_admin_principal }}
+    -password {{ afs_admin_password }}
+    -cell {{ afs_cell }}
+    -k {{ afs_realm }}
+  changed_when: false
 
 - name: Mount root volumes
   include: root-{{ ('-dynroot' in afs_afsd_opts) | ternary('dynamic','static') }}.yaml
 
 - name: Create principals
-  shell: >
-    echo {{ afs_admin_password }} |
-    {{ afs_kadmin }} -p {{ afs_admin_principal }}@{{ afs_realm }}
+  command: >
+    {{ afs_kadmin }}
+    -w {{ afs_admin_password }}
+    -p {{ afs_admin_principal }}@{{ afs_realm }}
     -q "add_principal -pw {{ afs_user_password }} {{ item.name|replace('.','/') }}@{{ afs_realm }}"
   with_items: "{{ afs_users }}"
+  # todo: changed_when
   when: afs_users
 
 - name: Create users

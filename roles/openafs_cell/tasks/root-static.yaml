@@ -44,6 +44,8 @@
   with_items:
     - "/afs/."
     - "/afs/{{ afs_cell }}/."
+  # todo: detect change?
+  changed_when: false
 
 - name: Add root volume read-only sites
   command: "{{ afs_vos }} addsite -server {{ afs_root_server }} -part {{ afs_root_part }} -id {{ item }}"
@@ -61,6 +63,9 @@
   with_items:
     - root.afs
     - root.cell
+  # todo: detect change?
+  changed_when: false
 
 - name: Flush the volume cache on this host
   command: "{{ afs_fs }} checkvolumes"
+  changed_when: false
