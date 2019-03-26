@@ -85,7 +85,7 @@
     state: absent
 
 - name: Install files
-  command: rsync -av * /
+  command: rsync -av ./ /
   args:
     chdir: /tmp/openafs-client-build
 
