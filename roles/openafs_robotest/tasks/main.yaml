@@ -1,0 +1,34 @@
+---
+- name: Install packages
+  include_tasks: "{{ role_path}}/tasks/{{ ansible_os_family|lower }}/install-packages.yaml"
+
+- name: Create test user
+  become: yes
+  user:
+    name: afsrobot
+    shell: /bin/bash
+
+- name: Download OpenAFS test cases
+  become: yes
+  become_user: afsrobot
+  git:
+    repo: https://github.com/openafs-contrib/openafs-robotest.git
+    dest: /home/afsrobot/openafs-robotest
+    version: ansiblize
+
+- name: Create config directory
+  become: yes
+  become_user: afsrobot
+  file:
+    path: /home/afsrobot/openafs-robotest/config/example.com
+    state: directory
+
+- name: Install config files
+  become: yes
+  become_user: afsrobot
+  template:
+    src: "{{ item }}.j2"
+    dest: "/home/afsrobot/openafs-robotest/config/example.com/{{ item }}"
+  with_items:
+    - robot.args
+    - variables.py

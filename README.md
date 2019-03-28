@@ -257,6 +257,16 @@ The Kerberos KDC hostname.
 The primary fileserver hostname and AFS fileserver partition id. The cell root
 volume (root.afs, root.cell) will be created on this fileserver partition.
 
+## OpenAFS Test Suite Role
+
+Name: `openafs_robotest`
+
+Install and configure a set of Robot Framework test suites for OpenAFS.
+
+### Role Variables
+
+TODO
+
 ## License
 
 BSD

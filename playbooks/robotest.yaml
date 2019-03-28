@@ -1,0 +1,6 @@
+---
+- name: Setup tests
+  hosts: afs_clients[0]
+  any_errors_fatal: true
+  roles:
+    - openafs_robotest
