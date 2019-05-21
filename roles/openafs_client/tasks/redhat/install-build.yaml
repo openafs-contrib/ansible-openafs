@@ -84,10 +84,24 @@
     path: /tmp/openafs-client-build/usr/afs
     state: absent
 
-- name: Install files
-  command: rsync -av * /
-  args:
-    chdir: /tmp/openafs-client-build
+# Needed to split the install into separate tasks
+# in order to get correct result,
+# /lib/modules was not updating correctly
+- name: Install files to /usr
+  synchronize:
+    src: /tmp/openafs-client-build/usr/
+    dest: /usr/
+    delete: no
+    recursive: yes
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Install files to /lib/modules
+  synchronize:
+    src: /tmp/openafs-client-build/lib/modules/
+    dest: /lib/modules/
+    delete: no
+    recursive: yes
+  delegate_to: "{{ inventory_hostname }}"
 
 - name: Install client configuration
   copy:
