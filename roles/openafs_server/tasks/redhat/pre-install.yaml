@@ -20,3 +20,11 @@
 - name: Setup SELinux policies
   include_tasks: "{{ ansible_os_family|lower }}/selinux.yaml"
   when: afs_selinux_mode == 'enforcing'
+
+- name: Create top level vice etc directory
+  file:
+    state: directory
+    path: "{{ afs_viceetcdir }}"
+    mode: 0755
+    owner: root
+    group: root
