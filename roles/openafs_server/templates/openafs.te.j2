@@ -12,7 +12,7 @@ require {
 	class unix_stream_socket connectto;
 	class lnk_file create;
     class sock_file { unlink write };
-	class file { create getattr lock open read setattr write };
+	class file { create getattr lock open read setattr write append};
 	class dir { add_name create read write search };
 }
 
@@ -20,7 +20,7 @@ require {
 
 allow afs_bosserver_t afs_files_t:dir { add_name create write };
 allow afs_bosserver_t afs_files_t:lnk_file create;
-allow afs_bosserver_t afs_files_t:file { create getattr open write };
+allow afs_bosserver_t afs_files_t:file { create getattr open write append };
 allow afs_bosserver_t afs_config_t:lnk_file create;
 
 #============= afs_fsserver_t ==============
@@ -29,9 +29,11 @@ allow afs_fsserver_t afs_config_t:sock_file { unlink write };
 
 #============= afs_ptserver_t ==============
 allow afs_ptserver_t afs_files_t:dir search;
+allow afs_ptserver_t afs_files_t:dir write;
 
 #============= afs_t ==============
 allow afs_t afs_files_t:dir search;
 
 #============= afs_vlserver_t ==============
 allow afs_vlserver_t afs_files_t:dir search;
+allow afs_vlserver_t afs_files_t:dir write;

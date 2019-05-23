@@ -46,13 +46,3 @@
   with_items:
     - BosConfig.new
     - NetInfo
-
-# Need to create at least the top level directory so
-# the SELInux context gets setup properly
-- name: Add server vice config dir
-  file:
-    state: directory
-    path: "{{ afs_viceetcdir }}"
-    mode: 0755
-    owner: root
-    group: root
