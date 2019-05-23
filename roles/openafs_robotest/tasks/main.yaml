@@ -1,4 +1,7 @@
 ---
+- name: Gather variables for each operating system
+  include_vars: "{{ ansible_os_family|lower }}.yaml"
+
 - name: Install packages
   include_tasks: "{{ role_path}}/tasks/{{ ansible_os_family|lower }}/install-packages.yaml"
 
