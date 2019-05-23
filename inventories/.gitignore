@@ -1,0 +1,4 @@
+# Ignore files in this directory, except the example and this file.
+*
+!.gitignore
+!example.com/
