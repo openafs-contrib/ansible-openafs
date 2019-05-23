@@ -1,9 +1,0 @@
----
-afs_kadmin: /usr/bin/kadmin
-
-afs_afsconfdir: /usr/afs/etc
-afs_viceetcdir: /usr/vice/etc
-afs_afssrvdir: /usr/afs/bin
-afs_afslocaldir: /usr/afs/local
-afs_afsdbdir: /usr/afs/db
-afs_afslogdir: /usr/afs/logs

@@ -1,3 +1,0 @@
----
-afs_kerberos_localstatedir: /var/kerberos
-afs_kadmin_local: /sbin/kadmin.local

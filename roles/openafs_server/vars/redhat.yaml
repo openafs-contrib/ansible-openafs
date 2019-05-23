@@ -1,12 +1,20 @@
 ---
-afs_kadmin: /usr/bin/kadmin
+# Kerberos commands.
+afs_kadmin: "/usr/bin/kadmin"
+afs_klist: "/usr/bin/klist"
 
-afs_afsconfdir: /usr/afs/etc
-afs_viceetcdir: /usr/vice/etc
-afs_afssrvdir: /usr/afs/bin
-afs_afslocaldir: /usr/afs/local
-afs_afsdbdir: /usr/afs/db
-afs_afslogdir: /usr/afs/logs
+# OpenAFS commands.
+afs_asetkey: "/usr/sbin/asetkey"
+afs_pts: "/usr/bin/pts"
+afs_vos: "/usr/sbin/vos"
 
-# SELinux module version
-afs_selinux_openafs_version: 1.1
+# OpenAFS Installation paths.
+afs_afsconfdir: "/usr/afs/etc"
+afs_afsdbdir: "/usr/afs/db"
+afs_afslocaldir: "/usr/afs/local"
+afs_afslogdir: "/usr/afs/logs"
+afs_afssrvdir: "/usr/afs/bin"
+afs_viceetcdir: "/usr/vice/etc"
+
+# SELinux module version.
+afs_selinux_openafs_version: "1.1"

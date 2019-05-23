@@ -1,6 +1,10 @@
 ---
 - name: Create admin user
-  command: pts createuser -name {{ afs_admin_principal|replace('/','.') }} -localauth
+  command: >
+    {{ afs_pts }}
+    createuser
+    -name {{ afs_admin_principal|replace('/','.') }}
+    -localauth
   register: pts_result
   until: >
     pts_result.rc == 0
@@ -13,7 +17,11 @@
     and 'Entry for name already exists' not in pts_result.get('stderr','')
 
 - name: Add admin user to system:administrators group
-  command: pts adduser {{ afs_admin_principal|replace('/','.') }} system:administrators -localauth
+  command: >
+    {{ afs_pts }}
+    adduser {{ afs_admin_principal|replace('/','.') }}
+    system:administrators
+    -localauth
   register: pts_result
   until: >
     pts_result.rc == 0

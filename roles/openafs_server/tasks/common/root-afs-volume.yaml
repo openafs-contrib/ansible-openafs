@@ -1,7 +1,7 @@
 ---
 - name: Create root.afs volume
   command: >
-    vos create
+    {{ afs_vos }} create
       -server {{ afs_root_server }}
       -partition {{ afs_root_part }}
       -name root.afs

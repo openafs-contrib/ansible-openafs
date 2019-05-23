@@ -1,7 +1,7 @@
 ---
 - name: Write the keytab file
   command: >
-    kadmin
+    {{ afs_kadmin }}
     -r "{{ afs_realm }}"
     -p "{{ afs_admin_principal }}"
     -w "{{ afs_admin_password }}"
@@ -10,14 +10,14 @@
     creates: "{{ afs_afsconfdir }}/rxkad.keytab"
 
 - name: Get asetkey usage
-  command: asetkey
+  command: "{{ afs_asetkey }}"
   register: asetkey_usage
   changed_when: false
   failed_when: false
 
 - name: Scan keytab for key versions and encryption types
   shell: >
-    klist -e -k {{ afs_afsconfdir }}/rxkad.keytab |
+    {{ afs_klist }} -e -k {{ afs_afsconfdir }}/rxkad.keytab |
     sed '1,3d' |
     sed 's/[()]//g' |
     awk '$2 == "afs/{{ afs_cell }}@{{ afs_realm }}" && $3 !~ /^des/
@@ -28,7 +28,7 @@
 
 - name: Set the service keys
   command: >
-    asetkey add rxkad_krb5
+    {{ afs_asetkey }} add rxkad_krb5
     {{ item.kvno }}
     {{ afs_kerberos_eno[item.enc] }}
     {{ afs_afsconfdir }}/rxkad.keytab

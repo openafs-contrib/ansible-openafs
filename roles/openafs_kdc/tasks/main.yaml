@@ -30,7 +30,7 @@
 
 - name: Create kerberos kdc database
   command: >
-    /sbin/kdb5_util
+    {{ afs_kdb5_util }}
     -P {{ afs_kerberos_master_password }}
     -r {{ afs_realm }}
     create -s

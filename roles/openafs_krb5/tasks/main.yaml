@@ -1,6 +1,3 @@
 ---
-- name: Load OS specific variables
-  include_vars: "{{ ansible_os_family|lower }}.yaml"
-
 - name: Include OS specific tasks
   include_tasks: "{{ ansible_os_family|lower }}.yaml"
