@@ -35,9 +35,11 @@
   when: inventory_hostname == ansible_play_hosts[0]
 
 - include_tasks: "{{ ansible_os_family|lower }}/pre-install.yaml"
+
+- include_tasks: common/partitions.yaml
+
 - include_tasks: "{{ ansible_os_family|lower }}/install-{{ afs_server_install_method }}.yaml"
 - include_tasks: "{{ ansible_os_family|lower }}/post-install.yaml"
-- include_tasks: common/partitions.yaml
 - include_tasks: common/config.yaml
 - include_tasks: common/setkey-rxkad-krb5.yaml
 - include_tasks: "{{ ansible_os_family|lower }}/post-config.yaml"
