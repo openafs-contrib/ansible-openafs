@@ -1,0 +1,2 @@
+---
+- include_tasks: "yum-{{ afs_client_install_dkms|ternary('dkms','kmod') }}.yaml"

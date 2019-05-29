@@ -20,10 +20,7 @@
     - 749/udp
     - 749/tcp
 
-- name: Install kerberos workstation
-  yum:
-    name: krb5-workstation
-    state: present
+- include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
 
 - name: Configure kerberos
   template:

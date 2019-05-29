@@ -1,0 +1,5 @@
+---
+- name: Install kerberos server
+  yum:
+    name: krb5-server
+    state: present
