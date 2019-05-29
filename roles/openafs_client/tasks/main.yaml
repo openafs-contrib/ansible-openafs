@@ -6,7 +6,6 @@
 - include_tasks: "{{ ansible_os_family|lower }}/install-{{ afs_client_install_method }}.yaml"
 - include_tasks: "{{ ansible_os_family|lower }}/post-install.yaml"
 - include_tasks: common/config.yaml
-#- include_tasks: "{{ ansible_os_family|lower }}/post-config.yaml"
 
 - name: Start OpenAFS client
   service:
