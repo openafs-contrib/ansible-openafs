@@ -35,18 +35,8 @@
     and not "already exists while creating" in kadmin_results.stderr
   when: inventory_hostname == ansible_play_hosts[0]
 
-- name: Start firewall
-  systemd:
-    name: firewalld
-    enabled: yes
-    state: started
-
-- name: Permit afs3 traffic
-  firewalld:
-    port: 7000-7009/udp
-    immediate: yes
-    permanent: yes
-    state: enabled
+- include_tasks: "fw-{{ afs_firewall }}.yaml"
+  when: afs_firewall is defined
 
 - name: Setup SELinux mode
   selinux:

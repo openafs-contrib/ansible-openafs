@@ -2,18 +2,8 @@
 - name: Gather variables for each operating system
   include_vars: "{{ ansible_os_family|lower }}.yaml"
 
-- name: Start firewall
-  systemd:
-    name: firewalld
-    enabled: yes
-    state: started
-
-- name: Permit afs3 traffic
-  firewalld:
-    port: 7000-7009/udp
-    state: enabled
-    immediate: yes
-    permanent: yes
+- include_tasks: "fw-{{ afs_firewall }}.yaml"
+  when: afs_firewall is defined
 
 - name: Check cache directory
   file:

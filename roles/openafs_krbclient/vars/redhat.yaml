@@ -1,1 +1,3 @@
 ---
+# OS dependent variables
+afs_firewall: firewalld

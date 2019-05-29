@@ -5,3 +5,6 @@ afs_kdb5_util: "/sbin/kdb5_util"
 
 # Kerberos installation paths.
 afs_kerberos_localstatedir: "/var/kerberos"
+
+# OS dependent variables
+afs_firewall: firewalld

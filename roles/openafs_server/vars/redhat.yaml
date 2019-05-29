@@ -16,5 +16,6 @@ afs_afslogdir: "/usr/afs/logs"
 afs_afssrvdir: "/usr/afs/bin"
 afs_viceetcdir: "/usr/vice/etc"
 
-# SELinux module version.
+# OS dependent variables
+afs_firewall: firewalld
 afs_selinux_openafs_version: "1.1"

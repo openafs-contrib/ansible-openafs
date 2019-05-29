@@ -2,3 +2,6 @@
 # OpenAFS installation paths.
 afs_viceetcdir: "/usr/vice/etc"
 afs_afscachedir: "/usr/vice/cache"
+
+# OS dependent variables
+afs_firewall: firewalld

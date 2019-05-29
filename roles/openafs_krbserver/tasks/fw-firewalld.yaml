@@ -1,0 +1,18 @@
+---
+- name: Start firewall
+  systemd:
+    name: firewalld
+    enabled: yes
+    state: started
+
+- name: Permit kerberos traffic
+  firewalld:
+    port: "{{ item }}"
+    immediate: yes
+    permanent: yes
+    state: enabled
+  with_items:
+    - 88/udp
+    - 88/tcp
+    - 749/udp
+    - 749/tcp

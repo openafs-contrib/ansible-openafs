@@ -11,23 +11,8 @@
       the --extra-vars (-e) option.
   when: afs_admin_password is not defined
 
-- name: Start firewall
-  systemd:
-    name: firewalld
-    enabled: yes
-    state: started
-
-- name: Permit kerberos traffic
-  firewalld:
-    port: "{{ item }}"
-    immediate: yes
-    permanent: yes
-    state: enabled
-  with_items:
-    - 88/udp
-    - 88/tcp
-    - 749/udp
-    - 749/tcp
+- include_tasks: "fw-{{ afs_firewall }}.yaml"
+  when: afs_firewall is defined
 
 - include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
 
