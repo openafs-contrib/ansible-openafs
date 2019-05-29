@@ -1,0 +1,14 @@
+---
+## Patch up the contexts for the directories and files
+## that were created while in unconfined_t
+- name: "Restore directory contexts for selinux"
+  command: restorecon -ir {{ item }}
+  with_items:
+    -  /usr/afs
+    -  /usr/vice
+
+## Same -- for the partitions
+- name: "Restore partition contexts for selinux"
+  command: restorecon /vicep{{ item }}
+  with_items: "{{ afs_partitions }}"
+  when: afs_partitions is defined
