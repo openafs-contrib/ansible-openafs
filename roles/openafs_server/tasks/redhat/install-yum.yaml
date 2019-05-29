@@ -12,3 +12,16 @@
     name:
       - openafs-server
       - openafs-krb5
+
+# The bosserver creates the client config directory on startup if it does not
+# exist (in order to create a symlink to the CellServDB for vos and pts). Be
+# sure to create this directory before the bosserver starts so the selinux
+# context will be properly set, otherwise the bosserver may fail to start with
+# a permission denied error when trying create the client config directory.
+- name: Create client config directory before the first bosserver startup
+  file:
+    state: directory
+    path: "{{ afs_viceetcdir }}"
+    mode: 0755
+    owner: root
+    group: root
