@@ -54,7 +54,7 @@
     policy: targeted
 
 - name: Setup SELinux policies
-  include_tasks: "{{ ansible_os_family|lower }}/selinux.yaml"
+  include_tasks: selinux-policies.yaml
   when: afs_selinux_mode == 'enforcing' or afs_selinux_mode == 'permissive'
 
 - include_tasks: server-partitions.yaml
