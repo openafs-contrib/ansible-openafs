@@ -37,18 +37,18 @@
 
 - include_tasks: "{{ ansible_os_family|lower }}/pre-install.yaml"
 
-- include_tasks: common/partitions.yaml
+- include_tasks: server-partitions.yaml
 
 - include_tasks: "{{ ansible_os_family|lower }}/install-{{ afs_server_install_method }}.yaml"
 - include_tasks: "{{ ansible_os_family|lower }}/post-install.yaml"
-- include_tasks: common/config.yaml
-- include_tasks: common/setkey-rxkad-krb5.yaml
+- include_tasks: server-config.yaml
+- include_tasks: server-setkey.yaml
 - include_tasks: "{{ ansible_os_family|lower }}/post-config.yaml"
 
 # The first admin user must be created with -localauth.
-- include_tasks: common/admin-user.yaml
+- include_tasks: server-admin-user.yaml
   when: inventory_hostname == ansible_play_hosts[0]
 
 # The root.afs volume must exist before non-dynroot clients can mount /afs.
-- include_tasks: common/root-afs-volume.yaml
+- include_tasks: server-root-volume.yaml
   when: inventory_hostname == ansible_play_hosts[0]
