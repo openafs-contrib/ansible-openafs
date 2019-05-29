@@ -105,7 +105,7 @@
 
 - name: Install client configuration
   copy:
-    src: "{{ role_path }}/files/openafs.sysconfig"
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs.sysconfig"
     dest: /etc/sysconfig/openafs
     # force is 'no' to avoid clobbering when already
     # installed by server tasks.
@@ -113,7 +113,7 @@
 
 - name: Install module probe script
   copy:
-    src: "{{ role_path }}/files/openafs-client.modules"
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.modules"
     dest: /etc/sysconfig/openafs
 
 - name: Update shared library cache
@@ -142,7 +142,7 @@
 
 - name: Install openafs client systemd unit file
   copy:
-    src: "{{ role_path }}/files/openafs-client.service"
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.service"
     dest: /usr/lib/systemd/system/openafs-client.service
 
 - name: Reload the systemd daemon

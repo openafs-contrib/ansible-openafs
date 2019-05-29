@@ -102,7 +102,7 @@
 
 - name: Install systemd service
   copy:
-    src: "{{ role_path }}/files/openafs-server.service"
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-server.service"
     dest: /usr/lib/systemd/system/openafs-server.service
 
 - name: Reload systemd
@@ -113,6 +113,6 @@
   copy:
     # This file has sections for the client and server.
     # Use force:no to avoid clobbering if already installed by the client.
-    src: "{{ role_path }}/files/openafs.sysconfig"
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs.sysconfig"
     dest: /etc/sysconfig/openafs
     force: no
