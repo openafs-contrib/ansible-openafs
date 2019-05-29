@@ -1,0 +1,6 @@
+---
+- name: Restart OpenAFS servers
+  service:
+    name: "{{ afs_server_service }}"
+    state: restarted
+  when: not afs_server_service_result.changed

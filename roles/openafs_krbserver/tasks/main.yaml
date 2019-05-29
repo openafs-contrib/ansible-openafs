@@ -24,7 +24,7 @@
     group: root
     mode: 0644
 
-- name: Configure kerberos kdc
+- name: Configure kerberos key server
   template:
     src: "{{ item }}.j2"
     dest: "{{ afs_kerberos_localstatedir }}/krb5kdc/{{ item }}"
@@ -32,11 +32,21 @@
     group: root
     mode: 0600
   with_items:
-  - kdc.conf
-  - kadm5.acl
+    - kdc.conf
   notify:
-    - restart kdc
-    - restart kadmin
+    - Restart kerberos key server
+
+- name: Configure kerberos admin server
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ afs_kerberos_localstatedir }}/krb5kdc/{{ item }}"
+    owner: root
+    group: root
+    mode: 0600
+  with_items:
+    - kadm5.acl
+  notify:
+    - Restart kerberos admin server
 
 - name: Create kerberos kdc database
   command: >
@@ -48,17 +58,19 @@
     creates: "{{ afs_kerberos_localstatedir }}/krb5kdc/principal"
   register: krb5_util_results
 
-- name: Start kerberos kdc
+- name: Start kerberos key server
   service:
     name: "{{ afs_krbserver_kdc_service }}"
     enabled: yes
     state: started
+  register: afs_krbserver_kdc_service_result
 
-- name: Start kadmin
+- name: Start kerberos admin server
   service:
     name: "{{ afs_krbserver_admin_service }}"
     enabled: yes
     state: started
+  register: afs_krbserver_admin_service_result
 
 - name: Create admin principal
   command: >

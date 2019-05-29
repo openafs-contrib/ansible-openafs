@@ -25,6 +25,8 @@
     regexp: "^AFSD_ARGS="
     line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
     state: present
+  notify:
+    - Restart OpenAFS client
 
 # Create an empty CellServDB.dist if one was not installed by the
 # distribution.  This avoids an error during startup when the
@@ -58,6 +60,8 @@
     mode: 0644
     owner: root
     group: root
+  notify:
+    - Restart OpenAFS client
 
 - name: Set local cell name
   copy:
@@ -66,6 +70,8 @@
     mode: 0644
     owner: root
     group: root
+  notify:
+    - Restart OpenAFS client
 
 - name: Update cache configuration
   template:
@@ -74,9 +80,12 @@
     mode: 0644
     owner: root
     group: root
+  notify:
+    - Restart OpenAFS client
 
 - name: Start OpenAFS client
   service:
     state: started
     enabled: yes
     name: "{{ afs_client_service }}"
+  register: afs_client_service_result

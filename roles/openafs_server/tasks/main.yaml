@@ -62,6 +62,8 @@
     regexp: '^BOSSERVER_ARGS='
     line: 'BOSSERVER_ARGS="{{ afs_bosserver_opts }}"'
     state: present
+  notify:
+    - Restart OpenAFS servers
 
 - include_tasks: server-config.yaml
 
@@ -75,6 +77,7 @@
     name: "{{ afs_server_service }}"
     state: started
     enabled: yes
+  register: afs_server_service_result
 
 # The first admin user must be created with -localauth.
 - include_tasks: server-admin-user.yaml

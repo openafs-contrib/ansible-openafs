@@ -46,3 +46,5 @@
   with_items:
     - BosConfig.new
     - NetInfo
+  notify:
+    - Restart OpenAFS servers
