@@ -11,7 +11,7 @@ systems.
 
 ## Kerberos Client Role
 
-Name: `openafs_krb5`
+Name: `openafs_krbclient`
 
 Install and configure the Kerberos workstation packages.
 
@@ -23,7 +23,7 @@ The Kerberos realm name.
 
 ## Kerberos Server Role
 
-Name: `openafs_kdc`
+Name: `openafs_krbserver`
 
 Install and configure the Kerberos master KDC on single host, create the
 Kerberos database, the administrator's principal, and the OpenAFS service key.
