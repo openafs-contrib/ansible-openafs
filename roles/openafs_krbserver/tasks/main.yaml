@@ -50,13 +50,13 @@
 
 - name: Start kerberos kdc
   service:
-    name: krb5kdc
+    name: "{{ afs_krbserver_kdc_service }}"
     enabled: yes
     state: started
 
 - name: Start kadmin
   service:
-    name: kadmin
+    name: "{{ afs_krbserver_admin_service }}"
     enabled: yes
     state: started
 

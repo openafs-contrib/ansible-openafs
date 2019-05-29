@@ -79,4 +79,4 @@
   service:
     state: started
     enabled: yes
-    name: openafs-client
+    name: "{{ afs_client_service }}"

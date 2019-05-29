@@ -16,6 +16,9 @@ afs_afslogdir: "/usr/afs/logs"
 afs_afssrvdir: "/usr/afs/bin"
 afs_viceetcdir: "/usr/vice/etc"
 
+# Service name
+afs_server_service: openafs-server
+
 # OS dependent variables
 afs_firewall: firewalld
 afs_selinux: yes

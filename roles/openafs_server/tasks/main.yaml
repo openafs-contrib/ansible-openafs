@@ -72,7 +72,7 @@
 
 - name: Start the OpenAFS servers
   service:
-    name: openafs-server
+    name: "{{ afs_server_service }}"
     state: started
     enabled: yes
 
