@@ -1,7 +1,0 @@
----
-- name: Set client options
-  lineinfile:
-    path: /etc/sysconfig/openafs
-    regexp: "^AFSD_ARGS="
-    line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
-    state: present

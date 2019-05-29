@@ -35,15 +35,63 @@
     and not "already exists while creating" in kadmin_results.stderr
   when: inventory_hostname == ansible_play_hosts[0]
 
-- include_tasks: "{{ ansible_os_family|lower }}/pre-install.yaml"
+- name: Start firewall
+  systemd:
+    name: firewalld
+    enabled: yes
+    state: started
+
+- name: Permit afs3 traffic
+  firewalld:
+    port: 7000-7009/udp
+    immediate: yes
+    permanent: yes
+    state: enabled
+
+- name: Setup SELinux mode
+  selinux:
+    state: "{{ afs_selinux_mode }}"
+    policy: targeted
+
+- name: Setup SELinux policies
+  include_tasks: "{{ ansible_os_family|lower }}/selinux.yaml"
+  when: afs_selinux_mode == 'enforcing' or afs_selinux_mode == 'permissive'
 
 - include_tasks: server-partitions.yaml
 
 - include_tasks: "{{ ansible_os_family|lower }}/install-{{ afs_server_install_method }}.yaml"
-- include_tasks: "{{ ansible_os_family|lower }}/post-install.yaml"
+
+- name: Set bosserver options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: '^BOSSERVER_ARGS='
+    line: 'BOSSERVER_ARGS="{{ afs_bosserver_opts }}"'
+    state: present
+
 - include_tasks: server-config.yaml
+
 - include_tasks: server-setkey.yaml
-- include_tasks: "{{ ansible_os_family|lower }}/post-config.yaml"
+
+## Patch up the contexts for the directories and files
+## that were created while in unconfined_t
+- name: "Restore directory contexts for selinux"
+  command: restorecon -ir {{ item }}
+  with_items:
+    -  /usr/afs
+    -  /usr/vice
+  when: afs_selinux_mode == 'enforcing' or afs_selinux_mode == 'permissive'
+
+## Same -- for the partitions
+- name: "Restore partition contexts for selinux"
+  command: restorecon /vicep{{ item }}
+  with_items: "{{ afs_partitions }}"
+  when: afs_partitions is defined and (afs_selinux_mode == 'enforcing' or afs_selinux_mode == 'permissive')
+
+- name: Start the OpenAFS servers
+  service:
+    name: openafs-server
+    state: started
+    enabled: yes
 
 # The first admin user must be created with -localauth.
 - include_tasks: server-admin-user.yaml
