@@ -6,8 +6,8 @@
 
 [realms]
  {{ afs_realm }} = {
-  acl_file = {{ afs_kerberos_localstatedir }}/krb5kdc/kadm5.acl
+  acl_file = {{ afs_krbserver_kadm5_acl }}
   dict_file = /usr/share/dict/words
-  admin_keytab = {{ afs_kerberos_localstatedir }}/krb5kdc/kadm5.keytab
+  admin_keytab = {{ afs_krbserver_kadm5_keytab }}
   supported_enctypes = aes256-cts:normal aes128-cts:normal des3-hmac-sha1:normal arcfour-hmac:normal camellia256-cts:normal camellia128-cts:normal des-hmac-sha1:normal des-cbc-md5:normal des-cbc-crc:normal
  }

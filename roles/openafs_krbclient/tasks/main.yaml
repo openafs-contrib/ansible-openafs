@@ -10,7 +10,7 @@
 - name: Configure kerberos
   template:
     src: krb5.conf.j2
-    dest: /etc/krb5.conf
+    dest: "{{ afs_krbclient_krb5_conf }}"
     owner: root
     group: root
     mode: 0644
