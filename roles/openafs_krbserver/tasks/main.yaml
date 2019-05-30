@@ -1,0 +1,79 @@
+---
+- name: Gather variables for each operating system
+  include_vars: "{{ ansible_os_family|lower }}.yaml"
+
+- name: Verify the admin password is defined
+  fail:
+    msg: |
+      Please define afs_admin_password before running this role.
+      It may be defined as a group variable (preferably encrypted
+      with ansible-vault) or provided on the command line with
+      the --extra-vars (-e) option.
+  when: afs_admin_password is not defined
+
+- include_tasks: "fw-{{ afs_firewall }}.yaml"
+  when: afs_firewall is defined
+
+- include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
+
+- name: Set default realm
+  template:
+    src: krb5.conf.j2
+    dest: "{{ afs_krbserver_krb5_conf }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Configure kerberos key server
+  template:
+    src: kdc.conf.j2
+    dest: "{{ afs_krbserver_kdc_conf }}"
+    owner: root
+    group: root
+    mode: 0600
+  notify:
+    - Restart kerberos key server
+
+- name: Configure kerberos admin server
+  template:
+    src: kadm5.acl.j2
+    dest: "{{ afs_krbserver_kadm5_acl }}"
+    owner: root
+    group: root
+    mode: 0600
+  notify:
+    - Restart kerberos admin server
+
+- name: Create kerberos kdc database
+  command: >
+    {{ afs_kdb5_util }}
+    -P {{ afs_kerberos_master_password }}
+    -r {{ afs_realm }}
+    create -s
+  args:
+    creates: "{{ afs_krbserver_principal }}"
+  register: krb5_util_results
+
+- name: Start kerberos key server
+  service:
+    name: "{{ afs_krbserver_kdc_service }}"
+    enabled: yes
+    state: started
+  register: afs_krbserver_kdc_service_result
+
+- name: Start kerberos admin server
+  service:
+    name: "{{ afs_krbserver_admin_service }}"
+    enabled: yes
+    state: started
+  register: afs_krbserver_admin_service_result
+
+- name: Create admin principal
+  command: >
+    {{ afs_kadmin_local }}
+    -r {{ afs_realm }}
+    -q "add_principal -pw {{ afs_admin_password }} {{ afs_admin_principal }}@{{ afs_realm }}"
+  register: kadmin_results
+  changed_when: >
+    kadmin_results.rc == 0
+    and not "already exists while creating" in kadmin_results.stderr

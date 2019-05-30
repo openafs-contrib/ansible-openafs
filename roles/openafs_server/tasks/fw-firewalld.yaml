@@ -1,0 +1,10 @@
+---
+- name: Gather service facts
+  service_facts:
+
+- name: Permit afs3 traffic
+  firewalld:
+    port: 7000-7009/udp
+    immediate: "{{ (ansible_facts.services['firewalld.service'].state == 'running') | ternary('yes','no') }}"
+    permanent: yes
+    state: enabled

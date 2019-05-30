@@ -1,0 +1,37 @@
+---
+- name: Write the keytab file
+  command: >
+    {{ afs_kadmin }}
+    -r "{{ afs_realm }}"
+    -p "{{ afs_admin_principal }}"
+    -w "{{ afs_admin_password }}"
+    -q 'ktadd -norandkey -k {{ afs_afsconfdir }}/rxkad.keytab afs/{{ afs_cell }}@{{ afs_realm }}'
+  args:
+    creates: "{{ afs_afsconfdir }}/rxkad.keytab"
+
+- name: Get asetkey usage
+  command: "{{ afs_asetkey }}"
+  register: asetkey_usage
+  changed_when: false
+  failed_when: false
+
+- name: Scan keytab for key versions and encryption types
+  shell: >
+    {{ afs_klist }} -e -k {{ afs_afsconfdir }}/rxkad.keytab |
+    sed '1,3d' |
+    sed 's/[()]//g' |
+    awk '$2 == "afs/{{ afs_cell }}@{{ afs_realm }}" && $3 !~ /^des/
+    { printf("- kvno: %d\n  enc: %s\n", $1, $3) }'
+  changed_when: False
+  register: klist_result
+  when: "'asetkey add <type> <kvno> <subtype> <key>' in asetkey_usage.stderr"
+
+- name: Set the service keys
+  command: >
+    {{ afs_asetkey }} add rxkad_krb5
+    {{ item.kvno }}
+    {{ afs_kerberos_eno[item.enc] }}
+    {{ afs_afsconfdir }}/rxkad.keytab
+    afs/{{ afs_cell }}@{{ afs_realm }}
+  with_items: "{{ klist_result.stdout | from_yaml }}"
+  when: "'asetkey add <type> <kvno> <subtype> <key>' in asetkey_usage.stderr"

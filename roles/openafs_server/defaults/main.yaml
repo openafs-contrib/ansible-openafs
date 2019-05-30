@@ -21,8 +21,8 @@ afs_openafs_server_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/r
 # selinux mode
 afs_selinux_mode: enforcing
 
-# Installation method, one of: yum, build
-afs_server_install_method: yum
+# Installation method, one of: package-manager, make-install
+afs_server_install_method: package-manager
 
 # 'build' installation git repo url
 afs_server_build_repo: https://github.com/openafs/openafs.git

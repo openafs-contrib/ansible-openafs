@@ -1,15 +1,82 @@
 ---
-- name: Load OS specific variables
+- name: Gather variables for each operating system
   include_vars: "{{ ansible_os_family|lower }}.yaml"
 
-- include_tasks: "{{ ansible_os_family|lower }}/pre-install.yaml"
-- include_tasks: "{{ ansible_os_family|lower }}/install-{{ afs_client_install_method }}.yaml"
-- include_tasks: "{{ ansible_os_family|lower }}/post-install.yaml"
-- include_tasks: common/config.yaml
-#- include_tasks: "{{ ansible_os_family|lower }}/post-config.yaml"
+- include_tasks: "fw-{{ afs_firewall }}.yaml"
+  when: afs_firewall is defined
+
+- name: Check cache directory
+  file:
+    state: directory
+    path: "{{ afs_afscachedir }}"
+    mode: 0700
+    owner: root
+    group: root
+
+- include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
+  when: afs_client_install_method == 'package-manager'
+
+- include_tasks: "{{ afs_client_install_method }}.yaml"
+  when: afs_client_install_method != 'package-manager'
+
+# Create an empty CellServDB.dist if one was not installed by the
+# distribution.  This avoids an error during startup when the
+# CellServDB.local and CellServDB.dist are combined.
+- name: Ensure public cell database file exists (CellServDB.dist)
+  copy:
+    content: ""
+    dest: "{{ afs_viceetcdir }}/CellServDB.dist"
+    mode: 0644
+    force: no
+
+- name: Update local cell configuration (CellServDB.local)
+  copy:
+    src: "{{ inventory_dir }}/files/CellServDB"
+    dest: "{{ afs_viceetcdir }}/CellServDB.local"
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Combine local and public cell database (CellServDB.new)
+  shell: cat CellServDB.local CellServDB.dist > CellServDB.new
+  args:
+    chdir: "{{ afs_viceetcdir }}"
+  changed_when: false
+
+- name: Update CellServDB
+  copy:
+    remote_src: true
+    src: "{{ afs_viceetcdir }}/CellServDB.new"
+    dest: "{{ afs_viceetcdir }}/CellServDB"
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    - Restart OpenAFS client
+
+- name: Set local cell name
+  copy:
+    src: "{{ inventory_dir }}/files/ThisCell"
+    dest: "{{ afs_viceetcdir }}/ThisCell"
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    - Restart OpenAFS client
+
+- name: Update cache configuration
+  template:
+    src: cacheinfo.j2
+    dest: "{{ afs_viceetcdir }}/cacheinfo"
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    - Restart OpenAFS client
 
 - name: Start OpenAFS client
   service:
     state: started
     enabled: yes
-    name: openafs-client
+    name: "{{ afs_client_service }}"
+  register: afs_client_service_result

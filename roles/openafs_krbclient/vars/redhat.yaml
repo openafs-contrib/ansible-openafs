@@ -1,0 +1,6 @@
+---
+# Kerberos client files
+afs_krbclient_krb5_conf: "/etc/krb5.conf"
+
+# OS dependent variables
+afs_firewall: firewalld

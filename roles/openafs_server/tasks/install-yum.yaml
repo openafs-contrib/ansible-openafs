@@ -1,0 +1,23 @@
+---
+- name: Add OpenAFS yum repo
+  yum_repository:
+    name: openafs
+    description: OpenAFS yum repo
+    baseurl: "{{ afs_openafs_server_repourl }}"
+    gpgcheck: no
+
+- name: Install OpenAFS server packages
+  yum:
+    state: present
+    name:
+      - openafs-server
+      - openafs-krb5
+
+- name: Set bosserver startup options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: '^BOSSERVER_ARGS='
+    line: 'BOSSERVER_ARGS="{{ afs_bosserver_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS servers

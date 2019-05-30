@@ -1,0 +1,46 @@
+---
+- include_tasks: "{{ ansible_os_family|lower }}/install-build-tools.yaml"
+
+- name: Create build directory
+  file:
+    state: directory
+    path: "{{ afs_server_build_path }}"
+
+- name: Clone OpenAFS git repo
+  git:
+    repo: "{{ afs_server_build_repo }}"
+    dest: "{{ afs_server_build_path }}"
+    version: "{{ afs_server_build_version }}"
+
+- name: Generate autoconf scripts
+  command: ./regen.sh
+  args:
+    chdir: "{{ afs_server_build_path }}"
+  changed_when: false
+
+- name: Configure
+  command: >
+    ./configure
+    --with-afs-sysname=amd64_linux26
+    --prefix=/usr
+    --libdir=/usr/lib64
+    --bindir=/usr/bin
+    --sbindir=/usr/sbin
+    --disable-strip-binaries
+    --enable-debug
+    --with-linux-kernel-packaging
+    --disable-kernel-module
+    --with-krb5
+    --with-swig
+    --enable-redhat-buildsys
+    --enable-transarc-paths
+  args:
+    chdir: "{{ afs_server_build_path }}"
+  changed_when: false
+
+- name: Build and install
+  make:
+    chdir: "{{ afs_server_build_path }}"
+    target: install_nolibafs
+
+- include_tasks: "{{ ansible_os_family|lower }}/install-files.yaml"

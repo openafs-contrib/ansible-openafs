@@ -1,4 +1,7 @@
 ---
+- name: Gather variables for each operating system
+  include_vars: "{{ ansible_os_family|lower }}.yaml"
+
 - name: Verify the admin password is defined
   fail:
     msg: |
@@ -7,8 +10,6 @@
       with ansible-vault) or provided on the command line with
       the --extra-vars (-e) option.
   when: afs_admin_password is not defined
-
-- include_vars: "{{ ansible_os_family|lower }}.yaml"
 
 - name: Create cell-wide configuration files
   run_once: true
@@ -34,20 +35,45 @@
     and not "already exists while creating" in kadmin_results.stderr
   when: inventory_hostname == ansible_play_hosts[0]
 
-- include_tasks: "{{ ansible_os_family|lower }}/pre-install.yaml"
+- include_tasks: "fw-{{ afs_firewall }}.yaml"
+  when: afs_firewall is defined
 
-- include_tasks: common/partitions.yaml
+- name: Setup SELinux mode
+  selinux:
+    state: "{{ afs_selinux_mode }}"
+    policy: targeted
+  when: afs_selinux and afs_selinux_mode in ['disabled','enforcing','permissive']
 
-- include_tasks: "{{ ansible_os_family|lower }}/install-{{ afs_server_install_method }}.yaml"
-- include_tasks: "{{ ansible_os_family|lower }}/post-install.yaml"
-- include_tasks: common/config.yaml
-- include_tasks: common/setkey-rxkad-krb5.yaml
-- include_tasks: "{{ ansible_os_family|lower }}/post-config.yaml"
+- name: Setup SELinux policies
+  include_tasks: selinux-policies.yaml
+  when: afs_selinux
+
+- include_tasks: server-partitions.yaml
+
+- include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
+  when: afs_server_install_method == 'package-manager'
+
+- include_tasks: "{{ afs_server_install_method }}.yaml"
+  when: afs_server_install_method != 'package-manager'
+
+- include_tasks: server-config.yaml
+
+- include_tasks: server-setkey.yaml
+
+- include_tasks: selinux-contexts.yaml
+  when: afs_selinux
+
+- name: Start the OpenAFS servers
+  service:
+    name: "{{ afs_server_service }}"
+    state: started
+    enabled: yes
+  register: afs_server_service_result
 
 # The first admin user must be created with -localauth.
-- include_tasks: common/admin-user.yaml
+- include_tasks: server-admin-user.yaml
   when: inventory_hostname == ansible_play_hosts[0]
 
 # The root.afs volume must exist before non-dynroot clients can mount /afs.
-- include_tasks: common/root-afs-volume.yaml
+- include_tasks: server-root-volume.yaml
   when: inventory_hostname == ansible_play_hosts[0]

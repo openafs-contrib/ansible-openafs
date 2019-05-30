@@ -1,0 +1,12 @@
+---
+- name: Restart kerberos key server
+  service:
+    name: "{{ afs_krbserver_kdc_service }}"
+    state: restarted
+  when: afs_krbserver_kdc_service_result.changed
+
+- name: Restart kerberos admin server
+  service:
+    name: "{{ afs_krbserver_admin_service }}"
+    state: restarted
+  when: afs_krbserver_admin_service_result.changed

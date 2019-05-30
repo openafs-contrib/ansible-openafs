@@ -1,0 +1,19 @@
+---
+- name: Create root.afs volume
+  command: >
+    {{ afs_vos }} create
+      -server {{ afs_root_server }}
+      -partition {{ afs_root_part }}
+      -name root.afs
+      -verbose
+      -localauth
+  register: vos_result
+  until: >
+    vos_result.rc == 0 or
+    'already exists' in vos_result.get('stderr','')
+  delay: 30
+  retries: 10
+  changed_when: vos_result.rc == 0
+  failed_when: >
+    vos_result.rc != 0 and
+    'already exists' not in vos_result.get('stderr','')

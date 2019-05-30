@@ -1,0 +1,11 @@
+---
+- include_tasks: "yum-{{ afs_client_install_dkms|ternary('dkms','kmod') }}.yaml"
+
+- name: Set client startup options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: "^AFSD_ARGS="
+    line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS client
