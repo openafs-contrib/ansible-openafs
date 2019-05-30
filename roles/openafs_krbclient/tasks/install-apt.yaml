@@ -1,0 +1,5 @@
+---
+- name: Install kerberos workstation
+  apt:
+    name: krb5-user
+    state: present
