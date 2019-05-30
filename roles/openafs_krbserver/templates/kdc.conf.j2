@@ -1,13 +1,21 @@
 # {{ ansible_managed }}
 
 [kdcdefaults]
- kdc_ports = 88
- kdc_tcp_ports = 88
+    kdc_ports = 750,88
 
 [realms]
- {{ afs_realm }} = {
-  acl_file = {{ afs_krbserver_kadm5_acl }}
-  dict_file = /usr/share/dict/words
-  admin_keytab = {{ afs_krbserver_kadm5_keytab }}
-  supported_enctypes = aes256-cts:normal aes128-cts:normal des3-hmac-sha1:normal arcfour-hmac:normal camellia256-cts:normal camellia128-cts:normal des-hmac-sha1:normal des-cbc-md5:normal des-cbc-crc:normal
- }
+    {{ afs_realm }} = {
+        database_name = {{ afs_krbserver_principal }}
+        admin_keytab = FILE:{{ afs_krbserver_kadm5_keytab }}
+        acl_file = {{ afs_krbserver_kadm5_acl }}
+        key_stash_file = {{ afs_krbserver_stash }}
+{% if afs_krbserver_dict is defined %}
+        dict_file = {{ afs_krbserver_dict }}
+{% endif %}
+        kdc_ports = 750,88
+        max_life = 10h 0m 0s
+        max_renewable_life = 7d 0h 0m 0s
+        master_key_type = des3-hmac-sha1
+        #supported_enctypes = aes256-cts:normal aes128-cts:normal
+        default_principal_flags = +preauth
+    }
