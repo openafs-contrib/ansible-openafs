@@ -25,3 +25,12 @@
     mode: 0755
     owner: root
     group: root
+
+- name: Set bosserver startup options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: '^BOSSERVER_ARGS='
+    line: 'BOSSERVER_ARGS="{{ afs_bosserver_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS servers

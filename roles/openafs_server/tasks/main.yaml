@@ -56,15 +56,6 @@
 - include_tasks: "{{ afs_server_install_method }}.yaml"
   when: afs_server_install_method != 'package-manager'
 
-- name: Set bosserver options
-  lineinfile:
-    path: /etc/sysconfig/openafs
-    regexp: '^BOSSERVER_ARGS='
-    line: 'BOSSERVER_ARGS="{{ afs_bosserver_opts }}"'
-    state: present
-  notify:
-    - Restart OpenAFS servers
-
 - include_tasks: server-config.yaml
 
 - include_tasks: server-setkey.yaml

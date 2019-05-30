@@ -1,0 +1,55 @@
+---
+- name: Install asetkey to a standard location
+  copy:
+    remote_src: true
+    src: /usr/afs/bin/asetkey
+    dest: /usr/sbin/asetkey
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Check for akeyconvert
+  stat:
+    path: /usr/afs/bin/akeyconvert
+  register: akeyconvert_stat
+
+- name: Install akeyconvert to a standard location
+  copy:
+    remote_src: true
+    src: /usr/afs/bin/akeyconvert
+    dest: /usr/sbin/akeyconvert
+    owner: root
+    group: root
+    mode: 0755
+  # akeyconvert is present as of OpenAFS 1.8.0.
+  when: akeyconvert_stat.stat.exists
+
+- name: Update shared library cache
+  command: /sbin/ldconfig
+  changed_when: false
+
+- name: Install systemd service
+  copy:
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-server.service"
+    dest: /usr/lib/systemd/system/openafs-server.service
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Install startup options config file
+  copy:
+    # This file has sections for the client and server.
+    # Use force:no to avoid clobbering if already installed by the client.
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs.sysconfig"
+    dest: /etc/sysconfig/openafs
+    force: no
+
+- name: Set bosserver startup options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: '^BOSSERVER_ARGS='
+    line: 'BOSSERVER_ARGS="{{ afs_bosserver_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS servers

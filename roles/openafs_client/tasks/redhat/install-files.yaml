@@ -1,0 +1,79 @@
+---
+- name: Remove server files
+  file:
+    path: /tmp/openafs-client-build/usr/afs
+    state: absent
+
+# Needed to split the install into separate tasks
+# in order to get correct result,
+# /lib/modules was not updating correctly
+- name: Install files to /usr
+  synchronize:
+    src: /tmp/openafs-client-build/usr/
+    dest: /usr/
+    delete: no
+    recursive: yes
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Install files to /lib/modules
+  synchronize:
+    src: /tmp/openafs-client-build/lib/modules/
+    dest: /lib/modules/
+    delete: no
+    recursive: yes
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Install module probe script
+  copy:
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.modules"
+    dest: /etc/sysconfig/openafs
+
+- name: Update shared library cache
+  command: /sbin/ldconfig
+  changed_when: false
+
+- name: Update module depenencies
+  command: depmod -a
+  changed_when: false
+
+- name: Make afs filesystem mount point
+  file:
+    path: /afs
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Make cache directory
+  file:
+    state: directory
+    path: "{{ afs_afscachedir }}"
+    mode: 0700
+    owner: root
+    group: root
+
+- name: Install openafs client systemd unit file
+  copy:
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.service"
+    dest: /usr/lib/systemd/system/openafs-client.service
+
+- name: Reload the systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Install startup options config file
+  copy:
+    # This file has sections for the client and server.
+    # Use force:no to avoid clobbering if already installed by the client.
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs.sysconfig"
+    dest: /etc/sysconfig/openafs
+    force: no
+
+- name: Set client startup options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: "^AFSD_ARGS="
+    line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS client
