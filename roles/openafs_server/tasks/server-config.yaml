@@ -44,7 +44,25 @@
     owner: root
     group: root
   with_items:
-    - BosConfig.new
     - NetInfo
+  notify:
+    - Restart OpenAFS servers
+
+- name: Create BosServer configuration directory
+  file:
+    state: directory
+    path: "{{ afs_bosconfdir }}"
+    owner: root
+    group: root
+
+- name: Update BosServer server configuration
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ afs_bosconfdir }}/{{ item }}"
+    mode: 0644
+    owner: root
+    group: root
+  with_items:
+    - BosConfig.new
   notify:
     - Restart OpenAFS servers

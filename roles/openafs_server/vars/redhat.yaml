@@ -15,6 +15,7 @@ afs_afslocaldir: "/usr/afs/local"
 afs_afslogdir: "/usr/afs/logs"
 afs_afssrvdir: "/usr/afs/bin"
 afs_viceetcdir: "/usr/vice/etc"
+afs_bosconfdir: "/usr/afs/local"
 
 # Service name
 afs_server_service: openafs-server
