@@ -1,8 +1,7 @@
 # Ansible Roles for OpenAFS
 
 This is a collection of Ansible roles and playbooks to deploy the [OpenAFS][1]
-distributed filesystem. Support is currently limited to RedHat-based linux
-systems.
+distributed filesystem.
 
 ## Platforms Supported
 
