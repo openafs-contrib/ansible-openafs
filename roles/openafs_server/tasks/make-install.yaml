@@ -21,22 +21,12 @@
 - name: Configure
   command: >
     ./configure
-    --with-afs-sysname=amd64_linux26
-    --prefix=/usr
-    --libdir=/usr/lib64
-    --bindir=/usr/bin
-    --sbindir=/usr/sbin
-    --disable-strip-binaries
-    --enable-debug
-    --with-linux-kernel-packaging
-    --disable-kernel-module
-    --with-krb5
-    --with-swig
-    --enable-redhat-buildsys
-    --enable-transarc-paths
+    --with-afs-sysname={{ afs_server_sysname | default('amd64_linux26') }}
+    {{ afs_server_configure_opts | default(_afs_server_configure_opts) }}
   args:
     chdir: "{{ afs_server_build_path }}"
   changed_when: false
+  environment: "{{ afs_server_configure_env | default(_afs_server_configure_env) }}"
 
 - name: Build and install
   make:
