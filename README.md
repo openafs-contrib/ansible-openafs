@@ -6,8 +6,9 @@ systems.
 
 ## Platforms Supported
 
-* EL 7
-* Ansible 2.2 or greater
+* Ansible 2.7
+* RHEL/CentOS 7.x
+* Ubuntu 18.x
 
 ## Kerberos Client Role
 

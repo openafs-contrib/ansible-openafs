@@ -1,0 +1,21 @@
+---
+- name: Prevent services from starting during install
+  copy:
+    src: "debian/policy-rc.d"
+    dest: "/usr/sbin/policy-rc.d"
+    mode: "0755"
+    backup: yes
+  register: change_policy_rc_result
+
+- name: Install kerberos server
+  apt:
+    name:
+      - krb5-kdc
+      - krb5-admin-server
+    state: present
+
+- name: Remove custom policy-rc file
+  file:
+    path: "/usr/sbin/policy-rc.d"
+    state: absent
+  when: change_policy_rc_result.changed

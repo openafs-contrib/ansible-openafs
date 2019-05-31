@@ -1,0 +1,16 @@
+---
+# Kerberos commands
+afs_kadmin_local: "/usr/sbin/kadmin.local"
+afs_kdb5_util: "/usr/sbin/kdb5_util"
+
+# Kerberos files
+afs_krbserver_krb5_conf: "/etc/krb5.conf"
+afs_krbserver_kdc_conf: "/etc/krb5kdc/kdc.conf"
+afs_krbserver_kadm5_acl: "/etc/krb5kdc/kadm5.acl"
+afs_krbserver_kadm5_keytab: "/etc/krb5kdc/kadm5.keytab"
+afs_krbserver_principal: "/var/lib/krb5kdc/principal"
+afs_krbserver_stash: "/etc/krb5kdc/stash"
+
+# Kerberos service names
+afs_krbserver_kdc_service: krb5-kdc
+afs_krbserver_admin_service: krb5-admin-server

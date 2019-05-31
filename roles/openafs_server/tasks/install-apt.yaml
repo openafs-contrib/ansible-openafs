@@ -1,0 +1,35 @@
+---
+- name: Prevent services from starting during install
+  copy:
+    src: "debian/policy-rc.d"
+    dest: "/usr/sbin/policy-rc.d"
+    mode: "0755"
+    backup: yes
+  register: change_policy_rc_result
+
+- name: Install OpenAFS server packages
+  apt:
+    state: present
+    install_recommends: no
+    name:
+      - openafs-fileserver
+      - openafs-dbserver
+      - openafs-krb5
+  notify:
+    - Restart OpenAFS servers
+
+- name: Remove custom policy-rc file
+  file:
+    path: "/usr/sbin/policy-rc.d"
+    state: absent
+  when: change_policy_rc_result.changed
+
+- name: Set bosserver startup options
+  template:
+    src: "debian/openafs-fileserver.j2"
+    dest: "/etc/default/openafs-fileserver"
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    - Restart OpenAFS servers
