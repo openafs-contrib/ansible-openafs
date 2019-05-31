@@ -41,7 +41,6 @@
 - name: Make build directory
   file:
     path: /tmp/openafs-client-build
-    chdir: "{{ afs_client_build_path }}"
     state: directory
 
 - name: Make install
