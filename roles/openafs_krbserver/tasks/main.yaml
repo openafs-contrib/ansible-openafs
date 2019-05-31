@@ -11,7 +11,7 @@
       the --extra-vars (-e) option.
   when: afs_admin_password is not defined
 
-- include_tasks: "fw-{{ afs_firewall }}.yaml"
+- include_tasks: "system-{{ afs_firewall }}.yaml"
   when: afs_firewall is defined
 
 - include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
