@@ -27,6 +27,13 @@ afs_client_build_path: /usr/local/src/openafs-client
 # 'build' installation method git reference
 afs_client_build_version: master
 
+afs_client_build_force: no
+afs_client_build_builddir: "/usr/local/src/openafs_client"
+afs_client_build_destdir: "/tmp/openafs_client"
+afs_client_build_fetch_method: "git"
+afs_client_build_git_repo: "https://github.com/openafs/openafs"
+afs_client_build_git_ref: "master"
+
 # openafs kmod package release prefix
 afs_openafs_kmod_prefix: 1
 

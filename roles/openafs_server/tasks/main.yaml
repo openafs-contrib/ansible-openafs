@@ -53,7 +53,7 @@
 - include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
   when: afs_server_install_method == 'package-manager'
 
-- include_tasks: "{{ afs_server_install_method }}.yaml"
+- include_tasks: "install-{{ afs_server_install_method }}.yaml"
   when: afs_server_install_method != 'package-manager'
 
 - include_tasks: server-config.yaml

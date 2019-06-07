@@ -33,6 +33,13 @@ afs_server_build_path: /usr/local/src/openafs-server
 # 'build' installation method git reference
 afs_server_build_version: master
 
+afs_server_build_force: no
+afs_server_build_builddir: "/usr/local/src/openafs_server"
+afs_server_build_destdir: "/tmp/openafs_server"
+afs_server_build_fetch_method: "git"
+afs_server_build_git_repo: "https://github.com/openafs/openafs"
+afs_server_build_git_ref: "master"
+
 # fileserver variation, one of: fs, dafs
 afs_fileserver_type: dafs
 
