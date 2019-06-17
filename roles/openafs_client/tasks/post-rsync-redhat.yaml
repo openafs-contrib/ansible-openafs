@@ -1,28 +1,4 @@
 ---
-- name: Remove server files
-  file:
-    path: /tmp/openafs-client-build/usr/afs
-    state: absent
-
-# Needed to split the install into separate tasks
-# in order to get correct result,
-# /lib/modules was not updating correctly
-- name: Install files to /usr
-  synchronize:
-    src: /tmp/openafs-client-build/usr/
-    dest: /usr/
-    delete: no
-    recursive: yes
-  delegate_to: "{{ inventory_hostname }}"
-
-- name: Install files to /lib/modules
-  synchronize:
-    src: /tmp/openafs-client-build/lib/modules/
-    dest: /lib/modules/
-    delete: no
-    recursive: yes
-  delegate_to: "{{ inventory_hostname }}"
-
 - name: Install module probe script
   copy:
     src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.modules"
@@ -51,11 +27,6 @@
     mode: 0700
     owner: root
     group: root
-
-- name: Install openafs client systemd unit file
-  copy:
-    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.service"
-    dest: /usr/lib/systemd/system/openafs-client.service
 
 - name: Reload the systemd daemon
   systemd:

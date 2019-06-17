@@ -35,7 +35,7 @@
     and not "already exists while creating" in kadmin_results.stderr
   when: inventory_hostname == ansible_play_hosts[0]
 
-- include_tasks: "fw-{{ afs_firewall }}.yaml"
+- include_tasks: "system-{{ afs_firewall }}.yaml"
   when: afs_firewall is defined
 
 - name: Setup SELinux mode
@@ -53,7 +53,7 @@
 - include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
   when: afs_server_install_method == 'package-manager'
 
-- include_tasks: "{{ afs_server_install_method }}.yaml"
+- include_tasks: "install-{{ afs_server_install_method }}.yaml"
   when: afs_server_install_method != 'package-manager'
 
 - include_tasks: server-config.yaml

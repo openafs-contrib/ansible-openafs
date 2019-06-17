@@ -1,0 +1,15 @@
+---
+afs_devel_configure_opts: >
+  --prefix=/usr
+  --libdir=/usr/lib64
+  --bindir=/usr/bin
+  --sbindir=/usr/sbin
+  --disable-strip-binaries
+  --enable-debug
+  --with-krb5
+  --with-swig
+  --with-linux-kernel-packaging
+  --enable-redhat-buildsys
+  --enable-transarc-paths
+
+afs_devel_configure_env: {}

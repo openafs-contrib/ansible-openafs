@@ -28,3 +28,10 @@
       - rpm-build
       - swig
       - wget
+
+- name: Install kernel devel packages
+  yum:
+    state: present
+    name:
+      - kernel-devel
+  when: afs_devel_build_client | bool

@@ -1,0 +1,17 @@
+---
+- name: Git checkout
+  git:
+    repo: "{{ afs_devel_git_repo }}"
+    dest: "{{ afs_devel_builddir }}"
+    version: "{{ afs_devel_git_ref }}"
+  register: git_results
+  failed_when: git_results.failed
+
+- name: Clean files to force reconfigure
+  file:
+    state: absent
+    path: "{{ item }}"
+  with_items:
+    - "{{ afs_devel_builddir }}/configure"
+    - "{{ afs_devel_builddir }}/config.status"
+  when: git_results.changed

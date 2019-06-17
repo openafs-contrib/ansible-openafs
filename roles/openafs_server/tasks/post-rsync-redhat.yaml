@@ -1,0 +1,25 @@
+---
+- name: Update shared library cache
+  command: /sbin/ldconfig
+  changed_when: false
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Install startup options config file
+  copy:
+    # This file has sections for the client and server.
+    # Use force:no to avoid clobbering if already installed by the client.
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs.sysconfig"
+    dest: /etc/sysconfig/openafs
+    force: no
+
+- name: Set bosserver startup options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: '^BOSSERVER_ARGS='
+    line: 'BOSSERVER_ARGS="{{ afs_bosserver_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS servers

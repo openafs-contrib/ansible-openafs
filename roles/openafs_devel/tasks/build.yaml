@@ -1,0 +1,68 @@
+---
+#
+# Build an OpenAFS binary distribution from source code.
+#
+
+- name: Gather variables for each operating system
+  include_vars: "{{ ansible_os_family|lower }}.yaml"
+
+- name: Install development tools and libraries
+  include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
+
+- name: Create build directories
+  file:
+    state: directory
+    path: "{{ item }}"
+  with_items:
+    - "{{ afs_devel_builddir }}"
+    - "{{ afs_devel_destdir }}"
+
+- name: Fetch source code
+  include_tasks: "fetch-{{ afs_devel_fetch_method | lower }}.yaml"
+  when:
+    - afs_devel_fetch_method is defined
+    - (afs_devel_fetch_method | lower) not in ['none','skip','']
+
+- name: Generate configure
+  command: ./regen.sh
+  args:
+    chdir: "{{ afs_devel_builddir }}"
+    creates: configure
+  register: regen_results
+  failed_when: regen_results.rc != 0
+
+- name: Clean config.status
+  file:
+    state: absent
+    path: "{{ afs_devel_builddir }}/config.status"
+  when: regen_results.changed
+
+- name: Configure
+  command: >
+    ./configure
+    --with-afs-sysname={{ afs_devel_sysname | default('amd64_linux26') }}
+    --{{ afs_devel_build_client | ternary('enable','disable') }}-kernel-module
+    {{ afs_devel_configure_opts | default('') }}
+  environment: "{{ afs_devel_configure.env | default({}) }}"
+  args:
+    chdir: "{{ afs_devel_builddir }}"
+    creates: config.status
+  register: configure_results
+  failed_when: configure_results.rc != 0
+
+- name: Make install
+  make:
+    chdir: "{{ afs_devel_builddir }}"
+    target: "{{ afs_devel_build_client | ternary('install', 'install_nolibafs') }}"
+    params:
+      DESTDIR: "{{ afs_devel_destdir }}"
+  register: make_results
+
+- name: Save make results
+  copy:
+    content: "{{ make_results | to_nice_json }}"
+    dest: "{{ afs_devel_builddir }}/make_results"
+  changed_when: false
+
+- name: Finalize destination directory
+  include_tasks: "post-make-{{ ansible_os_family|lower }}.yaml"
