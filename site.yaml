@@ -1,5 +1,0 @@
----
-- import_playbook: playbooks/realm.yaml
-- import_playbook: playbooks/servers.yaml
-- import_playbook: playbooks/clients.yaml
-- import_playbook: playbooks/cell.yaml
