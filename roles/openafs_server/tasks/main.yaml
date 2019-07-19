@@ -11,12 +11,20 @@
       the --extra-vars (-e) option.
   when: afs_admin_password is not defined
 
+- name: Create temp directory for our cell-wide configuration files
+  run_once: true
+  local_action:
+    module: file
+    path: "{{ afs_openafs_server_tmpdir }}/{{ afs_cell }}"
+    state: directory
+    mode: 0755
+
 - name: Create cell-wide configuration files
   run_once: true
   local_action:
     module: template
     src: "{{ item }}.j2"
-    dest: "{{ inventory_dir }}/files/{{ item }}"
+    dest: "{{ afs_openafs_server_tmpdir }}/{{ afs_cell }}/{{ item }}"
   with_items:
     - CellServDB
     - ThisCell

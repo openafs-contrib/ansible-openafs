@@ -15,6 +15,9 @@ afs_admin_principal: admin
 # Kerberos and AFS admin password (no default)
 # afs_admin_password:
 
+# Location of generated files.
+afs_openafs_server_tmpdir: /tmp/ansible/openafs
+
 # openafs yum repo for server packages
 afs_openafs_server_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/el7/$basearch
 

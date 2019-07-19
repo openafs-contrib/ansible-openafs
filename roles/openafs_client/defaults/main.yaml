@@ -9,6 +9,8 @@ afs_cell_description: Example
 # kerberos realm
 afs_realm: EXAMPLE.COM
 
+afs_openafs_client_tmpdir: /tmp/ansible/openafs
+
 # openafs yum repo for client packages
 afs_openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/el7/$basearch
 

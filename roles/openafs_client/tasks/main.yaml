@@ -19,26 +19,38 @@
 - include_tasks: "install-{{ afs_client_install_method }}.yaml"
   when: afs_client_install_method != 'package-manager'
 
-# Create an empty CellServDB.dist if one was not installed by the
-# distribution.  This avoids an error during startup when the
-# CellServDB.local and CellServDB.dist are combined.
-- name: Ensure public cell database file exists (CellServDB.dist)
+- name: Ensure public cell configuration file exists (CellServDB.dist)
   copy:
     content: ""
     dest: "{{ afs_viceetcdir }}/CellServDB.dist"
     mode: 0644
     force: no
 
-- name: Update local cell configuration (CellServDB.local)
+- local_action:
+    module: stat
+    path: "{{ afs_openafs_client_tmpdir }}/{{ afs_cell }}/CellServDB"
+  register: cellservdb_st
+
+- name: Update local cell configuration file (CellServDB.local)
   copy:
-    src: "{{ inventory_dir }}/files/CellServDB"
+    src: "{{ afs_openafs_client_tmpdir }}/{{ afs_cell }}/CellServDB"
     dest: "{{ afs_viceetcdir }}/CellServDB.local"
     mode: 0644
     owner: root
     group: root
+  when: cellservdb_st.stat.exists is defined and cellservdb_st.stat.exists
 
-- name: Combine local and public cell database (CellServDB.new)
-  shell: cat CellServDB.local CellServDB.dist > CellServDB.new
+- name: Ensure local cell configuration file exists (CellServDB.local)
+  copy:
+    content: "{{ afs_cell }}  #Cell name\n"
+    dest: "{{ afs_viceetcdir }}/CellServDB.local"
+    mode: 0644
+    owner: root
+    group: root
+    force: no
+
+- name: Combine local and public cell database (CellServDB.ansible)
+  shell: cat CellServDB.local CellServDB.dist > CellServDB.ansible
   args:
     chdir: "{{ afs_viceetcdir }}"
   changed_when: false
@@ -46,7 +58,7 @@
 - name: Update CellServDB
   copy:
     remote_src: true
-    src: "{{ afs_viceetcdir }}/CellServDB.new"
+    src: "{{ afs_viceetcdir }}/CellServDB.ansible"
     dest: "{{ afs_viceetcdir }}/CellServDB"
     mode: 0644
     owner: root
@@ -56,7 +68,7 @@
 
 - name: Set local cell name
   copy:
-    src: "{{ inventory_dir }}/files/ThisCell"
+    content: "{{ afs_cell }}"
     dest: "{{ afs_viceetcdir }}/ThisCell"
     mode: 0644
     owner: root
