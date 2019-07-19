@@ -1,0 +1,40 @@
+---
+#
+# Example playbook to deploy an OpenAFS cell.
+#
+
+- name: Create Kerberos realm
+  hosts: afs_kdcs[0]
+  become: yes
+  any_errors_fatal: true
+  roles:
+    - openafs_krbserver
+
+- name: Install Kerberos clients
+  hosts: all
+  become: yes
+  any_errors_fatal: true
+  roles:
+    - openafs_krbclient
+
+- name: Install OpenAFS servers
+  hosts:
+    - afs_databases
+    - afs_fileservers
+  become: yes
+  any_errors_fatal: true
+  roles:
+    - openafs_server
+
+- name: Install OpenAFS clients
+  hosts: afs_clients
+  become: yes
+  any_errors_fatal: true
+  roles:
+    - openafs_client
+
+- name: Create cell volumes
+  hosts: afs_clients[0]
+  any_errors_fatal: true
+  roles:
+    - openafs_cell
