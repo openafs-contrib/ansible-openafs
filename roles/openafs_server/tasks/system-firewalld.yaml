@@ -8,3 +8,4 @@
     immediate: "{{ (ansible_facts.services['firewalld.service'].state == 'running') | ternary('yes','no') }}"
     permanent: yes
     state: enabled
+  when: "'firewalld.service' in ansible_facts.services"

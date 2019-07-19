@@ -13,3 +13,4 @@
     - 88/tcp
     - 749/udp
     - 749/tcp
+  when: "'firewalld.service' in ansible_facts.services"
