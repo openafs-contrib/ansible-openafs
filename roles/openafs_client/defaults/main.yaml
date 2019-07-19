@@ -10,7 +10,7 @@ afs_cell_description: Example
 afs_realm: EXAMPLE.COM
 
 # openafs yum repo for client packages
-afs_openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/rhel7/$basearch
+afs_openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/el7/$basearch
 
 # Installation method.
 # One of: 'package-manager', 'rsync'
