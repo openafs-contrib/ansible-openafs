@@ -13,6 +13,7 @@
       - krb5-kdc
       - krb5-admin-server
     state: present
+    update_cache: yes
 
 - name: Remove custom policy-rc file
   file:

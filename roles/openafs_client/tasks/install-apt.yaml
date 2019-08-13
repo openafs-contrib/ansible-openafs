@@ -10,6 +10,7 @@
   apt:
     state: present
     install_recommends: no
+    update_cache: yes
     name:
       - openafs-client
       - openafs-modules-dkms

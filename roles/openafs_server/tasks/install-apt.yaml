@@ -11,6 +11,7 @@
   apt:
     state: present
     install_recommends: no
+    update_cache: yes
     name:
       - openafs-fileserver
       - openafs-dbserver
