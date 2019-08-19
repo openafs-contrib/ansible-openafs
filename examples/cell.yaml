@@ -3,6 +3,13 @@
 # Example playbook to deploy an OpenAFS cell.
 #
 
+- name: Wait for guests to start
+  hosts: all
+  gather_facts: no
+  tasks:
+  - name: Wait for system to become reachable
+    wait_for_connection:
+
 - name: Create Kerberos realm
   hosts: afs_kdcs[0]
   become: yes

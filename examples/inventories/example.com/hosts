@@ -9,6 +9,7 @@ afs03.example.com
 [afs_fileservers]
 afs04.example.com
 afs05.example.com
+afs06.example.com
 
 [afs_clients]
 afs[01:06].example.com
