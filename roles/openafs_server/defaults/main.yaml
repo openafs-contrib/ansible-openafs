@@ -36,6 +36,10 @@ afs_server_build_fetch_method: "git"
 afs_server_build_git_repo: "https://github.com/openafs/openafs"
 afs_server_build_git_ref: "master"
 
+# fileserver partitions
+afs_partitions:
+  - a
+
 # fileserver variation, one of: fs, dafs
 afs_fileserver_type: dafs
 
