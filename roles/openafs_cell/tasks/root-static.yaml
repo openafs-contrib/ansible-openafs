@@ -51,6 +51,11 @@
   command: "{{ afs_vos }} addsite -server {{ afs_root_server }} -part {{ afs_root_part }} -id {{ item }}"
   register: vos_result
   changed_when: vos_result.rc == 0
+  until: >
+    vos_result.rc == 0
+    or 'RO already exists on partition' in vos_result.get('stderr','')
+  delay: 30
+  retries: 10
   failed_when: >
     vos_result.rc != 0
     and 'RO already exists on partition' not in vos_result.get('stderr','')
