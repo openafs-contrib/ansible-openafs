@@ -17,7 +17,7 @@
   file:
     state: directory
     path: "{{ afs_viceetcdir }}"
-    mode: 0644
+    mode: 0755
     owner: root
     group: root
 
