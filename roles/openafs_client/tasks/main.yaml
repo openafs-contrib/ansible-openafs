@@ -13,6 +13,14 @@
     owner: root
     group: root
 
+- name: Check cache directory
+  file:
+    state: directory
+    path: "{{ afs_viceetcdir }}"
+    mode: 0644
+    owner: root
+    group: root
+
 - include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
   when: afs_client_install_method == 'package-manager'
 
