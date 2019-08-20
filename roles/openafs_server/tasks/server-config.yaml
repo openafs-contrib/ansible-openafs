@@ -48,21 +48,27 @@
   notify:
     - Restart OpenAFS servers
 
-- name: Create BosServer configuration directory
+- name: Create the bosserver configuration directory
   file:
     state: directory
     path: "{{ afs_bosconfdir }}"
     owner: root
     group: root
 
-- name: Update BosServer server configuration
+- name: Check the bosserver configuration
   template:
-    src: "{{ item }}.j2"
-    dest: "{{ afs_bosconfdir }}/{{ item }}"
+    src: "BosConfig.new.j2"
+    dest: "{{ afs_bosconfdir }}/BosConfig.ansible"
     mode: 0644
     owner: root
     group: root
-  with_items:
-    - BosConfig.new
+  register: bosconfig
+
+- name: Update the bosserver configuration
+  copy:
+    src: "{{ afs_bosconfdir }}/BosConfig.ansible"
+    dest: "{{ afs_bosconfdir }}/BosConfig.new"
+    remote_src: yes
+  when: bosconfig.changed
   notify:
     - Restart OpenAFS servers
