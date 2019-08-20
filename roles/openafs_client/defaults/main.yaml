@@ -4,7 +4,7 @@
 afs_cell: example.com
 
 # cell organization name
-afs_cell_description: Example
+afs_desc: Example
 
 # kerberos realm
 afs_realm: EXAMPLE.COM

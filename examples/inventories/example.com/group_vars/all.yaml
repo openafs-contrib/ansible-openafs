@@ -1,0 +1,4 @@
+---
+afs_cell: example.com
+afs_desc: My example cell
+afs_realm: EXAMPLE.COM

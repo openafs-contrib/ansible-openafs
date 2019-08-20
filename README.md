@@ -134,7 +134,7 @@ source code.
 ### Role Variables
 
     afs_cell: example.com
-    afs_cell_description: Example
+    afs_desc: Example
     afs_realm:  EXAMPLE.COM
 
 The Kerberos realm name, AFS cell name, and the cell organizational
@@ -189,7 +189,7 @@ enforcing mode.
 ### Role Variables
 
     afs_cell: example.com
-    afs_cell_description: Example
+    afs_desc: Example
     afs_realm:  EXAMPLE.COM
 
 The Kerberos realm name, AFS cell name, and the cell organizational
