@@ -8,6 +8,7 @@ afs_asetkey: "/usr/sbin/asetkey"
 afs_akeyconvert: "/usr/sbin/akeyconvert"
 afs_pts: "/usr/bin/pts"
 afs_vos: "/usr/sbin/vos"
+afs_udebug: "/usr/bin/udebug"
 
 # OpenAFS Installation paths.
 afs_afsconfdir: "/usr/afs/etc"

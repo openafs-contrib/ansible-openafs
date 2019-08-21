@@ -1,0 +1,110 @@
+---
+# Bootstrap the cell by creating the first user and volume on server with the
+# localauth option.  Wait for the databases to reach quorum before attempting
+# writes (but retry just in case quorum drops after checking).  Be sure to wait
+# an additional 15 seconds after udebug claims we have a sync site, since db
+# writes will fail with ENOQUORUM errors until the first beacons are received
+# after an election.
+#
+# Much of this should probably be moved to a module.
+
+- name: Check for prdb quorum
+  shell: >
+    {% for host in groups['afs_databases'] %}
+      echo -n "{{ host }}: "; {{ afs_udebug }} {{ host }} 7002 | grep "I am"
+    {% endfor %}
+  register: prdb_udebug_result
+  changed_when: False
+  failed_when: False
+
+- name: Check for vldb quorum
+  shell: >
+    {% for host in groups['afs_databases'] %}
+      echo -n "{{ host }}: "; {{ afs_udebug }} {{ host }} 7002 | grep "I am"
+    {% endfor %}
+  register: vldb_udebug_result
+  changed_when: False
+  failed_when: False
+
+- name: Waiting for prdb quorum
+  shell: >
+    {% for host in groups['afs_databases'] %}
+      echo -n "{{ host }}: "; {{ afs_udebug }} {{ host }} 7002 | grep "I am"
+    {% endfor %}
+    sleep 15 # wait for beacons after quorum
+  register: wait_prdb_udebug_result
+  until: >
+    'I am sync site' in wait_prdb_udebug_result.get('stdout')
+  delay: 15
+  retries: 9
+  changed_when: False
+  when: >
+    'I am sync site' not in prdb_udebug_result.get('stdout')
+
+- name: Waiting for vldb quorum
+  shell: >
+    {% for host in groups['afs_databases'] %}
+      echo -n "{{ host }}: "; {{ afs_udebug }} {{ host }} 7003 | grep "I am"
+    {% endfor %}
+    sleep 15 # wait for beacons after quorum
+  register: wait_vldb_udebug_result
+  until: >
+    'I am sync site' in wait_vldb_udebug_result.get('stdout')
+  delay: 30
+  retries: 9
+  changed_when: False
+  when: >
+    'I am sync site' not in vldb_udebug_result.get('stdout')
+
+- name: Create admin user
+  command: >
+    {{ afs_pts }}
+    createuser
+    -name {{ afs_admin_principal|replace('/','.') }}
+    -localauth
+  register: pts_result
+  until: >
+    pts_result.rc == 0
+    or 'Entry for name already exists' in pts_result.get('stderr','')
+  delay: 30
+  retries: 9
+  changed_when: pts_result.rc == 0
+  failed_when: >
+    pts_result.rc != 0
+    and 'Entry for name already exists' not in pts_result.get('stderr','')
+
+- name: Add admin user to system:administrators group
+  command: >
+    {{ afs_pts }}
+    adduser {{ afs_admin_principal|replace('/','.') }}
+    system:administrators
+    -localauth
+  register: pts_result
+  until: >
+    pts_result.rc == 0
+    or 'Entry for id already exists' in pts_result.get('stderr','')
+  delay: 30
+  retries: 9
+  changed_when: pts_result.rc == 0
+  failed_when: >
+    pts_result.rc != 0
+    and 'Entry for id already exists' not in pts_result.get('stderr','')
+
+- name: Create root.afs volume
+  command: >
+    {{ afs_vos }} create
+      -server {{ afs_root_server }}
+      -partition {{ afs_root_part }}
+      -name root.afs
+      -verbose
+      -localauth
+  register: vos_result
+  until: >
+    vos_result.rc == 0 or
+    'already exists' in vos_result.get('stderr','')
+  delay: 30
+  retries: 9
+  changed_when: vos_result.rc == 0
+  failed_when: >
+    vos_result.rc != 0 and
+    'already exists' not in vos_result.get('stderr','')

@@ -78,10 +78,5 @@
     enabled: yes
   register: afs_server_service_result
 
-# The first admin user must be created with -localauth.
-- include_tasks: server-admin-user.yaml
-  when: inventory_hostname == ansible_play_hosts[0]
-
-# The root.afs volume must exist before non-dynroot clients can mount /afs.
-- include_tasks: server-root-volume.yaml
+- include_tasks: cell-bootstrap.yaml
   when: inventory_hostname == ansible_play_hosts[0]
