@@ -35,7 +35,7 @@ afs_afsd_opts: -dynroot -fakestat -afsdb
 #       - name: volume_two
 #         mtpt: test
 #
-afs_volumes:
+afs_volumes: []
 
 # Initial AFS users.
 #
@@ -43,7 +43,7 @@ afs_volumes:
 #       - name: user1
 #       - name: user2
 #
-afs_users:
+afs_users: []
 
 # Initial AFS groups.
 #
@@ -53,4 +53,4 @@ afs_users:
 #          - user1
 #          - user2
 #
-afs_groups:
+afs_groups: []
