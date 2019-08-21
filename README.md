@@ -5,9 +5,11 @@ distributed filesystem.
 
 ## Platforms Supported
 
-* Ansible 2.7
-* RHEL/CentOS 7.x
-* Ubuntu 18.x
+* OpenAFS 1.6.5+
+* Ansible 2.5+
+* OS Versions
+    * RHEL7/CentOS7
+    * Ubuntu 18.x
 
 ## Kerberos Client Role
 
