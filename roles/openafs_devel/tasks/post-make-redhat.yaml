@@ -33,6 +33,21 @@
     mode: 0755
   when: afs_devel_build_server
 
+- name: Check for akeyconvert availability
+  stat:
+    path: "{{ afs_devel_builddir }}/src/aklog/akeyconvert"
+  register: akeyconvert_st
+
+- name: Install akeyconvert to a standard location
+  copy:
+    remote_src: true
+    src: "{{ afs_devel_builddir }}/src/aklog/akeyconvert"
+    dest: "{{ afs_devel_destdir }}/{{ afs_akeyconvert }}"
+    owner: root
+    group: root
+    mode: 0755
+  when: afs_devel_build_server and akeyconvert_st.stat.exists == True
+
 - name: Install module probe script
   copy:
     src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.modules"
