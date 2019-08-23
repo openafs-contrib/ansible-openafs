@@ -142,28 +142,33 @@ source code.
 The Kerberos realm name, AFS cell name, and the cell organizational
 description.
 
-    afs_client_install_method: yum-kmod
+    # One of: 'package-manager', 'rsync'
+    afs_client_install_method: package-manager
 
 The method used to install the OpenAFS client binaries. Values are:
 
-* `yum-kmod` :  Install client packages and a pre-built kernel module
-                with yum.
-* `yum-dkms`:   Install client packages and kernel module sources with yum
-                and build the kernel module using DKMS.
-* `build`:      Build the client binaries and kernel module from source
-                code. Also, install development packages in order to
-                build the OpenAFS client binaries and kernel module.
+* `package-manager` :  Install client packages and a pre-built kernel module
+                with  the system package manager (e.g., `yum`, `apt`).
+* `rsync`:      Copy the binary files. Build the client binaries and kernel module from source
+                code if needed. Installs development packages in order to
+                build the OpenAFS client binaries and kernel module, if needed.
 
     afs_openafs_client_repourl:
 
-The URL of a yum repo containing OpenAFS client packages.
+The URL of a yum repo containing OpenAFS client packages for the `package-manager` install method.
 
-    afs_client_build_repo:
-    afs_client_build_version: master
-    afs_client_build_path: /usr/local/src/openafs-client
+    afs_client_install_dkms: no
 
-The OpenAFS git repo URL, git reference, and build scratch directory for the
-`build` installation method.
+Install kernel module with DKMS for the `package-manager` install method.
+
+    afs_client_build_force: no
+    afs_client_build_builddir: "/usr/local/src/openafs_client"
+    afs_client_build_destdir: "/tmp/openafs_client"
+    afs_client_build_fetch_method: "git"
+    afs_client_build_git_repo: "https://github.com/openafs/openafs"
+    afs_client_build_git_ref: "master"
+
+Build options for `rsync` install method.
 
     afs_cacheinfo_mount: /afs
     afs_cacheinfo_cache: /usr/vice/cache
@@ -204,23 +209,25 @@ A administrator principal and password to be used to set the AFS service key.
 The password is not defined by default and must be set on the command line (-e)
 or in a group variable, preferably encrypted with `ansible-vault`.
 
-    afs_server_install_method: yum
+    afs_server_install_method: package-manager
 
 The method used to install the OpenAFS server binaries. Values are:
 
-* `yum`:  Install OpenAFS server packages with yum.
-* `build`: Build and install server binaries from source code.
+* `package-manager`:  Install OpenAFS server packages with yum. (default)
+* `rsync`: Copy binary files. Build binares from source code if needed.
 
     afs_openafs_server_repourl:
 
 The URL of a yum repo containing OpenAFS server packages.
 
-    afs_server_build_repo:
-    afs_server_build_path: /usr/local/src/openafs-server
-    afs_server_build_version: master
+    afs_server_build_force: no
+    afs_server_build_builddir: "/usr/local/src/openafs_server"
+    afs_server_build_destdir: "/tmp/openafs_server"
+    afs_server_build_fetch_method: "git"
+    afs_server_build_git_repo: "https://github.com/openafs/openafs"
+    afs_server_build_git_ref: "master"
 
-The OpenAFS git repo URL, git reference, and build scratch directory for the
-`build` installation method.
+Build from source options for the 'rsync' install method.
 
     afs_selinux_mode: enforcing
 
