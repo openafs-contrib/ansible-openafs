@@ -15,17 +15,18 @@ distributed filesystem.
 
 ## Roles
 
-* [Kerberos client](roles/openafs-krbclient)
-* [Kerberos server](roles/openafs-krbserver)
-* [OpenAFS cell](roles/openafs-cell)
-* [OpenAFS client](roles/openafs-client)
-* [OpenAFS server](roles/openafs-server)
-* [OpenAFS development](roles/openafs-devel)
-* [OpenAFS Robot Framework test suite](roles/role-openafs-robotest)
+* [Kerberos client](roles/openafs_krbclient/README.md)
+* [Kerberos server](roles/openafs_krbserver/README.md)
+* [OpenAFS cell](roles/openafs_cell/README.md)
+* [OpenAFS client](roles/openafs_client/README.md)
+* [OpenAFS server](roles/openafs_server/README.md)
+* [OpenAFS development](roles/openafs_devel/README.md)
+* [OpenAFS Robot Framework test suite](roles/openafs_robotest/README.md)
 
 ## Playbooks
 
-* `cell.yaml` - Deploy the `example.com` cell on a set of hosts
+* `kvm.yaml` - Setup a local KVM hypervisor for testing
+* `cell.yaml` - Deploy a kerberos realm and OpenAFS cell set of machines
 
 ## License
 
