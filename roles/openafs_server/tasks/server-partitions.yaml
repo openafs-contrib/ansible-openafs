@@ -19,4 +19,3 @@
     mode: 0600
   with_items: "{{ afs_partitions }}"
   when: afs_partitions is defined
-
