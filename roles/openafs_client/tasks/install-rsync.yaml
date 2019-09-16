@@ -12,7 +12,7 @@
     afs_devel_build_server: no
     afs_devel_build_client: yes
     afs_devel_builddir: "{{ afs_client_build_builddir }}"
-    afs_devel_destdir: "{{ afs_client_build_destdir }}" 
+    afs_devel_destdir: "{{ afs_client_build_destdir }}"
     afs_devel_fetch_method: "{{ afs_client_build_fetch_method }}"
     afs_devel_git_repo: "{{ afs_client_build_git_repo }}"
     afs_devel_git_ref: "{{ afs_client_build_git_ref }}"
@@ -25,7 +25,7 @@
   register: rsync_results
   failed_when: rsync_results.rc != 0
   changed_when:
-    - rsync_results.stdout != ''
+    - rsync_results.stdout | length > 0
 
 - name: Platform specific post-install tasks
   include_tasks: "post-rsync-{{ ansible_os_family | lower }}.yaml"

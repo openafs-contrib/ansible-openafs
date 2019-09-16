@@ -26,7 +26,7 @@
   register: rsync_results
   failed_when: rsync_results.rc != 0
   changed_when:
-    - rsync_results.stdout != ''
+    - rsync_results.stdout | length > 0
 
 - name: Platform specific post-install tasks
   include_tasks: "post-rsync-{{ ansible_os_family | lower }}.yaml"

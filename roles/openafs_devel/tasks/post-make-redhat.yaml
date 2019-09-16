@@ -46,7 +46,7 @@
     owner: root
     group: root
     mode: 0755
-  when: afs_devel_build_server and akeyconvert_st.stat.exists == True
+  when: afs_devel_build_server and akeyconvert_st.stat.exists
 
 - name: Install module probe script
   copy:

@@ -13,16 +13,16 @@
 
 - name: Create temp directory for our cell-wide configuration files
   run_once: true
-  local_action:
-    module: file
+  delegate_to: localhost
+  file:
     path: "{{ afs_openafs_server_tmpdir }}/{{ afs_cell }}"
     state: directory
     mode: 0755
 
 - name: Create cell-wide configuration files
   run_once: true
-  local_action:
-    module: template
+  delegate_to: localhost
+  template:
     src: "{{ item }}.j2"
     dest: "{{ afs_openafs_server_tmpdir }}/{{ afs_cell }}/{{ item }}"
   with_items:

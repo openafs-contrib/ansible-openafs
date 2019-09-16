@@ -95,9 +95,8 @@
   with_items: "{{ afs_volumes }}"
 
 - name: Release volumes
-  command: "{{ afs_vos }} release {{ item }} -verbose"
-  with_items:
-    - root.cell
+  command: "{{ afs_vos }} release root.cell -verbose"
+  changed_when: False
 
 - name: Flush the volume cache
   command: "{{ afs_fs }} checkvolumes"

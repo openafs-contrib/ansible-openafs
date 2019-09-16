@@ -34,8 +34,9 @@
     mode: 0644
     force: no
 
-- local_action:
-    module: stat
+- name: Check CellServDB file
+  delegate_to: localhost
+  stat:
     path: "{{ afs_openafs_client_tmpdir }}/{{ afs_cell }}/CellServDB"
   register: cellservdb_st
 
