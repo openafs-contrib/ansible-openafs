@@ -1,0 +1,26 @@
+---
+galaxy_info:
+  role_name: openafs_cell
+  author: Michael Meffie
+  description: OpenAFS cell deployment
+  company: Sine Nomine Associates
+  license: license (BSD)
+  min_ansible_version: 2.7
+
+  platforms:
+    - name: EL
+      versions:
+        - 6
+        - 7
+    - name: Ubuntu
+      versions:
+        - bionic
+    - name: Debian
+      versions:
+        - jessie
+
+  galaxy_tags:
+    - system
+    - openafs
+
+dependencies: []
