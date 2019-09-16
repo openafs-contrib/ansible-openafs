@@ -1,0 +1,6 @@
+skip_list:
+  # Skip the bogus warning: 'Tasks that run when changed should likely be handlers'
+  - ANSIBLE0016
+  - '503'
+  # Skip the bogus warning about rsync.
+  - '303'

@@ -1,0 +1,3 @@
+skip_list:
+  # Skip the bogus warning about rsync.
+  - '303'
