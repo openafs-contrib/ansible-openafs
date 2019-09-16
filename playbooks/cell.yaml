@@ -1,8 +1,7 @@
 ---
 #
-# Example playbook to deploy an OpenAFS cell.
+# Playbook to deploy an OpenAFS cell.
 #
-
 - name: Wait for guests to start
   hosts: all
   gather_facts: no
