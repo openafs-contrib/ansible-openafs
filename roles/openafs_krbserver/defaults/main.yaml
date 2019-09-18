@@ -6,10 +6,10 @@ afs_realm: EXAMPLE.COM
 afs_cell: example.com
 
 # Kerberos database master password (random default)
-afs_kerberos_master_password: "{{ lookup('password', '/dev/null chars=ascii_letters') }}"
+afs_kerberos_master_password: "{{ lookup('password', '~/.ansible-openafs/afs_kerberos_master_password' | expanduser + ' chars=ascii_letters,digits,hexdigits length=32') }}"
 
 # Kerberos admin principal
 afs_admin_principal: admin
 
-# Kerberos admin password (no default)
-# afs_admin_password:
+# Kerberos admin password (random default)
+afs_admin_password: "{{ lookup('password', '~/.ansible-openafs/afs_admin_password' | expanduser + ' chars=ascii_letters,digits,hexdigits length=15') }}"

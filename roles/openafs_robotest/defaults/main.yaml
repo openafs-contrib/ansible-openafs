@@ -1,0 +1,3 @@
+---
+# Kerberos and AFS admin password (random default)
+afs_admin_password: "{{ lookup('password', '~/.ansible-openafs/afs_admin_password' | expanduser + ' chars=ascii_letters,digits,hexdigits length=15') }}"

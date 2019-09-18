@@ -8,12 +8,12 @@ afs_realm: EXAMPLE.COM
 # Kerberos and AFS admin principal
 afs_admin_principal: admin
 
-# Kerberos and AFS admin password (no default)
-# afs_admin_password:
+# Kerberos and AFS admin password (random default)
+afs_admin_password: "{{ lookup('password', '~/.ansible-openafs/afs_admin_password' | expanduser + ' chars=ascii_letters,digits,hexdigits length=15') }}"
 
 # Initial password of created principals.
-# See afs_users below. (no default)
-# afs_user_password
+# See afs_users below. (random default)
+afs_user_password: "{{ lookup('password', '~/.ansible-openafs/user-password' | expanduser + ' chars=ascii_letters,digits,hexdigits length=12') }}"
 
 # primary kerberos kdc hostname
 afs_kdc: "{{ groups['afs_kdcs'][0] }}"
