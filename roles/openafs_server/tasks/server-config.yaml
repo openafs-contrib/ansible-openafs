@@ -9,7 +9,7 @@
 
 - name: Update cell configuration
   copy:
-    src: "{{ afs_openafs_server_tmpdir }}/{{ afs_cell }}/{{ item }}"
+    src: "{{ afs_local_dir }}/{{ item }}"
     dest: "{{ afs_afsconfdir }}/{{ item }}"
     mode: 0644
     owner: root

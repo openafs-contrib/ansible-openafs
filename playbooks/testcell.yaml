@@ -9,6 +9,20 @@
   - name: Wait for system to become reachable
     wait_for_connection:
 
+- name: Create Kerberos realm
+  hosts: afs_kdcs[0]
+  become: yes
+  any_errors_fatal: true
+  roles:
+    - openafs_krbserver
+
+- name: Install Kerberos clients
+  hosts: all
+  become: yes
+  any_errors_fatal: true
+  roles:
+    - openafs_krbclient
+
 - name: Install OpenAFS servers
   hosts:
     - afs_databases
@@ -37,3 +51,9 @@
       - name: test
   roles:
     - openafs_cell
+
+- name: Install tests
+  hosts: afs_robotest
+  any_errors_fatal: true
+  roles:
+    - openafs_robotest

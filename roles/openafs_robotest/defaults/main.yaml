@@ -1,3 +1,61 @@
 ---
-# Kerberos and AFS admin password (random default)
-afs_admin_password: "{{ lookup('password', '~/.ansible-openafs/afs_admin_password' | expanduser + ' chars=ascii_letters,digits,hexdigits length=15') }}"
+# Cell and realm name.
+afs_cell: example.com
+afs_realm: EXAMPLE.COM
+
+# Path to the locally generated files.
+afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
+
+# Kerberos and AFS admin password (read from a local file by default).
+afs_admin_password: "{{ lookup('password', afs_local_dir+'/afs_admin_password chars=ascii_letters,digits,hexdigits length=15') }}"
+
+# Install a webserver to publish test results; yes or no
+afs_robotest_install_webserver: yes
+
+# Version of openafs-robotest to be installed.
+afs_robotest_version: master
+
+# Username to run the tests.
+afs_robotest_user: "{{ ansible_user_id }}"
+
+# Test suite top level directory.
+afs_robotest_home: "/home/{{ afs_robotest_user }}/openafs-robotest"
+
+# Test config file directory.
+afs_robotest_confdir: "/home/{{ afs_robotest_user }}/.openafs-robotest"
+
+# Test exclusion tags.
+afs_robotest_exclude_tags:
+  - bug
+  - slow
+  - rogue-avoidance
+
+# Output logging level.
+afs_robotest_loglevel: INFO
+
+# Report output location.
+afs_robotest_outputdir: "/home/{{ afs_robotest_user }}/public_html/openafs-robotest-output"
+
+# The test fileserver(s).
+afs_robotest_fileservers: "{{ groups['afs_fileservers'][0] }}"
+
+# Distribution paths; one of: 'transarc', 'package'
+afs_robotest_dist: "package"
+
+# Custom distribution paths. These may be set individually to override
+# the paths specified by the "distribution" vars in vars/dist.
+#
+# afs_kinit:
+# afs_aklog:
+# afs_asetkey:
+# afs_akeyconvert:
+# afs_bos:
+# afs_fs:
+# afs_klog_krb5:
+# afs_pagsh:
+# afs_pts:
+# afs_rxdebug:
+# afs_tokens:
+# afs_udebug:
+# afs_unlog:
+# afs_vos:

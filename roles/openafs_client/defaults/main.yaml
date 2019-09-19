@@ -9,7 +9,8 @@ afs_desc: Example
 # kerberos realm
 afs_realm: EXAMPLE.COM
 
-afs_openafs_client_tmpdir: /tmp/ansible/openafs
+# Path to locally generated files.
+afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
 
 # openafs yum repo for client packages
 afs_openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/el7/$basearch

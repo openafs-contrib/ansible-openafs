@@ -5,11 +5,14 @@ afs_realm: EXAMPLE.COM
 # AFS cell name for the service key.
 afs_cell: example.com
 
+# Path to locally generated files.
+afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
+
 # Kerberos database master password (random default)
-afs_kerberos_master_password: "{{ lookup('password', '~/.ansible-openafs/afs_kerberos_master_password' | expanduser + ' chars=ascii_letters,digits,hexdigits length=32') }}"
+afs_kerberos_master_password: "{{ lookup('password', afs_local_dir+'/afs_kerberos_master_password chars=ascii_letters,digits,hexdigits length=32') }}"
 
 # Kerberos admin principal
 afs_admin_principal: admin
 
 # Kerberos admin password (random default)
-afs_admin_password: "{{ lookup('password', '~/.ansible-openafs/afs_admin_password' | expanduser + ' chars=ascii_letters,digits,hexdigits length=15') }}"
+afs_admin_password: "{{ lookup('password', afs_local_dir+'/afs_admin_password chars=ascii_letters,digits,hexdigits length=15') }}"

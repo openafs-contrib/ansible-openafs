@@ -5,15 +5,18 @@ afs_cell: example.com
 # kerberos realm name
 afs_realm: EXAMPLE.COM
 
+# Path to locally generated files.
+afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
+
 # Kerberos and AFS admin principal
 afs_admin_principal: admin
 
 # Kerberos and AFS admin password (random default)
-afs_admin_password: "{{ lookup('password', '~/.ansible-openafs/afs_admin_password' | expanduser + ' chars=ascii_letters,digits,hexdigits length=15') }}"
+afs_admin_password: "{{ lookup('password', afs_local_dir+'/afs_admin_password chars=ascii_letters,digits,hexdigits length=15') }}"
 
 # Initial password of created principals.
 # See afs_users below. (random default)
-afs_user_password: "{{ lookup('password', '~/.ansible-openafs/user-password' | expanduser + ' chars=ascii_letters,digits,hexdigits length=12') }}"
+afs_user_password: "{{ lookup('password', afs_local_dir+'/afs_user_password chars=ascii_letters,digits,hexdigits length=12') }}"
 
 # primary kerberos kdc hostname
 afs_kdc: "{{ groups['afs_kdcs'][0] }}"
@@ -35,7 +38,7 @@ afs_afsd_opts: -dynroot -fakestat -afsdb
 #       - name: volume_two
 #         mtpt: test
 #
-afs_volumes: []
+#afs_volumes: []
 
 # Initial AFS users.
 #

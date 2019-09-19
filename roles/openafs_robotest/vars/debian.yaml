@@ -4,20 +4,5 @@ afs_kadmin: "/usr/bin/kadmin"
 afs_kdestroy: "/usr/bin/kdestroy"
 afs_kinit: "/usr/bin/kinit"
 
-# OpenAFS commands.
-afs_aklog: "/usr/bin/aklog"
-afs_asetkey: "/usr/sbin/asetkey"
-afs_akeyconvert: "/usr/sbin/akeyconvert"
-afs_bos: "/usr/bin/bos"
-afs_fs: "/usr/bin/fs"
-afs_klog_krb5: "/usr/bin/klog.krb5"
-afs_pagsh: "/usr/bin/pagsh"
-afs_pts: "/usr/bin/pts"
-afs_rxdebug: "/usr/bin/rxdebug"
-afs_tokens: "/usr/bin/tokens"
-afs_udebug: "/usr/bin/udebug"
-afs_unlog: "/usr/bin/unlog"
-afs_vos: "/usr/bin/vos"
-
 # Other commands.
 afs_gfind: "/usr/bin/find"

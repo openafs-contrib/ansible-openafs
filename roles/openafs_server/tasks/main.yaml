@@ -2,20 +2,22 @@
 - name: Gather variables for each operating system
   include_vars: "{{ ansible_os_family|lower }}.yaml"
 
-- name: Create temp directory for our cell-wide configuration files
+- name: Make local directory
   run_once: true
   delegate_to: localhost
+  become: no
   file:
-    path: "{{ afs_openafs_server_tmpdir }}/{{ afs_cell }}"
+    path: "{{ afs_local_dir }}"
     state: directory
     mode: 0755
 
-- name: Create cell-wide configuration files
+- name: Generate cell configuration files
   run_once: true
   delegate_to: localhost
+  become: no
   template:
     src: "{{ item }}.j2"
-    dest: "{{ afs_openafs_server_tmpdir }}/{{ afs_cell }}/{{ item }}"
+    dest: "{{ afs_local_dir }}/{{ item }}"
   with_items:
     - CellServDB
     - ThisCell

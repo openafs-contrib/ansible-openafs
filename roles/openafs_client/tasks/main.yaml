@@ -37,12 +37,12 @@
 - name: Check CellServDB file
   delegate_to: localhost
   stat:
-    path: "{{ afs_openafs_client_tmpdir }}/{{ afs_cell }}/CellServDB"
+    path: "{{ afs_local_dir }}/CellServDB"
   register: cellservdb_st
 
 - name: Update local cell configuration file (CellServDB.local)
   copy:
-    src: "{{ afs_openafs_client_tmpdir }}/{{ afs_cell }}/CellServDB"
+    src: "{{ afs_local_dir }}/CellServDB"
     dest: "{{ afs_viceetcdir }}/CellServDB.local"
     mode: 0644
     owner: root

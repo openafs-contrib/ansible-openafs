@@ -9,14 +9,14 @@ afs_desc: Example
 # kerberos realm name
 afs_realm: EXAMPLE.COM
 
+# Location of generated files.
+afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
+
 # Kerberos and AFS admin principal
 afs_admin_principal: admin
 
 # Kerberos and AFS admin password (random default)
-afs_admin_password: "{{ lookup('password', '~/.ansible-openafs/afs_admin_password' | expanduser + ' chars=ascii_letters,digits,hexdigits length=15') }}"
-
-# Location of generated files.
-afs_openafs_server_tmpdir: /tmp/ansible/openafs
+afs_admin_password: "{{ lookup('password', afs_local_dir+'/afs_admin_password chars=ascii_letters,digits,hexdigits length=15') }}"
 
 # openafs yum repo for server packages
 afs_openafs_server_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/el7/$basearch

@@ -1,0 +1,9 @@
+<IfModule mod_userdir.c>
+    UserDir "public_html"
+</IfModule>
+
+<Directory "/home/*/public_html">
+    AllowOverride FileInfo AuthConfig Limit Indexes
+    Options MultiViews Indexes SymLinksIfOwnerMatch IncludesNoExec
+    Require method GET POST OPTIONS
+</Directory>

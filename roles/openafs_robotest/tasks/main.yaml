@@ -2,36 +2,61 @@
 - name: Gather variables for each operating system
   include_vars: "{{ ansible_os_family|lower }}.yaml"
 
-- name: Install packages
-  include_tasks: "{{ role_path }}/tasks/{{ ansible_os_family|lower }}/install-packages.yaml"
+- name: Gather OpenAFS installation paths
+  include_vars: "dist/{{ ansible_os_family|lower }}.yaml"
+  when: afs_robotest_dist == "package"
 
-- name: Create test user
+- name: Gather OpenAFS installation paths
+  include_vars: "dist/{{ afs_robotest_dist|lower }}.yaml"
+  when: afs_robotest_dist != "package"
+
+- name: Install packages
+  include_tasks: "{{ role_path }}/tasks/install-packages-{{ ansible_os_family|lower }}.yaml"
+
+- name: Install web server
+  include_tasks: "{{ role_path }}/tasks/webserver-{{ ansible_os_family|lower }}.yaml"
+  when: afs_robotest_install_webserver|bool
+
+- name: Create tester user account
   become: yes
   user:
-    name: afsrobot
+    name: "{{ afs_robotest_user }}"
     shell: /bin/bash
+
+- name: Install Robot Framework OpenAFS library
+  become: yes
+  pip:
+    name: robotframework-openafslibrary
+    state: present
 
 - name: Download OpenAFS test cases
   become: yes
-  become_user: afsrobot
+  become_user: "{{ afs_robotest_user }}"
   git:
     repo: https://github.com/openafs-contrib/openafs-robotest.git
-    dest: /home/afsrobot/openafs-robotest
-    version: ansiblize
+    dest: "{{ afs_robotest_home }}"
+    version: "{{ afs_robotest_version }}"
 
 - name: Create config directory
   become: yes
-  become_user: afsrobot
+  become_user: "{{ afs_robotest_user }}"
   file:
-    path: /home/afsrobot/openafs-robotest/config/example.com
+    path: "{{ afs_robotest_confdir }}"
     state: directory
 
 - name: Install config files
   become: yes
-  become_user: afsrobot
+  become_user: "{{ afs_robotest_user }}"
   template:
     src: "{{ item }}.j2"
-    dest: "/home/afsrobot/openafs-robotest/config/example.com/{{ item }}"
+    dest: "{{ afs_robotest_confdir }}/{{ item }}"
   with_items:
-    - robot.args
-    - variables.py
+    - robotrc
+    - local.py
+
+- name: Install shell script to run tests
+  become: yes
+  template:
+    src: run-openafs-robotest.sh.j2
+    dest: /usr/bin/run-openafs-robotest.sh
+    mode: 0755
