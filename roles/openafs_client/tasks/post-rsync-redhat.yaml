@@ -1,4 +1,10 @@
 ---
+
+# Patch up the contexts for the directories and files
+# that were created while in unconfined_t
+- name: Restore directory contexts for selinux
+  command: restorecon -ir /lib/modules
+
 - name: Install module probe script
   copy:
     src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.modules"

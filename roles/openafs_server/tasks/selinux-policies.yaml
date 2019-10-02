@@ -5,6 +5,7 @@
       - policycoreutils-python
       - setools-console
     state: present
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version < "8"
 
 - name: Test for presence of openafs module in SELinux
   shell: semodule -lstandard | grep -E '^openafs\s+{{ afs_selinux_openafs_version }}$'

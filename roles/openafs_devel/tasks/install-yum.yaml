@@ -35,3 +35,11 @@
     name:
       - kernel-devel
   when: afs_devel_build_client | bool
+
+- name: Install kernel devel packages
+  yum:
+    state: present
+    name:
+      - elfutils-devel
+  when: afs_devel_build_client | bool and (ansible_distribution == "CentOS" and ansible_distribution_major_version >= "8")
+
