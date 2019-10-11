@@ -42,4 +42,3 @@
     name:
       - elfutils-devel
   when: afs_devel_build_client | bool and (ansible_distribution == "CentOS" and ansible_distribution_major_version >= "8")
-
