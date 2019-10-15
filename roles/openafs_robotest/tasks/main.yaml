@@ -23,12 +23,6 @@
     name: "{{ afs_robotest_user }}"
     shell: /bin/bash
 
-- name: Install Robot Framework OpenAFS library
-  become: yes
-  pip:
-    name: robotframework-openafslibrary
-    state: present
-
 - name: Download OpenAFS test cases
   become: yes
   become_user: "{{ afs_robotest_user }}"
