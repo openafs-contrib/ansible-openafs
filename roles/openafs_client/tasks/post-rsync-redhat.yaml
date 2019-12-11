@@ -37,6 +37,8 @@
 - name: Reload the systemd daemon
   systemd:
     daemon_reload: yes
+  # Older RH/CentOS/Fedora are not systemd
+  when: ansible_service_mgr == "systemd"
 
 - name: Install startup options config file
   copy:

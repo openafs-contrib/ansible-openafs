@@ -58,10 +58,12 @@
   copy:
     src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-server.service"
     dest: "{{ afs_devel_destdir }}/usr/lib/systemd/system/openafs-server.service"
-  when: afs_devel_build_server
+  # Older RH/CentOS/Fedora are not systemd
+  when: ansible_service_mgr == "systemd" and afs_devel_build_server
 
 - name: Install client systemd unit file
   copy:
     src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.service"
     dest: "{{ afs_devel_destdir }}/usr/lib/systemd/system/openafs-client.service"
-  when: afs_devel_build_client
+  # Older RH/CentOS/Fedora are not systemd
+  when: ansible_service_mgr == "systemd" and afs_devel_build_client
