@@ -1,0 +1,69 @@
+---
+- name: Remove staged server files
+  file:
+    path: "{{ afs_devel_destdir }}/usr/afs"
+    state: absent
+  when: not afs_devel_build_server
+
+- name: Create extra directories for server files
+  file:
+    state: directory
+    path: "{{ afs_devel_destdir }}/{{ item }}"
+  with_items:
+    - "{{ afs_asetkey | dirname }}"
+    - "/usr/lib/systemd/system"
+  when: afs_devel_build_server
+
+- name: Create extra directories for client files
+  file:
+    state: directory
+    path: "{{ afs_devel_destdir }}/{{ item }}"
+  with_items:
+    - "/etc/sysconfig"
+    - "/usr/lib/systemd/system"
+  when: afs_devel_build_client
+
+- name: Install asetkey to a standard location
+  copy:
+    remote_src: true
+    src: "{{ afs_devel_builddir }}/src/aklog/asetkey"
+    dest: "{{ afs_devel_destdir }}/{{ afs_asetkey }}"
+    owner: root
+    group: root
+    mode: 0755
+  when: afs_devel_build_server
+
+- name: Check for akeyconvert availability
+  stat:
+    path: "{{ afs_devel_builddir }}/src/aklog/akeyconvert"
+  register: akeyconvert_st
+
+- name: Install akeyconvert to a standard location
+  copy:
+    remote_src: true
+    src: "{{ afs_devel_builddir }}/src/aklog/akeyconvert"
+    dest: "{{ afs_devel_destdir }}/{{ afs_akeyconvert }}"
+    owner: root
+    group: root
+    mode: 0755
+  when: afs_devel_build_server and akeyconvert_st.stat.exists
+
+- name: Install module probe script
+  copy:
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.modules"
+    dest: "{{ afs_devel_destdir }}/etc/sysconfig/openafs"
+  when: afs_devel_build_client
+
+- name: Install server systemd unit file
+  copy:
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-server.service"
+    dest: "{{ afs_devel_destdir }}/usr/lib/systemd/system/openafs-server.service"
+  # Older RH/CentOS/Fedora are not systemd
+  when: ansible_service_mgr == "systemd" and afs_devel_build_server
+
+- name: Install client systemd unit file
+  copy:
+    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.service"
+    dest: "{{ afs_devel_destdir }}/usr/lib/systemd/system/openafs-client.service"
+  # Older RH/CentOS/Fedora are not systemd
+  when: ansible_service_mgr == "systemd" and afs_devel_build_client
