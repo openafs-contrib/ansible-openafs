@@ -3,7 +3,8 @@
   yum:
     name: epel-release
     state: present
-    update_cache: yes
+  # EPEL makes no sense for Fedora
+  when: ansible_distribution != "Fedora"
 
 - name: Install development packages
   yum:
