@@ -24,3 +24,18 @@ afs_server_service: openafs-fileserver
 
 # OS dependent variables
 afs_selinux: no
+
+# Build default options
+_afs_server_configure_opts: >
+  --prefix=
+  --libdir=/usr/lib64
+  --bindir=/usr/bin
+  --sbindir=/usr/sbin
+  --disable-strip-binaries
+  --enable-debug
+  --with-linux-kernel-packaging
+  --disable-kernel-module
+  --with-krb5
+  --with-swig
+
+_afs_server_configure_env: {}
