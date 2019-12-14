@@ -14,7 +14,7 @@
   command: /sbin/ldconfig
   changed_when: false
 
-- name: Update module depenencies
+- name: Update module dependencies
   command: depmod -a
   changed_when: false
 
