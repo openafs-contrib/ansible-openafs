@@ -47,7 +47,7 @@
 
 - name: Setup SELinux policies
   include_tasks: selinux-policies.yaml
-  when: afs_selinux|bool
+  when: afs_selinux|bool and afs_selinux_mode != 'disabled'
 
 - include_tasks: server-partitions.yaml
 
@@ -62,7 +62,7 @@
 - include_tasks: server-key.yaml
 
 - include_tasks: selinux-contexts.yaml
-  when: afs_selinux|bool
+  when: afs_selinux|bool and afs_selinux_mode != 'disabled'
 
 - name: Start the OpenAFS servers
   service:
