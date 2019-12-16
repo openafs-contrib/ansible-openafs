@@ -13,6 +13,7 @@ ExecStartPre=/bin/sed -n 'w/usr/vice/etc/CellServDB' /usr/vice/etc/CellServDB.lo
 ExecStartPre=/bin/chmod 0644 /usr/vice/etc/CellServDB
 ExecStartPre=/sbin/modprobe openafs
 ExecStart=/usr/sbin/afsd $AFSD_ARGS
+# fixme: should be {{ afs_mountpoint }} XXX
 ExecStop=/bin/umount /afs
 ExecStop=/usr/sbin/afsd -shutdown
 ExecStop=/sbin/rmmod openafs
