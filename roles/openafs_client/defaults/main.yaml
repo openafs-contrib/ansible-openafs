@@ -9,6 +9,9 @@ afs_desc: Example
 # kerberos realm
 afs_realm: EXAMPLE.COM
 
+# afs mountpoint
+afs_mountpoint: /afs
+
 # Path to locally generated files.
 afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
 
@@ -34,7 +37,7 @@ afs_client_build_git_ref: "master"
 afs_openafs_kmod_prefix: 1
 
 # afs filesystem mount point
-afs_cacheinfo_mount: /afs
+afs_cacheinfo_mount: "{{ afs_mountpoint }}"
 
 # afs cache mount point
 afs_cacheinfo_cache: /usr/vice/cache

@@ -66,7 +66,7 @@
 - name: Mount volumes
   command: >
     {{ afs_fs }} mkmount
-    -dir /afs/.{{ afs_cell }}/{{ item.get('mtpt', item.name) }}
+    -dir {{ afs_mountpoint }}/.{{ afs_cell }}/{{ item.get('mtpt', item.name) }}
     -vol {{ item.name }}
     -cell {{ afs_cell }}
   register: fs_result
