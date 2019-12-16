@@ -26,7 +26,7 @@
       or 'You can not change a backup or readonly volume' in fs_result.get('stderr','') )
 
 - name: Mount root.cell read-write volume
-  command: "{{ afs_fs }} mkmount -dir /afs/.{{ cell }} -vol root.cell -cell {{ afs_cell }} -rw"
+  command: "{{ afs_fs }} mkmount -dir /afs/.{{ afs_cell }} -vol root.cell -cell {{ afs_cell }} -rw"
   register: fs_result
   changed_when: fs_result.rc == 0
   failed_when: >
