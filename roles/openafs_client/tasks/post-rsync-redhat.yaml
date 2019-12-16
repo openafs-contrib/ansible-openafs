@@ -18,6 +18,16 @@
   command: depmod -a
   changed_when: false
 
+- name: Check afs filesystem mount point
+  # We can't use the mount module to do this because it only checks
+  # /etc/fstab; /afs is never there.
+  command: "/usr/bin/mount --fake --verbose {{ afs_cacheinfo_mount }}"
+  args:
+    warn: no
+  ignore_errors: yes
+  # mount_result.rc == 0 if already mounted
+  register: mount_result
+
 - name: Make afs filesystem mount point
   file:
     path: /afs
@@ -25,6 +35,8 @@
     mode: 0755
     owner: root
     group: root
+  # skip this step if it's already mounted
+  when: mount_result.rc != 0
 
 - name: Make cache directory
   file:
