@@ -1,0 +1,19 @@
+namespace: openafs_contrib
+name: ansible_openafs
+version: 0.9.0
+readme: README.md
+authors:
+- Michael Meffie <mmeffie@sinenomine.net>
+- Cheyenne Wills <cwills@sinenomine.net>
+- Mark Vitale <mvitale@sinenomine.net>
+
+description: A collection of Ansible roles and playbooks to deploy the OpenAFS distributed filesystem.
+license: BSD-2-Clause
+license_file: 'LICENSE'
+tags:
+  - openafs
+dependencies: {}
+repository: 'https://github.com/openafs-contrib/ansible-openafs'
+# documentation: http://docs.example.com
+# homepage: http://example.com
+# issues: http://example.com/issue/tracker
