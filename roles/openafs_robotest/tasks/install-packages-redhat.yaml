@@ -1,4 +1,13 @@
 ---
+- name: Install Setools
+  become: yes
+  yum:
+    name:
+      - policycoreutils-python
+      - setools-console
+    state: present
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version < "8"
+
 - name: Add epel yum repo
   become: yes
   yum:
