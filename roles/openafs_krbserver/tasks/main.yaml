@@ -4,7 +4,7 @@
 
 - name: CentOS 6 exceptions to the RH conventions
   include_vars: "centos6.yaml"
-  when: ansible_distribution == "CentOS" and ansible_distribution_major_version >= 6
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version >= "6"
 
 - include_tasks: "system-{{ afs_firewall }}.yaml"
   when: afs_firewall is defined
