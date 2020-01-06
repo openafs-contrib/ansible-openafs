@@ -9,3 +9,5 @@ afs_gfind: "/usr/bin/find"
 
 # Platform
 afs_robotest_webserver: httpd
+
+afs_selinux: yes
