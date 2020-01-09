@@ -1,17 +1,23 @@
+#
+# Example ansible configuration. Copy this file to ~/.ansible.cfg or
+# /etc/ansible.cfg and change as needed.
+#
+
 [defaults]
 #
 # Inventory to use unless specified by -i.
 #
-# The following shows the path to an example inventory in the repo. Please
-# create your site inventory in a path outside this repo.
+# The following shows the path to an example inventory in the repo.  The path
+# is relative to this ansible.cfg file! Please create your site inventory in a
+# path outside this repo.
 #
-#inventory = ./inventories/example.com/hosts
+#inventory = ~/inventories/example.com/hosts
 
 #
-# Location for our roles. This path assumes your current directory is
-# the "playbooks" directory in the repo.
+# Location for our roles. This path is relative to this ansible.cfg
+# file, not the current directory!
 #
-roles_path = ../roles
+#roles_path = ~/ansible-openafs/roles
 
 #
 # ansible-playbook output formatting.

@@ -1,3 +1,8 @@
+#
+# Example configuration file for `virt-lab` to create guests
+# with cloud-init images.  Copy this file to ~/virt-lab.cfg
+# and edit as needed.
+#
 [.global]
 domain = example.com
 namefmt = afs{guest:02d}
@@ -5,7 +10,10 @@ distro = centos7
 playbook = testcell.yaml
 testhost = afs01.example.com
 testsuite = tests
-postcreate = ./testcell.sh
+postcreate =
+  echo "Running postcreate script for {name}" &&
+  echo ansible-playbook -i {scriptdir}/inventory.sh {local_playbooks} {playbook} &&
+  echo ssh {testhost} run-openafs-robotest.sh {testsuite}
 
 [afs-test-1]
 desc = OpenAFS test on single server
