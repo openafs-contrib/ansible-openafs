@@ -1,0 +1,43 @@
+---
+- name: Install the apache httpd service
+  become: yes
+  yum:
+    name: httpd
+    state: present
+  #notify: - Start web server
+
+- name: Enable httpd_enable_homedirs SELinux boolean
+  become: yes
+  seboolean:
+    name: httpd_enable_homedirs
+    state: yes
+    persistent: yes
+
+- name: Make home directory readable
+  become: yes
+  file:
+    state: directory
+    path: "/home/{{ afs_robotest_user }}"
+    owner: "{{ afs_robotest_user }}"
+    mode: "0755"
+
+- name: Enable httpd mod_userdir
+  become: yes
+  template:
+    src: userdir.conf.j2
+    dest: /etc/httpd/conf.d/userdir.conf
+  notify:
+    - Reload web server
+
+- name: Install root index.html
+  become: yes
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+
+- name: Start the apache httpd service
+  become: yes
+  service:
+    name: httpd
+    state: started
+    enabled: yes

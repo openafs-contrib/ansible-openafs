@@ -1,6 +1,12 @@
 ---
 - name: Gather variables for each operating system
-  include_vars: "{{ ansible_os_family|lower }}.yaml"
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "../vars/{{ ansible_distribution|lower }}{{ ansible_distribution_version }}.yaml"
+    - "../vars/{{ ansible_distribution|lower }}{{ ansible_distribution_major_version }}.yaml"
+    - "../vars/{{ ansible_distribution|lower }}.yaml"
+    - "../vars/{{ ansible_os_family|lower }}.yaml"
+    - "../vars/defaults.yaml"
 
 - name: Make local directory
   run_once: true

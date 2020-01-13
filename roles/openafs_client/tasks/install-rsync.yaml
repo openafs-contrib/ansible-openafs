@@ -27,6 +27,12 @@
   changed_when:
     - rsync_results.stdout | length > 0
 
-- name: Platform specific post-install tasks
-  include_tasks: "post-rsync-{{ ansible_os_family | lower }}.yaml"
+- name: Platform specific post-rsync tasks
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "post-rsync/{{ ansible_distribution|lower }}{{ ansible_distribution_version }}.yaml"
+    - "post-rsync/{{ ansible_distribution|lower }}{{ ansible_distribution_major_version }}.yaml"
+    - "post-rsync/{{ ansible_distribution|lower }}.yaml"
+    - "post-rsync/{{ ansible_os_family|lower }}.yaml"
+    - "unknown.yaml"
   when: rsync_results.changed

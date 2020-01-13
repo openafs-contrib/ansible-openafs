@@ -1,4 +1,9 @@
 ---
+# Post rsync install tasks for generic debian.
+#
+# XXX: Debian doesn't have a /etc/sysconf/ directory. Change this to
+#      be debian-like.
+#
 - name: Update shared library cache
   command: /sbin/ldconfig
   changed_when: false
@@ -6,14 +11,12 @@
 - name: Reload systemd
   systemd:
     daemon_reload: yes
-  # Older RH/CentOS/Fedora are not systemd
-  when: ansible_service_mgr == "systemd"
 
 - name: Install startup options config file
   copy:
     # This file has sections for the client and server.
     # Use force:no to avoid clobbering if already installed by the client.
-    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs.sysconfig"
+    src: debian/openafs.sysconfig
     dest: /etc/sysconfig/openafs
     force: no
 

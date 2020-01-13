@@ -1,4 +1,7 @@
 ---
+#
+# Post rsync tasks for CentOS 6.x
+#
 
 # Patch up the contexts for the directories and files
 # that were created while in unconfined_t
@@ -7,7 +10,7 @@
 
 - name: Install module probe script
   copy:
-    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs-client.modules"
+    src: centos6/openafs-client.modules
     dest: /etc/sysconfig/openafs
 
 - name: Update shared library cache
@@ -25,7 +28,6 @@
   args:
     warn: no
   ignore_errors: yes
-  # mount_result.rc == 0 if already mounted
   register: mount_result
 
 - name: Make afs filesystem mount point
@@ -35,7 +37,6 @@
     mode: 0755
     owner: root
     group: root
-  # skip this step if it's already mounted
   when: mount_result.rc != 0
 
 - name: Make cache directory
@@ -46,17 +47,11 @@
     owner: root
     group: root
 
-- name: Reload the systemd daemon
-  systemd:
-    daemon_reload: yes
-  # Older RH/CentOS/Fedora are not systemd
-  when: ansible_service_mgr == "systemd"
-
 - name: Install startup options config file
   copy:
     # This file has sections for the client and server.
     # Use force:no to avoid clobbering if already installed by the client.
-    src: "{{ role_path }}/files/{{ ansible_os_family|lower }}/openafs.sysconfig"
+    src: centos6/openafs.sysconfig"
     dest: /etc/sysconfig/openafs
     force: no
 

@@ -1,0 +1,23 @@
+[Unit]
+Description=OpenAFS Client Service
+Wants=network-online.target
+After=syslog.target network-online.target
+Before=remote-fs.target
+
+[Service]
+Type=forking
+RemainAfterExit=true
+EnvironmentFile=/etc/sysconfig/openafs
+ExecStartPre=/bin/bash -c "fs sysname > /dev/null 2>/dev/null; test $? -ne 0 || (echo AFS client appears to be running -- not starting && exit 1)"
+ExecStartPre=/bin/sed -n 'w/usr/vice/etc/CellServDB' /usr/vice/etc/CellServDB.local /usr/vice/etc/CellServDB.dist
+ExecStartPre=/bin/chmod 0644 /usr/vice/etc/CellServDB
+ExecStartPre=/sbin/modprobe openafs
+ExecStart=/usr/sbin/afsd $AFSD_ARGS
+# fixme: should be {{ afs_mountpoint }} XXX
+ExecStop=/bin/umount /afs
+ExecStop=/usr/sbin/afsd -shutdown
+ExecStop=/sbin/rmmod openafs
+KillMode=none
+
+[Install]
+WantedBy=multi-user.target remote-fs.target

@@ -1,6 +1,6 @@
 ---
-- name: Start web server
+- name: Reload web server
   become: yes
   service:
     name: "{{ afs_robotest_webserver }}"
-    state: started
+    state: reloaded

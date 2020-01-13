@@ -4,7 +4,13 @@
 #
 
 - name: Gather variables for each operating system
-  include_vars: "{{ ansible_os_family|lower }}.yaml"
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "../vars/{{ ansible_distribution|lower }}{{ ansible_distribution_version }}.yaml"
+    - "../vars/{{ ansible_distribution|lower }}{{ ansible_distribution_major_version }}.yaml"
+    - "../vars/{{ ansible_distribution|lower }}.yaml"
+    - "../vars/{{ ansible_os_family|lower }}.yaml"
+    - "../vars/defaults.yaml"
 
 - name: Install development tools and libraries
   include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
@@ -65,4 +71,10 @@
   changed_when: false
 
 - name: Finalize destination directory
-  include_tasks: "post-make-{{ ansible_os_family|lower }}.yaml"
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "post-build/{{ ansible_distribution|lower }}{{ ansible_distribution_version }}.yaml"
+    - "post-build/{{ ansible_distribution|lower }}{{ ansible_distribution_major_version }}.yaml"
+    - "post-build/{{ ansible_distribution|lower }}.yaml"
+    - "post-build/{{ ansible_os_family|lower }}.yaml"
+    - "unknown.yaml"

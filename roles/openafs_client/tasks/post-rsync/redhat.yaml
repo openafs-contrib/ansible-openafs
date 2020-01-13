@@ -1,0 +1,69 @@
+---
+#
+# Post rsync tasks for generic RedHat family os.
+#
+
+# Patch up the contexts for the directories and files
+# that were created while in unconfined_t
+- name: Restore directory contexts for selinux
+  command: restorecon -ir /lib/modules
+
+- name: Install module probe script
+  copy:
+    src: redhat/openafs-client.modules
+    dest: /etc/sysconfig/openafs
+
+- name: Update shared library cache
+  command: /sbin/ldconfig
+  changed_when: false
+
+- name: Update module dependencies
+  command: depmod -a
+  changed_when: false
+
+- name: Check afs filesystem mount point
+  # We can't use the mount module to do this because it only checks
+  # /etc/fstab; /afs is never there.
+  command: "/usr/bin/mount --fake --verbose {{ afs_mountpoint }}"
+  args:
+    warn: no
+  ignore_errors: yes
+  register: mount_result
+
+- name: Make afs filesystem mount point
+  file:
+    path: "{{ afs_mountpoint }}"
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+  when: mount_result.rc != 0
+
+- name: Make cache directory
+  file:
+    state: directory
+    path: "{{ afs_afscachedir }}"
+    mode: 0700
+    owner: root
+    group: root
+
+- name: Reload the systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Install startup options config file
+  copy:
+    # This file has sections for the client and server.
+    # Use force:no to avoid clobbering if already installed by the client.
+    src: redhat/openafs.sysconfig
+    dest: /etc/sysconfig/openafs
+    force: no
+
+- name: Set client startup options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: "^AFSD_ARGS="
+    line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS client

@@ -4,7 +4,6 @@
   yum:
     name: httpd
     state: present
-  #notify: - Start web server
 
 - name: Enable httpd_enable_homedirs SELinux boolean
   become: yes
@@ -26,14 +25,15 @@
   template:
     src: userdir.conf.j2
     dest: /etc/httpd/conf.d/userdir.conf
-  #notify: reload-http
+  notify:
+    - Reload web server
 
 - name: Install root index.html
   become: yes
   template:
     src: index.html.j2
     dest: /var/www/html/index.html
-    #force: no
+    force: no
 
 - name: Start the apache httpd service
   become: yes

@@ -1,10 +1,12 @@
 ---
 - name: Gather variables for each operating system
-  include_vars: "{{ ansible_os_family|lower }}.yaml"
-
-- name: CentOS 6 exceptions to the RH conventions
-  include_vars: "centos6.yaml"
-  when: ansible_distribution == "CentOS" and ansible_distribution_major_version >= "6"
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "../vars/{{ ansible_distribution|lower }}{{ ansible_distribution_version }}.yaml"
+    - "../vars/{{ ansible_distribution|lower }}{{ ansible_distribution_major_version }}.yaml"
+    - "../vars/{{ ansible_distribution|lower }}.yaml"
+    - "../vars/{{ ansible_os_family|lower }}.yaml"
+    - "../vars/defaults.yaml"
 
 - include_tasks: "system-{{ afs_firewall }}.yaml"
   when: afs_firewall is defined
