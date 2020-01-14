@@ -6,3 +6,18 @@ afs_kinit: "/usr/bin/kinit"
 
 # Other commands.
 afs_gfind: "/usr/bin/find"
+
+# Debian package distribution paths.
+_afs_aklog: '/usr/bin/aklog'
+_afs_asetkey: '/usr/sbin/asetkey'
+_afs_akeyconvert: '/usr/sbin/akeyconvert'
+_afs_bos: '/usr/bin/bos'
+_afs_fs: '/usr/bin/fs'
+_afs_klog_krb5: '/usr/bin/klog.krb5'
+_afs_pagsh: '/usr/bin/pagsh'
+_afs_pts: '/usr/bin/pts'
+_afs_rxdebug: '/usr/bin/rxdebug'
+_afs_tokens: '/usr/bin/tokens'
+_afs_udebug: '/usr/bin/udebug'
+_afs_unlog: '/usr/bin/unlog'
+_afs_vos: '/usr/bin/vos'

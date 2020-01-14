@@ -16,6 +16,22 @@ AFS_FILESERVERS = ','.join([
 # Client info
 PAG_ONEGROUP = True
 
+{% if afs_robotest_dist == 'transarc' %}
+# Transarc-style distribution paths.
+AKLOG = '{{ afs_aklog | default("/usr/afsws/bin/aklog") }}'
+ASETKEY = '{{ afs_asetkey | default("/usr/afs/bin/asetkey") }}'
+AKEYCONVERT = '{{ afs_akeyconvert | default("/usr/afs/bin/akeyconvert") }}'
+BOS = '{{ afs_bos | default("/usr/afs/bin/bos") }}'
+FS = '{{ afs_fs | default("/usr/afs/bin/fs") }}'
+KLOG_KRB5 = '{{ afs_klog_krb5 | default("/usr/afsws/bin/klog.krb5") }}'
+PAGSH = '{{ afs_pagsh | default("/usr/afsws/bin/pagsh") }}'
+PTS = '{{ afs_pts | default("/usr/afs/bin/pts") }}'
+RXDEBUG = '{{ afs_rxdebug | default("/usr/afsws/etc/rxdebug") }}'
+TOKENS = '{{ afs_tokens | default("/usr/afs/bin/tokens") }}'
+UDEBUG = '{{ afs_udebug | default("/usr/afs/bin/udebug") }}'
+UNLOG = '{{ afs_unlog | default("/usr/afsws/bin/unlog") }}'
+VOS = '{{ afs_vos | default("/usr/afs/bin/vos") }}'
+{% else %}
 # OpenAFS installation paths
 AKLOG = '{{ afs_aklog | default(_afs_aklog) }}'
 ASETKEY = '{{ afs_asetkey | default(_afs_asetkey) }}'
@@ -30,6 +46,7 @@ TOKENS = '{{ afs_tokens | default(_afs_tokens) }}'
 UDEBUG = '{{ afs_udebug | default(_afs_udebug) }}'
 UNLOG = '{{ afs_unlog | default(_afs_unlog) }}'
 VOS = '{{ afs_vos | default(_afs_vos) }}'
+{% endif %}
 
 # Kerberos paths
 KADMIN = '{{ afs_kadmin }}'
