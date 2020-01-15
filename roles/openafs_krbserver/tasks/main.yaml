@@ -11,7 +11,14 @@
 - include_tasks: "system-{{ afs_firewall }}.yaml"
   when: afs_firewall is defined
 
-- include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
+- name: Install packages
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "install-packages/{{ ansible_distribution|lower }}{{ ansible_distribution_version }}.yaml"
+    - "install-packages/{{ ansible_distribution|lower }}{{ ansible_distribution_major_version }}.yaml"
+    - "install-packages/{{ ansible_distribution|lower }}.yaml"
+    - "install-packages/{{ ansible_os_family|lower }}.yaml"
+    - "unknown.yaml"
 
 - name: Set default realm
   template:

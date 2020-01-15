@@ -25,9 +25,36 @@
     afs_openafs_kmod_version: "{{ rpm_query.stdout }}"
     afs_openafs_kmod_release: "{{ afs_openafs_kmod_prefix }}.{{ ansible_kernel | regex_replace('-','_') }}"
 
-- name: Install OpenAFS kernel module
+- name: Add epel yum repo
+  become: yes
+  yum:
+    name: epel-release
+    state: present
+    update_cache: yes
+  when: afs_client_install_dkms|bool
+
+- name: Install OpenAFS client with DKMS
+  yum:
+    state: present
+    name:
+      - openafs-client
+      - kernel-devel
+      - dkms-openafs
+  when: afs_client_install_dkms|bool
+
+- name: Install OpenAFS client
   yum:
     state: present
     name:
       - openafs-client
       - kmod-openafs-{{ afs_openafs_kmod_version }}-{{ afs_openafs_kmod_release }}
+  when: not afs_client_install_dkms|bool
+
+- name: Set client startup options
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: "^AFSD_ARGS="
+    line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS client
