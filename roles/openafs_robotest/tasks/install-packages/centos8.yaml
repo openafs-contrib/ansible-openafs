@@ -11,7 +11,7 @@
   yum:
     name:
       - git
-      - python-pip
+      - python3-pip
     state: present
 
 - name: Install Robot Framework OpenAFS library
