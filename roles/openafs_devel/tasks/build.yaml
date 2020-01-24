@@ -6,10 +6,10 @@
 - name: Gather variables for each operating system
   include_vars: "{{ item }}"
   with_first_found:
-    - "../vars/{{ ansible_distribution|lower }}{{ ansible_distribution_version }}.yaml"
-    - "../vars/{{ ansible_distribution|lower }}{{ ansible_distribution_major_version }}.yaml"
-    - "../vars/{{ ansible_distribution|lower }}.yaml"
-    - "../vars/{{ ansible_os_family|lower }}.yaml"
+    - "../vars/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
+    - "../vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
+    - "../vars/{{ ansible_distribution }}.yaml"
+    - "../vars/{{ ansible_os_family }}.yaml"
     - "../vars/defaults.yaml"
 
 - name: Install development tools and libraries
@@ -24,10 +24,10 @@
     - "{{ afs_devel_destdir }}"
 
 - name: Fetch source code
-  include_tasks: "fetch-{{ afs_devel_fetch_method | lower }}.yaml"
+  include_tasks: "fetch-{{ afs_devel_fetch_method | ansible_distribution }}.yaml"
   when:
     - afs_devel_fetch_method is defined
-    - (afs_devel_fetch_method | lower) not in ['none','skip','']
+    - (afs_devel_fetch_method | ansible_distribution) not in ['none','skip','']
 
 - name: Generate configure
   command: ./regen.sh
@@ -73,8 +73,8 @@
 - name: Finalize destination directory
   include_tasks: "{{ item }}"
   with_first_found:
-    - "post-build/{{ ansible_distribution|lower }}{{ ansible_distribution_version }}.yaml"
-    - "post-build/{{ ansible_distribution|lower }}{{ ansible_distribution_major_version }}.yaml"
-    - "post-build/{{ ansible_distribution|lower }}.yaml"
-    - "post-build/{{ ansible_os_family|lower }}.yaml"
+    - "post-build/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
+    - "post-build/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
+    - "post-build/{{ ansible_distribution }}.yaml"
+    - "post-build/{{ ansible_os_family }}.yaml"
     - "unknown.yaml"

@@ -2,10 +2,10 @@
 - name: Gather variables for each operating system
   include_vars: "{{ item }}"
   with_first_found:
-    - "../vars/{{ ansible_distribution|lower }}{{ ansible_distribution_version }}.yaml"
-    - "../vars/{{ ansible_distribution|lower }}{{ ansible_distribution_major_version }}.yaml"
-    - "../vars/{{ ansible_distribution|lower }}.yaml"
-    - "../vars/{{ ansible_os_family|lower }}.yaml"
+    - "../vars/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
+    - "../vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
+    - "../vars/{{ ansible_distribution }}.yaml"
+    - "../vars/{{ ansible_os_family }}.yaml"
     - "../vars/defaults.yaml"
 
 - name: Install development tools and libraries
