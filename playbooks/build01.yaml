@@ -1,0 +1,98 @@
+---
+#
+# Example play to build and install OpenAFS from source on
+# RedHat and Debian based machines.
+#
+# * builds the server and client binaries in one build step
+# * configure options for RedHat or Debian based hosts
+# * installs the binaries on the target system after the build completes
+# * logs of the build and installation are saved on the remote
+#   system in the `$HOME/src/openafs/.ansible` directory.
+# * run with -v to show the build and install results during the play
+#
+
+- name: Build and install OpenAFS from source on RedHat based systems
+  hosts: "{{ afs_devel | default('afs_cell') }}"
+  pre_tasks:
+    - assert:
+        that: ansible_os_family in ['RedHat', 'Debian']
+  roles:
+    - openafs_devel
+  tasks:
+    - name: Checkout source
+      git:
+        repo: https://github.com/openafs/openafs.git
+        dest: ~/src/openafs
+        version: master
+      register: checkout_results
+
+    - name: Build OpenAFS binaries for RHEL
+      openafs_build:
+        state: kmodready
+        projectdir: ~/src/openafs
+        clean: "{{ checkout_results.changed }}"
+        target: install
+        destdir: packaging/dest
+        configure_options:
+          prefix: /usr
+          bindir: /usr/bin
+          libdir: /usr/lib64
+          sbindir: /usr/sbin
+          enable:
+            - debug
+            - redhat-buildsys
+            - transarc-paths
+            - kernel-module
+          disable:
+            - strip_binaries
+          with:
+            - krb5
+            - linux-kernel-packaging
+            - swig
+      register: build_results_redhat
+      when: ansible_os_family == 'RedHat'
+
+    - name: Build results for RedHat
+      debug:
+        var: build_results_redhat
+        verbosity: 1
+
+    - name: Build OpenAFS binaries for Debian
+      openafs_build:
+        state: kmodready
+        projectdir: ~/src/openafs
+        clean: "{{ checkout_results.changed }}"
+        target: install
+        destdir: /tmp/openafs/dest
+        configure_options:
+          prefix: /
+          enable:
+            - debug
+            - debug-lwp
+            - debug-kernel
+          disable: linux-syscall-probing
+          with: linux-kernel-packaging
+          without: swig
+      register: build_results_debian
+
+    - name: Build results for Debian
+      debug:
+        var: build_results_debian
+        verbosity: 1
+
+    - name: Install OpenAFS binaries
+      become: yes
+      openafs_install:
+        destdir: "{{ afs_build_destdir }}"
+        logdir: "{{ afs_build_logdir }}"
+      register: install_results
+
+    - name: Install results
+      debug:
+        var: install_results
+        verbosity: 1
+
+    # openafs_install updated the ansible facts to indicate
+    # where programs were installed.
+    - debug:
+        msg: "The bosserver path is '{{ afs_bosserver }}'."

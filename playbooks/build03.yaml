@@ -1,0 +1,81 @@
+---
+#
+# Example play to show how to build servers and clients
+# separately.
+#
+
+- name: Build and install OpenAFS from source
+  hosts: "{{ afs_devel | default('afs_cell') }}"
+  pre_tasks:
+    - assert:
+        that: ansible_os_family == 'Debian'
+  roles:
+    - openafs_devel
+  tasks:
+    - name: Checkout source
+      git:
+        repo: https://github.com/openafs/openafs.git
+        dest: ~/src/openafs
+        version: openafs-stable-1_8_x
+
+    - name: Build OpenAFS server binaries for Debian
+      openafs_build:
+        state: completed
+        projectdir: ~/src/openafs
+        builddir: /tmp/openafs-server/build
+        logdir: /tmp/openafs-server/log
+        clean: no
+        target: install_nolibafs
+        destdir: /tmp/openafs-server/dest
+        configure_options:
+          prefix: /
+          enable:
+            - debug
+            - debug-lwp
+            - debug-kernel
+          disable:
+            - kernel-module
+            - linux-syscall-probing
+          without: swig
+
+    - name: Install OpenAFS servers
+      become: yes
+      openafs_install:
+        destdir: /tmp/openafs-server/dest
+        logdir: /tmp/openafs-server/log
+
+    - name: Build OpenAFS client for Debian
+      openafs_build:
+        state: kmodready
+        projectdir: ~/src/openafs
+        builddir: /tmp/openafs-client/build
+        logdir: /tmp/openafs-client/log
+        clean: yes
+        target: install_only_libafs
+        destdir: /tmp/openafs-client/dest
+        configure_options:
+          prefix: /
+          enable:
+            - debug
+            - debug-lwp
+            - debug-kernel
+            - kernel-module
+          disable: linux-syscall-probing
+          with: linux-kernel-packaging
+          without: swig
+      register: build_results
+
+    - debug:
+        var: build_results
+        verbosity: 1
+
+    - name: Install OpenAFS client
+      become: yes
+      openafs_install:
+        destdir: /tmp/openafs-client/dest
+        logdir: /tmp/openafs-client/log
+      register: install_results
+
+    - debug:
+        var: install_results
+        verbosity: 1

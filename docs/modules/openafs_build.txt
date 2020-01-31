@@ -1,0 +1,211 @@
+> OPENAFS_BUILD    (/home/mmeffie/src/ansible-openafs/roles/openafs_devel/library/openafs_build.py)
+
+        Build OpenAFS server and client binaries from source code. The source code must be already present in the `projectdir'
+        directory on the host. The [openafs_build] module will run the OpenAFS `regen.sh' command, then run `configure' with the
+        given `configure_options', and then run `make' with the given `target'.  The `regen.sh' execution is skipped when the
+        `configure' file already exists.  The `configure' execution is skipped when the `config.status' file already exists. A
+        complete set of build log files are written on the `logdir' directory on the host for build troubleshooting. Out-of-tree
+        builds are supported by specifying a build directory with the `builddir' option. Before the build starts, `git clean' is run
+        in the `projectdir' directory to remove all untracked files when `clean' is true and a `.git' directory is found in the
+        `projectdir'. All of the files and directories are removed from the `builddir' when `clean' is true and an out-of-tree build
+        is being done. A check for a loadable kernel module is done after the build completes when the `state' is `kmodready'.  Be
+        sure the `target' and `configure_options' are set to build a kernel module when using the `mkodready' state. An installation
+        file tree is created in the `destdir' directory when the `target' starts with `install' or `dest'. The files in `destdir' may
+        be installed with the [openafs_install] module. See the `openafs_devel' role for tasks to install required build tools and
+        libraries on various platforms.
+
+  * This module is maintained by The Ansible Community
+OPTIONS (= is mandatory):
+
+- builddir
+        The path for out-of-tree builds.
+        [Default: `projectdir']
+        type: path
+
+- clean
+        Run `git clean' in the `projectdir' when it contains a `.git' directory.
+        Remove the `builddir', if different than the `projectdir'.
+        A `clean' build should be done if the source files in `projectdir' or the `configure_options' have been changed since the
+        last time this module has been run.
+        Use the `clean' option with caution!
+        [Default: False]
+        type: bool
+
+- configure_options
+        The `configure' options, as a dictionary.
+        Provide only one of `configure_options' or `configure_options_str'.
+        [Default: (null)]
+        type: dict
+
+- configure_options_str
+        The `configure' arguments, as a string of command line options.
+        Provide only one of `configure_options' or `configure_options_str'.
+        [Default: (null)]
+        type: dict
+
+- destdir
+        The destination directory for `install' and `dest' targets and variants.
+        The tree staged in this directory may be installed with the [openafs_install] module.
+        [Default: `projectdir'/packaging/dest]
+        type: path
+
+- jobs
+        Number of parallel make processes.
+        Set this to 0 to disable parallel make.
+        [Default: the number of CPUs on the system]
+        type: int
+
+- logdir
+        The path to store build log files.
+        The logdir may be a subdirectory of the `projectdir'.
+        The logdir may not be a subdirectory of the `builddir' when doing an out-of-tree build.
+        [Default: `projectdir'/.ansible]
+        type: path
+
+- make
+        The `make' program to be executed.
+        [Default: detect]
+        type: path
+
+- manpages
+        Generate the man-pages from POD files when running `regen'.
+        [Default: True]
+        type: bool
+
+= projectdir
+        The project directory.
+        Source files must have been previously checkout or copied to this path.
+
+        type: path
+
+- state
+        `complete' Run regen.sh, configure, make
+        `kmodready' After build is complete, also verify a kernel module was built for the current running kernel version. Be sure
+        the target and configure options are set to build a client when this state is in use.
+        (Choices: completed, kmodready)[Default: complete]
+        type: str
+
+- target
+        The make target to be run.
+        [Default: (null)]
+        type: str
+
+- version
+        Version string to embed in built files.
+        The `version' will be written to the `.version' file, overwritting the current contents, if any.
+        [Default: (null)]
+        type: str
+
+
+REQUIREMENTS:  tools and libraries required to build OpenAFS
+
+AUTHOR: Michael Meffie (@meffie)
+        METADATA:
+          status:
+          - preview
+          supported_by: community
+
+
+EXAMPLES:
+
+- name: Build OpenAFS from source
+  openafs_build:
+    projectdir: ~/src/openafs
+
+- name: Build OpenAFS server binaries for RHEL
+  openafs_build:
+    state: completed
+    projectdir: ~/src/openafs
+    clean: yes
+    target: install_nolibafs
+    destdir: packaging/dest
+    configure_options:
+      prefix: /usr
+      bindir: /usr/bin
+      libdir: /usr/lib64
+      sbindir: /usr/sbin
+      disable:
+        - strip_binaries
+        - kernel_module
+      enable:
+        - debug
+        - redhat_buildsys
+        - transarc_paths
+      with:
+        - krb5: /path/to/krb5.lib
+      with_linux_kernel_packaging: true
+      with_swig: true
+  register: build_results
+  when: ansible_os_family == 'RedHat'
+
+- name: Build OpenAFS legacy distribution
+  openafs_build:
+    state: kmodready
+    projectdir: ~/src/openafs
+    clean: yes
+    target: dest
+    configure_options:
+      enable:
+        - debug
+        - transarc_paths
+        - kernel_module
+      with:
+        - linux_kernel_packaging
+
+- name: Build OpenAFS with configure options as a string
+  openafs_build:
+    projectdir: /tmp/openafs/myfiles
+    destdir: /tmp/openafs/mydest
+    clean: yes
+    target: install
+    configure_options_str: "--enable-debug --enable-kernel-module"
+
+
+RETURN VALUES:
+
+msg:
+  description: Informational message.
+  returned: always
+  type: string
+  sample: Build completed
+
+projectdir:
+  description: Absolute path to the project directory.
+  returned: always
+  type: string
+  sample: /home/tycobb/projects/myproject
+
+builddir:
+  description: Absolute path to the build directory
+  returned: always
+  type: string
+  sample: /home/tycobb/projects/myproject
+
+destdir:
+  description: Absolute path to the installation files.
+  returned: when C(destdir) is specified
+  type: string
+  sample: /home/tycobb/projects/myproject/packaging/dest
+
+logdir:
+  description: Absolute path to the log files. Maybe used for M(openafs_install).
+  return: always
+  type: string
+  sample: /home/tycobb/projects/myproject/.ansible
+
+logfiles:
+  description: Log files written for troubleshooting
+  returned: always
+  type: list
+  sample:
+    - /tmp/logs/build.log
+    - /tmp/logs/make.out
+    - /tmp/logs/make.err
+
+kmods:
+  description: The list of kernel modules built, if any.
+  returned: success
+  type: list
+  sample:
+    - /home/tycobb/projects/myproject/src/libafs/MODLOAD-5.1.0-SP/openafs.ko
+

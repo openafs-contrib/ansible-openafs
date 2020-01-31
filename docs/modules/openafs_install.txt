@@ -1,0 +1,72 @@
+> OPENAFS_INSTALL    (/home/mmeffie/src/ansible-openafs/roles/openafs_devel/library/openafs_install.py)
+
+        Install OpenAFS binaries built from source. This module usually needs to be run as root.
+
+  * This module is maintained by The Ansible Community
+OPTIONS (= is mandatory):
+
+= destdir
+        Absolute path to the installation file tree to be installed. The file tree is usually created by the openafs_build module,
+        and if so, the openafs_build results may provide the destdir value.
+
+        type: path
+
+- logdir
+        Absolute path to the installation logs for troubleshooting. If not given, no log files are written.
+        [Default: (null)]
+        type: type
+
+
+AUTHOR: Michael Meffie
+        METADATA:
+          status:
+          - preview
+          supported_by: community
+
+
+EXAMPLES:
+
+- name: Build OpenAFS from source
+  openafs_build:
+    topdir: ~/src/openafs
+    target: install
+    destdir: /tmp/openafs/dest
+
+- name: Install OpenAFS binaries as root
+  become: yes
+  openafs_install:
+    destdir: /tmp/openafs/dest
+    logdir: /tmp/install_logs
+
+
+RETURN VALUES:
+
+msg:
+  description: Informational message.
+  returned: always
+  type: string
+  sample: Install completed
+
+files:
+  description: Files installed
+  returned: success
+  type: list
+  sample:
+    - /usr/bin/pts
+    - /usr/sbin/vos
+
+commands:
+  description: Command paths
+  returned: success
+  type: dict
+  sample:
+    vos: /usr/sbin/vos
+    pts: /usr/bin/pts
+
+logfiles:
+  description: Log files written for troubleshooting
+  returned: always
+  type: list
+  sample:
+    - /tmp/logs/install.log
+
