@@ -1,5 +1,7 @@
 # Copyright (c) 2019 Sine Nomine Associates
 
+PYFLAKES=pyflakes3
+
 .PHONY: help
 help:
 	@echo "usage: make <target>"
@@ -10,3 +12,4 @@ help:
 lint:
 	yamllint .
 	ansible-lint .
+	$(PYFLAKES) library/*.py

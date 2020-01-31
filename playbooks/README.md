@@ -4,11 +4,14 @@ This directory is a collection of Ansible playbooks for OpenAFS.
 
 ## Playbooks
 
+These example playbooks can be used as starting points for your playbooks.
+
 * `kvm.yaml`       - install a local kvm hypervisor
 * `realm.yaml`     - deploy a kerberos realm
 * `cell.yaml`      - deploy an OpenAFS cell
 * `robotest.yaml`  - install a Robot Framework based test suite for OpenAFS
 * `testcell.yaml`  - deploy a realm, a test cell, and testsuite
+* `build*.yaml`    - example plays to build and install OpenAFS from source
 
 ## Example Ansible Configuration
 
