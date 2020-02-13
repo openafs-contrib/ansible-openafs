@@ -34,6 +34,10 @@ afs_root_part: a
 # TODO: should detect or get this from the client role.
 afs_afsd_opts: -dynroot -fakestat -afsdb
 
+# Commands
+afs_klog_krb5: klog.krb5
+afs_fs: fs
+
 # Initial top level volumes.
 #
 #     afs_volumes:
