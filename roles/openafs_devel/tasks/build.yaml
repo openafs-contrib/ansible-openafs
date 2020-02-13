@@ -24,10 +24,10 @@
     - "{{ afs_devel_destdir }}"
 
 - name: Fetch source code
-  include_tasks: "fetch-{{ afs_devel_fetch_method | ansible_distribution }}.yaml"
+  include_tasks: "fetch-{{ afs_devel_fetch_method | lower }}.yaml"
   when:
     - afs_devel_fetch_method is defined
-    - (afs_devel_fetch_method | ansible_distribution) not in ['none','skip','']
+    - (afs_devel_fetch_method | lower) not in ['none','skip','']
 
 - name: Generate configure
   command: ./regen.sh
