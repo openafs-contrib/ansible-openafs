@@ -50,16 +50,16 @@
 
 - name: Install module probe script
   copy:
-    src: debian/openafs-client.modules
+    src: Debian/openafs-client.modules
     dest: "{{ afs_devel_destdir }}/etc/sysconfig/openafs"
   when: afs_devel_build_client
 
 - name: Install server systemd unit file
   copy:
-    src: debian/openafs-server.service
+    src: Debian/openafs-server.service
     dest: "{{ afs_devel_destdir }}/usr/lib/systemd/system/openafs-server.service"
 
 - name: Install client systemd unit file
   copy:
-    src: debian/openafs-client.service"
+    src: Debian/openafs-client.service"
     dest: "{{ afs_devel_destdir }}/usr/lib/systemd/system/openafs-client.service"

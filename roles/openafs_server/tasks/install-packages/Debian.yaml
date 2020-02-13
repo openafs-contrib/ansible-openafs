@@ -1,7 +1,7 @@
 ---
 - name: Prevent services from starting during install
   copy:
-    src: "debian/policy-rc.d"
+    src: "Debian/policy-rc.d"
     dest: "/usr/sbin/policy-rc.d"
     mode: "0755"
     backup: yes
@@ -27,7 +27,7 @@
 
 - name: Set bosserver startup options
   template:
-    src: "debian/openafs-fileserver.j2"
+    src: "Debian/openafs-fileserver.j2"
     dest: "/etc/default/openafs-fileserver"
     mode: 0644
     owner: root

@@ -50,16 +50,16 @@
 
 - name: Install module probe script
   copy:
-    src: redhat/openafs-client.modules
+    src: RedHat/openafs-client.modules
     dest: "{{ afs_devel_destdir }}/etc/sysconfig/openafs"
   when: afs_devel_build_client
 
 - name: Install server systemd unit file
   copy:
-    src: redhat/openafs-server.service
+    src: RedHat/openafs-server.service
     dest: "{{ afs_devel_destdir }}/usr/lib/systemd/system/openafs-server.service"
 
 - name: Install client systemd unit file
   copy:
-    src: redhat/openafs-client.service
+    src: RedHat/openafs-client.service
     dest: "{{ afs_devel_destdir }}/usr/lib/systemd/system/openafs-client.service"

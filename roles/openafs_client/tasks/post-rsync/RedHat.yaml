@@ -10,7 +10,7 @@
 
 - name: Install module probe script
   copy:
-    src: redhat/openafs-client.modules
+    src: RedHat/openafs-client.modules
     dest: /etc/sysconfig/openafs
 
 - name: Update shared library cache
@@ -55,7 +55,7 @@
   copy:
     # This file has sections for the client and server.
     # Use force:no to avoid clobbering if already installed by the client.
-    src: redhat/openafs.sysconfig
+    src: RedHat/openafs.sysconfig
     dest: /etc/sysconfig/openafs
     force: no
 

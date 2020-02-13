@@ -1,7 +1,7 @@
 ---
 - name: Prevent services from starting during install
   copy:
-    src: "debian/policy-rc.d"
+    src: "Debian/policy-rc.d"
     dest: "/usr/sbin/policy-rc.d"
     mode: "0755"
     backup: yes

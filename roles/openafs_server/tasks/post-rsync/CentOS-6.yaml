@@ -9,7 +9,7 @@
   copy:
     # This file has sections for the client and server.
     # Use force:no to avoid clobbering if already installed by the client.
-    src: centos6/openafs.sysconfig
+    src: CentOS-6/openafs.sysconfig
     dest: /etc/sysconfig/openafs
     force: no
 

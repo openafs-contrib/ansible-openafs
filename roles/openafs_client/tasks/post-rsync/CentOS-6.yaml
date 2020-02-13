@@ -10,7 +10,7 @@
 
 - name: Install module probe script
   copy:
-    src: centos6/openafs-client.modules
+    src: CentOS-6/openafs-client.modules
     dest: /etc/sysconfig/openafs
 
 - name: Update shared library cache
@@ -51,7 +51,7 @@
   copy:
     # This file has sections for the client and server.
     # Use force:no to avoid clobbering if already installed by the client.
-    src: centos6/openafs.sysconfig"
+    src: CentOS-6/openafs.sysconfig"
     dest: /etc/sysconfig/openafs
     force: no
 
