@@ -26,7 +26,7 @@
     mode: 0644
     owner: root
     group: root
-  when: afs_realm is defined and afs_realm.ansible_distribution() != afs_cell
+  when: afs_realm is defined and afs_realm.lower() != afs_cell
 
 - name: Create local server directory
   file:
