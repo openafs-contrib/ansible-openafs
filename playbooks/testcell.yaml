@@ -24,9 +24,7 @@
     - openafs_krbclient
 
 - name: Install OpenAFS servers
-  hosts:
-    - afs_databases
-    - afs_fileservers
+  hosts: afs_databases:afs_fileservers
   vars:
     afs_partitions:
       - a
