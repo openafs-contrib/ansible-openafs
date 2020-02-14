@@ -21,9 +21,3 @@
       - git
       - python-pip
     state: present
-
-- name: Install Robot Framework OpenAFS library
-  become: yes
-  pip:
-    name: robotframework-openafslibrary
-    state: present

@@ -33,7 +33,15 @@
     name: "{{ afs_robotest_user }}"
     shell: /bin/bash
 
-- name: Download OpenAFS test cases
+- name: Install Robot Framework
+  become: yes
+  pip:
+    name:
+     - robotframework
+     - robotframework-openafslibrary
+    state: present
+
+- name: Download OpenAFS RF test cases
   become: yes
   become_user: "{{ afs_robotest_user }}"
   git:
