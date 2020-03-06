@@ -7,37 +7,15 @@
       - automake
       - bison
       - flex
-        #    - fuse-devel
-      - libfuse-dev
       - gcc
       - git
-        #- glibc-devel
+      - libfuse-dev
       - libgc-dev
-        #- krb5-devel
       - libkrb5-dev
-      - libtool
-      - make
-        #- ncurses-devel
       - libncurses5-dev
-        #- pam-devel
-        #- perl-devel
       - libperl-dev
-        #- perl-ExtUtils-Embed
-        #- redhat-rpm-config
-        #- rpm-build
+      - libtool
+      - linux-headers-{{ ansible_kernel }}
+      - make
       - swig
       - wget
-
-- name: Install kernel devel packages
-  apt:
-    state: present
-    name:
-      - kernel-devel
-  when: afs_devel_build_client | bool
-
-- name: Install kernel devel packages
-  apt:
-    state: present
-    name:
-      - elfutils-devel
-  when: afs_devel_build_client | bool and (ansible_distribution == "CentOS" and ansible_distribution_major_version >= "8")
