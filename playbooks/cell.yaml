@@ -3,7 +3,7 @@
 # Playbook to deploy an OpenAFS cell.
 #
 - name: Wait for guests to start
-  hosts: all
+  hosts: afs_cell
   gather_facts: no
   tasks:
   - name: Wait for system to become reachable
