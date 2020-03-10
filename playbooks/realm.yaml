@@ -3,7 +3,7 @@
 # Deploy kerberos realm.
 #
 - name: Wait for guests to start
-  hosts: all
+  hosts: afs_cell
   gather_facts: no
   tasks:
   - name: Wait for system to become reachable
@@ -17,7 +17,7 @@
     - openafs_krbserver
 
 - name: Install Kerberos clients
-  hosts: all
+  hosts: afs_cell
   become: yes
   any_errors_fatal: true
   roles:

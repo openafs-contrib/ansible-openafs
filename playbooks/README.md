@@ -44,20 +44,22 @@ TODO: Describe
     cat ~/inventories/hosts
     [afs_kdcs]
     afs01.example.com
-    
+
     [afs_databases]
     afs01.example.com
     afs02.example.com
     afs03.example.com
-    
+
     [afs_fileservers]
     afs04.example.com
     afs05.example.com
     afs06.example.com
-    
+
     [afs_clients]
     afs[01:06].example.com
 
+    [afs_cell]
+    afs[01:06].example.com
 
     cat ~/inventories/example.com/group_vars/all.yaml
     ---
