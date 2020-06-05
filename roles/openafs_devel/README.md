@@ -23,6 +23,23 @@ The path of the directory to place the generated binary distribution.
 
     afs_devel_fetch_method: "git"
 
+The arguments used for configuring the build can be overridden by setting
+the following variables
+
+    afs_devel_configure_opts: - configure options used for both client and server
+    afs_devel_configure_env:  - environment settings used for both client and server
+
+    afs_devel_client_configure_opts: - configure options specific for client builds
+    afs_devel_client_configure_env:  - environment settings specific for client builds
+
+    afs_devel_server_configure_opts: - configure options specific for server builds
+    afs_devel_server_configure_env:  - environment settings specific for server builds
+
+    The order these are used are:
+        - If defined, use the client/server specific settings.
+        - Otherwise use the 'afs_devel_configure_' if defined.
+        - If neither are defined use the built in defaults.
+
 The method to obtain the source code. One of 'git', or 'none' (or 'skip')
 Specify 'none' (or 'skip') to skip this stage.
 

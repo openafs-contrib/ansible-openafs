@@ -12,6 +12,18 @@
     - "../vars/{{ ansible_os_family }}.yaml"
     - "../vars/defaults.yaml"
 
+- name: Set Default Configuration Facts
+  set_fact:
+    _afs_devel_default_config_opts: "{{ afs_devel_configure_opts | default(_afs_devel_configure_opts) }}"
+    _afs_devel_default_config_env:  "{{ afs_devel_configure_env | default(_afs_devel_configure_env) }}"
+
+- name: Set Server/Client Configuration Facts
+  set_fact:
+    _afs_devel_client_opts: "{{ afs_devel_client_configure_opts | default(_afs_devel_default_config_opts) }}"
+    _afs_devel_server_opts: "{{ afs_devel_server_configure_opts | default(_afs_devel_default_config_opts) }}"
+    _afs_devel_client_env:  "{{ afs_devel_client_configure_env | default(_afs_devel_default_config_env) }}"
+    _afs_devel_server_env:  "{{ afs_devel_server_configure_env | default(_afs_devel_default_config_env) }}"
+
 - name: Install development tools and libraries
   include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
 
@@ -48,8 +60,8 @@
     ./configure
     --with-afs-sysname={{ afs_devel_sysname | default('amd64_linux26') }}
     --{{ afs_devel_build_client | ternary('enable','disable') }}-kernel-module
-    {{ afs_devel_configure_opts | default('') }}
-  environment: "{{ afs_devel_configure.env | default({}) }}"
+    {{ _afs_devel_client_ops if afs_devel_build_client else _afs_devel_server_opts }}
+  environment: "{{ afs_devel_client_env if afs_devel_build_client else _afs_devel_server_env }}"
   args:
     chdir: "{{ afs_devel_builddir }}"
     creates: config.status
