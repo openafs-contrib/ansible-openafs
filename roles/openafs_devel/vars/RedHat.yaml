@@ -1,5 +1,5 @@
 ---
-afs_devel_configure_opts: >
+_afs_devel_configure_opts: >
   --prefix=/usr
   --libdir=/usr/lib64
   --bindir=/usr/bin
@@ -12,4 +12,4 @@ afs_devel_configure_opts: >
   --enable-redhat-buildsys
   --enable-transarc-paths
 
-afs_devel_configure_env: {}
+_afs_devel_configure_env: {}
