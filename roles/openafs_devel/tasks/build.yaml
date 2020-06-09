@@ -61,7 +61,7 @@
     --with-afs-sysname={{ afs_devel_sysname | default('amd64_linux26') }}
     --{{ afs_devel_build_client | ternary('enable','disable') }}-kernel-module
     {{ _afs_devel_client_opts if afs_devel_build_client else _afs_devel_server_opts }}
-  environment: "{{ afs_devel_client_env if afs_devel_build_client else _afs_devel_server_env }}"
+  environment: "{{ _afs_devel_client_env if afs_devel_build_client else _afs_devel_server_env }}"
   args:
     chdir: "{{ afs_devel_builddir }}"
     creates: config.status
