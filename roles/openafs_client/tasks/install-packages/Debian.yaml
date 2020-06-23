@@ -1,24 +1,47 @@
 ---
-- name: Prevent services from starting during install
+- name: "Debian: Install build essentials"
+  apt:
+    state: present
+    name: "build-essential"
+    update_cache: yes
+
+- name: "Debian: Install kernel headers"
+  apt:
+    state: present
+    name: "linux-headers-{{ ansible_kernel }}"
+
+- name: "Debian: Build OpenAFS kernel module"
+  apt:
+    state: present
+    name: openafs-modules-dkms
+
+- name: "Debian: Get kernel modules"
+  command:
+    cmd: lsmod
+  changed_when: false
+  register: lsmod_results
+
+- name: "Debian: Verify the OpenAFS kernel module is loaded"
+  assert:
+    that:
+      lsmod_results.stdout is search('openafs')
+
+- name: "Debian: Prevent openafs client service until configured"
   copy:
     src: "Debian/policy-rc.d"
     dest: "/usr/sbin/policy-rc.d"
     mode: "0755"
     backup: yes
 
-- name: Install OpenAFS packages
+- name: "Debian: Install OpenAFS client"
   apt:
     state: present
     install_recommends: no
-    update_cache: yes
     name:
       - openafs-client
-      - openafs-modules-dkms
       - openafs-krb5
-  notify:
-    - Restart OpenAFS client
 
-- name: Ensure there are no policy-rc files
+- name: "Debian: Restore service policy"
   file:
     path: "/usr/sbin/policy-rc.d"
     state: absent
