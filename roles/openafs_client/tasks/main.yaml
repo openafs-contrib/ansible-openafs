@@ -64,7 +64,7 @@
 
 - name: Ensure local cell configuration file exists (CellServDB.local)
   copy:
-    content: "{{ afs_cell }}  #Cell name\n"
+    content: ">{{ afs_cell }}  #Cell name\n"
     dest: "{{ afs_viceetcdir }}/CellServDB.local"
     mode: 0644
     owner: root
