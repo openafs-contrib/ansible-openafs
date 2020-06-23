@@ -1,0 +1,28 @@
+---
+- name: "Fedora-31: Install development packages"
+  become: yes
+  yum:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - bison
+      - elfutils-devel
+      - flex
+      - fuse-devel
+      - gcc
+      - git
+      - glibc-devel
+      - kernel-devel
+      - krb5-devel
+      - libtool
+      - make
+      - ncurses-devel
+      - pam-devel
+      - perl-devel
+      - perl-ExtUtils-Embed
+      - redhat-rpm-config
+      - rpm-build
+      - swig
+      - wget
+  tags: root

@@ -1,0 +1,9 @@
+---
+- name: Unsupported OS
+  fail:
+    msg: >
+      Sorry, no tasks found for this operating system;
+      {{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }},
+      {{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }},
+      {{ ansible_distribution | replace(' ', '_') }},
+      {{ ansible_os_family | replace(' ', '_') }}

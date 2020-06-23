@@ -1,7 +1,9 @@
 ---
-- name: Install development packages
+- name: "Ubuntu-18: Install development packages"
+  become: yes
   apt:
     state: present
+    update_cache: yes
     name:
       - autoconf
       - automake
@@ -19,3 +21,4 @@
       - make
       - swig
       - wget
+  tags: root

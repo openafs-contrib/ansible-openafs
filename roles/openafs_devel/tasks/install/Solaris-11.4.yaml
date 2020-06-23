@@ -1,0 +1,95 @@
+---
+- name: "Solaris 11.4: Update"
+  become: yes
+  pkg5:
+    state: present
+    name: "entire@latest"
+  register: update
+  tags: root
+
+- name: "Solaris 11.4: Make publisher certs directory"
+  file:
+    state: directory
+    path: "{{ ansible_user_dir }}/.certs"
+    owner: "{{ ansible_user_id }}"
+    mode: 0755
+
+- name: "Solaris 11.4: Upload publisher certificate files"
+  copy:
+    src: "{{ item }}"
+    dest: "{{ ansible_user_dir }}/.certs/{{ item_pem | basename }}"
+  loop:
+    - "{{ afs_devel_oracle_key }}"
+    - "{{ afs_devel_oracle_cert }}"
+  loop_control:
+    loop_var: item_pem
+
+- name: "Solaris 11.4: Get publishers"
+  command: pkg publisher -H
+  register: publisher_results
+  changed_when: no
+
+- name: "Solaris 11.4: Set Solaris Studio publisher"
+  become: yes
+  command:
+    cmd: >
+      pkg set-publisher
+      -k {{ ansible_user_dir }}/.certs/{{ afs_devel_oracle_key | basename }}
+      -c {{ ansible_user_dir }}/.certs/{{ afs_devel_oracle_cert | basename }}
+      -G "*"
+      -g https://pkg.oracle.com/solarisstudio/release solarisstudio
+  when: not 'solarisstudio' in publisher_results.get('stdout', '')
+  tags: root
+
+- name: "Solaris 11.4: Install development packages"
+  become: yes
+  pkg5:
+    state: present
+    accept_licenses: yes
+    name:
+      - autoconf
+      - automake
+      - bison
+      - developerstudio-126
+      - flex
+      - git
+      - gnu-binutils
+      - gnu-coreutils
+      - gnu-sed
+      - libtool
+      - make
+      - onbld
+      - runtime/perl-526
+      - text/locale
+  tags: root
+
+# Save cc path as a fact for tasks which run after this role.
+- name: "Solaris 11.4: Set Developer Studio variables"
+  set_fact:
+    solaris_cc: /opt/developerstudio12.6/bin/cc
+
+- name: "Solaris 11.4: Create cc symlink"
+  become: yes
+  file:
+    state: link
+    src: "{{ solaris_cc }}"
+    path: /usr/bin/cc
+  tags: root
+
+- name: "Solaris 11.4: Set the SOLARISCC environment variable"
+  become: yes
+  lineinfile:
+    path: /etc/profile
+    line: SOLARISCC={{ solaris_cc }}; export SOLARISCC
+    state: present
+  tags: root
+
+# This task is a work around. The perl-526 package installation sometimes fails
+# to to create this symlink for me.
+- name: "Solaris 11.4: Create pod2man symlink"
+  become: yes
+  file:
+    state: link
+    src: /usr/perl5/5.26/bin/pod2man
+    path: /usr/bin/pod2man
+  tags: root

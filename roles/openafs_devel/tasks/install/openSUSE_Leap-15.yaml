@@ -1,0 +1,38 @@
+---
+- name: "openSUSE: Install build requirements"
+  become: yes
+  zypper:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - bison
+      - flex
+      - gcc
+      - git
+      - kernel-devel
+      - kernel-source
+      - krb5-devel
+      - libtool
+      - make
+      - ncurses-devel
+      - libopenssl-devel
+      - libelf-devel
+  tags: root
+
+- name: "openSUSE: Copy kernel config {{ ansible_kernel }}"
+  become: yes
+  copy:
+    remote_src: yes
+    src: "/boot/config-{{ ansible_kernel }}"
+    dest: "/usr/src/linux/.config"
+  tags: root
+
+- name: "openSUSE: Prepare kernel modules"
+  become: yes
+  command:
+    cmd: make modules_prepare
+    creates: /usr/src/linux/include/generated/utsrelease.h
+  args:
+    chdir: /usr/src/linux
+  tags: root
