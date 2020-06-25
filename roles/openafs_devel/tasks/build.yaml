@@ -24,9 +24,6 @@
     _afs_devel_client_env:  "{{ afs_devel_client_configure_env | default(_afs_devel_default_config_env) }}"
     _afs_devel_server_env:  "{{ afs_devel_server_configure_env | default(_afs_devel_default_config_env) }}"
 
-- name: Install development tools and libraries
-  include_tasks: "install-{{ ansible_pkg_mgr }}.yaml"
-
 - name: Create build directories
   file:
     state: directory
