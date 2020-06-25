@@ -4,6 +4,11 @@
   register: destdir_st
   when: not afs_client_build_force|bool
 
+- name: Install devel libs/tools
+  include_role:
+    name: openafs_devel
+    tasks_from: main
+
 - name: Build dest directory from source
   include_role:
     name: openafs_devel
