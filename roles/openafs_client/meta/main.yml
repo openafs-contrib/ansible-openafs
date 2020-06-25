@@ -23,4 +23,5 @@ galaxy_info:
     - system
     - openafs
 
-dependencies: []
+dependencies:
+  - openafs_krbclient
