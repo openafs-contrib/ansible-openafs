@@ -1,3 +1,5 @@
 ---
 # Kerberos realm name
 afs_realm: "{{ afs_cell | default('example.com') | upper }}"
+# afs_kdc_servers: comma separted list of kdc host names
+# afs_kadmin_server: kadmin server hostname
