@@ -114,3 +114,21 @@
     enabled: yes
     name: "{{ afs_client_service }}"
   register: afs_client_service_result
+
+- name: "Get mount information"
+  command:
+    cmd: mount
+    warn: false
+  check_mode: no
+  changed_when: false
+  register: mount_results
+
+- name: "Print mount information"
+  debug:
+    var: mount_results
+    verbosity: 1
+
+- name: "Verify afs filesystem is mounted"
+  assert:
+    that:
+      mount_results.stdout is regex('AFS on /\w+ type afs')
