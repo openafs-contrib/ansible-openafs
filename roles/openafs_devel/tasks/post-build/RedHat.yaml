@@ -8,19 +8,23 @@
 - name: Create extra directories for server files
   file:
     state: directory
-    path: "{{ afs_devel_destdir }}/{{ item }}"
+    path: "{{ afs_devel_destdir }}/{{ dir_item }}"
   with_items:
     - "{{ afs_asetkey | dirname }}"
     - "/usr/lib/systemd/system"
+  loop_control:
+    loop_var: dir_item
   when: afs_devel_build_server
 
 - name: Create extra directories for client files
   file:
     state: directory
-    path: "{{ afs_devel_destdir }}/{{ item }}"
+    path: "{{ afs_devel_destdir }}/{{ dir_item }}"
   with_items:
     - "/etc/sysconfig"
     - "/usr/lib/systemd/system"
+  loop_control:
+    loop_var: dir_item
   when: afs_devel_build_client
 
 - name: Install asetkey to a standard location
