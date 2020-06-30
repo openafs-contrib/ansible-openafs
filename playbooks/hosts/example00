@@ -1,0 +1,25 @@
+[all]
+localhost ansible_connection=local
+
+[afs_kdcs]
+localhost
+
+[afs_databases]
+localhost
+
+[afs_fileservers]
+localhost
+
+[afs_clients]
+localhost
+
+[afs_cell:children]
+afs_databases
+afs_fileservers
+afs_clients
+
+[afs_cell:vars]
+afs_realm = EXAMPLE.COM
+afs_cell = example.com
+
+; vim: set ft=cfg:
