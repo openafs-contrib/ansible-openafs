@@ -1,3 +1,7 @@
+#
+# Example inventory to install a realm and afs test
+# cell on the local system.
+#
 [all]
 localhost ansible_connection=local
 
@@ -22,4 +26,4 @@ afs_clients
 afs_realm = EXAMPLE.COM
 afs_cell = example.com
 
-; vim: set ft=cfg:
+# vim: set ft=cfg:

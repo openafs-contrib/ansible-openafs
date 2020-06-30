@@ -1,3 +1,7 @@
+#
+# Example inventory to deploy a kerberos realm and
+# a minimal afs test cell on a single host.
+#
 [all]
 afs01.example.com  ansible_host=192.168.123.241
 
@@ -22,4 +26,4 @@ afs_clients
 afs_realm = EXAMPLE.COM
 afs_cell = example.com
 
-; vim: set ft=cfg:
+# vim: set ft=cfg:
