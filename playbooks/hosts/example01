@@ -1,0 +1,25 @@
+[all]
+afs01.example.com  ansible_host=192.168.123.241
+
+[afs_kdcs]
+afs01.example.com
+
+[afs_databases]
+afs01.example.com
+
+[afs_fileservers]
+afs01.example.com
+
+[afs_clients]
+afs01.example.com
+
+[afs_cell:children]
+afs_databases
+afs_fileservers
+afs_clients
+
+[afs_cell:vars]
+afs_realm = EXAMPLE.COM
+afs_cell = example.com
+
+; vim: set ft=cfg:
