@@ -1,56 +1,122 @@
 ---
-- name: Add OpenAFS yum repo
+- name: "CentOS-7: Trace repourl"
+  debug:
+    var: afs_openafs_client_repourl
+
+- name: "CentOS-7: Add OpenAFS yum repo"
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
     baseurl: "{{ afs_openafs_client_repourl }}"
     gpgcheck: no
 
-- name: Install OpenAFS base packages
-  yum:
-    state: present
-    name:
-      - openafs
-      - openafs-krb5
+- name: "CentOS-7: DKMS mode"
+  when: afs_client_install_dkms | bool
+  block:
+    - name: "CentOS-7: Add epel yum repo"
+      become: yes
+      yum:
+        name: epel-release
+        state: present
+        update_cache: yes
 
-- name: Query installed OpenAFS version
-  shell: rpm -q --queryformat "%{VERSION}" openafs
-  args:
-    warn: False
-  register: rpm_query
-  changed_when: False
+    - name: "CentOS-7: Install OpenAFS client with DKMS"
+      yum:
+        state: present
+        name:
+          - openafs
+          - openafs-client
+          - dkms-openafs
+          - openafs-krb5
+      register: yum_results
 
-- name: Set kernel module package version
-  set_fact:
-    afs_openafs_kmod_version: "{{ rpm_query.stdout }}"
-    afs_openafs_kmod_release: "{{ afs_openafs_kmod_prefix }}.{{ ansible_kernel | regex_replace('-','_') }}"
+    - name: "CentOS-7: Get dkms status"
+      command: dkms status
+      check_mode: no
+      changed_when: false
+      register: dkms_status
 
-- name: Add epel yum repo
-  become: yes
-  yum:
-    name: epel-release
-    state: present
-    update_cache: yes
-  when: afs_client_install_dkms|bool
+    - debug:
+        var: dkms_status
+        verbosity: 1
 
-- name: Install OpenAFS client with DKMS
-  yum:
-    state: present
-    name:
-      - openafs-client
-      - kernel-devel
-      - dkms-openafs
-  when: afs_client_install_dkms|bool
+    - name: "CentOS-7: Verify openafs dkms status is 'installed'"
+      assert:
+        that:
+          dkms_status.stdout is regex('openafs, .* installed')
 
-- name: Install OpenAFS client
-  yum:
-    state: present
-    name:
-      - openafs-client
-      - kmod-openafs-{{ afs_openafs_kmod_version }}-{{ afs_openafs_kmod_release }}
-  when: not afs_client_install_dkms|bool
+- name: "CentOS-7: kmod mode"
+  when: not (afs_client_install_dkms | bool)
+  block:
+    - name: "CentOS-7: Install OpenAFS base package"
+      yum:
+        state: present
+        name:
+          - openafs
 
-- name: Set client startup options
+    - name: "CentOS-7: Query OpenAFS version"
+      command: rpm -q --queryformat "%{VERSION}" openafs
+      args:
+        warn: False
+      changed_when: False
+      register: rpm_query
+
+    - name: "CentOS-7: Set kernel module package version"
+      set_fact:
+        afs_openafs_kmod_version: "{{ rpm_query.stdout }}"
+        afs_openafs_kmod_release: "{{ afs_openafs_kmod_prefix }}.{{ ansible_kernel | regex_replace('-','_') }}"
+    - name: "CentOS-7: Trace"
+      debug:
+        var: afs_openafs_kmod_version
+        verbosity: 1
+
+    - name: "CentOS-7: Trace"
+      debug:
+        var: afs_openafs_kmod_release
+        verbosity: 1
+
+    - name: "CentOS-7: Install OpenAFS client"
+      yum:
+        state: present
+        name:
+          - openafs-client
+          - kmod-openafs-{{ afs_openafs_kmod_version }}-{{ afs_openafs_kmod_release }}
+          - openafs-krb5
+
+- name: "CentOS-7: Load kernel module"
+  block:
+    - name: "CentOS-7: Get kernel modules"
+      command: lsmod
+      check_mode: no
+      changed_when: false
+      register: lsmod_results
+
+    - name: "CentOS-7: Trace lsmod output"
+      debug:
+        var: lsmod_results
+        verbosity: 1
+
+    - name: "CentOS-7: Load openafs kernel module"
+      command: modprobe openafs
+      when: not lsmod_results.stdout is search('openafs')
+
+    - name: "CentOS-7: Get kernel modules"
+      command: lsmod
+      check_mode: no
+      changed_when: false
+      register: lsmod_results
+
+    - name: "CentOS-7: Trace lsmod output"
+      debug:
+        var: lsmod_results
+        verbosity: 1
+
+    - name: "CentOS-7: Verify the OpenAFS kernel module is loaded"
+      assert:
+        that:
+          lsmod_results.stdout is search('openafs')
+
+- name: "CentOS-7: Set client startup options"
   lineinfile:
     path: /etc/sysconfig/openafs
     regexp: "^AFSD_ARGS="
