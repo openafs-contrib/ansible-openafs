@@ -1,0 +1,30 @@
+---
+# OpenAFS installation paths.
+afs_viceetcdir: "/usr/vice/etc"
+afs_afscachedir: "/usr/vice/cache"
+
+# Service name
+afs_client_service: openafs-client
+
+# OS dependent variables
+afs_firewall: firewalld
+
+# Install dkms by default in CentOS 8.
+_afs_client_install_dkms: yes
+
+# Build default options.
+_afs_client_configure_opts: >
+  --prefix=/usr
+  --libdir=/usr/lib64
+  --bindir=/usr/bin
+  --sbindir=/usr/sbin
+  --disable-strip-binaries
+  --enable-debug
+  --with-linux-kernel-packaging
+  --enable-kernel-module
+  --with-krb5
+  --with-swig
+  --enable-redhat-buildsys
+  --enable-transarc-paths
+
+_afs_client_configure_env: {}

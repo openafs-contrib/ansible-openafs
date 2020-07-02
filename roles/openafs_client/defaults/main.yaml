@@ -23,7 +23,7 @@ afs_openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/e
 afs_client_install_method: package-manager
 
 # Install kernel module with DKMS
-afs_client_install_dkms: no
+afs_client_install_dkms: "{{ _afs_client_install_dkms | default('no') }}"
 
 # Build options for rsync install method.
 afs_client_build_force: no
