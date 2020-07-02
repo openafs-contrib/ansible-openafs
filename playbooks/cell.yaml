@@ -19,6 +19,8 @@
   any_errors_fatal: true
   roles:
     - openafs_server
+  tags:
+    - server
 
 - name: Install OpenAFS clients
   hosts: afs_clients
@@ -26,6 +28,8 @@
   any_errors_fatal: true
   roles:
     - openafs_client
+  tags:
+    - client
 
 - name: Create cell volumes
   hosts: afs_clients[0]
@@ -35,3 +39,5 @@
       - name: test
   roles:
     - openafs_cell
+  tags:
+    - volume
