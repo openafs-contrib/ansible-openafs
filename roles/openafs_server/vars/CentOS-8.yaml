@@ -1,0 +1,55 @@
+---
+# Kerberos commands.
+afs_kadmin: "/usr/bin/kadmin"
+afs_klist: "/usr/bin/klist"
+
+# OpenAFS commands.
+afs_asetkey: "/usr/sbin/asetkey"
+afs_akeyconvert: "/usr/sbin/akeyconvert"
+afs_pts: "/usr/bin/pts"
+afs_vos: "/usr/sbin/vos"
+afs_udebug: "/usr/bin/udebug"
+
+# OpenAFS Installation paths.
+afs_afsconfdir: "/usr/afs/etc"
+afs_afsdbdir: "/usr/afs/db"
+afs_afslocaldir: "/usr/afs/local"
+afs_afslogdir: "/usr/afs/logs"
+afs_afssrvdir: "/usr/afs/bin"
+afs_viceetcdir: "/usr/vice/etc"
+afs_bosconfdir: "/usr/afs/local"
+
+# Service name
+afs_server_service: openafs-server
+
+# OS dependent variables
+afs_firewall: firewalld
+afs_selinux: yes
+afs_selinux_openafs_version: "1.1"
+
+# Note: The bosserver creates the /usr/vice/etc directory on startup if it does not
+# exist in order to create a symlink to the CellServDB for vos and pts. Be sure
+# to set the selinux context before bosserver starts.
+afs_selinux_top_dirs:
+ - "/usr/afs"
+ - "/usr/vice"
+
+# Default selinux mode.
+_afs_selinux_mode: permissive
+
+# Build default options
+_afs_server_configure_opts: >
+  --prefix=/usr
+  --libdir=/usr/lib64
+  --bindir=/usr/bin
+  --sbindir=/usr/sbin
+  --disable-strip-binaries
+  --enable-debug
+  --with-linux-kernel-packaging
+  --disable-kernel-module
+  --with-krb5
+  --with-swig
+  --enable-redhat-buildsys
+  --enable-transarc-paths
+
+_afs_server_configure_env: {}
