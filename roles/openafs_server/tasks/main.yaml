@@ -45,15 +45,25 @@
 - include_tasks: "system-{{ afs_firewall }}.yaml"
   when: afs_firewall is defined
 
-- name: Setup SELinux mode
-  selinux:
-    state: "{{ afs_selinux_mode }}"
-    policy: targeted
-  when: afs_selinux|bool and afs_selinux_mode in ['disabled','enforcing','permissive']
+- name: SELinux
+  when: afs_selinux | bool
+  block:
+    - debug:
+        var: afs_selinux_mode
+        verbosity: 1
 
-- name: Setup SELinux policies
-  include_tasks: selinux-policies.yaml
-  when: afs_selinux|bool and afs_selinux_mode != 'disabled'
+    - name: Verify selinux mode value
+      assert:
+        that: afs_selinux_mode in ['disabled','enforcing','permissive']
+
+    - name: Setup SELinux mode
+      selinux:
+        state: "{{ afs_selinux_mode }}"
+        policy: targeted
+
+    - name: Setup SELinux policies
+      include_tasks: selinux-policies.yaml
+      when: afs_selinux_mode != 'disabled'
 
 - include_tasks: server-partitions.yaml
 
