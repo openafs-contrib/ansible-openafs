@@ -22,7 +22,7 @@ afs_admin_password: "{{ lookup('password', afs_local_dir+'/afs_admin_password ch
 afs_openafs_server_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/el7/$basearch
 
 # selinux mode
-afs_selinux_mode: enforcing
+afs_selinux_mode: "{{ _afs_selinux_mode | default('enforcing') }}"
 
 # Installation method.
 # One of: 'package-manager', 'rsync'
