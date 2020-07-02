@@ -33,6 +33,15 @@
     update_cache: yes
   when: afs_client_install_dkms|bool
 
+# Note: Workaround missing "requires" in the dkms-openafs package.
+- name: Install OpenAFS DKMS requirements
+  yum:
+    state: present
+    name:
+      - make
+      - "kernel-devel-{{ ansible_kernel }}"
+  when: afs_client_install_dkms|bool
+
 - name: Install OpenAFS client with DKMS
   yum:
     state: present
