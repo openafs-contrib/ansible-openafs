@@ -45,7 +45,7 @@
   become: yes
   become_user: "{{ afs_robotest_user }}"
   git:
-    repo: https://github.com/openafs-contrib/openafs-robotest.git
+    repo: "{{ afs_robotest_git_repo }}"
     dest: "{{ afs_robotest_home }}"
     version: "{{ afs_robotest_version }}"
 

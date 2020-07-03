@@ -12,7 +12,8 @@ afs_admin_password: "{{ lookup('password', afs_local_dir+'/afs_admin_password ch
 # Install a webserver to publish test results; yes or no
 afs_robotest_install_webserver: yes
 
-# Version of openafs-robotest to be installed.
+# git repo and version of openafs-robotest to be installed.
+afs_robotest_git_repo: "https://github.com/openafs-contrib/openafs-robotest.git"
 afs_robotest_version: master
 
 # Username to run the tests.
