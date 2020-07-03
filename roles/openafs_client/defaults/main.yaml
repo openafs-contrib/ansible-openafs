@@ -16,7 +16,7 @@ afs_mountpoint: /afs
 afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
 
 # openafs yum repo for client packages
-afs_openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.2/el7/$basearch
+afs_openafs_client_repourl: https://download.sinenomine.net/openafs/bins/1.8.5/el$releasever/$basearch
 
 # Installation method.
 # One of: 'package-manager', 'rsync'
