@@ -5,6 +5,7 @@ afs_kdestroy: "/usr/bin/kdestroy"
 afs_kinit: "/usr/bin/kinit"
 
 # Other commands.
+afs_python: "/usr/bin/python"
 afs_gfind: "/usr/bin/find"
 
 # Platform
