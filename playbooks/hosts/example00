@@ -17,6 +17,9 @@ localhost
 [afs_clients]
 localhost
 
+[afs_robotest]
+localhost
+
 [afs_cell:children]
 afs_databases
 afs_fileservers

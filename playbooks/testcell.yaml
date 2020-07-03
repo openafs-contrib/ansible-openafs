@@ -67,4 +67,25 @@
   roles:
     - openafs_robotest
   tags:
+    - test-setup
+
+- name: Run tests
+  hosts: afs_robotest[0]
+  tags:
     - test
+  tasks:
+    - name: Run tests
+      command:
+        cmd: "/usr/bin/run-openafs-robotest.sh {{ afs_robotest_suite | d('tests') }}"
+      failed_when: false
+      register: test_results
+
+    - debug:
+        var: test_results
+        verbosity: 1
+
+    - debug:
+        msg: |
+          Test suite: {{ afs_robotest_suite | d('tests') }}
+          Test results: {{ (test_results.rc == 0) | ternary('PASS', 'FAIL') }}
+          Test report: http://{{ ansible_fqdn }}/~{{ ansible_user_id }}/openafs-robotest-output/
