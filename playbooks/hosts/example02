@@ -16,6 +16,9 @@ afs[04:06].example.com
 [afs_clients]
 afs[07:09].example.com
 
+[afs_robotest]
+afs07.example.com
+
 [afs_cell:children]
 afs_databases
 afs_fileservers
