@@ -9,6 +9,7 @@ help:
 	@echo "  lint             lint test cases"
 	@echo "  test             run all tests"
 	@echo "  test_modules     run module tests"
+	@echo "  test_playbooks   run playbook tests"
 
 .PHONY: install
 install:
@@ -20,8 +21,12 @@ lint:
 	$(PYFLAKES) playbooks/*.py
 
 .PHONY: test
-test: test_modules
+test: test_modules test_playbooks
 
 .PHONY: test_modules
 test_modules:
 	$(PYTHON) -m unittest -v modules.test_openafs_build
+
+.PHONY: test_playbooks
+test_playbooks:
+	$(PYTHON) -m playbooks.test_playbooks
