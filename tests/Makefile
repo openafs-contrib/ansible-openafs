@@ -1,14 +1,22 @@
 PYTHON=python3
 PYFLAKES=pyflakes3
 
-.PHONY: test
-test: modules
+.PHONY: help
+help:
+	@echo "make <target>"
+	@echo "targets:"
+	@echo "  lint             lint test cases"
+	@echo "  test             run all tests"
+	@echo "  test_modules     run module tests"
 
 .PHONY: lint
 lint:
 	$(PYFLAKES) modules/*.py
+	$(PYFLAKES) playbooks/*.py
 
-.PHONY: modules
-modules:
-	PYTHONPATH=$$PYTHONPATH:../roles/openafs_devel/library \
-    $(PYTHON) -m unittest -v modules.test_openafs_build
+.PHONY: test
+test: test_modules
+
+.PHONY: test_modules
+test_modules:
+	$(PYTHON) -m unittest -v modules.test_openafs_build

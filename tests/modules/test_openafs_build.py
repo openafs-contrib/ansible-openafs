@@ -1,6 +1,10 @@
 
+import sys
 import unittest
 import ddt
+
+sys.path.append('../roles/openafs_devel/library')
+sys.path.append('../../roles/openafs_devel/library')
 import openafs_build
 
 @ddt.ddt
