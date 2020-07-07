@@ -5,9 +5,14 @@ PYFLAKES=pyflakes3
 help:
 	@echo "make <target>"
 	@echo "targets:"
+	@echo "  install          pip install requirements"
 	@echo "  lint             lint test cases"
 	@echo "  test             run all tests"
 	@echo "  test_modules     run module tests"
+
+.PHONY: install
+install:
+	$(PYTHON) -m pip install --user -r requirements.txt
 
 .PHONY: lint
 lint:
