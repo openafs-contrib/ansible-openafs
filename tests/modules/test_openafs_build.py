@@ -84,8 +84,8 @@ class ConfigureOptionToArgsTest(unittest.TestCase):
         {'enable': {'enable': {'bar': 'baz'}}},
     )
     def test_bogus_options(self, case):
-        with self.assertRaises(ValueError) as context:
-            args = openafs_build.options_to_args(case)
+        with self.assertRaises(ValueError):
+            openafs_build.options_to_args(case)
 
 
 if __name__ == '__main__':
