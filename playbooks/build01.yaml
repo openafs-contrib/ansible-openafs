@@ -84,7 +84,7 @@
       become: yes
       openafs_install:
         destdir: "{{ afs_build_destdir }}"
-        logdir: "{{ afs_build_logdir }}"
+        logdir: /var/tmp/
       register: install_results
 
     - name: Install results

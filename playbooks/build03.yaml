@@ -18,15 +18,15 @@
         dest: ~/src/openafs
         version: openafs-stable-1_8_x
 
-    - name: Build OpenAFS server binaries for Debian
+    - name: Build OpenAFS server binaries
       openafs_build:
         state: completed
         projectdir: ~/src/openafs
-        builddir: /tmp/openafs-server/build
-        logdir: /tmp/openafs-server/log
+        builddir: /var/tmp/openafs-server/build
+        logdir: /var/tmp/openafs-server/log
         clean: no
         target: install_nolibafs
-        destdir: /tmp/openafs-server/dest
+        destdir: /var/tmp/openafs-server/dest
         configure_options:
           prefix: /
           enable:
@@ -41,18 +41,18 @@
     - name: Install OpenAFS servers
       become: yes
       openafs_install:
-        destdir: /tmp/openafs-server/dest
-        logdir: /tmp/openafs-server/log
+        destdir: /var/tmp/openafs-server/dest
+        logdir: /var/tmp/openafs-server/log
 
-    - name: Build OpenAFS client for Debian
+    - name: Build OpenAFS client
       openafs_build:
         state: kmodready
         projectdir: ~/src/openafs
-        builddir: /tmp/openafs-client/build
-        logdir: /tmp/openafs-client/log
+        builddir: /var/tmp/openafs-client/build
+        logdir: /var/tmp/openafs-client/log
         clean: yes
         target: install_only_libafs
-        destdir: /tmp/openafs-client/dest
+        destdir: /var/tmp/openafs-client/dest
         configure_options:
           prefix: /
           enable:
@@ -72,8 +72,8 @@
     - name: Install OpenAFS client
       become: yes
       openafs_install:
-        destdir: /tmp/openafs-client/dest
-        logdir: /tmp/openafs-client/log
+        destdir: /var/tmp/openafs-client/dest
+        logdir: /var/tmp/openafs-client/log
       register: install_results
 
     - debug:
