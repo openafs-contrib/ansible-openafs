@@ -27,58 +27,63 @@
       register: checkout_results
 
     - name: Build OpenAFS binaries for RHEL
-      openafs_build:
-        state: kmodready
-        projectdir: ~/src/openafs
-        clean: "{{ checkout_results.changed }}"
-        target: install
-        destdir: packaging/dest
-        configure_options:
-          prefix: /usr
-          bindir: /usr/bin
-          libdir: /usr/lib64
-          sbindir: /usr/sbin
-          enable:
-            - debug
-            - redhat-buildsys
-            - transarc-paths
-            - kernel-module
-          disable:
-            - strip_binaries
-          with:
-            - krb5
-            - linux-kernel-packaging
-            - swig
-      register: build_results_redhat
       when: ansible_os_family == 'RedHat'
+      block:
+        - name: Build OpenAFS binaries for RHEL
+          openafs_build:
+            state: kmodready
+            projectdir: ~/src/openafs
+            clean: "{{ checkout_results.changed }}"
+            target: install
+            destdir: packaging/dest
+            configure_options:
+              prefix: /usr
+              bindir: /usr/bin
+              libdir: /usr/lib64
+              sbindir: /usr/sbin
+              enable:
+                - debug
+                - redhat-buildsys
+                - transarc-paths
+                - kernel-module
+              disable:
+                - strip_binaries
+              with:
+                - krb5
+                - linux-kernel-packaging
+                - swig
+          register: build_results_redhat
 
-    - name: Build results for RedHat
-      debug:
-        var: build_results_redhat
-        verbosity: 1
+        - name: Build results for RedHat
+          debug:
+            var: build_results_redhat
+            verbosity: 1
 
     - name: Build OpenAFS binaries for Debian
-      openafs_build:
-        state: kmodready
-        projectdir: ~/src/openafs
-        clean: "{{ checkout_results.changed }}"
-        target: install
-        destdir: /tmp/openafs/dest
-        configure_options:
-          prefix: /
-          enable:
-            - debug
-            - debug-lwp
-            - debug-kernel
-          disable: linux-syscall-probing
-          with: linux-kernel-packaging
-          without: swig
-      register: build_results_debian
+      when: ansible_os_family == 'Debian'
+      block:
+        - name: Build OpenAFS binaries for Debian
+          openafs_build:
+            state: kmodready
+            projectdir: ~/src/openafs
+            clean: "{{ checkout_results.changed }}"
+            target: install
+            destdir: /var/tmp/openafs/dest
+            configure_options:
+              prefix: /
+              enable:
+                - debug
+                - debug-lwp
+                - debug-kernel
+              disable: linux-syscall-probing
+              with: linux-kernel-packaging
+              without: swig
+          register: build_results_debian
 
-    - name: Build results for Debian
-      debug:
-        var: build_results_debian
-        verbosity: 1
+        - name: Build results for Debian
+          debug:
+            var: build_results_debian
+            verbosity: 1
 
     - name: Install OpenAFS binaries
       become: yes

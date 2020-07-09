@@ -3,12 +3,8 @@
 # Example play to show how to build servers and clients
 # separately.
 #
-
 - name: Build and install OpenAFS from source
   hosts: "{{ afs_devel | default('afs_cell') }}"
-  pre_tasks:
-    - assert:
-        that: ansible_os_family == 'Debian'
   roles:
     - openafs_devel
   tasks:
