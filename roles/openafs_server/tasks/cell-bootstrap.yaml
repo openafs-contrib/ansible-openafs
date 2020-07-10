@@ -56,6 +56,10 @@
   when: >
     'I am sync site' not in vldb_udebug_result.get('stdout')
 
+- name: Wait for db server
+  wait_for:
+    timeout: 10
+
 - name: Create admin user
   command: >
     {{ afs_pts }}
