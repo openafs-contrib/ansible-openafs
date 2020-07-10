@@ -30,7 +30,8 @@ The method used to install the OpenAFS server binaries. Values are:
 * `package-manager`:  Install OpenAFS server packages with yum. (default)
 * `rsync`: Copy binary files. Build binares from source code if needed.
 
-    afs_openafs_server_repourl:
+    afs_server_version:
+    afs_server_repo_url:
 
 The URL of a yum repo containing OpenAFS server packages.
 

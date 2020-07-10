@@ -1,13 +1,13 @@
 ---
-- name: "CentOS-8: Trace repourl"
+- name: "CentOS-8: Trace repo url"
   debug:
-    var: afs_openafs_client_repourl
+    var: afs_client_repo_url
 
 - name: "CentOS-8: Add OpenAFS yum repo"
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
-    baseurl: "{{ afs_openafs_client_repourl }}"
+    baseurl: "{{ afs_client_repo_url }}"
     gpgcheck: no
 
 - name: "CentOS-8: DKMS mode"

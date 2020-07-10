@@ -1,9 +1,13 @@
 ---
+- name: Trace repo url
+  debug:
+    var: afs_server_repo_url
+
 - name: Add OpenAFS yum repo
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
-    baseurl: "{{ afs_openafs_server_repourl }}"
+    baseurl: "{{ afs_server_repo_url }}"
     gpgcheck: no
 
 - name: Install OpenAFS server packages

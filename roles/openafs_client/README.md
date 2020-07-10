@@ -23,7 +23,8 @@ The method used to install the OpenAFS client binaries. Values are:
                 code if needed. Installs development packages in order to
                 build the OpenAFS client binaries and kernel module, if needed.
 
-    afs_openafs_client_repourl:
+    afs_client_version:
+    afs_client_repo_url:
 
 The URL of a yum repo containing OpenAFS client packages for the `package-manager` install method.
 
