@@ -20,6 +20,14 @@
         state: present
         update_cache: yes
 
+    # Note: Workaround missing dkms-openafs package requires.
+    - name: "CentOS-6: Install missing dkms-openafs requirements"
+      yum:
+        state: present
+        name:
+          - make
+          - "kernel-devel-{{ ansible_kernel }}"
+
     - name: "CentOS-6: Install OpenAFS client with DKMS"
       yum:
         state: present
