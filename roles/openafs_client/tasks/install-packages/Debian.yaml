@@ -30,6 +30,17 @@
   command: modprobe openafs
   when: not lsmod_results.stdout is search('openafs')
 
+- name: "Debian: Get kernel modules"
+  command: lsmod
+  check_mode: no
+  changed_when: false
+  register: lsmod_results
+
+- name: "Debian: Trace lsmod output"
+  debug:
+    var: lsmod_results
+    verbosity: 1
+
 - name: "Debian: Verify the OpenAFS kernel module is loaded"
   assert:
     that:
