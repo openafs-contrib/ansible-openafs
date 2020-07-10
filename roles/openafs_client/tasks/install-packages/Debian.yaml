@@ -15,36 +15,27 @@
     state: present
     name: openafs-modules-dkms
 
-- name: "Debian: Get kernel modules"
-  command: lsmod
-  check_mode: no
-  changed_when: false
-  register: lsmod_results
+- name: "Debian: Load kernel module"
+  block:
+    - name: "Debian: Get kernel modules"
+      slurp:
+        src: /proc/modules
+      register: modules
 
-- name: "Debian: Trace lsmod output"
-  debug:
-    var: lsmod_results
-    verbosity: 1
+    - name: "Debian: Dump kernel modules"
+      debug:
+        msg: "{{ modules.content | b64decode }}"
+        verbosity: 1
 
-- name: "Debian: Load openafs kernel module"
-  command: modprobe openafs
-  when: not lsmod_results.stdout is search('openafs')
+    - name: "Debian: Load openafs kernel module"
+      command: modprobe openafs
+      when: (modules.content | b64decode) is not search('openafs')
 
-- name: "Debian: Get kernel modules"
-  command: lsmod
-  check_mode: no
-  changed_when: false
-  register: lsmod_results
-
-- name: "Debian: Trace lsmod output"
-  debug:
-    var: lsmod_results
-    verbosity: 1
-
-- name: "Debian: Verify the OpenAFS kernel module is loaded"
-  assert:
-    that:
-      lsmod_results.stdout is search('openafs')
+    - name: "Debian: Verify the OpenAFS kernel module is loaded"
+      wait_for:
+        path: /proc/modules
+        search_regex: openafs
+        timeout: 5
 
 - name: "Debian: Prevent openafs client service until configured"
   copy:

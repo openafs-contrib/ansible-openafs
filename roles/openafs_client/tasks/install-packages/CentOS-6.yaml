@@ -86,35 +86,24 @@
 - name: "CentOS-6: Load kernel module"
   block:
     - name: "CentOS-6: Get kernel modules"
-      command: lsmod
-      check_mode: no
-      changed_when: false
-      register: lsmod_results
+      slurp:
+        src: /proc/modules
+      register: modules
 
-    - name: "CentOS-6: Trace lsmod output"
+    - name: "CentOS-6: Dump kernel modules"
       debug:
-        var: lsmod_results
+        msg: "{{ modules.content | b64decode }}"
         verbosity: 1
 
     - name: "CentOS-6: Load openafs kernel module"
       command: modprobe openafs
-      when: not lsmod_results.stdout is search('openafs')
-
-    - name: "CentOS-6: Get kernel modules"
-      command: lsmod
-      check_mode: no
-      changed_when: false
-      register: lsmod_results
-
-    - name: "CentOS-6: Trace lsmod output"
-      debug:
-        var: lsmod_results
-        verbosity: 1
+      when: (modules.content | b64decode) is not search('openafs')
 
     - name: "CentOS-6: Verify the OpenAFS kernel module is loaded"
-      assert:
-        that:
-          lsmod_results.stdout is search('openafs')
+      wait_for:
+        path: /proc/modules
+        search_regex: openafs
+        timeout: 5
 
 - name: "CentOS-6: Set client startup options"
   lineinfile:
