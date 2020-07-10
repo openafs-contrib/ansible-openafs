@@ -8,10 +8,10 @@
 afs01.example.com
 
 [afs_databases]
-afs[01:03].example.com
+afs[02:04].example.com
 
 [afs_fileservers]
-afs[04:06].example.com
+afs[05:06].example.com
 
 [afs_clients]
 afs[07:09].example.com

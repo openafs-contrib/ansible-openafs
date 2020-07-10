@@ -1,3 +1,6 @@
-pyflakes
+ansible
 ddt
+pyflakes
+pytest
 sh
+libvirt-python

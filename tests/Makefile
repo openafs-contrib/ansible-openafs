@@ -1,32 +1,34 @@
-PYTHON=python3
-PYFLAKES=pyflakes3
+.PHONY: help install packages.apt lint test clear clean
+PYTEST_NO_TESTS=5
 
-.PHONY: help
 help:
 	@echo "make <target>"
 	@echo "targets:"
-	@echo "  install          pip install requirements"
-	@echo "  lint             lint test cases"
-	@echo "  test             run all tests"
-	@echo "  test_modules     run module tests"
-	@echo "  test_playbooks   run playbook tests"
+	@echo "  install    install requirements in venv"
+	@echo "  lint       lint test cases"
+	@echo "  test       run all tests"
+	@echo "  retest     rerun failed tests"
+	@echo "  clean      remove installed and generated files"
 
-.PHONY: install
-install:
-	$(PYTHON) -m pip install --user -r requirements.txt
+.packages:
+	sudo apt install -y python3-dev pkg-config build-essential libvirt-dev
+	touch .packages
 
-.PHONY: lint
-lint:
-	$(PYFLAKES) modules/*.py
-	$(PYFLAKES) playbooks/*.py
+venv/bin/activate: .packages requirements.txt
+	test -d venv || /usr/bin/python3 -m venv venv
+	. venv/bin/activate && pip install -Ur requirements.txt
+	touch venv/bin/activate
 
-.PHONY: test
-test: test_modules test_playbooks
+install: venv/bin/activate
 
-.PHONY: test_modules
-test_modules:
-	$(PYTHON) -m unittest -v modules.test_openafs_build
+lint: install
+	venv/bin/pyflakes modules/*.py playbooks/*.py
 
-.PHONY: test_playbooks
-test_playbooks:
-	$(PYTHON) -m playbooks.test_playbooks
+test: install
+	venv/bin/pytest --cache-clear
+
+retest: install
+	venv/bin/pytest --lf --last-failed-no-failures none || test $$? = $(PYTEST_NO_TESTS)
+
+clean: clear
+	rm -rf .packages venv */__pycache__
