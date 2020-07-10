@@ -1,6 +1,0 @@
----
-- name: Install tests
-  hosts: afs_robotest
-  any_errors_fatal: true
-  roles:
-    - openafs_robotest

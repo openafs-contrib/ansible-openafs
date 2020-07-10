@@ -1,0 +1,20 @@
+---
+- name: Create cell volumes
+  hosts: "{{ afs_admin_client | default(groups['afs_clients'][0]) }}"
+  vars:
+    afs_volumes:
+      - name: test
+  tasks:
+    - name: Connecting
+      wait_for_connection:
+
+    - name: Install client
+      become: yes
+      import_role:
+        name: openafs_client
+
+    - name: Setup new cell
+      import_role:
+        name: openafs_cell
+  tags:
+    - volume

@@ -1,0 +1,7 @@
+---
+- name: Install test suite and report viewer
+  hosts: afs_robotest
+  roles:
+    - openafs_robotest
+  tags:
+    - test-setup

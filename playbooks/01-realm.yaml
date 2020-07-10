@@ -1,0 +1,9 @@
+---
+- name: Setup the Kerberos realm kdc
+  hosts: afs_kdcs[0]
+  become: yes
+  pre_tasks:
+    - name: Connecting
+      wait_for_connection:
+  roles:
+    - openafs_krbserver

@@ -1,0 +1,11 @@
+---
+- name: Install OpenAFS clients
+  hosts: afs_clients
+  become: yes
+  pre_tasks:
+    - name: Connecting
+      wait_for_connection:
+  roles:
+    - openafs_client
+  tags:
+    - client

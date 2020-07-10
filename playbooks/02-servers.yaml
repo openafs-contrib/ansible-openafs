@@ -1,0 +1,15 @@
+---
+- name: Install OpenAFS servers
+  hosts: afs_databases:afs_fileservers
+  vars:
+    afs_partitions:
+      - a
+      - b
+  become: yes
+  pre_tasks:
+    - name: Connecting
+      wait_for_connection:
+  roles:
+    - openafs_server
+  tags:
+    - server
