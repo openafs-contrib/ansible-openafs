@@ -42,6 +42,16 @@
     and not "already exists while creating" in kadmin_results.stderr
   when: inventory_hostname == ansible_play_hosts[0]
 
+# Debian based systems add a loopback address for the hostname as
+# a fallback when dns is unavailable. These can cause issues when
+# trying to update the vldb.
+- name: Avoid resolving the hostname to a loopback address
+  replace:
+    path: /etc/hosts
+    backup: yes
+    regexp: '^127.0.1.1\b(.*)\b{{ ansible_host | replace(".", "\.") }}\b'
+    replace: '{{ ansible_default_ipv4.address }} \1 {{ ansible_host }}'
+
 - include_tasks: "system-{{ afs_firewall }}.yaml"
   when: afs_firewall is defined
 
