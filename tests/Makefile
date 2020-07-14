@@ -1,5 +1,6 @@
 .PHONY: help install packages.apt lint test clear clean
 PYTEST_NO_TESTS=5
+PYTEST_OPTS=
 
 help:
 	@echo "make <target>"
@@ -24,11 +25,14 @@ install: venv/bin/activate
 lint: install
 	venv/bin/pyflakes modules/*.py playbooks/*.py
 
+list: install
+	venv/bin/pytest --co
+
 test: install
-	venv/bin/pytest --cache-clear
+	venv/bin/pytest --cache-clear $(PYTEST_OPTS)
 
 retest: install
-	venv/bin/pytest --lf --last-failed-no-failures none || test $$? = $(PYTEST_NO_TESTS)
+	venv/bin/pytest --lf --last-failed-no-failures none $(PYTEST_OPTS) || test $$? = $(PYTEST_NO_TESTS)
 
 clean: clear
 	rm -rf .packages venv */__pycache__
