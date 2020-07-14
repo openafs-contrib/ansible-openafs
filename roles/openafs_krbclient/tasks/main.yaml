@@ -21,6 +21,7 @@
     - "unknown.yaml"
 
 - name: Configure kerberos
+  become: yes
   template:
     src: krb5.conf.j2
     dest: "{{ afs_krbclient_krb5_conf }}"

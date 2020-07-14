@@ -4,6 +4,7 @@
     var: afs_client_repo_url
 
 - name: "CentOS-7: Add OpenAFS yum repo"
+  become: yes
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
@@ -22,6 +23,7 @@
 
     # Note: Workaround missing dkms-openafs package requires.
     - name: "CentOS-7: Install missing dkms-openafs requirements"
+      become: yes
       yum:
         state: present
         name:
@@ -29,6 +31,7 @@
           - "kernel-devel-{{ ansible_kernel }}"
 
     - name: "CentOS-7: Install OpenAFS client with DKMS"
+      become: yes
       yum:
         state: present
         name:
@@ -54,15 +57,18 @@
           dkms_status.stdout is regex('openafs, .* installed')
 
 - name: "CentOS-7: kmod mode"
+  become: yes
   when: not (afs_client_install_dkms | bool)
   block:
     - name: "CentOS-7: Install OpenAFS base package"
+      become: yes
       yum:
         state: present
         name:
           - openafs
 
     - name: "CentOS-7: Query OpenAFS version"
+      become: yes
       command: rpm -q --queryformat "%{VERSION}" openafs
       args:
         warn: False
@@ -73,6 +79,7 @@
       set_fact:
         afs_openafs_kmod_version: "{{ rpm_query.stdout }}"
         afs_openafs_kmod_release: "{{ afs_openafs_kmod_prefix }}.{{ ansible_kernel | regex_replace('-','_') }}"
+
     - name: "CentOS-7: Trace"
       debug:
         var: afs_openafs_kmod_version
@@ -84,6 +91,7 @@
         verbosity: 1
 
     - name: "CentOS-7: Install OpenAFS client"
+      become: yes
       yum:
         state: present
         name:
@@ -104,6 +112,7 @@
         verbosity: 1
 
     - name: "CentOS-7: Load openafs kernel module"
+      become: yes
       command: modprobe openafs
       when: (modules.content | b64decode) is not search('openafs')
 
@@ -114,6 +123,7 @@
         timeout: 5
 
 - name: "CentOS-7: Set client startup options"
+  become: yes
   lineinfile:
     path: /etc/sysconfig/openafs
     regexp: "^AFSD_ARGS="

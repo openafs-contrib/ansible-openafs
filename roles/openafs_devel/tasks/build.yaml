@@ -2,6 +2,9 @@
 #
 # Build an OpenAFS binary distribution from source code.
 #
+# This file is deprecated and is to be replaced with the
+# custom build_openafs module in ../library.
+#
 
 - name: Gather variables for each operating system
   include_vars: "{{ item }}"
@@ -25,6 +28,7 @@
     _afs_devel_server_env:  "{{ afs_devel_server_configure_env | default(_afs_devel_default_config_env) }}"
 
 - name: Create build directories
+  become: yes
   file:
     state: directory
     path: "{{ item }}"
@@ -33,12 +37,14 @@
     - "{{ afs_devel_destdir }}"
 
 - name: Fetch source code
+  become: yes
   include_tasks: "fetch-{{ afs_devel_fetch_method | lower }}.yaml"
   when:
     - afs_devel_fetch_method is defined
     - (afs_devel_fetch_method | lower) not in ['none','skip','']
 
 - name: Generate configure
+  become: yes
   command: ./regen.sh
   args:
     chdir: "{{ afs_devel_builddir }}"
@@ -47,12 +53,14 @@
   failed_when: regen_results.rc != 0
 
 - name: Clean config.status
+  become: yes
   file:
     state: absent
     path: "{{ afs_devel_builddir }}/config.status"
   when: regen_results.changed
 
 - name: Configure
+  become: yes
   command: >
     ./configure
     --with-afs-sysname={{ afs_devel_sysname | default('amd64_linux26') }}
@@ -66,6 +74,7 @@
   failed_when: configure_results.rc != 0
 
 - name: Make install
+  become: yes
   make:
     chdir: "{{ afs_devel_builddir }}"
     target: "{{ afs_devel_build_client | ternary('install', 'install_nolibafs') }}"
@@ -74,6 +83,7 @@
   register: make_results
 
 - name: Save make results
+  become: yes
   copy:
     content: "{{ make_results | to_nice_json }}"
     dest: "{{ afs_devel_builddir }}/make_results"

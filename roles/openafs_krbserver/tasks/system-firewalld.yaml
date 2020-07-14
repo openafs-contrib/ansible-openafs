@@ -3,6 +3,7 @@
   service_facts:
 
 - name: Permit kerberos traffic
+  become: yes
   firewalld:
     port: "{{ item }}"
     immediate: "{{ (ansible_facts.services['firewalld.service'].state == 'running') | ternary('yes','no') }}"

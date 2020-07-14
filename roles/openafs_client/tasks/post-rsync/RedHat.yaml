@@ -6,18 +6,22 @@
 # Patch up the contexts for the directories and files
 # that were created while in unconfined_t
 - name: Restore directory contexts for selinux
+  become: yes
   command: restorecon -ir /lib/modules
 
 - name: Install module probe script
+  become: yes
   copy:
     src: RedHat/openafs-client.modules
     dest: /etc/sysconfig/openafs
 
 - name: Update shared library cache
+  become: yes
   command: /sbin/ldconfig
   changed_when: false
 
 - name: Update module dependencies
+  become: yes
   command: depmod -a
   changed_when: false
 
@@ -31,6 +35,7 @@
   register: mount_result
 
 - name: Make afs filesystem mount point
+  become: yes
   file:
     path: "{{ afs_mountpoint }}"
     state: directory
@@ -40,6 +45,7 @@
   when: mount_result.rc != 0
 
 - name: Make cache directory
+  become: yes
   file:
     state: directory
     path: "{{ afs_afscachedir }}"
@@ -48,10 +54,12 @@
     group: root
 
 - name: Reload the systemd daemon
+  become: yes
   systemd:
     daemon_reload: yes
 
 - name: Install startup options config file
+  become: yes
   copy:
     # This file has sections for the client and server.
     # Use force:no to avoid clobbering if already installed by the client.
@@ -60,6 +68,7 @@
     force: no
 
 - name: Set client startup options
+  become: yes
   lineinfile:
     path: /etc/sysconfig/openafs
     regexp: "^AFSD_ARGS="

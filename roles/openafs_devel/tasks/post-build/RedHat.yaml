@@ -1,11 +1,13 @@
 ---
 - name: Remove staged server files
+  become: yes
   file:
     path: "{{ afs_devel_destdir }}/usr/afs"
     state: absent
   when: not afs_devel_build_server
 
 - name: Create extra directories for server files
+  become: yes
   file:
     state: directory
     path: "{{ afs_devel_destdir }}/{{ dir_item }}"
@@ -17,6 +19,7 @@
   when: afs_devel_build_server
 
 - name: Create extra directories for client files
+  become: yes
   file:
     state: directory
     path: "{{ afs_devel_destdir }}/{{ dir_item }}"
@@ -28,6 +31,7 @@
   when: afs_devel_build_client
 
 - name: Install asetkey to a standard location
+  become: yes
   copy:
     remote_src: true
     src: "{{ afs_devel_builddir }}/src/aklog/asetkey"
@@ -38,11 +42,13 @@
   when: afs_devel_build_server
 
 - name: Check for akeyconvert availability
+  become: yes
   stat:
     path: "{{ afs_devel_builddir }}/src/aklog/akeyconvert"
   register: akeyconvert_st
 
 - name: Install akeyconvert to a standard location
+  become: yes
   copy:
     remote_src: true
     src: "{{ afs_devel_builddir }}/src/aklog/akeyconvert"
@@ -53,17 +59,20 @@
   when: afs_devel_build_server and akeyconvert_st.stat.exists
 
 - name: Install module probe script
+  become: yes
   copy:
     src: RedHat/openafs-client.modules
     dest: "{{ afs_devel_destdir }}/etc/sysconfig/openafs"
   when: afs_devel_build_client
 
 - name: Install server systemd unit file
+  become: yes
   copy:
     src: RedHat/openafs-server.service
     dest: "{{ afs_devel_destdir }}/usr/lib/systemd/system/openafs-server.service"
 
 - name: Install client systemd unit file
+  become: yes
   copy:
     src: RedHat/openafs-client.service
     dest: "{{ afs_devel_destdir }}/usr/lib/systemd/system/openafs-client.service"

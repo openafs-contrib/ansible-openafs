@@ -19,7 +19,7 @@
     owner: root
     group: root
 
-- name: Check cache directory
+- name: Check configuration directory
   file:
     state: directory
     path: "{{ afs_viceetcdir }}"
@@ -41,6 +41,7 @@
   when: afs_client_install_method != 'package-manager'
 
 - name: Ensure public cell configuration file exists (CellServDB.dist)
+  become: yes
   copy:
     content: ""
     dest: "{{ afs_viceetcdir }}/CellServDB.dist"
@@ -54,6 +55,7 @@
   register: cellservdb_st
 
 - name: Update local cell configuration file (CellServDB.local)
+  become: yes
   copy:
     src: "{{ afs_local_dir }}/CellServDB"
     dest: "{{ afs_viceetcdir }}/CellServDB.local"
@@ -63,6 +65,7 @@
   when: cellservdb_st.stat.exists is defined and cellservdb_st.stat.exists
 
 - name: Ensure local cell configuration file exists (CellServDB.local)
+  become: yes
   copy:
     content: ">{{ afs_cell }}  #Cell name\n"
     dest: "{{ afs_viceetcdir }}/CellServDB.local"
@@ -72,12 +75,14 @@
     force: no
 
 - name: Combine local and public cell database (CellServDB.ansible)
+  become: yes
   shell: cat CellServDB.local CellServDB.dist > CellServDB.ansible
   args:
     chdir: "{{ afs_viceetcdir }}"
   changed_when: false
 
 - name: Update CellServDB
+  become: yes
   copy:
     remote_src: true
     src: "{{ afs_viceetcdir }}/CellServDB.ansible"
@@ -89,6 +94,7 @@
     - Restart OpenAFS client
 
 - name: Set local cell name
+  become: yes
   copy:
     content: "{{ afs_cell }}"
     dest: "{{ afs_viceetcdir }}/ThisCell"
@@ -99,6 +105,7 @@
     - Restart OpenAFS client
 
 - name: Update cache configuration
+  become: yes
   template:
     src: cacheinfo.j2
     dest: "{{ afs_viceetcdir }}/cacheinfo"
@@ -109,6 +116,7 @@
     - Restart OpenAFS client
 
 - name: Start OpenAFS client
+  become: yes
   service:
     state: started
     enabled: yes

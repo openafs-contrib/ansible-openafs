@@ -21,6 +21,7 @@
     - "unknown.yaml"
 
 - name: Set default realm
+  become: yes
   template:
     src: krb5.conf.j2
     dest: "{{ afs_krbserver_krb5_conf }}"
@@ -29,6 +30,7 @@
     mode: 0644
 
 - name: Configure kerberos key server
+  become: yes
   template:
     src: kdc.conf.j2
     dest: "{{ afs_krbserver_kdc_conf }}"
@@ -39,6 +41,7 @@
     - Restart kerberos key server
 
 - name: Configure kerberos admin server
+  become: yes
   template:
     src: kadm5.acl.j2
     dest: "{{ afs_krbserver_kadm5_acl }}"
@@ -49,6 +52,7 @@
     - Restart kerberos admin server
 
 - name: Create kerberos kdc database
+  become: yes
   command: >
     {{ afs_kdb5_util }}
     -P {{ afs_kerberos_master_password }}
@@ -59,6 +63,7 @@
   register: krb5_util_results
 
 - name: Start kerberos key server
+  become: yes
   service:
     name: "{{ afs_krbserver_kdc_service }}"
     enabled: yes
@@ -66,6 +71,7 @@
   register: afs_krbserver_kdc_service_result
 
 - name: Start kerberos admin server
+  become: yes
   service:
     name: "{{ afs_krbserver_admin_service }}"
     enabled: yes
@@ -73,6 +79,7 @@
   register: afs_krbserver_admin_service_result
 
 - name: Create admin principal
+  become: yes
   command: >
     {{ afs_kadmin_local }}
     -r {{ afs_realm }}

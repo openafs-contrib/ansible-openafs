@@ -1,5 +1,6 @@
 ---
 - name: Git checkout
+  become: yes
   git:
     repo: "{{ afs_devel_git_repo }}"
     dest: "{{ afs_devel_builddir }}"
@@ -8,6 +9,7 @@
   failed_when: git_results.failed
 
 - name: Clean files to force reconfigure
+  become: yes
   file:
     state: absent
     path: "{{ item }}"

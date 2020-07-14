@@ -1,16 +1,19 @@
 ---
 - name: "Debian: Install build essentials"
+  become: yes
   apt:
     state: present
     name: "build-essential"
     update_cache: yes
 
 - name: "Debian: Install kernel headers"
+  become: yes
   apt:
     state: present
     name: "linux-headers-{{ ansible_kernel }}"
 
 - name: "Debian: Build OpenAFS kernel module"
+  become: yes
   apt:
     state: present
     name: openafs-modules-dkms
@@ -28,6 +31,7 @@
         verbosity: 1
 
     - name: "Debian: Load openafs kernel module"
+      become: yes
       command: modprobe openafs
       when: (modules.content | b64decode) is not search('openafs')
 
@@ -38,6 +42,7 @@
         timeout: 5
 
 - name: "Debian: Prevent openafs client service until configured"
+  become: yes
   copy:
     src: "Debian/policy-rc.d"
     dest: "/usr/sbin/policy-rc.d"

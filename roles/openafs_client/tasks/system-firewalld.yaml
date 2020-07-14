@@ -3,6 +3,7 @@
   service_facts:
 
 - name: Permit afs3 traffic
+  become: yes
   firewalld:
     port: 7000-7009/udp
     state: enabled
