@@ -14,7 +14,7 @@ ansible_playbook = sh.Command('ansible-playbook')
 @pytest.fixture(params=['centos7', 'centos8', 'debian10'])
 def guest(request):
     template = 'base-%s' % request.param
-    with Guest('afs01', template) as g:
+    with Guest('afs01', template, update_resolver=True) as g:
         for line in ansible('all', i='hosts/example01', m='wait_for_connection',
                             _cwd='../playbooks', _env=env, _iter=True):
             log.info('wait_for_connection: %s' % line.rstrip())
@@ -30,7 +30,7 @@ def inventory(request):
     inv, num, os_ = request.param
     guests = []
     for i in range(num):
-        g = Guest('afs%02d' % (i + 1), 'base-%s' % os_)
+        g = Guest('afs%02d' % (i + 1), 'base-%s' % os_, update_resolver=True)
         guests.append(g)
     for g in guests:
         g.create()
