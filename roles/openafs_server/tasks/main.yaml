@@ -11,7 +11,6 @@
 - name: Make local directory
   run_once: true
   delegate_to: localhost
-  become: no
   file:
     path: "{{ afs_local_dir }}"
     state: directory
@@ -20,7 +19,6 @@
 - name: Generate cell configuration files
   run_once: true
   delegate_to: localhost
-  become: no
   template:
     src: "{{ item }}.j2"
     dest: "{{ afs_local_dir }}/{{ item }}"
@@ -30,6 +28,7 @@
     - UserList
 
 - name: Create the Kerberos service key
+  become: yes
   command: >
     {{ afs_kadmin }}
     -w {{ afs_admin_password }}
@@ -46,6 +45,7 @@
 # a fallback when dns is unavailable. These can cause issues when
 # trying to update the vldb.
 - name: Avoid resolving the hostname to a loopback address
+  become: yes
   replace:
     path: /etc/hosts
     backup: yes
@@ -67,6 +67,7 @@
         that: afs_selinux_mode in ['disabled','enforcing','permissive']
 
     - name: Setup SELinux mode
+      become: yes
       selinux:
         state: "{{ afs_selinux_mode }}"
         policy: targeted
@@ -99,6 +100,7 @@
   when: afs_selinux|bool and afs_selinux_mode != 'disabled'
 
 - name: Start the OpenAFS servers
+  become: yes
   service:
     name: "{{ afs_server_service }}"
     state: started

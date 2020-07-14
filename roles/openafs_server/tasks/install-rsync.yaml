@@ -25,6 +25,7 @@
   when: afs_server_build_force|bool or not destdir_st.stat.exists
 
 - name: Install dest directory to system
+  become: yes
   command: rsync -a -K --info=name --checksum . /
   args:
     chdir: "{{ afs_server_build_destdir }}"

@@ -2,10 +2,12 @@
 # Post rsync installation tasks for CentOS 6.x.
 
 - name: Update shared library cache
+  become: yes
   command: /sbin/ldconfig
   changed_when: false
 
 - name: Install startup options config file
+  become: yes
   copy:
     # This file has sections for the client and server.
     # Use force:no to avoid clobbering if already installed by the client.
@@ -14,6 +16,7 @@
     force: no
 
 - name: Set bosserver startup options
+  become: yes
   lineinfile:
     path: /etc/sysconfig/openafs
     regexp: '^BOSSERVER_ARGS='

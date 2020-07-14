@@ -11,7 +11,8 @@
 - include_tasks: "system-{{ afs_firewall }}.yaml"
   when: afs_firewall is defined
 
-- name: Check cache directory
+- name: Create cache directory
+  become: yes
   file:
     state: directory
     path: "{{ afs_afscachedir }}"
@@ -19,7 +20,8 @@
     owner: root
     group: root
 
-- name: Check configuration directory
+- name: Create configuration directory
+  become: yes
   file:
     state: directory
     path: "{{ afs_viceetcdir }}"

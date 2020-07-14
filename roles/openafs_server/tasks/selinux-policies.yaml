@@ -1,5 +1,6 @@
 ---
 - name: Install Setools
+  become: yes
   yum:
     name:
       - policycoreutils-python
@@ -8,12 +9,14 @@
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version < "8"
 
 - name: Test for presence of openafs module in SELinux
+  become: yes
   shell: semodule -lstandard | grep -E '^openafs\s+{{ afs_selinux_openafs_version }}$'
   register: module_result
   changed_when: False
   failed_when: False
 
 - name: Copy the SELinux module for openafs server
+  become: yes
   template:
     dest: "/tmp/{{ item }}"
     src: "{{ role_path }}/templates/{{ item }}.j2"
@@ -23,6 +26,7 @@
     - openafs.fc
 
 - name: Build SELinux module for openafs server
+  become: yes
   command: "{{ item }}"
   args:
     chdir: "/tmp"

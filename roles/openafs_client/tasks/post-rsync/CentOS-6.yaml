@@ -27,7 +27,8 @@
 
 - name: Check afs filesystem mount point
   # We can't use the mount module to do this because it only checks
-  # /etc/fstab; /afs is never there.
+  # /etc/fstab; /afs is never there. Thoe --fake option requires root.
+  become: yes
   command: "/usr/bin/mount --fake --verbose {{ afs_mountpoint }}"
   args:
     warn: no

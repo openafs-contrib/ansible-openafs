@@ -1,5 +1,6 @@
 ---
 - name: Restart OpenAFS client
+  become: yes
   service:
     name: "{{ afs_client_service }}"
     state: restarted

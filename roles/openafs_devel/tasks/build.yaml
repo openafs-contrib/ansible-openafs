@@ -37,7 +37,6 @@
     - "{{ afs_devel_destdir }}"
 
 - name: Fetch source code
-  become: yes
   include_tasks: "fetch-{{ afs_devel_fetch_method | lower }}.yaml"
   when:
     - afs_devel_fetch_method is defined

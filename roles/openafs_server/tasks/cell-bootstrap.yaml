@@ -61,6 +61,7 @@
     timeout: 10
 
 - name: Create admin user
+  become: yes
   command: >
     {{ afs_pts }}
     createuser
@@ -78,6 +79,7 @@
     and 'Entry for name already exists' not in pts_result.get('stderr','')
 
 - name: Add admin user to system:administrators group
+  become: yes
   command: >
     {{ afs_pts }}
     adduser {{ afs_admin_principal|replace('/','.') }}
@@ -95,6 +97,7 @@
     and 'Entry for id already exists' not in pts_result.get('stderr','')
 
 - name: Create root.afs volume
+  become: yes
   command: >
     {{ afs_vos }} create
       -server {{ afs_root_server }}

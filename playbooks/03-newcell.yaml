@@ -4,17 +4,11 @@
   vars:
     afs_volumes:
       - name: test
-  tasks:
+  pre_tasks:
     - name: Connecting
       wait_for_connection:
-
-    - name: Install client
-      become: yes
-      import_role:
-        name: openafs_client
-
-    - name: Setup new cell
-      import_role:
-        name: openafs_cell
+  roles:
+    - openafs_client
+    - openafs_cell
   tags:
     - volume

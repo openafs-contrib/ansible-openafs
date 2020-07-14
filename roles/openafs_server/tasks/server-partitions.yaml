@@ -1,5 +1,6 @@
 ---
 - name: Make partition directory
+  become: yes
   file:
     path: /vicep{{ item }}
     state: directory
@@ -10,6 +11,7 @@
   when: afs_partitions is defined
 
 - name: Enable always attach mode for partition
+  become: yes
   copy:
     content: ""
     dest: /vicep{{ item }}/AlwaysAttach

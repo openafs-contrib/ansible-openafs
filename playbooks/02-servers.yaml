@@ -5,7 +5,6 @@
     afs_partitions:
       - a
       - b
-  become: yes
   pre_tasks:
     - name: Connecting
       wait_for_connection:
