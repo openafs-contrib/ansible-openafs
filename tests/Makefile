@@ -1,6 +1,6 @@
 .PHONY: help install packages.apt lint test clear clean
 PYTEST_NO_TESTS=5
-PYTEST_OPTS=
+PYTEST_FLAGS=
 
 help:
 	@echo "make <target>"
@@ -29,10 +29,10 @@ list: install
 	venv/bin/pytest --co
 
 test: install
-	venv/bin/pytest --cache-clear $(PYTEST_OPTS)
+	venv/bin/pytest --cache-clear $(PYTEST_FLAGS)
 
 retest: install
-	venv/bin/pytest --lf --last-failed-no-failures none $(PYTEST_OPTS) || test $$? = $(PYTEST_NO_TESTS)
+	venv/bin/pytest --lf --last-failed-no-failures none $(PYTEST_FLAGS) || test $$? = $(PYTEST_NO_TESTS)
 
 clean: clear
 	rm -rf .packages venv */__pycache__

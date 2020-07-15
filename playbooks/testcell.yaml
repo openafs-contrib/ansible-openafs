@@ -1,5 +1,6 @@
 ---
 # Deploy an OpenAFS test cell and run tests.
+- import_playbook: 00-prereqs.yaml
 - import_playbook: 01-realm.yaml
 - import_playbook: 02-servers.yaml
 - import_playbook: 03-newcell.yaml

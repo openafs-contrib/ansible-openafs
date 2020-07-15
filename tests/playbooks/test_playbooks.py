@@ -16,13 +16,13 @@ ansible_playbook = sh.Command('ansible-playbook')
 def guest(request):
     template = 'base-%s' % request.param
     with Guest('afs01', template, update_resolver=True) as g:
-        for line in ansible('all', i='hosts/single', m='wait_for_connection',
+        for line in ansible('all', i='hosts/devel01', m='wait_for_connection',
                             _cwd='../playbooks', _env=env, _iter=True):
             log.info('wait_for_connection: %s' % line.rstrip())
         yield(g)
 
 def invfn(val):
-    return '%s-%s' % (val[0].replace('hosts/', ''), val[2])
+    return '%s-%s' % (val[2], val[0].replace('hosts/', ''))
 
 # Test cell inventory fixture.
 @pytest.fixture(ids=invfn, params=[
@@ -30,7 +30,11 @@ def invfn(val):
     ('hosts/single', 1, 'centos8'),
     ('hosts/single', 1, 'debian10'),
     ('hosts/multi', 9, 'centos7'),
-    ('hosts/build', 3, 'centos7'),
+    ('hosts/devel01', 1, 'centos7'),
+    ('hosts/devel02', 3, 'centos7'),
+    ('hosts/devel03', 3, 'centos7'),
+    ('hosts/devel03', 3, 'centos8'),
+    ('hosts/devel03', 3, 'debian10'),
 ])
 def inventory(request):
     hosts, num, os_ = request.param
@@ -54,9 +58,9 @@ def run_playbook(playbook, inventory):
         log.info('ansible: %s', line.strip())
 
 # Test build-only playbooks.
-@pytest.mark.parametrize('playbook', ['build01.yaml', 'build02.yaml', 'build03.yaml'])
+@pytest.mark.parametrize('playbook', ['build01', 'build02', 'build03'])
 def test_build(guest, playbook):
-    run_playbook(playbook, 'hosts/single')
+    run_playbook(playbook+'.yaml', 'hosts/single')
 
 # Create test cells and run robotest.
 def test_testcell(inventory):
