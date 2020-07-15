@@ -38,7 +38,7 @@ class Guest:
                  dns='example.com',
                  uri=None,
                  update_resolver=False):
-        print('Guest: name=%s, tempate=%s' % (name, template))
+        log.debug('Guest(): name=%s, template=%s' % (name, template))
         self.name = name
         self.template = template
         self.pool = pool
@@ -127,6 +127,14 @@ class Guest:
             else:
                 raise e
 
+    def snapshots(self):
+        snapshots = []
+        for line in virsh('snapshot-list', self.name, '--name', _iter=True):
+            line = line.rstrip()
+            if line:
+                snapshots.append(line)
+        return snapshots
+
     def create(self):
         """
         Create a guest from a pre-existing template. Save and reuse the
@@ -211,6 +219,10 @@ class Guest:
         if disk_files is None:
             log.info("Skipping destroy; domain '%s' not found.", self.name)
             return 0
+
+        for snapshot in self.snapshots():
+            log.info("Deleting snapshot '%s' from domain '%s'.", snapshot, self.name)
+            virsh('snapshot-delete', self.name, snapshot)
 
         log.info("Destroying domain '%s'.", self.name)
         try:
