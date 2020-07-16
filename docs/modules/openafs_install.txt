@@ -1,20 +1,28 @@
 > OPENAFS_INSTALL    (/home/mmeffie/src/ansible-openafs/roles/openafs_devel/library/openafs_install.py)
 
-        Install OpenAFS binaries built from source. This module usually needs to be run as root.
+        Install OpenAFS binaries built from source. This module usually needs to be run
+        as root.
 
   * This module is maintained by The Ansible Community
 OPTIONS (= is mandatory):
 
 = destdir
-        Absolute path to the installation file tree to be installed. The file tree is usually created by the openafs_build module,
-        and if so, the openafs_build results may provide the destdir value.
+        Absolute path to the installation file tree to be installed. The file tree is
+        usually created by the openafs_build module, and if so, the openafs_build
+        results may provide the destdir value.
 
         type: path
 
-- logdir
-        Absolute path to the installation logs for troubleshooting. If not given, no log files are written.
+- exclude
+        List of file patterns to be excluded.
         [Default: (null)]
-        type: type
+        type: list
+
+- logdir
+        Absolute path to the installation logs for troubleshooting. If not given, no
+        log files are written.
+        [Default: (null)]
+        type: path
 
 
 AUTHOR: Michael Meffie
@@ -22,13 +30,13 @@ AUTHOR: Michael Meffie
           status:
           - preview
           supported_by: community
-
+        
 
 EXAMPLES:
 
 - name: Build OpenAFS from source
   openafs_build:
-    topdir: ~/src/openafs
+    projectdir: ~/src/openafs
     target: install
     destdir: /tmp/openafs/dest
 
@@ -36,7 +44,8 @@ EXAMPLES:
   become: yes
   openafs_install:
     destdir: /tmp/openafs/dest
-    logdir: /tmp/install_logs
+    exclude: /usr/vice/etc/*
+    logdir: /tmp/openafs/logs
 
 
 RETURN VALUES:
@@ -54,6 +63,13 @@ files:
   sample:
     - /usr/bin/pts
     - /usr/sbin/vos
+
+excluded:
+  description: Files excluded from the installation
+  returned: success
+  type: list
+  sample:
+    - /usr/vice/etc/afs.conf
 
 commands:
   description: Command paths

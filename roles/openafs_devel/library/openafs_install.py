@@ -28,11 +28,16 @@ options:
     type: path
     required: true
 
+  exclude:
+    description: >
+      List of file patterns to be excluded.
+    type: list
+
   logdir:
     description: >
       Absolute path to the installation logs for troubleshooting.
       If not given, no log files are written.
-    type: type
+    type: path
 
 author:
   - Michael Meffie
@@ -49,6 +54,7 @@ EXAMPLES = r'''
   become: yes
   openafs_install:
     destdir: /tmp/openafs/dest
+    exclude: /usr/vice/etc/*
     logdir: /tmp/openafs/logs
 '''
 
@@ -66,6 +72,13 @@ files:
   sample:
     - /usr/bin/pts
     - /usr/sbin/vos
+
+excluded:
+  description: Files excluded from the installation
+  returned: success
+  type: list
+  sample:
+    - /usr/vice/etc/afs.conf
 
 commands:
   description: Command paths
@@ -88,7 +101,10 @@ import os
 import platform
 import pprint
 import shutil
+import fnmatch
 from ansible.module_utils.basic import AnsibleModule
+
+logger = logging.getLogger(__name__)
 
 COMMANDS = {
     'akeyconvert',
@@ -112,42 +128,51 @@ COMMANDS = {
 class FileError(Exception):
     pass
 
-def copy_tree(src, dst):
+def copy_tree(src, dst, exclude=None):
     """Copy an entire directory tree.
 
     Creates destination if needed. Clobbers any existing files/symlinks.
 
     :arg src: directory to copy from. must already exist
     :arg dst: directory to copy to. created if not already present
+    :arg exclude: list of patterns (glob notation) to exclude
     :returns: a list of files/symlinks created
     """
     outputs = []
+    if exclude is None:
+        exclude = []
+    def is_exclusion(fn):
+        for pattern in exclude:
+            if fnmatch.fnmatch(fn, pattern):
+                return True
+        return False
     if not os.path.isdir(src):
-        raise FileError("cannot copy tree '%s': not a directory" % src)
+        raise FileError("Cannot copy tree '%s': not a directory" % src)
     try:
         names = os.listdir(src)
     except os.error:
-        raise FileError("error listing files in '%s'" % src)
+        raise FileError("Error listing files in '%s'" % src)
     if not os.path.isdir(dst):
         os.makedirs(dst)
     for n in names:
         src_name = os.path.join(src, n)
         dst_name = os.path.join(dst, n)
-        if os.path.islink(src_name):
+        if is_exclusion(dst_name):
+            logger.info("Excluding '%s'.", dst_name)
+        elif os.path.islink(src_name):
             link_dest = os.readlink(src_name)
             if os.path.exists(dst_name):
                 os.remove(dst_name)
             os.symlink(link_dest, dst_name)
             outputs.append(dst_name)
         elif os.path.isdir(src_name):
-            outputs.extend(copy_tree(src_name, dst_name))
+            outputs.extend(copy_tree(src_name, dst_name, exclude))
         else:
             shutil.copy2(src_name, dst_name)
             outputs.append(dst_name)
     return outputs
 
 def main():
-    logger = logging.getLogger(__name__)
     results = dict(
         changed=False,
         msg='',
@@ -159,14 +184,19 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             destdir=dict(type='path', required=True),
+            exclude=dict(type='list', default=[]),
             logdir=dict(type='path'),
         ),
         supports_check_mode=False
     )
     destdir = module.params['destdir']
+    exclude = module.params['exclude']
     logdir = module.params['logdir']
 
-    if logdir and os.path.isdir(logdir):
+    if logdir and not os.path.exists(logdir):
+        os.makedirs(logdir)
+
+    if logdir:
         install_log = os.path.join(logdir, 'install.log')
         logging.basicConfig(
             level=logging.INFO,
@@ -184,7 +214,7 @@ def main():
         module.fail_json(msg=msg)
 
     logger.info('Copying files from %s to /' % destdir)
-    files = copy_tree(destdir, '/')
+    files = copy_tree(destdir, '/', exclude)
     results['files'] = files
     if files:
         results['changed'] = True
