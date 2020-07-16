@@ -465,15 +465,9 @@ def main():
     configure_options = module.params['configure_options']
     configure_options_str = module.params['configure_options']
 
-    if not os.path.isdir(projectdir):
+    if not (os.path.exists(projectdir) and os.path.isdir(projectdir)):
         module.fail_json(msg='projectdir directory not found: %s' % projectdir)
     results['projectdir'] = os.path.abspath(projectdir)
-
-    if not builddir:
-        builddir = projectdir
-    else:
-        builddir = abspath(projectdir, builddir)
-    results['builddir'] = builddir
 
     #
     # Setup logging
@@ -499,12 +493,60 @@ def main():
     logger.debug('Parameters: %s' % pprint.pformat(module.params))
 
     #
+    # Setup paths.
+    #
+    if builddir:
+        builddir = abspath(projectdir, builddir)
+    else:
+        builddir = projectdir
+    results['builddir'] = builddir
+    logger.debug("builddir='%s'", builddir)
+
+    gitdir = os.path.abspath(os.path.join(projectdir, '.git'))
+    if not (os.path.exists(gitdir) and os.path.isdir(gitdir)):
+        gitdir = None
+    logger.debug("gitdir='%s'.", gitdir)
+
+    #
+    # Don't bother doing a build on a unchanged, clean git repo.
+    #
+    git_sha1 = None
+    git_sha1_file = os.path.join(logdir, 'git_sha1')
+    destdir_file = os.path.join(logdir, 'destdir')
+    if gitdir:
+        git = [module.get_bin_path('git', required=True), 'diff-files', '--quiet']
+        rc, out, err = module.run_command(git, cwd=projectdir)
+        if rc != 0:
+            logger.info('git repo is dirty')
+        else:
+            git = [module.get_bin_path('git', required=True), 'show-ref', '--hash', 'HEAD']
+            rc, out, err = module.run_command(git, cwd=projectdir)
+            if rc == 0:
+                git_sha1 = out.splitlines()[0]
+                logger.info('Current sha1 %s', git_sha1)
+                results['git_sha1'] = git_sha1
+
+    if git_sha1 and os.path.exists(git_sha1_file):
+        with open(git_sha1_file) as f:
+            last_sha1 = f.read().rstrip()
+        logger.info('Last sha1 %s', last_sha1)
+        if git_sha1 == last_sha1:
+            # Retrieve our last destdir for the install task.
+            with open(destdir_file) as f:
+                last_destdir = f.read().rstrip()
+            results['destdir'] = last_destdir
+            results['ansible_facts']['afs_build_destdir'] = last_destdir
+            logger.info('Skipping build; no changes since last build.')
+            results['msg'] = 'Build skipped; no changes since last build.'
+            module.exit_json(**results)
+
+    #
     # Cleanup previous build.
     #
     if not clean:
         logger.info('Skipping clean; clean is disabled.')
     else:
-        if os.path.isdir(os.path.join(projectdir, '.git')):
+        if gitdir:
             clean_command = [
                 module.get_bin_path('git', required=True), 'clean',
                 '-f', '-d', '-x', '--exclude=.ansible'
@@ -640,6 +682,17 @@ def main():
                 logger.debug('shutil.copy2("%s", "%s")' % (src, dst))
                 shutil.copy2(src, dst)
                 results['changed'] = True
+
+    #
+    # Save git sha1 for next time.
+    #
+    if git_sha1:
+        with open(git_sha1_file, 'w') as f:
+            logger.info("Writing '%s' to file '%s'.", git_sha1, git_sha1_file)
+            f.write("%s\n" % git_sha1)
+        with open(destdir_file, 'w') as f:
+            logger.info("Writing '%s' to file '%s'.", destdir, destdir_file)
+            f.write("%s\n" % destdir)
 
     logger.debug('Results: %s' % pprint.pformat(results))
     results['msg'] = 'Build completed'
