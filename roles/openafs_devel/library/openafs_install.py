@@ -102,6 +102,7 @@ import platform
 import pprint
 import shutil
 import fnmatch
+import filecmp
 from ansible.module_utils.basic import AnsibleModule
 
 logger = logging.getLogger(__name__)
@@ -138,7 +139,8 @@ def copy_tree(src, dst, exclude=None):
     :arg exclude: list of patterns (glob notation) to exclude
     :returns: a list of files/symlinks created
     """
-    outputs = []
+    copied = []
+    skipped = []
     if exclude is None:
         exclude = []
     def is_exclusion(fn):
@@ -147,11 +149,11 @@ def copy_tree(src, dst, exclude=None):
                 return True
         return False
     if not os.path.isdir(src):
-        raise FileError("Cannot copy tree '%s': not a directory" % src)
+        raise FileError("Cannot copy tree '%s': not a directory." % src)
     try:
         names = os.listdir(src)
     except os.error:
-        raise FileError("Error listing files in '%s'" % src)
+        raise FileError("Error listing files in '%s'." % src)
     if not os.path.isdir(dst):
         os.makedirs(dst)
     for n in names:
@@ -159,18 +161,25 @@ def copy_tree(src, dst, exclude=None):
         dst_name = os.path.join(dst, n)
         if is_exclusion(dst_name):
             logger.info("Excluding '%s'.", dst_name)
+        elif os.path.isdir(src_name):
+            c, s = copy_tree(src_name, dst_name, exclude)
+            copied.extend(c)
+            skipped.extend(s)
+        elif filecmp.cmp(src_name, dst_name, shallow=True):
+            logger.info("Skipping '%s'; already copied.", dst_name)
+            skipped.append(dst_name)
         elif os.path.islink(src_name):
             link_dest = os.readlink(src_name)
             if os.path.exists(dst_name):
                 os.remove(dst_name)
+            logger.debug("Creating symlink '%s'.", dst_name)
             os.symlink(link_dest, dst_name)
-            outputs.append(dst_name)
-        elif os.path.isdir(src_name):
-            outputs.extend(copy_tree(src_name, dst_name, exclude))
+            copied.append(dst_name)
         else:
+            logger.debug("Copying '%s' to '%s'.", src_name, dst_name)
             shutil.copy2(src_name, dst_name)
-            outputs.append(dst_name)
-    return outputs
+            copied.append(dst_name)
+    return (copied, skipped)
 
 def main():
     results = dict(
@@ -214,9 +223,10 @@ def main():
         module.fail_json(msg=msg)
 
     logger.info('Copying files from %s to /' % destdir)
-    files = copy_tree(destdir, '/', exclude)
+    copied, skipped = copy_tree(destdir, '/', exclude)
+    files = copied + skipped
     results['files'] = files
-    if files:
+    if copied:
         results['changed'] = True
 
     for file_ in files:
@@ -237,18 +247,14 @@ def main():
         results['logfiles'].append(install_list)
 
     if platform.system() == 'Linux':
-        logger.info('Running ldconfig to update shared object cache.')
-        ldconfig = ['/sbin/ldconfig']
-        rc, out, err = module.run_command(ldconfig, check_rc=True)
-        results['changed'] = True
-
-    if results['kmods']:
-        if platform.system() == 'Linux':
-            logger.info('Running depmod to update modprobe dependencies.')
-            depmod = ['/sbin/depmod', '-a']
-            rc, out, err = module.run_command(depmod, check_rc=True)
-            results['changed'] = True
-
+        if copied:
+            logger.info('Running ldconfig to update shared object cache.')
+            ldconfig = ['/sbin/ldconfig']
+            rc, out, err = module.run_command(ldconfig, check_rc=True)
+            if results['kmods']:
+                logger.info('Running depmod to update modprobe dependencies.')
+                depmod = ['/sbin/depmod', '-a']
+                rc, out, err = module.run_command(depmod, check_rc=True)
 
     msg = 'Install completed'
     logger.info(msg)
