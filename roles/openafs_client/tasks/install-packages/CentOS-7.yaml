@@ -42,7 +42,7 @@
       register: yum_results
 
     - name: "CentOS-7: Get dkms status"
-      command: dkms status
+      command: /usr/sbin/dkms status
       check_mode: no
       changed_when: false
       register: dkms_status

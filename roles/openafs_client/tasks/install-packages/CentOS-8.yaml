@@ -43,7 +43,7 @@
 
     - name: "CentOS-8: Get dkms status"
       become: yes
-      command: dkms status
+      command: /usr/sbin/dkms status
       check_mode: no
       changed_when: false
       register: dkms_status
