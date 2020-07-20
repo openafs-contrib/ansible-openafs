@@ -143,11 +143,18 @@ def copy_tree(src, dst, exclude=None):
     skipped = []
     if exclude is None:
         exclude = []
+
     def is_exclusion(fn):
         for pattern in exclude:
             if fnmatch.fnmatch(fn, pattern):
                 return True
         return False
+
+    def is_same(src, dst):
+        if os.path.exists(src) and os.path.exists(dst):
+            return filecmp.cmp(src, dst, shallow=True)
+        return False
+
     if not os.path.isdir(src):
         raise FileError("Cannot copy tree '%s': not a directory." % src)
     try:
@@ -165,8 +172,8 @@ def copy_tree(src, dst, exclude=None):
             c, s = copy_tree(src_name, dst_name, exclude)
             copied.extend(c)
             skipped.extend(s)
-        elif filecmp.cmp(src_name, dst_name, shallow=True):
-            logger.info("Skipping '%s'; already copied.", dst_name)
+        elif is_same(src_name, dst_name):
+            logger.info("Skipping '%s'; unchanged.", dst_name)
             skipped.append(dst_name)
         elif os.path.islink(src_name):
             link_dest = os.readlink(src_name)
