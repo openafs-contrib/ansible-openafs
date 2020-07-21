@@ -1,0 +1,47 @@
+---
+- name: Load kernel module
+  block:
+    - name: Get kernel modules
+      slurp:
+        src: /proc/modules
+      register: modules
+
+    - name: Dump kernel modules
+      debug:
+        msg: "{{ modules.content | b64decode }}"
+        verbosity: 1
+
+    - name: Load openafs kernel module
+      become: yes
+      command: modprobe openafs
+      when: (modules.content | b64decode) is not search('openafs')
+
+    - name: Verify the OpenAFS kernel module is loaded
+      wait_for:
+        path: /proc/modules
+        search_regex: openafs
+        timeout: 5
+
+- name: Setup openafs-client systemd service
+  when: ansible_service_mgr == 'systemd'
+  block:
+    - name:  Install openafs-client unit file
+      become: yes
+      template:
+        src: openafs-client.service.j2
+        dest: /usr/lib/systemd/system/openafs-client.service
+        owner: root
+        group: root
+        mode: "0644"
+      register: client_service_results
+
+    - name: Reload systemd
+      become: yes
+      systemd:
+        daemon_reload: yes
+      when: client_service_results.changed
+
+- name: Install opeanfs-client init scripts
+  when: ansible_service_mgr != 'systemd'
+  fail:
+    msg: todo

@@ -3,22 +3,6 @@
 afs_kadmin: "/usr/bin/kadmin"
 afs_klist: "/usr/bin/klist"
 
-# OpenAFS commands.
-afs_asetkey: "/usr/sbin/asetkey"
-afs_akeyconvert: "/usr/sbin/akeyconvert"
-afs_pts: "/usr/bin/pts"
-afs_vos: "/usr/bin/vos"
-afs_udebug: "/usr/bin/udebug"
-
-# OpenAFS Installation paths.
-afs_afsconfdir: "/etc/openafs/server"
-afs_afsdbdir: "/var/lib/openafs/db"
-afs_afslocaldir: "/var/lib/openafs/local"
-afs_afslogdir: "/var/log/openafs"
-afs_afssrvdir: "/usr/lib/openafs"
-afs_viceetcdir: "/etc/openafs"
-afs_bosconfdir: "/etc/openafs"
-
 # Service name
 afs_server_service: openafs-fileserver
 

@@ -1,4 +1,8 @@
 ---
+#
+# NOTICE: This file is deprecated.
+#
+
 - name: Check for dest directory
   stat:
     path: "{{ afs_server_build_destdir }}"
@@ -22,7 +26,6 @@
     afs_devel_fetch_method: "{{ afs_server_build_fetch_method }}"
     afs_devel_git_repo: "{{ afs_server_build_git_repo }}"
     afs_devel_git_ref: "{{ afs_server_build_git_ref }}"
-  when: afs_server_build_force|bool or not destdir_st.stat.exists
 
 - name: Install dest directory to system
   become: yes
@@ -37,9 +40,8 @@
 - name: Platform specific post-install tasks
   include_tasks: "{{ item }}"
   with_first_found:
-    - "post-rsync/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
-    - "post-rsync/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
-    - "post-rsync/{{ ansible_distribution }}.yaml"
-    - "post-rsync/{{ ansible_os_family }}.yaml"
-    - "unknown.yaml"
-  when: rsync_results.changed
+    - "{{ role_path }}/tasks/post-rsync/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
+    - "{{ role_path }}/tasks/post-rsync/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
+    - "{{ role_path }}/tasks/post-rsync/{{ ansible_distribution }}.yaml"
+    - "{{ role_path }}/tasks/post-rsync/{{ ansible_os_family }}.yaml"
+    - "{{ role_path }}/tasks/unknown.yaml"

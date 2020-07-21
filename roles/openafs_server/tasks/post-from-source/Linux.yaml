@@ -1,0 +1,24 @@
+---
+- name: Setup openafs-server systemd service
+  when: ansible_service_mgr == 'systemd'
+  block:
+    - name: Install openafs-server unit file
+      become: yes
+      template:
+        src: openafs-server.service.j2
+        dest: /usr/lib/systemd/system/{{ afs_server_service }}.service
+        owner: root
+        group: root
+        mode: "0644"
+      register: server_service_results
+
+    - name: Reload systemd
+      become: yes
+      systemd:
+        daemon_reload: yes
+      when: server_service_results.changed
+
+- name: Install openafs-server init script
+  when: ansible_service_mgr != 'systemd'
+  fail:
+    msg: todo

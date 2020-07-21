@@ -10,6 +10,6 @@ help:
 
 .PHONY: lint
 lint:
+	$(PYFLAKES) library/*.py
 	yamllint .
 	ansible-lint .
-	$(PYFLAKES) library/*.py

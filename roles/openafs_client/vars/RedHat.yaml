@@ -1,8 +1,4 @@
 ---
-# OpenAFS installation paths.
-afs_viceetcdir: "/usr/vice/etc"
-afs_afscachedir: "/usr/vice/cache"
-
 # Service name
 afs_client_service: openafs-client
 

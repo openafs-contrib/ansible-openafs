@@ -1,9 +1,6 @@
 ---
 #
-# Build an OpenAFS binary distribution from source code.
-#
-# This file is deprecated and is to be replaced with the
-# custom build_openafs module in ../library.
+# NOTICE: This file is deprecated.
 #
 
 - name: Gather variables for each operating system
@@ -88,11 +85,41 @@
     dest: "{{ afs_devel_builddir }}/make_results"
   changed_when: false
 
+# Temporary workaround.
+- name: Set OpenAFS commands
+  set_fact:
+    afs_akeyconvert: /usr/sbin/akeyconvert
+    afs_asetkey: /usr/sbin/asetkey
+    afs_dafileserver: /usr/afs/bin/dafileserver
+    afs_dasalvager: /usr/afs/bin/dasalvager
+    afs_davolserver: /usr/afs/bin/davolserver
+    afs_fileserver: /usr/afs/bin/fileserver
+    afs_ptserver: /usr/afs/bin/ptserver
+    afs_pts: /usr/bin/pts
+    afs_rxdebug: /usr/sbin/rxdebug
+    afs_salvager: /usr/afs/bin/salvager
+    afs_salvageserver: /usr/afs/bin/salvageserver
+    afs_udebug: /usr/bin/udebug
+    afs_vlserver: /usr/afs/bin/vlserver
+    afs_volserver: /usr/afs/bin/volserver
+    afs_vos: /usr/sbin/vos
+
+# Temporary workaround.
+- name: Set OpenAFS installation paths
+  set_fact:
+    afs_afsbosconfigdir: /usr/afs/local
+    afs_afsconfdir: /usr/afs/etc
+    afs_afsdbdir: /usr/afs/db
+    afs_afslocaldir: /usr/afs/local
+    afs_afslogdir: /usr/afs/logs
+    afs_afssrvdir: /usr/afs/bin
+    afs_viceetcdir: /usr/vice/etc
+
 - name: Finalize destination directory
   include_tasks: "{{ item }}"
   with_first_found:
-    - "post-build/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
-    - "post-build/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
-    - "post-build/{{ ansible_distribution }}.yaml"
-    - "post-build/{{ ansible_os_family }}.yaml"
-    - "unknown.yaml"
+    - "{{ role_path }}/tasks/post-build/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
+    - "{{ role_path }}/tasks/post-build/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
+    - "{{ role_path }}/tasks/post-build/{{ ansible_distribution }}.yaml"
+    - "{{ role_path }}/tasks/post-build/{{ ansible_os_family }}.yaml"
+    - "{{ role_path }}/unknown.yaml"

@@ -1,0 +1,76 @@
+---
+#
+# Build and install OpenAFS servers from source code.
+#
+# Skip the 'checkout' tag if you want to build a dirty repo, otherwise
+# the git task will fail.
+#
+
+- import_role:
+    name: openafs_devel
+
+- name: Checkout source code
+  git:
+    repo: "{{ afs_server_git_repo | d('https://github.com/openafs/openafs.git') }}"
+    version: "{{ afs_server_git_ref | d('master') }}"
+    dest: "{{ afs_server_project_dir | d('~/openafs-server') }}"
+  register: checkout_results
+  tags:
+    - checkout
+
+- name: Set server configure options
+  set_fact:
+    afs_server_configure_options:
+      prefix: /
+      enable:
+        - debug
+        - debug-lwp
+      disable:
+        - kernel-module
+        - linux-syscall-probing
+  when: afs_server_configure_options is undefined
+  tags:
+    - build
+
+- name: Build OpenAFS servers
+  openafs_build:
+    state: built
+    projectdir: "{{ afs_server_project_dir | d('~/openafs-server') }}"
+    clean: "{{ checkout_results is defined and checkout_results.changed }}"
+    target: install_nolibafs
+    destdir: packaging/dest
+    configure_options:
+      - "{{ afs_server_configure_options }}"
+  register: server_build_results
+  tags:
+    - build
+
+- name: Trace build results
+  debug:
+    var: server_build_results
+    verbosity: 1
+  tags:
+    - build
+
+- name: Install OpenAFS server binaries
+  become: yes
+  openafs_install:
+    destdir: "{{ server_build_results.destdir }}"
+    exclude:
+      - "/usr/vice"
+      - "*/afsd"
+    logdir: /var/tmp/ansible/openafs-server
+  tags:
+    - install
+
+- name: Post install tasks
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "{{ role_path }}/tasks/post-from-source/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
+    - "{{ role_path }}/tasks/post-from-source/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
+    - "{{ role_path }}/tasks/post-from-source/{{ ansible_distribution }}.yaml"
+    - "{{ role_path }}/tasks/post-from-source/{{ ansible_os_family }}.yaml"
+    - "{{ role_path }}/tasks/post-from-source/{{ ansible_system }}.yaml"
+    - "{{ role_path }}/tasks/unknown.yaml"
+  tags:
+    - install

@@ -16,7 +16,7 @@
 
     - name: Build OpenAFS server binaries
       openafs_build:
-        state: completed
+        state: built
         projectdir: ~/src/openafs
         builddir: /var/tmp/openafs-server/build
         logdir: /var/tmp/openafs-server/log
@@ -24,15 +24,15 @@
         target: install_nolibafs
         destdir: /var/tmp/openafs-server/dest
         configure_options:
-          prefix: /
-          enable:
-            - debug
-            - debug-lwp
-            - debug-kernel
-          disable:
-            - kernel-module
-            - linux-syscall-probing
-          without: swig
+          - prefix: /
+            enable:
+              - debug
+              - debug-lwp
+              - debug-kernel
+            disable:
+              - kernel-module
+              - linux-syscall-probing
+            without: swig
 
     - name: Install OpenAFS servers
       become: yes
@@ -42,7 +42,7 @@
 
     - name: Build OpenAFS client
       openafs_build:
-        state: kmodready
+        state: kernel_module_built
         projectdir: ~/src/openafs
         builddir: /var/tmp/openafs-client/build
         logdir: /var/tmp/openafs-client/log
@@ -50,15 +50,15 @@
         target: install_only_libafs
         destdir: /var/tmp/openafs-client/dest
         configure_options:
-          prefix: /
-          enable:
-            - debug
-            - debug-lwp
-            - debug-kernel
-            - kernel-module
-          disable: linux-syscall-probing
-          with: linux-kernel-packaging
-          without: swig
+          - prefix: /
+            enable:
+              - debug
+              - debug-lwp
+              - debug-kernel
+              - kernel-module
+            disable: linux-syscall-probing
+            with: linux-kernel-packaging
+            without: swig
       register: build_results
 
     - debug:

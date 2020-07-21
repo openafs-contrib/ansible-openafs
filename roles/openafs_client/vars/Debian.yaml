@@ -1,10 +1,6 @@
 ---
-# OpenAFS installation paths.
-afs_viceetcdir: "/etc/openafs"
-afs_afscachedir: "/var/cache/openafs"
-
-# Cache info
-afs_cacheinfo_cache: "/var/cache/openafs"
+# Default cache directory on Debian.
+_afs_cachedir: /var/cache/openafs
 
 # Service name
 afs_client_service: openafs-client

@@ -23,9 +23,7 @@ description:
 
   - The M(openafs_build) module will run the OpenAFS C(regen.sh) command, then
     run C(configure) with the given I(configure_options), and then run C(make)
-    with the given I(target).  The C(regen.sh) execution is skipped when the
-    C(configure) file already exists.  The C(configure) execution is skipped
-    when the C(config.status) file already exists.
+    with the given I(target).
 
   - A complete set of build log files are written on the I(logdir) directory on
     the host for build troubleshooting.
@@ -40,7 +38,7 @@ description:
     done.
 
   - A check for a loadable kernel module is done after the build completes when
-    the I(state) is C(kmodready).  Be sure the I(target) and
+    the I(state) is C(kernel_module_built).  Be sure the I(target) and
     I(configure_options) are set to build a kernel module when using the
     C(mkodready) state.
 
@@ -57,16 +55,14 @@ requirements:
 options:
   state:
     description:
-      - C(complete) Run regen.sh, configure, make
-      - C(kmodready) After build is complete, also verify a kernel module was
-        built for the current running kernel version. Be sure the target
-        and configure options are set to build a client when this state is
-        in use.
+      - C(built) Build completed
+      - C(kernel_module_built) After the build is completed, verify a kernel
+        module was built for the current running kernel version.
     type: str
     default: complete
     choices:
-      - completed
-      - kmodready
+      - built
+      - kernel_module_built
 
   projectdir:
     description:
@@ -141,15 +137,9 @@ options:
 
   configure_options:
     description:
-      - The C(configure) options, as a dictionary.
-      - Provide only one of I(configure_options) or I(configure_options_str).
-    type: dict
-
-  configure_options_str:
-    description:
-      - The C(configure) arguments, as a string of command line options.
-      - Provide only one of I(configure_options) or I(configure_options_str).
-    type: dict
+      - The C(configure) options, as a dictionary or string of configure command
+        line arguments.
+    type: list
 
 author:
   - Michael Meffie (@meffie)
@@ -162,7 +152,7 @@ EXAMPLES = r'''
 
 - name: Build OpenAFS server binaries for RHEL
   openafs_build:
-    state: completed
+    state: built
     projectdir: ~/src/openafs
     clean: yes
     target: install_nolibafs
@@ -188,17 +178,17 @@ EXAMPLES = r'''
 
 - name: Build OpenAFS legacy distribution
   openafs_build:
-    state: kmodready
+    state: kernel_module_built
     projectdir: ~/src/openafs
     clean: yes
     target: dest
     configure_options:
-      enable:
-        - debug
-        - transarc_paths
-        - kernel_module
-      with:
-        - linux_kernel_packaging
+      - enable:
+          - debug
+          - transarc_paths
+          - kernel_module
+        with:
+          - linux_kernel_packaging
 
 - name: Build OpenAFS with configure options as a string
   openafs_build:
@@ -206,7 +196,9 @@ EXAMPLES = r'''
     destdir: /tmp/openafs/mydest
     clean: yes
     target: install
-    configure_options_str: "--enable-debug --enable-kernel-module"
+    configure_options:
+      - "--enable-debug"
+      - "--enable-kernel-module"
 '''
 
 RETURN = r'''
@@ -265,9 +257,38 @@ import pprint
 import re
 import shlex
 import shutil
+import json
 from multiprocessing import cpu_count
 from ansible.module_utils.basic import AnsibleModule
 
+_MAKEFILE_PATHS = """
+include ./src/config/Makefile.config
+all:
+	@echo afsbackupdir=$(afsbackupdir)
+	@echo afsbosconfigdir=$(afsbosconfigdir)
+	@echo afsconfdir=$(afsconfdir)
+	@echo afsdbdir=$(afsdbdir)
+	@echo afslocaldir=$(afslocaldir)
+	@echo afslogsdir=$(afslogsdir)
+	@echo afssrvbindir=$(afssrvbindir)
+	@echo afskerneldir=$(afskerneldir)
+	@echo afssrvlibexecdir=$(afssrvlibexecdir)
+	@echo afssrvsbindir=$(afssrvsbindir)
+	@echo afsdatadir=$(afsdatadir)
+	@echo bindir=$(bindir)
+	@echo exec_prefix=$(exec_prefix)
+	@echo datarootdir=$(datarootdir)
+	@echo datadir=$(datadir)
+	@echo includedir=$(includedir)
+	@echo libdir=$(libdir)
+	@echo libexecdir=$(libexecdir)
+	@echo localstatedir=$(localstatedir)
+	@echo mandir=$(mandir)
+	@echo prefix=$(prefix)
+	@echo sbindir=$(sbindir)
+	@echo sysconfdir=$(sysconfdir)
+	@echo viceetcdir=$(viceetcdir)
+"""
 
 class FileError(Exception):
     pass
@@ -430,10 +451,11 @@ def main():
         projectdir=None,
         logfiles=[],
         kmods=[],
+        dirs={},
     )
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(choices=['completed', 'kmodready'], default='completed'),
+            state=dict(choices=['built', 'kernel_module_built'], default='built'),
             projectdir=dict(type='path', required=True),
             builddir=dict(type='path'),
             logdir=dict(type='path'),
@@ -444,10 +466,8 @@ def main():
             jobs=dict(type='int', default=cpu_count()),
             manpages=dict(type='bool', default=True),
             destdir=dict(type='path'),
-            configure_options=dict(type='dict'),
-            configure_options_str=dict(type='str'), # alternative
+            configure_options=dict(type='list', element=('str', 'dict')),
         ),
-        mutually_exclusive=[['configure_options', 'configure_options_str']],
         supports_check_mode=False,
     )
 
@@ -463,11 +483,14 @@ def main():
     manpages = module.params['manpages']
     destdir = module.params['destdir']
     configure_options = module.params['configure_options']
-    configure_options_str = module.params['configure_options']
 
     if not (os.path.exists(projectdir) and os.path.isdir(projectdir)):
         module.fail_json(msg='projectdir directory not found: %s' % projectdir)
     results['projectdir'] = os.path.abspath(projectdir)
+
+    # Find `make` if not specified.
+    if not make:
+        make = module.get_bin_path('make', required=True)
 
     #
     # Setup logging
@@ -511,8 +534,6 @@ def main():
     # Don't bother doing a build on a unchanged, clean git repo.
     #
     git_sha1 = None
-    git_sha1_file = os.path.join(logdir, 'git_sha1')
-    destdir_file = os.path.join(logdir, 'destdir')
     if gitdir:
         git = [module.get_bin_path('git', required=True), 'diff-files', '--quiet']
         rc, out, err = module.run_command(git, cwd=projectdir)
@@ -526,19 +547,15 @@ def main():
                 logger.info('Current sha1 %s', git_sha1)
                 results['git_sha1'] = git_sha1
 
-    if git_sha1 and os.path.exists(git_sha1_file):
-        with open(git_sha1_file) as f:
-            last_sha1 = f.read().rstrip()
-        logger.info('Last sha1 %s', last_sha1)
-        if git_sha1 == last_sha1:
-            # Retrieve our last destdir for the install task.
-            with open(destdir_file) as f:
-                last_destdir = f.read().rstrip()
-            results['destdir'] = last_destdir
-            results['ansible_facts']['afs_build_destdir'] = last_destdir
-            logger.info('Skipping build; no changes since last build.')
-            results['msg'] = 'Build skipped; no changes since last build.'
-            module.exit_json(**results)
+    if git_sha1 and os.path.exists(os.path.join(logdir, 'results.json')):
+        saved_results = {}
+        with open(os.path.join(logdir, 'results.json')) as f:
+            saved_results = json.load(f)
+            logger.debug('saved_results=%s', saved_results)
+        if git_sha1 == saved_results.get('git_sha1'):
+            saved_results['changed'] = False
+            saved_results['msg'] = 'Build skipped; no changes since last build.'
+            module.exit_json(**saved_results)
 
     #
     # Cleanup previous build.
@@ -579,37 +596,45 @@ def main():
             f.write(version)
 
     #
-    # Run autoconf
+    # Run autoconf.
     #
-    if os.path.exists(os.path.join(projectdir, 'configure')):
-        logger.info('Skipping regen; found %s' % os.path.join(projectdir, 'configure'))
-    else:
-        regen_command = [os.path.join(projectdir, 'regen.sh')]
-        if not manpages:
-            regen_command.append('-q')
-        run_command('regen', regen_command, projectdir, module, logger, logdir, results)
+    regen_command = [os.path.join(projectdir, 'regen.sh')]
+    if not manpages:
+        regen_command.append('-q')
+    run_command('regen', regen_command, projectdir, module, logger, logdir, results)
 
     #
-    # Run configure
+    # Run configure.
     #
-    if os.path.exists(os.path.join(builddir, 'config.status')):
-        logger.info('Skipping configure; found %s' % os.path.join(builddir, 'config.status'))
-    else:
-        configure_command = [os.path.join(projectdir, 'configure')]
-        if configure_options:
-            args = options_to_args(configure_options)
-        elif configure_options_str:
-            args = shlex.split(configure_options_str)
+    configure_command = [os.path.join(projectdir, 'configure')]
+    for element in configure_options:
+        if isinstance(element, dict):
+            configure_command.extend(options_to_args(element))
         else:
-            args = []
-        configure_command.extend(args)
-        run_command('configure', configure_command, builddir, module, logger, logdir, results)
+            configure_command.extend(shlex.split(element))
+    run_command('configure', configure_command, builddir, module, logger, logdir, results)
 
     #
-    # Run make
+    # Get configured installation directories.
     #
-    if not make:
-        make = module.get_bin_path('make', required=True)
+    with open(os.path.join(builddir, '.Makefile.dirs'), 'w') as f:
+        f.write(_MAKEFILE_PATHS)
+    rc, out, err = module.run_command([make, '-f', '.Makefile.dirs'], cwd=builddir)
+    if rc != 0:
+        module.fail_json(msg='Failed to find installation directories: %s' % err)
+    for line in out.splitlines():
+        line = line.rstrip()
+        if '=' in line:
+            name, value = line.split('=', 1)
+            name = 'afs_' + name
+            if value.startswith('//'):
+                value = value.replace('//', '/', 1)  # Cleanup leading double slashes.
+            results['dirs'][name] = value
+            results['ansible_facts'][name] = value
+
+    #
+    # Run make.
+    #
     make_command = [make]
     if jobs > 0:
         make_command.extend(['-j', '%d' % jobs])
@@ -626,7 +651,7 @@ def main():
     #
     kmod_pattern = os.path.join(builddir, 'src', 'libafs', 'MODLOAD-*', '*afs.ko')
     results['kmods'] = glob.glob(kmod_pattern)
-    if state == 'kmodready':
+    if state == 'kernel_module_built':
         logger.info('Checking for kernel module for %s.' % platform.release())
         modloads = []
         for kmod in results['kmods']:
@@ -683,23 +708,17 @@ def main():
                 shutil.copy2(src, dst)
                 results['changed'] = True
 
-    #
-    # Save git sha1 for next time.
-    #
-    if git_sha1:
-        with open(git_sha1_file, 'w') as f:
-            logger.info("Writing '%s' to file '%s'.", git_sha1, git_sha1_file)
-            f.write("%s\n" % git_sha1)
-        with open(destdir_file, 'w') as f:
-            logger.info("Writing '%s' to file '%s'.", destdir, destdir_file)
-            f.write("%s\n" % destdir)
-
     logger.debug('Results: %s' % pprint.pformat(results))
     results['msg'] = 'Build completed'
     logger.info(results['msg'])
+
+    #
+    # Save git sha1 and directories for skipped builds.
+    #
+    with open(os.path.join(logdir, 'results.json'), 'w') as f:
+        f.write(json.dumps(results, indent=4))
 
     module.exit_json(**results)
 
 if __name__ == '__main__':
     main()
-

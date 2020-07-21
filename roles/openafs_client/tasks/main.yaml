@@ -37,7 +37,7 @@
   become: yes
   file:
     state: directory
-    path: "{{ afs_afscachedir }}"
+    path: "{{ afs_cachedir }}"
     mode: 0700
     owner: root
     group: root
@@ -50,19 +50,6 @@
     mode: 0755
     owner: root
     group: root
-
-- name: Install packages
-  include_tasks: "{{ item }}"
-  with_first_found:
-    - "install-packages/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
-    - "install-packages/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
-    - "install-packages/{{ ansible_distribution }}.yaml"
-    - "install-packages/{{ ansible_os_family }}.yaml"
-    - "unknown.yaml"
-  when: afs_client_install_method == 'package-manager'
-
-- include_tasks: "install-{{ afs_client_install_method }}.yaml"
-  when: afs_client_install_method != 'package-manager'
 
 - name: Ensure public cell configuration file exists (CellServDB.dist)
   become: yes

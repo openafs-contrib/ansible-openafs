@@ -31,27 +31,27 @@
       block:
         - name: Build OpenAFS binaries for RHEL
           openafs_build:
-            state: kmodready
+            state: kernel_module_built
             projectdir: ~/src/openafs
             clean: "{{ checkout_results.changed }}"
             target: install
             destdir: packaging/dest
             configure_options:
-              prefix: /usr
-              bindir: /usr/bin
-              libdir: /usr/lib64
-              sbindir: /usr/sbin
-              enable:
-                - debug
-                - redhat-buildsys
-                - transarc-paths
-                - kernel-module
-              disable:
-                - strip_binaries
-              with:
-                - krb5
-                - linux-kernel-packaging
-                - swig
+              - prefix: /usr
+                bindir: /usr/bin
+                libdir: /usr/lib64
+                sbindir: /usr/sbin
+                enable:
+                  - debug
+                  - redhat-buildsys
+                  - transarc-paths
+                  - kernel-module
+                disable:
+                  - strip_binaries
+                with:
+                  - krb5
+                  - linux-kernel-packaging
+                  - swig
           register: build_results_redhat
 
         - name: Build results for RedHat
@@ -64,20 +64,20 @@
       block:
         - name: Build OpenAFS binaries for Debian
           openafs_build:
-            state: kmodready
+            state: kernel_module_built
             projectdir: ~/src/openafs
             clean: "{{ checkout_results.changed }}"
             target: install
             destdir: /var/tmp/openafs/dest
             configure_options:
-              prefix: /
-              enable:
-                - debug
-                - debug-lwp
-                - debug-kernel
-              disable: linux-syscall-probing
-              with: linux-kernel-packaging
-              without: swig
+              - prefix: /
+                enable:
+                  - debug
+                  - debug-lwp
+                  - debug-kernel
+                disable: linux-syscall-probing
+                with: linux-kernel-packaging
+                without: swig
           register: build_results_debian
 
         - name: Build results for Debian

@@ -29,14 +29,14 @@
         clean: "{{ checkout_results.changed }}"
         target: dest
         destdir: packaging/dest
-        state: kmodready
+        state: kernel_module_built
         configure_options:
-          enable:
-            - debug
-            - transarc-paths
-            - kernel-module
-          with: linux-kernel-packaging
-          without: swig
+          - enable:
+              - debug
+              - transarc-paths
+              - kernel-module
+            with: linux-kernel-packaging
+            without: swig
       register: build_results
 
     - name: Build results

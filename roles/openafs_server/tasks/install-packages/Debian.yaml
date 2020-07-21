@@ -2,8 +2,8 @@
 - name: Prevent services from starting during install
   become: yes
   copy:
-    src: "Debian/policy-rc.d"
-    dest: "/usr/sbin/policy-rc.d"
+    src: Debian/policy-rc.d
+    dest: /usr/sbin/policy-rc.d
     mode: "0755"
     backup: yes
   register: change_policy_rc_result
@@ -24,17 +24,45 @@
 - name: Remove custom policy-rc file
   become: yes
   file:
-    path: "/usr/sbin/policy-rc.d"
+    path: /usr/sbin/policy-rc.d
     state: absent
   when: change_policy_rc_result.changed
 
 - name: Set bosserver startup options
   become: yes
   template:
-    src: "Debian/openafs-fileserver.j2"
-    dest: "/etc/default/openafs-fileserver"
-    mode: 0644
+    src: Debian/openafs-fileserver.j2
+    dest: /etc/default/openafs-fileserver
+    mode: "0644"
     owner: root
     group: root
   notify:
     - Restart OpenAFS servers
+
+- name: Set OpenAFS commands
+  set_fact:
+    afs_akeyconvert: /usr/sbin/akeyconvert
+    afs_asetkey: /usr/sbin/asetkey
+    afs_dafileserver: /usr/lib/openafs/dafileserver
+    afs_dasalvager: /usr/lib/openafs/dasalvager
+    afs_davolserver: /usr/lib/openafs/davolserver
+    afs_fileserver: /usr/lib/openafs/fileserver
+    afs_ptserver: /usr/lib/openafs/ptserver
+    afs_pts: /usr/bin/pts
+    afs_rxdebug: /usr/bin/rxdebug
+    afs_salvager: /usr/lib/openafs/salvager
+    afs_salvageserver: /usr/lib/openafs/salvageserver
+    afs_udebug: /usr/bin/udebug
+    afs_vlserver: /usr/lib/openafs/vlserver
+    afs_volserver: /usr/lib/openafs/volserver
+    afs_vos: /usr/bin/vos
+
+- name: Set OpenAFS installation paths
+  set_fact:
+    afs_afsbosconfigdir: /etc/openafs
+    afs_afsconfdir: /etc/openafs/server
+    afs_afsdbdir: /var/lib/openafs/db
+    afs_afslocaldir: /var/lib/openafs/local
+    afs_afslogdir: /var/log/openafs
+    afs_afssrvdir: /usr/lib/openafs
+    afs_viceetcdir: /etc/openafs

@@ -1,0 +1,80 @@
+---
+#
+# Build and install OpenAFS client from source code.
+#
+# Skip the 'checkout' tag if you want to build a dirty repo, otherwise
+# the git task will fail.
+#
+
+- import_role:
+    name: openafs_devel
+
+- name: Checkout source code
+  git:
+    repo: "{{ afs_client_git_repo | d('https://github.com/openafs/openafs.git') }}"
+    version: "{{ afs_client_git_ref | d('master') }}"
+    dest: "{{ afs_client_project_dir | d('~/openafs-client') }}"
+  register: checkout_results
+  tags:
+    - checkout
+
+- name: Set client configure options
+  set_fact:
+    afs_client_configure_options:
+      prefix: /
+      enable:
+        - debug
+        - debug-lwp
+        - debug-kernel
+        - kernel-module
+      with:
+        - linux-kernel-packaging
+  when: afs_client_configure_options is undefined
+  tags:
+    - build
+
+# We do not have a target to build just the kernel module and client programs,
+# so build everything and exclude the server binaries during installation.
+- name: Build OpenAFS client binaries
+  openafs_build:
+    state: kernel_module_built
+    projectdir: "{{ afs_client_project_dir | d('~/openafs-client') }}"
+    clean: "{{ checkout_results is defined and checkout_results.changed }}"
+    target: install
+    destdir: packaging/dest
+    configure_options:
+      - "{{ afs_client_configure_options }}"
+  register: client_build_results
+  tags:
+    - build
+
+- name: Trace build results
+  debug:
+    var: client_build_results
+    verbosity: 1
+  tags:
+    - build
+
+- name: Install OpenAFS client binaries
+  become: yes
+  openafs_install:
+    destdir: "{{ client_build_results.destdir }}"
+    logdir: /var/tmp/ansible/openafs-client
+    exclude:
+      - "*/*server"
+      - "*/*salvager"
+      - "*/upclient"
+  tags:
+    - install
+
+- name: Post installation tasks
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "{{ role_path }}/tasks/post-from-source/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
+    - "{{ role_path }}/tasks/post-from-source/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
+    - "{{ role_path }}/tasks/post-from-source/{{ ansible_distribution }}.yaml"
+    - "{{ role_path }}/tasks/post-from-source/{{ ansible_os_family }}.yaml"
+    - "{{ role_path }}/tasks/post-from-source/{{ ansible_system }}.yaml"
+    - "{{ role_path }}/tasks/unknown.yaml"
+  tags:
+    - install

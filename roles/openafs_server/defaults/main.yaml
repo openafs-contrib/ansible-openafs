@@ -45,34 +45,34 @@ afs_partitions:
 afs_fileserver_type: dafs
 
 # bosserver options
-afs_bosserver_opts:
+afs_bosserver_opts: ''
 
 # ptserver options
-afs_ptserver_opts:
+afs_ptserver_opts: ''
 
 # vlserver options
-afs_vlserver_opts:
+afs_vlserver_opts: ''
 
 # DAFS fileserver options
 afs_dafileserver_opts: -L
 
 # DAFS volume server options
-afs_davolserver_opts:
+afs_davolserver_opts: ''
 
 # DAFS salvage server options
-afs_salvageserver_opts:
+afs_salvageserver_opts: ''
 
 # DAFS salvager options
-afs_dasalvager_opts:
+afs_dasalvager_opts: ''
 
 # Legacy fileserver options
-afs_fileserver_opts:
+afs_fileserver_opts: ''
 
 # Legacy volume server options
-afs_volserver_opts:
+afs_volserver_opts: ''
 
 # Legacy salvager options
-afs_salvager_opts:
+afs_salvager_opts: ''
 
 # Master kerberos kdc
 afs_kdc: "{{ groups['afs_kdcs'][0] }}"

@@ -12,6 +12,15 @@ afs_realm: EXAMPLE.COM
 # afs mountpoint
 afs_mountpoint: /afs
 
+# Cache directory
+afs_cachedir: "{{ _afs_cachedir | d('/usr/vice/cache') }}"
+
+# Cache size
+afs_cachesize: 50000
+
+# afsd options
+afs_afsd_opts: -dynroot -fakestat -afsdb
+
 # Path to locally generated files.
 afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
 
@@ -36,16 +45,3 @@ afs_client_build_git_ref: "master"
 
 # openafs kmod package release prefix
 afs_openafs_kmod_prefix: 1
-
-# afs filesystem mount point
-afs_cacheinfo_mount: "{{ afs_mountpoint }}"
-
-# afs cache mount point
-afs_cacheinfo_cache: /usr/vice/cache
-
-# afs cache size
-# TODO: create partition or autodecte
-afs_cacheinfo_size: 50000
-
-# afsd options
-afs_afsd_opts: -dynroot -fakestat -afsdb

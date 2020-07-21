@@ -41,9 +41,9 @@ Install kernel module with DKMS for the `package-manager` install method.
 
 Build options for `rsync` install method.
 
-    afs_cacheinfo_mount: /afs
-    afs_cacheinfo_cache: /usr/vice/cache
-    afs_cacheinfo_size: 50000
+    afs_mountpoint: /afs
+    afs_cachedir: /usr/vice/cache (/var/cache/openafs on debian)
+    afs_cachesize: 50000
 
 The OpenAFS cache configuration parameters; the AFS filesystem mount point, the
 cache partition, and the cache manager cache size.  The cache partition should

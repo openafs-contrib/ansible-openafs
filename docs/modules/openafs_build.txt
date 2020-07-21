@@ -1,18 +1,17 @@
 > OPENAFS_BUILD    (/home/mmeffie/src/ansible-openafs/roles/openafs_devel/library/openafs_build.py)
 
         Build OpenAFS server and client binaries from source code. The source code must be already present in the `projectdir'
-        directory on the host. The [openafs_build] module will run the OpenAFS `regen.sh' command, then run `configure' with the
-        given `configure_options', and then run `make' with the given `target'.  The `regen.sh' execution is skipped when the
-        `configure' file already exists.  The `configure' execution is skipped when the `config.status' file already exists. A
-        complete set of build log files are written on the `logdir' directory on the host for build troubleshooting. Out-of-tree
-        builds are supported by specifying a build directory with the `builddir' option. Before the build starts, `git clean' is run
-        in the `projectdir' directory to remove all untracked files when `clean' is true and a `.git' directory is found in the
-        `projectdir'. All of the files and directories are removed from the `builddir' when `clean' is true and an out-of-tree build
-        is being done. A check for a loadable kernel module is done after the build completes when the `state' is `kmodready'.  Be
-        sure the `target' and `configure_options' are set to build a kernel module when using the `mkodready' state. An installation
-        file tree is created in the `destdir' directory when the `target' starts with `install' or `dest'. The files in `destdir' may
-        be installed with the [openafs_install] module. See the `openafs_devel' role for tasks to install required build tools and
-        libraries on various platforms.
+        directory on the host. The [openafs_build] module will run the OpenAFS `regen.sh' command, then run `configure' with
+        the given `configure_options', and then run `make' with the given `target'. A complete set of build log files are
+        written on the `logdir' directory on the host for build troubleshooting. Out-of-tree builds are supported by
+        specifying a build directory with the `builddir' option. Before the build starts, `git clean' is run in the
+        `projectdir' directory to remove all untracked files when `clean' is true and a `.git' directory is found in the
+        `projectdir'. All of the files and directories are removed from the `builddir' when `clean' is true and an out-of-tree
+        build is being done. A check for a loadable kernel module is done after the build completes when the `state' is
+        `kernel_module_built'.  Be sure the `target' and `configure_options' are set to build a kernel module when using the
+        `mkodready' state. An installation file tree is created in the `destdir' directory when the `target' starts with
+        `install' or `dest'. The files in `destdir' may be installed with the [openafs_install] module. See the
+        `openafs_devel' role for tasks to install required build tools and libraries on various platforms.
 
   * This module is maintained by The Ansible Community
 OPTIONS (= is mandatory):
@@ -25,23 +24,16 @@ OPTIONS (= is mandatory):
 - clean
         Run `git clean' in the `projectdir' when it contains a `.git' directory.
         Remove the `builddir', if different than the `projectdir'.
-        A `clean' build should be done if the source files in `projectdir' or the `configure_options' have been changed since the
-        last time this module has been run.
+        A `clean' build should be done if the source files in `projectdir' or the `configure_options' have been changed since
+        the last time this module has been run.
         Use the `clean' option with caution!
         [Default: False]
         type: bool
 
 - configure_options
-        The `configure' options, as a dictionary.
-        Provide only one of `configure_options' or `configure_options_str'.
+        The `configure' options, as a dictionary or string of configure command line arguments.
         [Default: (null)]
-        type: dict
-
-- configure_options_str
-        The `configure' arguments, as a string of command line options.
-        Provide only one of `configure_options' or `configure_options_str'.
-        [Default: (null)]
-        type: dict
+        type: list
 
 - destdir
         The destination directory for `install' and `dest' targets and variants.
@@ -79,10 +71,10 @@ OPTIONS (= is mandatory):
         type: path
 
 - state
-        `complete' Run regen.sh, configure, make
-        `kmodready' After build is complete, also verify a kernel module was built for the current running kernel version. Be sure
-        the target and configure options are set to build a client when this state is in use.
-        (Choices: completed, kmodready)[Default: complete]
+        `built' Build completed
+        `kernel_module_built' After the build is completed, verify a kernel module was built for the current running kernel
+        version.
+        (Choices: built, kernel_module_built)[Default: complete]
         type: str
 
 - target
@@ -104,7 +96,7 @@ AUTHOR: Michael Meffie (@meffie)
           status:
           - preview
           supported_by: community
-
+        
 
 EXAMPLES:
 
@@ -114,7 +106,7 @@ EXAMPLES:
 
 - name: Build OpenAFS server binaries for RHEL
   openafs_build:
-    state: completed
+    state: built
     projectdir: ~/src/openafs
     clean: yes
     target: install_nolibafs
@@ -140,17 +132,17 @@ EXAMPLES:
 
 - name: Build OpenAFS legacy distribution
   openafs_build:
-    state: kmodready
+    state: kernel_module_built
     projectdir: ~/src/openafs
     clean: yes
     target: dest
     configure_options:
-      enable:
-        - debug
-        - transarc_paths
-        - kernel_module
-      with:
-        - linux_kernel_packaging
+      - enable:
+          - debug
+          - transarc_paths
+          - kernel_module
+        with:
+          - linux_kernel_packaging
 
 - name: Build OpenAFS with configure options as a string
   openafs_build:
@@ -158,7 +150,9 @@ EXAMPLES:
     destdir: /tmp/openafs/mydest
     clean: yes
     target: install
-    configure_options_str: "--enable-debug --enable-kernel-module"
+    configure_options:
+      - "--enable-debug"
+      - "--enable-kernel-module"
 
 
 RETURN VALUES:

@@ -1,0 +1,9 @@
+---
+- name: Install packages
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_distribution }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_os_family }}.yaml"
+    - "{{ role_path }}/tasks/unknown.yaml"

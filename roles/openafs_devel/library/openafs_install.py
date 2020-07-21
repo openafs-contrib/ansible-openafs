@@ -108,17 +108,23 @@ from ansible.module_utils.basic import AnsibleModule
 logger = logging.getLogger(__name__)
 
 COMMANDS = {
+    'afsd',
     'akeyconvert',
     'aklog',
     'asetkey',
     'bos',
     'bosserver',
     'dafileserver',
+    'dasalvager',
     'davolserver',
     'fileserver',
     'fs',
     'pts',
     'ptserver',
+    'rxdebug',
+    'salvager',
+    'salvageserver',
+    'udebug',
     'upclient',
     'upserver',
     'vlserver',

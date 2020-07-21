@@ -63,3 +63,9 @@
   file:
     path: "/usr/sbin/policy-rc.d"
     state: absent
+
+- name: "Debian: Set OpenAFS installation paths"
+  set_fact:
+    afs_afsd: /usr/sbin/afsd
+    afs_fs: /usr/bin/fs
+    afs_viceetcdir: /etc/openafs

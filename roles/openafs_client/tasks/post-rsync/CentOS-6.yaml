@@ -49,7 +49,7 @@
   become: yes
   file:
     state: directory
-    path: "{{ afs_afscachedir }}"
+    path: "{{ afs_cachedir }}"
     mode: 0700
     owner: root
     group: root

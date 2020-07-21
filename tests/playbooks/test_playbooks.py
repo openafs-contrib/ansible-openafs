@@ -35,6 +35,9 @@ def invfn(val):
     ('hosts/devel03', 3, 'centos7'),
     ('hosts/devel03', 3, 'centos8'),
     ('hosts/devel03', 3, 'debian10'),
+    ('hosts/devel04', 1, 'centos7'),
+    ('hosts/devel04', 1, 'centos8'),
+    ('hosts/devel04', 1, 'debian10'),
 ])
 def inventory(request):
     hosts, num, os_ = request.param
@@ -54,8 +57,12 @@ def inventory(request):
 # Helper to run a playbook.
 def run_playbook(playbook, inventory):
     log.info('Running playbook %s' % playbook)
-    for line in ansible_playbook(playbook, i=inventory, _cwd='../playbooks', _env=env, _iter=True):
-        log.info('ansible: %s', line.strip())
+    try:
+        for line in ansible_playbook(playbook, i=inventory, _cwd='../playbooks', _env=env, _iter=True):
+            log.info('ansible: %s', line.strip())
+    except Exception as e:
+        log.error('Playbook failed: %s' % (e))
+        pytest.fail('Playbook failed')
 
 # Test build-only playbooks.
 @pytest.mark.parametrize('playbook', ['build01', 'build02', 'build03'])
