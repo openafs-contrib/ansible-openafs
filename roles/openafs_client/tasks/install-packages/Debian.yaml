@@ -50,6 +50,7 @@
     backup: yes
 
 - name: "Debian: Install OpenAFS client"
+  become: yes
   apt:
     state: present
     install_recommends: no
@@ -58,6 +59,7 @@
       - openafs-krb5
 
 - name: "Debian: Restore service policy"
+  become: yes
   file:
     path: "/usr/sbin/policy-rc.d"
     state: absent
