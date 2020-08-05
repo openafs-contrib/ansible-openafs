@@ -22,9 +22,6 @@ afs_bosconfdir: "/etc/openafs"
 # Service name
 afs_server_service: openafs-fileserver
 
-# OS dependent variables
-afs_selinux: no
-
 # Build default options
 _afs_server_configure_opts: >
   --prefix=

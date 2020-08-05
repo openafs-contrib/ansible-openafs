@@ -56,7 +56,9 @@
   when: afs_firewall is defined
 
 - name: SELinux
-  when: afs_selinux | bool
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux.get('status') == 'enabled'
   block:
     - debug:
         var: afs_selinux_mode
@@ -64,7 +66,7 @@
 
     - name: Verify selinux mode value
       assert:
-        that: afs_selinux_mode in ['disabled','enforcing','permissive']
+        that: afs_selinux_mode in ['disabled', 'enforcing', 'permissive']
 
     - name: Setup SELinux mode
       become: yes
@@ -97,7 +99,10 @@
 - include_tasks: server-key.yaml
 
 - include_tasks: selinux-contexts.yaml
-  when: afs_selinux|bool and afs_selinux_mode != 'disabled'
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux.get('status') == 'enabled'
+    - afs_selinux_mode != 'disabled'
 
 - name: Start the OpenAFS servers
   become: yes

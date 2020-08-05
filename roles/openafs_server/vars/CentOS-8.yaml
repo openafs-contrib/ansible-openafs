@@ -24,7 +24,8 @@ afs_server_service: openafs-server
 
 # OS dependent variables
 afs_firewall: firewalld
-afs_selinux: yes
+
+# SELinux
 afs_selinux_openafs_version: "1.1"
 
 # Note: The bosserver creates the /usr/vice/etc directory on startup if it does not

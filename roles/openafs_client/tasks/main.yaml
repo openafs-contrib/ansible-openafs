@@ -11,6 +11,28 @@
 - include_tasks: "system-{{ afs_firewall }}.yaml"
   when: afs_firewall is defined
 
+- name: Setup SELinux mode
+  become: yes
+  selinux:
+    state: "{{ afs_selinux_mode }}"
+    policy: targeted
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux.get('status') == 'enabled'
+    - afs_selinux_mode is defined
+    - afs_selinux_mode in ['disabled', 'enforcing', 'permissive']
+
+- include_tasks: "install-{{ afs_client_install_method }}.yaml"
+
+- name: Create /afs
+  become: yes
+  file:
+    state: directory
+    path: "{{ afs_mountpoint }}"
+    mode: 0755
+    owner: root
+    group: root
+
 - name: Create cache directory
   become: yes
   file:
