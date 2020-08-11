@@ -99,6 +99,12 @@
           - kmod-openafs-{{ afs_openafs_kmod_version }}-{{ afs_openafs_kmod_release }}
           - openafs-krb5
 
+- name: Gather OpenAFS installation facts
+  become: yes
+  openafs_gather_facts:
+    state: update
+    pkg: rpm
+    
 - name: "CentOS-7: Load kernel module"
   block:
     - name: "CentOS-7: Get kernel modules"
@@ -131,9 +137,3 @@
     state: present
   notify:
     - Restart OpenAFS client
-
-- name: "CentOS-7: Set OpenAFS installation paths"
-  set_fact:
-    afs_afsd: /usr/sbin/afsd
-    afs_fs: /usr/bin/fs
-    afs_viceetcdir: /usr/vice/etc

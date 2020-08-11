@@ -1,3 +1,4 @@
+.*
 *.retry
 ansible.cfg
 *.tar.gz

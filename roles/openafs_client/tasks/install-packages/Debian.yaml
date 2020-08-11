@@ -64,6 +64,12 @@
     path: "/usr/sbin/policy-rc.d"
     state: absent
 
+- name: Gather OpenAFS installation facts
+  become: yes
+  openafs_gather_facts:
+    state: update
+    pkg: deb
+    
 - name: "Debian: Set OpenAFS installation paths"
   set_fact:
     afs_afsd: /usr/sbin/afsd

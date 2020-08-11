@@ -9,11 +9,17 @@ afs_desc: Example
 # kerberos realm
 afs_realm: EXAMPLE.COM
 
+# Commands
+afs_afsd: "{{ ansible_local.openafs.commands.afsd }}"
+afs_fs: "{{ ansible_local.openafs.commands.fs }}"
+afs_vos: "{{ ansible_local.openafs.commands.vos }}"
+
+# Directories
+afs_viceetcdir: "{{ ansible_local.openafs.dirs.viceetcdir }}"
+afs_cachedir: "{{ _afs_cachedir | d('/usr/vice/cache') }}"
+
 # afs mountpoint
 afs_mountpoint: /afs
-
-# Cache directory
-afs_cachedir: "{{ _afs_cachedir | d('/usr/vice/cache') }}"
 
 # Cache size
 afs_cachesize: 50000

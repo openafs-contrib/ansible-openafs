@@ -261,7 +261,7 @@ import json
 from multiprocessing import cpu_count
 from ansible.module_utils.basic import AnsibleModule
 
-_MAKEFILE_PATHS = """
+MAKEFILE_PATHS = """
 include ./src/config/Makefile.config
 all:
 	@echo afsbackupdir=$(afsbackupdir)
@@ -618,7 +618,7 @@ def main():
     # Get configured installation directories.
     #
     with open(os.path.join(builddir, '.Makefile.dirs'), 'w') as f:
-        f.write(_MAKEFILE_PATHS)
+        f.write(MAKEFILE_PATHS)
     rc, out, err = module.run_command([make, '-f', '.Makefile.dirs'], cwd=builddir)
     if rc != 0:
         module.fail_json(msg='Failed to find installation directories: %s' % err)
@@ -626,11 +626,9 @@ def main():
         line = line.rstrip()
         if '=' in line:
             name, value = line.split('=', 1)
-            name = 'afs_' + name
             if value.startswith('//'):
                 value = value.replace('//', '/', 1)  # Cleanup leading double slashes.
             results['dirs'][name] = value
-            results['ansible_facts'][name] = value
 
     #
     # Run make.

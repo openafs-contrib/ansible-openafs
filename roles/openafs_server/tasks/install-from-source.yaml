@@ -48,7 +48,7 @@
 - name: Trace build results
   debug:
     var: server_build_results
-    verbosity: 1
+    #verbosity: 1
   tags:
     - build
 
@@ -56,6 +56,7 @@
   become: yes
   openafs_install:
     destdir: "{{ server_build_results.destdir }}"
+    dirs: "{{ server_build_results.dirs }}"
     exclude:
       - "/usr/vice"
       - "*/afsd"

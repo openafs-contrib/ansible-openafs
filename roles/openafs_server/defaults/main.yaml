@@ -1,5 +1,4 @@
 ---
-
 # afs cell name
 afs_cell: example.com
 
@@ -8,6 +7,32 @@ afs_desc: Example
 
 # kerberos realm name
 afs_realm: EXAMPLE.COM
+
+# Commands
+afs_akeyconvert: "{{ ansible_local.openafs.commands.akeyconvert }}"
+afs_bos: "{{ ansible_local.openafs.commands.bos }}"
+afs_bosserver: "{{ ansible_local.openafs.commands.bosserver }}"
+afs_dafileserver: "{{ ansible_local.openafs.commands.dafileserver }}"
+afs_dasalvager: "{{ ansible_local.openafs.commands.dasalvager }}"
+afs_davolserver: "{{ ansible_local.openafs.commands.davolserver }}"
+afs_fileserver: "{{ ansible_local.openafs.commands.fileserver }}"
+afs_pts: "{{ ansible_local.openafs.commands.pts }}"
+afs_ptserver: "{{ ansible_local.openafs.commands.ptserver }}"
+afs_salvager: "{{ ansible_local.openafs.commands.salvager }}"
+afs_salvageserver: "{{ ansible_local.openafs.commands.salvageserver }}"
+afs_udebug: "{{ ansible_local.openafs.commands.udebug }}"
+afs_vlserver: "{{ ansible_local.openafs.commands.vlserver }}"
+afs_volserver: "{{ ansible_local.openafs.commands.volserver }}"
+afs_vos: "{{ ansible_local.openafs.commands.vos }}"
+
+# Directories
+afs_afsbosconfigdir: "{{ ansible_local.openafs.dirs.afsbosconfigdir }}"
+afs_afsconfdir: "{{ ansible_local.openafs.dirs.afsconfdir }}" 
+afs_afsdbdir: "{{ ansible_local.openafs.dirs.afsdbdir }}"
+afs_afslocaldir: "{{ ansible_local.openafs.dirs.afslocaldir }}"
+afs_afslogdir: "{{ ansible_local.openafs.dirs.afslogdir }}"
+afs_afssrvdir: "{{ ansible_local.openafs.dirs.afssrvdir }}"
+afs_viceetcdir: "{{ ansible_local.openafs.dirs.viceetcdir }}"
 
 # Location of generated files.
 afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"

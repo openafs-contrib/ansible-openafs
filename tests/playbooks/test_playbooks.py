@@ -30,20 +30,20 @@ def invfn(val):
     ('hosts/single', 1, 'centos8'),
     ('hosts/single', 1, 'debian10'),
     ('hosts/multi', 9, 'centos7'),
-    ('hosts/devel01', 1, 'centos7'),
-    ('hosts/devel02', 3, 'centos7'),
-    ('hosts/devel03', 3, 'centos7'),
-    ('hosts/devel03', 3, 'centos8'),
-    ('hosts/devel03', 3, 'debian10'),
-    ('hosts/devel04', 1, 'centos7'),
-    ('hosts/devel04', 1, 'centos8'),
-    ('hosts/devel04', 1, 'debian10'),
+    ('hosts/devel01', 1, 'centos7-dev'),
+    ('hosts/devel02', 3, 'centos7-dev'),
+    ('hosts/devel03', 3, 'centos7-dev'),
+    ('hosts/devel03', 3, 'centos8-dev'),
+    ('hosts/devel03', 3, 'debian10-dev'),
+    ('hosts/devel04', 1, 'centos7-dev'),
+    ('hosts/devel04', 1, 'centos8-dev'),
+    ('hosts/devel04', 1, 'debian10-dev'),
 ])
 def inventory(request):
     hosts, num, os_ = request.param
     guests = []
     for i in range(num):
-        g = Guest('afs%02d' % (i + 1), 'base-%s' % os_, update_resolver=True)
+        g = Guest('afs%02d' % (i + 1), 'base-%s' % (os_), update_resolver=True)
         guests.append(g)
     for g in guests:
         g.create()

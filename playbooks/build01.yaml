@@ -10,8 +10,7 @@
 #   system in the `$HOME/src/openafs/.ansible` directory.
 # * run with -v to show the build and install results during the play
 #
-
-- name: Build and install OpenAFS from source on RedHat based systems
+- name: Build and install OpenAFS from source
   hosts: "{{ afs_devel | default('afs_cell') }}"
   pre_tasks:
     - assert:
@@ -52,11 +51,24 @@
                   - krb5
                   - linux-kernel-packaging
                   - swig
-          register: build_results_redhat
+          register: build_results
 
         - name: Build results for RedHat
           debug:
-            var: build_results_redhat
+            var: build_results
+            verbosity: 1
+
+        - name: Install OpenAFS binaries
+          become: yes
+          openafs_install:
+            destdir: "{{ build_results.destdir }}"
+            dirs: "{{ build_results.dirs }}"
+            logdir: /var/tmp/
+          register: install_results
+
+        - name: Install results
+          debug:
+            var: install_results
             verbosity: 1
 
     - name: Build OpenAFS binaries for Debian
@@ -78,26 +90,29 @@
                 disable: linux-syscall-probing
                 with: linux-kernel-packaging
                 without: swig
-          register: build_results_debian
+          register: build_results
 
         - name: Build results for Debian
           debug:
-            var: build_results_debian
+            var: build_results
             verbosity: 1
 
-    - name: Install OpenAFS binaries
-      become: yes
-      openafs_install:
-        destdir: "{{ afs_build_destdir }}"
-        logdir: /var/tmp/
-      register: install_results
+        - name: Install OpenAFS binaries
+          become: yes
+          openafs_install:
+            destdir: "{{ build_results.destdir }}"
+            dirs: "{{ build_results.dirs }}"
+            logdir: /var/tmp/
+          register: install_results
 
-    - name: Install results
-      debug:
-        var: install_results
-        verbosity: 1
+        - name: Install results
+          debug:
+            var: install_results
+            verbosity: 1
 
-    # openafs_install updated the ansible facts to indicate
-    # where programs were installed.
+    # openafs_install updated the ansible local facts to indicate
+    # where programs were installed and the paths to configuration files.
     - debug:
-        msg: "The bosserver path is '{{ afs_bosserver }}'."
+        msg: >
+          The bosserver path is '{{ ansible_local.openafs.commands.bosserver }}'.
+          The cell configuration files are in '{{ ansible_local.openafs.dirs.afsconfdir }}'.

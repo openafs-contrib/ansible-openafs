@@ -33,11 +33,13 @@
               - kernel-module
               - linux-syscall-probing
             without: swig
+      register: build_results_server
 
     - name: Install OpenAFS servers
       become: yes
       openafs_install:
-        destdir: /var/tmp/openafs-server/dest
+        destdir: "{{ build_results_server.destdir }}"
+        dirs: "{{ build_results_server.dirs }}"
         logdir: /var/tmp/openafs-server/log
 
     - name: Build OpenAFS client
@@ -59,16 +61,17 @@
             disable: linux-syscall-probing
             with: linux-kernel-packaging
             without: swig
-      register: build_results
+      register: build_results_client
 
     - debug:
-        var: build_results
+        var: build_results_client
         verbosity: 1
 
     - name: Install OpenAFS client
       become: yes
       openafs_install:
-        destdir: /var/tmp/openafs-client/dest
+        destdir: "{{ build_results_client.destdir }}"
+        dirs: "{{ build_results_client.dirs }}"
         logdir: /var/tmp/openafs-client/log
       register: install_results
 

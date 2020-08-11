@@ -85,35 +85,57 @@
     dest: "{{ afs_devel_builddir }}/make_results"
   changed_when: false
 
-# Temporary workaround.
-- name: Set OpenAFS commands
+- name: Set local facts
   set_fact:
-    afs_akeyconvert: /usr/sbin/akeyconvert
-    afs_asetkey: /usr/sbin/asetkey
-    afs_dafileserver: /usr/afs/bin/dafileserver
-    afs_dasalvager: /usr/afs/bin/dasalvager
-    afs_davolserver: /usr/afs/bin/davolserver
-    afs_fileserver: /usr/afs/bin/fileserver
-    afs_ptserver: /usr/afs/bin/ptserver
-    afs_pts: /usr/bin/pts
-    afs_rxdebug: /usr/sbin/rxdebug
-    afs_salvager: /usr/afs/bin/salvager
-    afs_salvageserver: /usr/afs/bin/salvageserver
-    afs_udebug: /usr/bin/udebug
-    afs_vlserver: /usr/afs/bin/vlserver
-    afs_volserver: /usr/afs/bin/volserver
-    afs_vos: /usr/sbin/vos
+    openafs_fact:
+      commands:
+        akeyconvert: /usr/sbin/akeyconvert
+        aklog: /usr/bin/aklog
+        asetkey: /usr/sbin/asetkey
+        bos: /usr/bin/bos
+        dafileserver: /usr/afs/bin/dafileserver
+        dasalvager: /usr/afs/bin/dasalvager
+        davolserver: /usr/afs/bin/davolserver
+        fileserver: /usr/afs/bin/fileserver
+        fs: /usr/bin/fs
+        klog.krb5: /usr/bin/klog.krb5
+        pagsh: /usr/bin/pagsh
+        ptserver: /usr/afs/bin/ptserver
+        pts: /usr/bin/pts
+        rxdebug: /usr/sbin/rxdebug
+        salvager: /usr/afs/bin/salvager
+        salvageserver: /usr/afs/bin/salvageserver
+        tokens: /usr/bin/tokens
+        udebug: /usr/bin/udebug
+        unlog: /usr/bin/unlog
+        vlserver: /usr/afs/bin/vlserver
+        volserver: /usr/afs/bin/volserver
+        vos: /usr/sbin/vos
+      dirs:
+        afsbosconfigdir: /usr/afs/local
+        afsconfdir: /usr/afs/etc
+        afsdbdir: /usr/afs/db
+        afslocaldir: /usr/afs/local
+        afslogdir: /usr/afs/logs
+        afssrvdir: /usr/afs/bin
+        viceetcdir: /usr/vice/etc
 
-# Temporary workaround.
-- name: Set OpenAFS installation paths
-  set_fact:
-    afs_afsbosconfigdir: /usr/afs/local
-    afs_afsconfdir: /usr/afs/etc
-    afs_afsdbdir: /usr/afs/db
-    afs_afslocaldir: /usr/afs/local
-    afs_afslogdir: /usr/afs/logs
-    afs_afssrvdir: /usr/afs/bin
-    afs_viceetcdir: /usr/vice/etc
+- name: Make local facts directory
+  become: yes
+  file:
+    state: directory
+    path: /etc/ansible/facts.d
+
+- name: Save local facts
+  become: yes
+  copy:
+    dest: /etc/ansible/facts.d/openafs.fact
+    content: "{{ openafs_fact | to_nice_json }}"
+  register: save_local_facts
+
+- name: Reload facts
+  setup:
+  when: save_local_facts.changed
 
 - name: Finalize destination directory
   include_tasks: "{{ item }}"

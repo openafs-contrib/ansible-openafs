@@ -98,6 +98,12 @@
           - kmod-openafs-{{ afs_openafs_kmod_version }}-{{ afs_openafs_kmod_release }}
           - openafs-krb5
 
+- name: Gather OpenAFS installation facts
+  become: yes
+  openafs_gather_facts:
+    state: update
+    pkg: rpm
+    
 - name: "CentOS-8: Load kernel module"
   block:
     - name: "CentOS-8: Get kernel modules"

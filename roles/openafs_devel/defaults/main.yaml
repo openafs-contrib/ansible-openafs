@@ -10,3 +10,7 @@ afs_devel_git_ref: "master"
 # Keys for Solaris Studio installation
 afs_devel_oracle_key: "{{ '~/.certs/pkg.oracle.com.key.pem' | expanduser }}"
 afs_devel_oracle_cert: "{{ '~/.certs/pkg.oracle.com.certificate.pem' | expanduser }}"
+
+# Temporary workaround
+afs_asetkey: "{{ ansible_local.openafs.commands['asetkey'] }}"
+afs_akeyconvert: "{{ ansible_local.openafs.commands['akeyconvert'] }}"

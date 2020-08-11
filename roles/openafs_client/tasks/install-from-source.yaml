@@ -59,6 +59,7 @@
   become: yes
   openafs_install:
     destdir: "{{ client_build_results.destdir }}"
+    dirs: "{{ client_build_results.dirs }}"
     logdir: /var/tmp/ansible/openafs-client
     exclude:
       - "*/*server"
