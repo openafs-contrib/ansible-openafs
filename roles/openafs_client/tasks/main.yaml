@@ -22,8 +22,6 @@
     - afs_selinux_mode is defined
     - afs_selinux_mode in ['disabled', 'enforcing', 'permissive']
 
-- include_tasks: "install-{{ afs_client_install_method }}.yaml"
-
 - name: Create /afs
   become: yes
   file:
