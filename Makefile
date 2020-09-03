@@ -4,9 +4,18 @@
 help:
 	@echo "usage: make <target>"
 	@echo "targets:"
+	@echo "  venv          install virtualenv"
 	@echo "  lint          lint check"
 	@echo "  build         build ansible galaxy collection"
 	@echo "  docs          generate docs"
+
+.venv/bin/activate: requirements.txt
+	test -d .venv || /usr/bin/python3 -m venv .venv
+	. .venv/bin/activate && pip install -Ur requirements.txt
+	touch .venv/bin/activate
+
+.PHONY: venv
+venv: .venv/bin/activate
 
 .PHONY: lint
 lint:
