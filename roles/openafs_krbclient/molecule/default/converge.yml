@@ -1,0 +1,9 @@
+---
+- name: Create realm
+  hosts: afs_kdcs
+  roles:
+    - openafs_krbserver
+- name: Converge
+  hosts: krbclients
+  roles:
+    - openafs_krbclient

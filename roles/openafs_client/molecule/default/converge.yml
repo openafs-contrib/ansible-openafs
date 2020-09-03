@@ -1,0 +1,6 @@
+---
+- name: Converge
+  hosts: afs_clients
+  tasks:
+    - include_role:
+        name: "openafs_client"

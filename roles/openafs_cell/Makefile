@@ -5,8 +5,13 @@ help:
 	@echo "usage: make <target>"
 	@echo "targets:"
 	@echo "  lint   lint check"
+	@echo "  test   run molecule tests"
 
 .PHONY: lint
 lint:
 	yamllint .
 	ansible-lint .
+
+.PHONY: test
+test:
+	molecule test
