@@ -6,9 +6,5 @@
       wait_for_connection:
   roles:
     - openafs_client
-  tasks:
-    - include_tasks: snapshot.yaml
-      vars:
-        libvirt_snapshot: 04-clients
   tags:
     - client

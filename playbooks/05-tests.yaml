@@ -3,9 +3,5 @@
   hosts: afs_robotest
   roles:
     - openafs_robotest
-  tasks:
-    - include_tasks: snapshot.yaml
-      vars:
-        libvirt_snapshot: 05-tests
   tags:
     - test-setup

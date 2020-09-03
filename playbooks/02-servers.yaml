@@ -10,9 +10,5 @@
       wait_for_connection:
   roles:
     - openafs_server
-  tasks:
-    - include_tasks: snapshot.yaml
-      vars:
-        libvirt_snapshot: 02-servers
   tags:
     - server

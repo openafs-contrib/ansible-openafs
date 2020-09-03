@@ -1,15 +1,10 @@
 ---
-# Tasks to be run before a snapshot.
-- name: Prepare for snapshot
+- name: Prepare
   hosts: afs_devel
-  vars:
-    libvirt_snapshot: 00-prereqs
   pre_tasks:
     - name: Connecting
       wait_for_connection:
   roles:
     - openafs_devel
-  tasks:
-    - include_tasks: snapshot.yaml
   tags:
     - prepare

@@ -10,9 +10,5 @@
   roles:
     - openafs_client
     - openafs_cell
-  tasks:
-    - include_tasks: snapshot.yaml
-      vars:
-        libvirt_snapshot: 03-newcell
   tags:
     - volume

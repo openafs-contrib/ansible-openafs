@@ -6,7 +6,3 @@
       wait_for_connection:
   roles:
     - openafs_krbserver
-  tasks:
-    - include_tasks: snapshot.yaml
-      vars:
-        libvirt_snapshot: 01-realm
