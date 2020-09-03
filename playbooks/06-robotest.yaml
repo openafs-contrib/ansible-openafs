@@ -20,9 +20,5 @@
           Test results: {{ (test_results.rc == 0) | ternary('PASS', 'FAIL') }}
           Test report: http://{{ ansible_fqdn }}/~{{ ansible_user_id }}/openafs-robotest-output/
 
-    - include_tasks: snapshot.yaml
-      vars:
-        libvirt_snapshot: 06-robotest
-
   tags:
     - test
