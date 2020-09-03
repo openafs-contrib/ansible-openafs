@@ -1,0 +1,18 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+  provider:
+    name: libvirt
+platforms:
+  - name: instance
+    box: ${BOX-generic/centos8}
+    memory: 1024
+    cpus: 1
+    groups:
+      - afs_clients
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

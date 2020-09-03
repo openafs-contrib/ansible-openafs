@@ -1,0 +1,29 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+  provider:
+    name: libvirt
+platforms:
+  - name: instance-krbclient-1
+    box: generic/centos8
+    memory: 1024
+    cpus: 1
+    groups:
+      - afs_kdcs
+  - name: instance-krbclient-2
+    box: generic/centos8
+    memory: 1024
+    cpus: 1
+    groups:
+      - krbclients
+  - name: instance-krbclient-3
+    box: generic/debian10
+    memory: 1024
+    groups:
+      - krbclients
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

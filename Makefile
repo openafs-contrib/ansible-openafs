@@ -20,7 +20,13 @@ venv: .venv/bin/activate
 .PHONY: lint
 lint:
 	for role in roles/*; do $(MAKE) -C $$role lint || passed=no; done; \
-    if [ "x$$passed" = "xno" ]; then exit 1; fi
+    test "x$$passed" != "xno"
+
+.PHONY: check test
+check test:
+	$(MAKE) -C tests test
+	for role in roles/*; do $(MAKE) -C $$role test || passed=no; done; \
+	test "x$$passed" != "xno"
 
 .PHONY: build
 build:

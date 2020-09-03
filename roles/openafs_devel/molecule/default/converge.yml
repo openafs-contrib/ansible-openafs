@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include openafs_devel"
+      include_role:
+        name: "openafs_devel"

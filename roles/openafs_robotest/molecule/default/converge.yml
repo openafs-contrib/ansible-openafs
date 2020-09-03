@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include openafs_robotest"
+      include_role:
+        name: "openafs_robotest"
