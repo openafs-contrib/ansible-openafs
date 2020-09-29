@@ -18,6 +18,9 @@ description.
 
     afs_admin_principal:
     afs_admin_password: (undefined by default)
+    afs_servicekey_options:
+      - additional options passed to kadmin when creating the principal associated with the
+        service key (can be used to specify the encryption type).  Default is blank.
 
 A administrator principal and password to be used to set the AFS service key.
 The password is not defined by default and must be set on the command line (-e)

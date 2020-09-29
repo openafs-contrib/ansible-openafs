@@ -16,6 +16,14 @@
     state: directory
     mode: 0755
 
+- name: Check for existance of the service key
+  local_action: stat path="{{ afs_local_dir }}/rxkad.keytab.ansible"
+  register: afs_service_key
+
+- name: Create service key if needed
+  include_tasks: create-service-key.yaml
+  when: not afs_service_key.stat.exists
+
 - name: Generate cell configuration files
   run_once: true
   delegate_to: localhost
@@ -26,20 +34,6 @@
     - CellServDB
     - ThisCell
     - UserList
-
-- name: Create the Kerberos service key
-  become: yes
-  command: >
-    {{ afs_kadmin }}
-    -w {{ afs_admin_password }}
-    -p {{ afs_admin_principal }}@{{ afs_realm }}
-    -r "{{ afs_realm }}"
-    -q "add_principal -randkey afs/{{ afs_cell }}@{{ afs_realm }}"
-  register: kadmin_results
-  changed_when: >
-    kadmin_results.rc == 0
-    and not "already exists while creating" in kadmin_results.stderr
-  when: inventory_hostname == ansible_play_hosts[0]
 
 # Debian based systems add a loopback address for the hostname as
 # a fallback when dns is unavailable. These can cause issues when

@@ -5,16 +5,14 @@
 # supported here.  We also assume the kadmin tool is new enough to support the
 # -norandkey option to distribute the keys.
 
-- name: Write the service key to a keytab file
+- name: Copy service key
   become: yes
-  command: >
-    {{ afs_kadmin }}
-    -r "{{ afs_realm }}"
-    -p "{{ afs_admin_principal }}"
-    -w "{{ afs_admin_password }}"
-    -q 'ktadd -norandkey -k {{ afs_afsconfdir }}/rxkad.keytab.ansible afs/{{ afs_cell }}@{{ afs_realm }}'
-  args:
-    creates: "{{ afs_afsconfdir }}/rxkad.keytab.ansible"
+  copy:
+    src:  "{{ afs_local_dir }}/rxkad.keytab.ansible"
+    dest: "{{ afs_afsconfdir }}/rxkad.keytab.ansible"
+    mode: 0700
+    owner: root
+    group: root
 
 - name: Check for key value changes
   become: yes
@@ -23,17 +21,16 @@
     dest: "{{ afs_afsconfdir }}/rxkad.keytab"
     remote_src: yes
   register: keytab
-  notify:
-    - Restart OpenAFS servers
-
+  
 - name: Check for akeyconvert availability
   stat:
-    path: "{{ afs_akeyconvert }}"
-  register: akeyconvert
+    path: "{{ afs_asetkey }}"
+  register: asetkey
   changed_when: False
 
 - name: Set the service key
   become: yes
-  command: "{{ afs_akeyconvert }}"
-  register: akeyconvert_results
-  when: keytab.changed and akeyconvert.stat.exists
+  command: "{{ afs_asetkey }} add 1 {{ afs_afsconfdir }}/rxkad.keytab afs/{{ afs_cell }}" 
+  when: keytab.changed and asetkey.stat.exists
+  notify:
+    - Restart OpenAFS servers

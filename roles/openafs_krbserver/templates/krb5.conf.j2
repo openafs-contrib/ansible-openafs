@@ -2,7 +2,8 @@
 
 [libdefaults]
     default_realm = {{ afs_realm }}
-
+    allow_weak_crypto = true
+    
 [realms]
     {{ afs_realm }} = {
 {% for host in groups['afs_kdcs'] %}

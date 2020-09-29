@@ -1,0 +1,51 @@
+---
+# Create the service key and 
+
+- name: Create the afs service principal
+  become: yes
+  command: >
+    {{ afs_kadmin }}
+    -w {{ afs_admin_password }}
+    -p {{ afs_admin_principal }}@{{ afs_realm }}
+    -r "{{ afs_realm }}"
+    -q "add_principal {{ afs_servicekey_options | default('') }} -randkey afs/{{ afs_cell }}@{{ afs_realm }}"
+  register: kadmin_results
+  changed_when: >
+    kadmin_results.rc == 0
+    and not "already exists while creating" in kadmin_results.stderr
+  when: inventory_hostname == ansible_play_hosts[0]
+
+- name: Check for existance of the service key
+  local_action: stat path="{{ afs_local_dir }}/rxkad.keytab.ansible"
+  register: afs_service_key
+
+- name: Write the service key to a keytab file
+  become: yes
+  command: >
+    {{ afs_kadmin }}
+    -r "{{ afs_realm }}"
+    -p "{{ afs_admin_principal }}"
+    -w "{{ afs_admin_password }}"
+    -q 'ktadd -norandkey -k rxkad.keytab.ansible afs/{{ afs_cell }}@{{ afs_realm }}'
+  args:
+    creates: "{{ afs_afsconfdir }}/rxkad.keytab.ansible"
+  when: (kadmin_results.rc == 0 
+        or not afs_service_key.stat.exists) 
+        and inventory_hostname == ansible_play_hosts[0]
+
+- name: Retrieve Service key to controller
+  become: yes
+  fetch:
+    flat: yes
+    src: rxkad.keytab.ansible
+    dest: "{{ afs_local_dir }}/rxkad.keytab.ansible"
+  when: (kadmin_results.rc == 0 
+        or not afs_service_key.stat.exists) 
+        and inventory_hostname == ansible_play_hosts[0]
+
+- name: Cleanup service key
+  become: yes
+  file: 
+    path: rxkad.keytab.ansible
+    state: absent  
+  when: inventory_hostname == ansible_play_hosts[0]
