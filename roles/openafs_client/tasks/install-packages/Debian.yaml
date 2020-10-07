@@ -48,6 +48,7 @@
     dest: "/usr/sbin/policy-rc.d"
     mode: "0755"
     backup: yes
+  changed_when: false
 
 - name: "Debian: Install OpenAFS client"
   become: yes
@@ -63,3 +64,4 @@
   file:
     path: "/usr/sbin/policy-rc.d"
     state: absent
+  changed_when: false

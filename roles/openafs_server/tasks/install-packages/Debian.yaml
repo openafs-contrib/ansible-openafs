@@ -6,7 +6,7 @@
     dest: "/usr/sbin/policy-rc.d"
     mode: "0755"
     backup: yes
-  register: change_policy_rc_result
+  changed_when: false
 
 - name: Install OpenAFS server packages
   become: yes
@@ -26,7 +26,7 @@
   file:
     path: "/usr/sbin/policy-rc.d"
     state: absent
-  when: change_policy_rc_result.changed
+  changed_when: false
 
 - name: Set bosserver startup options
   become: yes
