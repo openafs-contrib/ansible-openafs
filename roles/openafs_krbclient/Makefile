@@ -1,18 +1,16 @@
 # Copyright (c) 2019 Sine Nomine Associates
 
-.PHONY: help
+.PHONY: help lint test
+
 help:
 	@echo "usage: make <target>"
 	@echo "targets:"
 	@echo "  lint   lint check"
 	@echo "  test   run molecule tests"
 
-.PHONY: lint
 lint:
 	yamllint .
 	ansible-lint .
 
-.PHONY: test
 test:
-	BOX=generic/centos8 molecule test
-	BOX=generic/debian10 molecule test
+	molecule test
