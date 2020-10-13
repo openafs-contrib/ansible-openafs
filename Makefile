@@ -1,40 +1,63 @@
 # Copyright (c) 2019-2020 Sine Nomine Associates
 
-.PHONY: help
+.PHONY: help init lint test build docs clean distclean
+
+PYTHON=python3
+ROLES=\
+  openafs_krbserver \
+  openafs_krbclient \
+  openafs_server \
+  openafs_client \
+  openafs_cell
+
+#openafs_devel
+#openafs_robotest
+
 help:
 	@echo "usage: make <target>"
 	@echo "targets:"
-	@echo "  venv          install virtualenv"
-	@echo "  lint          lint check"
-	@echo "  build         build ansible galaxy collection"
-	@echo "  docs          generate docs"
+	@echo "  init [PYTHON=<path>]  install virtualenv"
+	@echo "  lint                  run lint"
+	@echo "  test                  run unit and molecule tests"
+	@echo "  build                 build ansible galaxy collection"
+	@echo "  docs                  generate docs"
+	@echo "  clean                 remove generated files"
+	@echo "  distclean             remove generated files and virtualenv"
 
 .venv/bin/activate: requirements.txt
-	test -d .venv || /usr/bin/python3 -m venv .venv
-	. .venv/bin/activate && pip install -Ur requirements.txt
+	test -d .venv || $(PYTHON) -m venv .venv
+	.venv/bin/pip install -U wheel
+	.venv/bin/pip install -U -r requirements.txt
 	touch .venv/bin/activate
 
-.PHONY: venv
-venv: .venv/bin/activate
+init: .venv/bin/activate
 
-.PHONY: lint
-lint:
-	for role in roles/*; do $(MAKE) -C $$role lint || passed=no; done; \
-    test "x$$passed" != "xno"
+lint: init
+	. .venv/bin/activate; \
+	for role in roles/*; do \
+		echo "linting: $$role"; \
+	    $(MAKE) -C $$role lint; \
+	done;
 
-.PHONY: check test
-check test:
+test: init
 	$(MAKE) -C tests test
-	for role in roles/*; do $(MAKE) -C $$role test || passed=no; done; \
-	test "x$$passed" != "xno"
+	for role in $(ROLES); do \
+		echo "testing: $$role"; \
+	    $(MAKE) -C roles/$$role test; \
+	done;
 
-.PHONY: build
-build:
-	ansible-galaxy collection build
+build: init
+	.venv/bin/ansible-galaxy collection build
 
-.PHONY: docs
-docs:
-	# Create plan text docs for now.
+docs: init
 	@mkdir -p docs/modules
-	ansible-doc -M roles/openafs_devel/library -t module openafs_build > docs/modules/openafs_build.txt
-	ansible-doc -M roles/openafs_devel/library -t module openafs_install > docs/modules/openafs_install.txt
+	for m in roles/*/library/*.py; do \
+		modulepath=`dirname $$m`; \
+		modulename=`basename $$m .py`; \
+		.venv/bin/ansible-doc -M $${modulepath} -t module $${modulename} > docs/modules/$${modulename}.txt; \
+	done
+
+clean:
+
+distclean: clean
+	rm -rf .venv
