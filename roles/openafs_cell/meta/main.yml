@@ -12,12 +12,16 @@ galaxy_info:
       versions:
         - 6
         - 7
+        - 8
     - name: Ubuntu
       versions:
         - bionic
+        - focal
     - name: Debian
       versions:
         - jessie
+        - stretch
+        - buster
 
   galaxy_tags:
     - system
