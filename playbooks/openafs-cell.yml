@@ -1,0 +1,46 @@
+---
+- name: Prepare
+  hosts: afs_cell
+  pre_tasks:
+    - name: Connecting
+      wait_for_connection:
+
+- name: Setup the Kerberos realm kdc
+  hosts: afs_kdcs[0]
+  pre_tasks:
+    - name: Connecting
+      wait_for_connection:
+  roles:
+    - openafs_krbserver
+
+- name: Install OpenAFS servers
+  hosts: afs_databases:afs_fileservers
+  vars:
+    afs_partitions:
+      - a
+      - b
+  pre_tasks:
+    - name: Connecting
+      wait_for_connection:
+  roles:
+    - openafs_server
+
+- name: Create cell volumes
+  hosts: "{{ afs_admin_client | default(groups['afs_clients'][0]) }}"
+  vars:
+    afs_volumes:
+      - name: test
+  pre_tasks:
+    - name: Connecting
+      wait_for_connection:
+  roles:
+    - openafs_client
+    - openafs_cell
+
+- name: Install OpenAFS clients
+  hosts: afs_clients
+  pre_tasks:
+    - name: Connecting
+      wait_for_connection:
+  roles:
+    - openafs_client

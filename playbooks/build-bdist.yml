@@ -12,7 +12,7 @@
 #
 
 - name: Build and install OpenAFS from source
-  hosts: "{{ afs_devel | default('afs_cell') }}"
+  hosts: afs_devel
   roles:
     - openafs_devel
   tasks:
@@ -23,7 +23,7 @@
         version: master
       register: checkout_results
 
-    - name: Build OpenAFS transarc-style distribution
+    - name: Build OpenAFS Transarc-style binary distribution
       openafs_build:
         projectdir: ~/src/openafs
         clean: "{{ checkout_results.changed }}"
