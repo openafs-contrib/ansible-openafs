@@ -1,0 +1,11 @@
+---
+- name: Create a Kerberos realm
+  hosts: afs_kdcs
+  vars:
+    afs_realm: EXAMPLE.COM
+  tasks:
+    - name: Connecting
+      wait_for_connection:
+
+    - import_role:
+        name: openafs_krbserver
