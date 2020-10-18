@@ -1,9 +1,14 @@
 ---
 - name: Create realm
   hosts: afs_kdcs
+  vars:
+    afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   roles:
     - openafs_krbserver
+
 - name: Converge
+  vars:
+    afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   hosts: krbclients
   roles:
     - openafs_krbclient

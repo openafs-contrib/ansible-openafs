@@ -1,7 +1,21 @@
 ---
 - name: Converge
   hosts: all
+  vars:
+    afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   tasks:
+    - name: "Setup /etc/hosts"
+      become: yes
+      copy:
+        backup: yes
+        dest: /etc/hosts
+        content: |
+          127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+          ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+          {% for name in hostvars | sort %}
+          {{ hostvars[name].ansible_default_ipv4.address }}    {{ hostvars[name].ansible_hostname }}
+          {% endfor %}
+
     - name: "Include openafs_krbserver"
       include_role:
         name: "openafs_krbserver"
