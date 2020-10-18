@@ -4,7 +4,7 @@
   vars:
     afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   tasks:
-    - name: Set hostname address mapping
+    - name: "Setup /etc/hosts"
       become: yes
       copy:
         backup: yes
@@ -16,7 +16,8 @@
           {{ hostvars[name].ansible_default_ipv4.address }}    {{ hostvars[name].ansible_hostname }}
           {% endfor %}
 
-    - include_role:
+    - import_role:
         name: openafs_krbserver
-    - include_role:
+
+    - import_role:
         name: openafs_server

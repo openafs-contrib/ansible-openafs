@@ -17,5 +17,5 @@
           {% endfor %}
 
     - name: "Include openafs_krbserver"
-      include_role:
+      import_role:
         name: "openafs_krbserver"

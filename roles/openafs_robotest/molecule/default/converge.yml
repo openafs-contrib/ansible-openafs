@@ -5,5 +5,5 @@
     afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   tasks:
     - name: "Include openafs_robotest"
-      include_role:
+      import_role:
         name: "openafs_robotest"
