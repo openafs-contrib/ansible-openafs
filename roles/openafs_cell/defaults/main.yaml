@@ -45,7 +45,7 @@ afs_fs: fs
 #       - name: volume_two
 #         mtpt: test
 #
-#afs_volumes: []
+afs_volumes: []
 
 # Initial AFS users.
 #
