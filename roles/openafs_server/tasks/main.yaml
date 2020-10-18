@@ -78,7 +78,7 @@
       include_tasks: selinux-policies.yaml
       when: afs_selinux_mode == 'enforcing'
 
-- include_tasks: server-partitions.yaml
+- import_tasks: server-partitions.yaml
 
 - name: Install packages
   include_tasks: "{{ item }}"
@@ -94,9 +94,9 @@
   include_tasks: "install-{{ afs_server_install_method }}.yaml"
   when: afs_server_install_method != 'package-manager'
 
-- include_tasks: server-config.yaml
+- import_tasks: server-config.yaml
 
-- include_tasks: server-key.yaml
+- import_tasks: server-key.yaml
 
 - include_tasks: selinux-contexts.yaml
   when:

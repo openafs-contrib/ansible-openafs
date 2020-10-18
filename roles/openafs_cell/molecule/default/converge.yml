@@ -18,9 +18,9 @@
 
     - import_role:
         name: "openafs_krbserver"
-    - include_role:
+    - import_role:
         name: "openafs_server"
-    - include_role:
+    - import_role:
         name: "openafs_client"
-    - include_role:
+    - import_role:
         name: "openafs_cell"

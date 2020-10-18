@@ -5,12 +5,12 @@
   when: not afs_client_build_force|bool
 
 - name: Install devel libs/tools
-  include_role:
+  import_role:
     name: openafs_devel
     tasks_from: main
 
 - name: Build dest directory from source
-  include_role:
+  import_role:
     name: openafs_devel
     tasks_from: build
   vars:
