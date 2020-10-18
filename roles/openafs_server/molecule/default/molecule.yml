@@ -7,10 +7,11 @@ driver:
     name: libvirt
 platforms:
   - name: instance-server
-    box: ${BOX-generic/centos8}
-    memory: 1024
+    box: ${BOX-generic/centos7}
+    memory: 2048
     cpus: 1
     groups:
+      - afs_cell
       - afs_kdcs
       - afs_databases
       - afs_fileservers
@@ -18,3 +19,13 @@ provisioner:
   name: ansible
 verifier:
   name: ansible
+scenario:
+  test_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - cleanup
+    - destroy
