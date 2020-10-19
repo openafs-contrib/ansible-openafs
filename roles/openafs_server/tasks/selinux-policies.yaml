@@ -2,11 +2,9 @@
 - name: Install Setools
   become: yes
   yum:
-    name:
-      - policycoreutils-python
-      - setools-console
+    name: "{{ afs_selinux_tools }}"
     state: present
-  when: ansible_distribution == "CentOS" and ansible_distribution_major_version < "8"
+  when: afs_selinux_tools is defined
 
 - name: Test for presence of openafs module in SELinux
   become: yes
