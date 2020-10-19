@@ -8,39 +8,6 @@
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
-- name: Make local directory
-  run_once: true
-  delegate_to: localhost
-  file:
-    path: "{{ afs_local_dir }}"
-    state: directory
-    mode: 0755
-
-- name: Generate cell configuration files
-  run_once: true
-  delegate_to: localhost
-  template:
-    src: "{{ item }}.j2"
-    dest: "{{ afs_local_dir }}/{{ item }}"
-  with_items:
-    - CellServDB
-    - ThisCell
-    - UserList
-
-- name: Create the Kerberos service key
-  become: yes
-  command: >
-    {{ afs_kadmin }}
-    -w {{ afs_admin_password }}
-    -p {{ afs_admin_principal }}@{{ afs_realm }}
-    -r "{{ afs_realm }}"
-    -q "add_principal -randkey afs/{{ afs_cell }}@{{ afs_realm }}"
-  register: kadmin_results
-  changed_when: >
-    kadmin_results.rc == 0
-    and not "already exists while creating" in kadmin_results.stderr
-  when: inventory_hostname == ansible_play_hosts[0]
-
 # Debian based systems add a loopback address for the hostname as
 # a fallback when dns is unavailable. These can cause issues when
 # trying to update the vldb.
