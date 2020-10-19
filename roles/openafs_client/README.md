@@ -1,26 +1,8 @@
 # Ansible Role: OpenAFS client
 
-Install and configure OpenAFS client packages.  Optionally, this role will
-build and install the client from source code with the [OpenAFS devel][1] role.
+Install and configure OpenAFS clients.
 
 ## Role Variables
-
-    afs_cell: example.com
-    afs_desc: Example
-    afs_realm:  EXAMPLE.COM
-
-The Kerberos realm name, AFS cell name, and the cell organizational
-description.
-
-    afs_client_install_method: package-manager
-
-The method used to install the OpenAFS client binaries. Values are:
-
-* `package-manager` :  Install client packages and a pre-built kernel module
-                with  the system package manager (e.g., `yum`, `apt`).
-
-    afs_client_version:
-    afs_client_repo_url:
 
 The URL of a yum repo containing OpenAFS client packages for the `package-manager` install method.
 

@@ -1,8 +1,8 @@
 ---
 galaxy_info:
-  role_name: openafs_server
+  role_name: openafs_common
   author: Michael Meffie
-  description: OpenAFS database and file server
+  description: OpenAFS base role
   company: Sine Nomine Associates
   license: license (BSD)
   min_ansible_version: 2.7
@@ -27,6 +27,4 @@ galaxy_info:
     - system
     - openafs
 
-dependencies:
-  - openafs_common
-  - openafs_krbclient
+dependencies: []

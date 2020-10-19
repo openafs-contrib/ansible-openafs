@@ -1,20 +1,14 @@
 # Ansible Role: OpenAFS cell
 
-Set up the top level volumes in the cell, and optionally, the initial volumes,
-users, and groups for the new cell. This role is to be run on a single client
-host, after the servers and at least one client has been installed.
+Set up the top level volumes in the cell, and optionally, the initial
+volumes, users, and groups for the new cell. This role is to be imported on a
+single client after the servers and at least one client has been installed.
 
 ## Role Variables
-
-    afs_cell: example.com
-    afs_realm: EXAMPLE.COM
-
-Cell and realm names.
 
     afs_admin_principal: admin
     afs_admin_password: (not defined)
     afs_user_password:  (not defined)
-
 
 A administrator credentials to create the regular users listed in `afs_users`
 and the initial Kerberos password for those users.  The passwords are not
@@ -56,13 +50,13 @@ Example initial cell configuration:
     afs_volumes:
       - name: test
         mtpt: test
-    
+
     # Initial AFS users.
     afs_users:
       - name: user1
       - name: user2
       - name: user3
-    
+
     # Initial AFS groups
     afs_groups:
       - name: group1

@@ -1,14 +1,10 @@
 ---
-- name: "CentOS-6: Trace repo url"
-  debug:
-    var: afs_client_repo_url
-
 - name: "CentOS-6: Add OpenAFS yum repo"
   become: yes
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
-    baseurl: "{{ afs_client_repo_url }}"
+    baseurl: "{{ afs_yum_repo }}"
     gpgcheck: no
 
 - name: "CentOS-6: DKMS mode"

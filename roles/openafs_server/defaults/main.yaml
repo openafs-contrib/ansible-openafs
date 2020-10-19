@@ -1,29 +1,9 @@
 ---
-
-# afs cell name
-afs_cell: example.com
-
-# cell organization name
-afs_desc: Example
-
-# kerberos realm name
-afs_realm: EXAMPLE.COM
-
-# Location of generated files.
-afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
-
 # Kerberos and AFS admin principal
 afs_admin_principal: admin
 
 # Kerberos and AFS admin password (random default)
 afs_admin_password: "{{ lookup('password', afs_local_dir+'/afs_admin_password chars=ascii_letters,digits,hexdigits length=15') }}"
-
-# openafs yum repo for server packages
-afs_server_version: 1.8.5
-afs_server_repo_url: "https://download.sinenomine.net/openafs/bins/{{ afs_server_version }}/el$releasever/$basearch"
-
-# Installation method.
-afs_server_install_method: package-manager
 
 # fileserver partitions
 afs_partitions:
