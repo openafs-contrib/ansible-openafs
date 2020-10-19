@@ -68,7 +68,7 @@
     - "install-packages/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
     - "install-packages/{{ ansible_distribution }}.yaml"
     - "install-packages/{{ ansible_os_family }}.yaml"
-    - "unknown.yaml"
+    - "install-packages/unknown.yaml"
 
 - import_tasks: server-config.yaml
 
