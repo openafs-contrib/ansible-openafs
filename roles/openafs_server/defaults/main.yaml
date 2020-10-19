@@ -23,16 +23,7 @@ afs_server_version: 1.8.5
 afs_server_repo_url: "https://download.sinenomine.net/openafs/bins/{{ afs_server_version }}/el$releasever/$basearch"
 
 # Installation method.
-# One of: 'package-manager', 'rsync'
 afs_server_install_method: package-manager
-
-# Build from source options for the 'rsync' install method.
-afs_server_build_force: no
-afs_server_build_builddir: "/usr/local/src/openafs_server"
-afs_server_build_destdir: "/tmp/openafs_server"
-afs_server_build_fetch_method: "git"
-afs_server_build_git_repo: "https://github.com/openafs/openafs"
-afs_server_build_git_ref: "master"
 
 # fileserver partitions
 afs_partitions:

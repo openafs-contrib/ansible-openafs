@@ -20,19 +20,10 @@ afs_client_version: 1.8.5
 afs_client_repo_url: "https://download.sinenomine.net/openafs/bins/{{ afs_client_version }}/el$releasever/$basearch"
 
 # Installation method.
-# One of: 'package-manager', 'rsync'
 afs_client_install_method: package-manager
 
 # Install kernel module with DKMS
 afs_client_install_dkms: "{{ _afs_client_install_dkms | default('no') }}"
-
-# Build options for rsync install method.
-afs_client_build_force: no
-afs_client_build_builddir: "/usr/local/src/openafs_client"
-afs_client_build_destdir: "/tmp/openafs_client"
-afs_client_build_fetch_method: "git"
-afs_client_build_git_repo: "https://github.com/openafs/openafs"
-afs_client_build_git_ref: "master"
 
 # openafs kmod package release prefix
 afs_openafs_kmod_prefix: 1

@@ -46,10 +46,6 @@
     - "install-packages/{{ ansible_distribution }}.yaml"
     - "install-packages/{{ ansible_os_family }}.yaml"
     - "unknown.yaml"
-  when: afs_client_install_method == 'package-manager'
-
-- include_tasks: "install-{{ afs_client_install_method }}.yaml"
-  when: afs_client_install_method != 'package-manager'
 
 - name: Ensure public cell configuration file exists (CellServDB.dist)
   become: yes
