@@ -35,9 +35,6 @@ afs_selinux_top_dirs:
  - "/usr/afs"
  - "/usr/vice"
 
-# Default selinux mode.
-_afs_selinux_mode: enforcing
-
 # Build default options
 _afs_server_configure_opts: >
   --prefix=/usr

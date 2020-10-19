@@ -55,28 +55,9 @@
 - include_tasks: "system-{{ afs_firewall }}.yaml"
   when: afs_firewall is defined
 
-- name: SELinux
-  when:
-    - ansible_selinux is defined
-    - ansible_selinux.get('status') == 'enabled'
-  block:
-    - debug:
-        var: afs_selinux_mode
-        verbosity: 1
-
-    - name: Verify selinux mode value
-      assert:
-        that: afs_selinux_mode in ['disabled', 'enforcing', 'permissive']
-
-    - name: Setup SELinux mode
-      become: yes
-      selinux:
-        state: "{{ afs_selinux_mode }}"
-        policy: targeted
-
-    - name: Setup SELinux policies
-      include_tasks: selinux-policies.yaml
-      when: afs_selinux_mode == 'enforcing'
+- name: Setup SELinux policies
+  include_tasks: selinux-policies.yaml
+  when: ansible_selinux is defined and ansible_selinux.get('status') == 'enabled'
 
 - import_tasks: server-partitions.yaml
 
@@ -99,10 +80,7 @@
 - import_tasks: server-key.yaml
 
 - include_tasks: selinux-contexts.yaml
-  when:
-    - ansible_selinux is defined
-    - ansible_selinux.get('status') == 'enabled'
-    - afs_selinux_mode != 'disabled'
+  when: ansible_selinux is defined and ansible_selinux.get('status') == 'enabled'
 
 - name: Start the OpenAFS servers
   become: yes

@@ -44,12 +44,6 @@ The URL of a yum repo containing OpenAFS server packages.
 
 Build from source options for the 'rsync' install method.
 
-    afs_selinux_mode: enforcing
-
-The selinux enforcing mode. May be one of `enforcing`, `passive`, or
-`disabled`.  When `enforcing`, update the required selinux bits to allow the
-servers to properly operate.
-
     afs_fileserver_type: dafs
 
 Determines which fileserver variation is setup when the host is a member of the
