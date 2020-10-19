@@ -1,8 +1,0 @@
-# TODO
-
-Random collection of items to improve the Ansible roles for OpenAFS.
-
-* Run fs wscell to verify openafs.ko is loaded and the cell name is correct
-* Ansible logging of retries is unhelpful (e.g. when creating root.afs)
-  - Use a shell wrapper to log pts/vos commands on the remote?
-  - Is it possible to use ansible callbacks to improve logging?
