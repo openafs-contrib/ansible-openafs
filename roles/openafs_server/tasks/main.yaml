@@ -8,25 +8,18 @@
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
-# Debian based systems add a loopback address for the hostname as
-# a fallback when dns is unavailable. These can cause issues when
-# trying to update the vldb.
-- name: Avoid resolving the hostname to a loopback address
-  become: yes
-  replace:
-    path: /etc/hosts
-    backup: yes
-    regexp: '^127.0.1.1\b(.*)\b{{ ansible_host | replace(".", "\.") }}\b'
-    replace: '{{ ansible_default_ipv4.address }} \1 {{ ansible_host }}'
+- set_fact:
+    afs_security_model: selinux
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux | type_debug == 'dict'
+    - ansible_selinux.status == 'enabled'
+    - afs_security_model is undefined
 
-- include_tasks: "system-{{ afs_firewall }}.yaml"
-  when: afs_firewall is defined
-
-- name: Setup SELinux policies
-  include_tasks: selinux-policies.yaml
-  when: ansible_selinux is defined and ansible_selinux.get('status') == 'enabled'
-
-- import_tasks: server-partitions.yaml
+- import_tasks: "pre-install/server-etc-hosts.yaml"
+- import_tasks: "pre-install/server-partitions.yaml"
+- include_tasks: "pre-install/firewall-{{ afs_firewall | default('none') }}.yaml"
+- include_tasks: "pre-install/security-policies-{{ afs_security_model | default('none') }}.yaml"
 
 - name: Install packages
   include_tasks: "{{ item }}"
@@ -37,14 +30,11 @@
     - "install-packages/{{ ansible_os_family }}.yaml"
     - "install-packages/unknown.yaml"
 
-- import_tasks: server-config.yaml
+- import_tasks: "post-install/server-config.yaml"
+- import_tasks: "post-install/server-key.yaml"
+- include_tasks: "post-install/security-contexts-{{ afs_security_model | default('none') }}.yaml"
 
-- import_tasks: server-key.yaml
-
-- include_tasks: selinux-contexts.yaml
-  when: ansible_selinux is defined and ansible_selinux.get('status') == 'enabled'
-
-- name: Start the OpenAFS servers
+- name: Start the OpenAFS services
   become: yes
   service:
     name: "{{ afs_server_service }}"
@@ -52,5 +42,5 @@
     enabled: yes
   register: afs_server_service_result
 
-- include_tasks: cell-bootstrap.yaml
-  when: inventory_hostname == ansible_play_hosts[0]
+- include_tasks: post-install/cell-bootstrap.yaml
+  run_once: yes

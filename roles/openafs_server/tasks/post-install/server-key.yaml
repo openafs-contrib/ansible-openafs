@@ -1,4 +1,18 @@
 ---
+- name: Create the Kerberos service key
+  become: yes
+  run_once: yes
+  command: >
+    {{ afs_kadmin }}
+    -w {{ afs_admin_password }}
+    -p {{ afs_admin_principal }}@{{ afs_realm }}
+    -r "{{ afs_realm }}"
+    -q "add_principal -randkey afs/{{ afs_cell }}@{{ afs_realm }}"
+  register: kadmin_results
+  changed_when: >
+    kadmin_results.rc == 0
+    and not "already exists while creating" in kadmin_results.stderr
+
 # Set the AFS service key. As of OpenAFS 1.8.0, the akeyconvert tool was
 # provided to import the keys into the OpenAFS keyfile formats. Versions 1.6.5
 # to 1.6.x use the rxkad.keytab directly.  Versions before 1.6.5 are not
