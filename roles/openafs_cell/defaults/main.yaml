@@ -1,16 +1,4 @@
 ---
-# afs cell name
-afs_cell: example.com
-
-# kerberos realm name
-afs_realm: EXAMPLE.COM
-
-# afs mountpoint
-afs_mountpoint: /afs
-
-# Path to locally generated files.
-afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
-
 # Kerberos and AFS admin principal
 afs_admin_principal: admin
 

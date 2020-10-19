@@ -1,11 +1,4 @@
 ---
-# Cell and realm name.
-afs_cell: example.com
-afs_realm: EXAMPLE.COM
-
-# Path to the locally generated files.
-afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
-
 # Kerberos and AFS admin password (read from a local file by default).
 afs_admin_password: "{{ lookup('password', afs_local_dir+'/afs_admin_password chars=ascii_letters,digits,hexdigits length=15') }}"
 

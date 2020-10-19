@@ -1,26 +1,6 @@
 ---
-
-# AFS cell name
-afs_cell: example.com
-
-# cell organization name
-afs_desc: Example
-
-# kerberos realm
-afs_realm: EXAMPLE.COM
-
 # afs mountpoint
 afs_mountpoint: /afs
-
-# Path to locally generated files.
-afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
-
-# yum repo for client packages
-afs_client_version: 1.8.5
-afs_client_repo_url: "https://download.sinenomine.net/openafs/bins/{{ afs_client_version }}/el$releasever/$basearch"
-
-# Installation method.
-afs_client_install_method: package-manager
 
 # Install kernel module with DKMS
 afs_client_install_dkms: "{{ _afs_client_install_dkms | default('no') }}"

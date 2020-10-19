@@ -9,30 +9,12 @@ This role configures the system to allow OpenAFS servers operate correctly in
 
 ## Role Variables
 
-    afs_cell: example.com
-    afs_desc: Example
-    afs_realm:  EXAMPLE.COM
-
-The Kerberos realm name, AFS cell name, and the cell organizational
-description.
-
     afs_admin_principal:
     afs_admin_password: (undefined by default)
 
 A administrator principal and password to be used to set the AFS service key.
 The password is not defined by default and must be set on the command line (-e)
 or in a group variable, preferably encrypted with `ansible-vault`.
-
-    afs_server_install_method: package-manager
-
-The method used to install the OpenAFS server binaries. Values are:
-
-* `package-manager`:  Install OpenAFS server packages with yum. (default)
-
-    afs_server_version:
-    afs_server_repo_url:
-
-The URL of a yum repo containing OpenAFS server packages.
 
     afs_fileserver_type: dafs
 

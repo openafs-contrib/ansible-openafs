@@ -1,0 +1,18 @@
+---
+# AFS cell name.
+afs_cell: example.com
+
+# AFS cell organization name.
+afs_desc: Example
+
+# Kerberos realm name.
+afs_realm: EXAMPLE.COM
+
+# Path to locally generated files.
+afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
+
+# Installation method.
+afs_install_method: managed
+
+# OpenAFS yum/dnf repository.
+afs_yum_repo: "https://download.sinenomine.net/openafs/bins/1.8.5/el$releasever/$basearch"
