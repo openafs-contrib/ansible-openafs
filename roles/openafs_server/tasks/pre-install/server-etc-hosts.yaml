@@ -1,0 +1,11 @@
+---
+# Some platforms, such as Debian based systems, add a loopback address for the
+# hostname as a fallback when dns is unavailable. For now, fixup the /etc/hosts
+# file by replacing the loopback address with the actual ipv4 address.
+- name: Avoid resolving the hostname to a loopback address
+  become: yes
+  replace:
+    path: /etc/hosts
+    backup: yes
+    regexp: '^127.0.1.1\b(.*)\b{{ ansible_host | replace(".", "\.") }}\b'
+    replace: '{{ ansible_default_ipv4.address }} \1 {{ ansible_host }}'

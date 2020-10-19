@@ -1,0 +1,16 @@
+---
+- name: Create directories
+  become: yes
+  file:
+    state: directory
+    path: "{{ item.path }}"
+    mode: "{{ item.mode }}"
+    owner: root
+    group: root
+  with_items:
+    - path: "{{ afs_mountpoint }}"
+      mode: "0755"
+    - path: "{{ afs_afscachedir }}"
+      mode: "0700"
+    - path: "{{ afs_viceetcdir }}"
+      mode: "0755"
