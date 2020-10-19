@@ -28,21 +28,11 @@ or in a group variable, preferably encrypted with `ansible-vault`.
 The method used to install the OpenAFS server binaries. Values are:
 
 * `package-manager`:  Install OpenAFS server packages with yum. (default)
-* `rsync`: Copy binary files. Build binares from source code if needed.
 
     afs_server_version:
     afs_server_repo_url:
 
 The URL of a yum repo containing OpenAFS server packages.
-
-    afs_server_build_force: no
-    afs_server_build_builddir: "/usr/local/src/openafs_server"
-    afs_server_build_destdir: "/tmp/openafs_server"
-    afs_server_build_fetch_method: "git"
-    afs_server_build_git_repo: "https://github.com/openafs/openafs"
-    afs_server_build_git_ref: "master"
-
-Build from source options for the 'rsync' install method.
 
     afs_fileserver_type: dafs
 

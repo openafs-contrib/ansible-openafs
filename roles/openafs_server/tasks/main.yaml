@@ -69,11 +69,6 @@
     - "install-packages/{{ ansible_distribution }}.yaml"
     - "install-packages/{{ ansible_os_family }}.yaml"
     - "unknown.yaml"
-  when: afs_server_install_method == 'package-manager'
-
-- name: Install
-  include_tasks: "install-{{ afs_server_install_method }}.yaml"
-  when: afs_server_install_method != 'package-manager'
 
 - import_tasks: server-config.yaml
 

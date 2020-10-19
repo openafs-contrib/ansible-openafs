@@ -1,12 +1,4 @@
 ---
-afs_devel_build_server: yes
-afs_devel_build_client: yes
-afs_devel_builddir: "/usr/local/src/openafs"
-afs_devel_destdir: "/tmp/openafs"
-afs_devel_fetch_method: "git"
-afs_devel_git_repo: "https://github.com/openafs/openafs"
-afs_devel_git_ref: "master"
-
 # Keys for Solaris Studio installation
 afs_devel_oracle_key: "{{ '~/.certs/pkg.oracle.com.key.pem' | expanduser }}"
 afs_devel_oracle_cert: "{{ '~/.certs/pkg.oracle.com.certificate.pem' | expanduser }}"
