@@ -11,17 +11,6 @@
 - include_tasks: "system-{{ afs_firewall }}.yaml"
   when: afs_firewall is defined
 
-- name: Setup SELinux mode
-  become: yes
-  selinux:
-    state: "{{ afs_selinux_mode }}"
-    policy: targeted
-  when:
-    - ansible_selinux is defined
-    - ansible_selinux.get('status') == 'enabled'
-    - afs_selinux_mode is defined
-    - afs_selinux_mode in ['disabled', 'enforcing', 'permissive']
-
 - name: Create /afs
   become: yes
   file:
