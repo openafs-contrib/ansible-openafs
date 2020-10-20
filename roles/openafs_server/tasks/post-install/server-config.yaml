@@ -76,7 +76,7 @@
   become: yes
   file:
     state: directory
-    path: "{{ afs_bosconfdir }}"
+    path: "{{ afs_afsbosconfigdir }}"
     owner: root
     group: root
 
@@ -84,7 +84,7 @@
   become: yes
   template:
     src: "BosConfig.new.j2"
-    dest: "{{ afs_bosconfdir }}/BosConfig.ansible"
+    dest: "{{ afs_afsbosconfigdir }}/BosConfig.ansible"
     mode: 0644
     owner: root
     group: root
@@ -93,8 +93,8 @@
 - name: Update the bosserver configuration
   become: yes
   copy:
-    src: "{{ afs_bosconfdir }}/BosConfig.ansible"
-    dest: "{{ afs_bosconfdir }}/BosConfig.new"
+    src: "{{ afs_afsbosconfigdir }}/BosConfig.ansible"
+    dest: "{{ afs_afsbosconfigdir }}/BosConfig.new"
     remote_src: yes
   when: bosconfig.changed
   notify:

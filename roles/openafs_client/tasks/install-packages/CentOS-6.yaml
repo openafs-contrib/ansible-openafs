@@ -94,6 +94,12 @@
           - kmod-openafs-{{ afs_openafs_kmod_version }}-{{ afs_openafs_kmod_release }}
           - openafs-krb5
 
+- name: "CentOS-6: Save OpenAFS installation facts"
+  become: yes
+  openafs_install_facts:
+    state: update
+    package_type: rpm
+
 - name: "CentOS-6: Load kernel module"
   block:
     - name: "CentOS-6: Get kernel modules"

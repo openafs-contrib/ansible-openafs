@@ -2,10 +2,3 @@
 # Kerberos commands.
 afs_kadmin: "/usr/bin/kadmin"
 afs_kinit: "/usr/bin/kinit"
-
-# OpenAFS commands.
-afs_aklog: "/usr/bin/aklog"
-afs_fs: "/usr/bin/fs"
-afs_klog_krb5: "/usr/bin/klog.krb5"
-afs_pts: "/usr/bin/pts"
-afs_vos: "/usr/bin/vos"

@@ -21,6 +21,12 @@
   notify:
     - Restart OpenAFS servers
 
+- name: Save OpenAFS installation facts
+  become: yes
+  openafs_install_facts:
+    state: update
+    package_type: deb
+
 - name: Remove custom policy-rc file
   become: yes
   file:

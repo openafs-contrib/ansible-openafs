@@ -33,23 +33,20 @@ afs_robotest_outputdir: "/home/{{ afs_robotest_user }}/public_html/openafs-robot
 # The test fileserver(s).
 afs_robotest_fileservers: "{{ groups['afs_fileservers'][0] }}"
 
-# Distribution paths; one of: 'transarc', 'package'
-afs_robotest_dist: "package"
-
-# Custom distribution paths. These may be set individually to override
-# the paths specified by the "distribution" vars in vars/dist.
-#
+# path to kinit?
 # afs_kinit:
-# afs_aklog:
-# afs_asetkey:
-# afs_akeyconvert:
-# afs_bos:
-# afs_fs:
-# afs_klog_krb5:
-# afs_pagsh:
-# afs_pts:
-# afs_rxdebug:
-# afs_tokens:
-# afs_udebug:
-# afs_unlog:
-# afs_vos:
+
+# Paths
+afs_aklog: "{{ ansible_local.openafs.paths['aklog'] }}"
+afs_asetkey: "{{ ansible_local.openafs.paths['asetkey'] }}"
+afs_akeyconvert: "{{ ansible_local.openafs.paths['akeyconvert'] }}"
+afs_bos: "{{ ansible_local.openafs.paths['bos'] }}"
+afs_fs: "{{ ansible_local.openafs.paths['fs'] }}"
+afs_klog_krb5: "{{ ansible_local.openafs.paths['klog.krb5'] }}"
+afs_pagsh: "{{ ansible_local.openafs.paths['pagsh'] }}"
+afs_pts: "{{ ansible_local.openafs.paths['pts'] }}"
+afs_rxdebug: "{{ ansible_local.openafs.paths['rxdebug'] }}"
+afs_tokens: "{{ ansible_local.openafs.paths['tokens'] }}"
+afs_udebug: "{{ ansible_local.openafs.paths['udebug'] }}"
+afs_unlog: "{{ ansible_local.openafs.paths['unlog'] }}"
+afs_vos: "{{ ansible_local.openafs.paths['vos'] }}"
