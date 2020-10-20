@@ -10,16 +10,7 @@
 
 - include_tasks: "pre-install/firewall-{{ afs_firewall | default('none') }}.yaml"
 - import_tasks: "pre-install/directories.yaml"
-
-- name: Install packages
-  include_tasks: "{{ item }}"
-  with_first_found:
-    - "install-packages/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
-    - "install-packages/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
-    - "install-packages/{{ ansible_distribution }}.yaml"
-    - "install-packages/{{ ansible_os_family }}.yaml"
-    - "install-packages/unknown.yaml"
-
+- include_tasks: "install/{{ afs_install_method }}.yaml"
 - import_tasks: "post-install/configure.yaml"
 
 - name: Start OpenAFS client
