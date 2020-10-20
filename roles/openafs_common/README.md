@@ -18,11 +18,15 @@ The Kerberos realm name.
 
     afs_install_method: managed
 
-The method used to install OpenAFS.
+The method used to install OpenAFS on the remote node. The default value
+is `managed`. Supported values are:
+
+* `managed`: Install OpenAFS with the distro's package manager, e.g., `yum`, `apt`.
 
     afs_yum_repo:
 
-OpenAFS yum/dnf repo url for the 'managed' install method.
+OpenAFS `yum`/`dnf` repository URL used on Red Hat based distributions when
+the the `install_method` is `managed`.
 
 License
 -------

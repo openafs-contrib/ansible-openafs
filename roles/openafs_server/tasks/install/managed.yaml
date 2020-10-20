@@ -1,0 +1,9 @@
+---
+- name: Install with package manager
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "managed/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
+    - "managed/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
+    - "managed/{{ ansible_distribution }}.yaml"
+    - "managed/{{ ansible_os_family }}.yaml"
+    - "managed/unknown.yaml"
