@@ -15,6 +15,12 @@
       - openafs-server
       - openafs-krb5
 
+- name: Save OpenAFS installation facts
+  become: yes
+  openafs_install_facts:
+    state: update
+    package_type: rpm
+
 - name: Set bosserver startup options
   become: yes
   lineinfile:

@@ -20,3 +20,11 @@ afs_cacheinfo_size: 50000
 
 # afsd options
 afs_afsd_opts: -dynroot -fakestat -afsdb
+
+# Paths
+afs_afsd: "{{ ansible_local.openafs.paths['afsd'] }}"
+afs_fs: "{{ ansible_local.openafs.paths['fs'] }}"
+afs_vos: "{{ ansible_local.openafs.paths['vos'] }}"
+
+# Directories
+afs_viceetcdir: "{{ ansible_local.openafs.dirs['viceectdir'] }}"

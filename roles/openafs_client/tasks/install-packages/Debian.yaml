@@ -59,6 +59,12 @@
       - openafs-client
       - openafs-krb5
 
+- name: "Debian: Save OpenAFS installation facts"
+  become: yes
+  openafs_install_facts:
+    state: update
+    package_type: deb
+
 - name: "Debian: Restore service policy"
   become: yes
   file:
