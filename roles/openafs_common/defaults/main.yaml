@@ -15,4 +15,4 @@ afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
 afs_install_method: managed
 
 # OpenAFS yum/dnf repository for Red Hat based distros.
-afs_yum_repo: "https://download.sinenomine.net/openafs/bins/1.8.5/el$releasever/$basearch"
+afs_yum_repo: "https://download.sinenomine.net/openafs/rpms/el$releasever/$basearch"
