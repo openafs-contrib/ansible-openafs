@@ -4,7 +4,17 @@
   vars:
     afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   tasks:
-    - name: "Setup /etc/hosts"
+    - name: Prepare selinux
+      become: yes
+      selinux:
+        policy: targeted
+        state: "{{ enable_selinux | ternary('enable', 'permissive') }}"
+      when:
+        - ansible_selinux is defined
+        - ansible_selinux | type_debug == 'dict'
+        - ansible_selinux.status == 'enabled'
+
+    - name: Prepare /etc/hosts
       become: yes
       copy:
         backup: yes

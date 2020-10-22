@@ -19,6 +19,10 @@ provisioner:
   name: ansible
 verifier:
   name: ansible
+  inventory:
+    group_vars:
+      all:
+        enable_selinux: ${ENABLE_SELINUX-yes}
 scenario:
   test_sequence:
     - cleanup
