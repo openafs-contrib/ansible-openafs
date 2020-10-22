@@ -3,7 +3,7 @@
 afs_mountpoint: /afs
 
 # Install kernel module with DKMS
-afs_client_install_dkms: "{{ _afs_client_install_dkms | default('no') }}"
+afs_client_install_dkms: no
 
 # openafs kmod package release prefix
 afs_openafs_kmod_prefix: 1
