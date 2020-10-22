@@ -8,8 +8,9 @@
       become: yes
       selinux:
         policy: targeted
-        state: "{{ enable_selinux | ternary('enable', 'permissive') }}"
+        state: "{{ m_enable_selinux | ternary('enforcing', 'permissive') }}"
       when:
+        - m_enable_selinux is defined
         - ansible_selinux is defined
         - ansible_selinux | type_debug == 'dict'
         - ansible_selinux.status == 'enabled'

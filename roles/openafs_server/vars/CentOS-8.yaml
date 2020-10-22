@@ -1,10 +1,9 @@
 ---
+_afs_server_install_platform: redhat
+
 # Kerberos commands.
 afs_kadmin: "/usr/bin/kadmin"
 afs_klist: "/usr/bin/klist"
-
-# Service name
-afs_server_service: openafs-server
 
 # OS dependent variables
 afs_firewall: firewalld

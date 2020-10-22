@@ -1,7 +1,6 @@
 ---
+_afs_server_install_platform: debian
+
 # Kerberos commands.
 afs_kadmin: "/usr/bin/kadmin"
 afs_klist: "/usr/bin/klist"
-
-# Service name
-afs_server_service: openafs-fileserver

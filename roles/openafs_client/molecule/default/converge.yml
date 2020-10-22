@@ -1,18 +1,58 @@
 ---
-- name: Converge
+- name: Prepare
   hosts: afs_clients
-  vars:
-    afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   tasks:
+    - name: Update RedHat kernel
+      when:
+        - m_update_kernel | default('yes') | bool
+        - ansible_os_family == 'RedHat'
+      become: yes
+      block:
+        - name: Update kernel
+          yum:
+            state: latest
+            name:
+              - kernel
+              - kernel-devel
+          register: yum_update_kernel
+        - name: Reboot
+          reboot:
+            reboot_timeout: 600
+          when: yum_update_kernel.changed
+
+    - name: Update Debian kernel
+      when:
+        - m_update_kernel | default('yes') | bool
+        - ansible_os_family == 'Debian'
+      become: yes
+      block:
+        - name: Update kernel
+          apt:
+            state: latest
+            name: 'linux-image*'
+            only_upgrade: yes
+            update_cache: yes
+          register: apt_update_kernel
+        - name: Reboot
+          reboot:
+            reboot_timeout: 600
+          when: apt_update_kernel.changed
+
     - name: Prepare selinux
       become: yes
       selinux:
         policy: targeted
-        state: "{{ enable_selinux | ternary('enable', 'permissive') }}"
+        state: "{{ m_enable_selinux | ternary('enforcing', 'permissive') }}"
       when:
+        - m_enable_selinux is defined
         - ansible_selinux is defined
         - ansible_selinux | type_debug == 'dict'
         - ansible_selinux.status == 'enabled'
+      register: prepare_selinux
+
+    - debug:
+        msg: selinux state has been changed. Be sure to rerun setup.
+      when: prepare_selinux.changed
 
     - name: Prepare /etc/hosts
       become: yes
@@ -26,5 +66,12 @@
           {{ hostvars[name].ansible_default_ipv4.address }}    {{ hostvars[name].ansible_hostname }}
           {% endfor %}
 
+- name: Converge
+  hosts: afs_clients
+  vars:
+    afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
+    afs_module_install_method: "{{ m_with_dkms | ternary('dkms', 'kmod') }}"
+    afs_bdist_dir: "~/.cache/ansible-openafs/binaries/bdist{{ m_transarc | ternary('-transarc', '') }}"
+  tasks:
     - import_role:
-        name: "openafs_client"
+        name: openafs_client

@@ -1,7 +1,5 @@
 # Copyright (c) 2019 Sine Nomine Associates
 
-.PHONY: help lint test
-
 help:
 	@echo "usage: make <target>"
 	@echo "targets:"

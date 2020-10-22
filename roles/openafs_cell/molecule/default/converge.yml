@@ -1,15 +1,14 @@
 ---
-- name: Converge
+- name: Setup
   hosts: all
-  vars:
-    afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   tasks:
     - name: Prepare selinux
       become: yes
       selinux:
         policy: targeted
-        state: "{{ enable_selinux | ternary('enable', 'permissive') }}"
+        state: "{{ m_enable_selinux | ternary('enforcing', 'permissive') }}"
       when:
+        - m_enable_selinux is defined
         - ansible_selinux is defined
         - ansible_selinux | type_debug == 'dict'
         - ansible_selinux.status == 'enabled'
@@ -26,8 +25,15 @@
           {{ hostvars[name].ansible_default_ipv4.address }}    {{ hostvars[name].ansible_hostname }}
           {% endfor %}
 
+- name: Converge
+  hosts: all
+  vars:
+    afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
+  tasks:
     - import_role:
         name: "openafs_krbserver"
+    - import_role:
+        name: "openafs_krbclient"
     - import_role:
         name: "openafs_server"
     - import_role:

@@ -1,0 +1,50 @@
+---
+- name: "Debian: Install build prereqs"
+  become: yes
+  apt:
+    state: present
+    name:
+      - build-essential
+      - "linux-headers-{{ ansible_kernel }}"
+    update_cache: yes
+
+- name: "Debian: Install client"
+  become: yes
+  block:
+    - name: "Debian: Prevent services from starting during install"
+      copy:
+        content: "exit 101"
+        dest: "/usr/sbin/policy-rc.d"
+        mode: "0755"
+      changed_when: false
+
+    - name: "Debian: Install OpenAFS client packages"
+      apt:
+        state: present
+        install_recommends: no
+        name:
+          - openafs-client
+          - openafs-krb5
+          - openafs-modules-dkms
+
+    - name: "Debian: Restore installation policy"
+      file:
+        path: "/usr/sbin/policy-rc.d"
+        state: absent
+      changed_when: false
+
+- name: Get installation paths
+  openafs_get_install_paths:
+    package_manager_type: apt
+  register: install_results
+
+- name: Store installation facts
+  become: yes
+  openafs_store_facts:
+    state: update
+    facts:
+      install_method: "{{ afs_install_method }}"
+      client_installed: yes
+      client_service_name: openafs-client
+      bins: "{{ install_results.bins }}"
+      dirs: "{{ install_results.dirs }}"

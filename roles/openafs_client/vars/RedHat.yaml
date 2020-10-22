@@ -1,10 +1,4 @@
 ---
-# OpenAFS installation paths.
-afs_viceetcdir: "/usr/vice/etc"
-afs_afscachedir: "/usr/vice/cache"
-
-# Service name
-afs_client_service: openafs-client
-
-# OS dependent variables
+_afs_client_install_platform: redhat
+_afs_cachedir: /usr/vice/cache
 afs_firewall: firewalld

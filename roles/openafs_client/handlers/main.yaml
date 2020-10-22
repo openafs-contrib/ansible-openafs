@@ -2,6 +2,6 @@
 - name: Restart OpenAFS client
   become: yes
   service:
-    name: "{{ afs_client_service }}"
+    name: "{{ afs_client_service_name }}"
     state: restarted
   when: not afs_client_service_result.changed

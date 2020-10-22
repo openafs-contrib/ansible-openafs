@@ -1,0 +1,71 @@
+---
+- name: Verify service manager type is supported
+  assert:
+    that: ansible_service_mgr in ["systemd"]
+
+- name: Verify selinux is disabled
+  assert:
+    that: ansible_selinux.mode != 'enforcing'
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux | type_debug == 'dict'
+    - ansible_selinux.status == 'enabled'
+
+- import_role:
+    name: openafs_devel
+
+- name: Checkout source code
+  git:
+    repo: "git://git.openafs.org/openafs.git"
+    version: "master"
+    dest: ~/openafs
+  register: checkout_results
+
+- name: Build OpenAFS binaries
+  openafs_build:
+    target: install_nolibafs
+    clean: "{{ checkout_results.changed }}"
+    projectdir: ~/openafs
+    destdir: ~/openafs/packaging/dest
+    configure_options:
+      enable:
+        - debug
+      disable:
+        - kernel-module
+  register: build_results
+
+- name: Build results
+  debug:
+    var: build_results
+
+- name: Install binary distribution
+  become: yes
+  openafs_install_bdist:
+    path: "{{ build_results.destdir }}"
+    log_level: debug
+  register: install_results
+
+- name: Store installation facts
+  become: yes
+  openafs_store_facts:
+    state: update
+    facts:
+      install_method: "{{ afs_install_method }}"
+      server_installed: yes
+      server_service_name: openafs-server
+      bins: "{{ install_results.bins }}"
+      dirs: "{{ install_results.dirs }}"
+
+- name: Setup systemd service
+  become: yes
+  block:
+    - name: Install systemd unit file
+      template:
+        src: openafs-server.service.j2
+        dest: "/etc/systemd/system/{{ afs_server_service_name }}.service"
+      register: unit_file
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+      when: unit_file.changed

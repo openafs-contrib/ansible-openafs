@@ -1,0 +1,77 @@
+---
+#
+# Install a prebuilt OpenAFS kernel module for the currently running kernel
+# version. This install method requires a private yum repo populated with
+# OpenAFS packages and prebuilt kernel module rpm package files (kmod-openafs).
+#
+# Just installing the 'kmod-openafs' package will install a kernel module for
+# the most recent kernel version in the yum repository, not neccessarily the
+# version currently running on the remote node. In order to obviate the need to
+# update the kernel and endure a reboot when importing this role, we attempt to
+# install the kmod-openafs with the full version name. This is a bit tricky
+# since the full name also contains on the OpenAFS version name. First, we
+# ensure the base openafs package is installed, and then query the version
+# string from the installed base package. Then we use that version string plus
+# the running kernel version to specify the full kmod-openafs package name.
+#
+
+- name: Add OpenAFS yum repo
+  become: yes
+  yum_repository:
+    name: openafs
+    description: OpenAFS yum repo
+    baseurl: "{{ afs_yum_repo }}"
+    gpgcheck: no
+
+- name: Install OpenAFS base package
+  become: yes
+  yum:
+    state: present
+    name:
+      - openafs
+
+- name: Query OpenAFS version
+  become: yes
+  command: rpm -q --queryformat "%{VERSION}" openafs
+  args:
+    warn: False
+  changed_when: False
+  register: rpm_query
+
+- name: Install OpenAFS client with kmod
+  become: yes
+  yum:
+    state: present
+    name:
+      - openafs
+      - openafs-client
+      - openafs-krb5
+      - "kmod-openafs-{{ rpm_query.stdout }}-1.{{ ansible_kernel | regex_replace('-', '_') }}"
+
+- name: Get installation paths
+  openafs_get_install_paths:
+    package_manager_type: rpm
+  register: install_results
+
+- name: Store installation facts
+  become: yes
+  openafs_store_facts:
+    state: update
+    facts:
+      install_method: "{{ afs_install_method }}"
+      client_installed: yes
+      client_service_name: openafs-client
+      bins: "{{ install_results.bins }}"
+      dirs: "{{ install_results.dirs }}"
+
+- import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
+
+- name: Set client startup options
+  become: yes
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: "^AFSD_ARGS="
+    line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS client

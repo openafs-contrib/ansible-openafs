@@ -51,22 +51,25 @@ afs_root_server: "{{ groups['afs_fileservers'][0] }}"
 # Primary fileserver vice partition id
 afs_root_part: a
 
+# Service name
+afs_server_service_name: "{{ ansible_local.openafs.server_service_name }}"
+
 # Paths
-afs_akeyconvert: "{{ ansible_local.openafs.paths['akeyconvert'] }}"
-afs_bos: "{{ ansible_local.openafs.paths['bos'] }}"
-afs_bosserver: "{{ ansible_local.openafs.paths['bosserver'] }}"
-afs_dafileserver: "{{ ansible_local.openafs.paths['dafileserver'] }}"
-afs_dasalvager: "{{ ansible_local.openafs.paths['dasalvager'] }}"
-afs_davolserver: "{{ ansible_local.openafs.paths['davolserver'] }}"
-afs_fileserver: "{{ ansible_local.openafs.paths['fileserver'] }}"
-afs_pts: "{{ ansible_local.openafs.paths['pts'] }}"
-afs_ptserver: "{{ ansible_local.openafs.paths['ptserver'] }}"
-afs_salvager: "{{ ansible_local.openafs.paths['salvager'] }}"
-afs_salvageserver: "{{ ansible_local.openafs.paths['salvageserver'] }}"
-afs_udebug: "{{ ansible_local.openafs.paths['udebug'] }}"
-afs_vlserver: "{{ ansible_local.openafs.paths['vlserver'] }}"
-afs_volserver: "{{ ansible_local.openafs.paths['volserver'] }}"
-afs_vos: "{{ ansible_local.openafs.paths['vos'] }}"
+afs_akeyconvert: "{{ ansible_local.openafs.bins['akeyconvert'] }}"
+afs_bos: "{{ ansible_local.openafs.bins['bos'] }}"
+afs_bosserver: "{{ ansible_local.openafs.bins['bosserver'] }}"
+afs_dafileserver: "{{ ansible_local.openafs.bins['dafileserver'] }}"
+afs_dasalvager: "{{ ansible_local.openafs.bins['dasalvager'] }}"
+afs_davolserver: "{{ ansible_local.openafs.bins['davolserver'] }}"
+afs_fileserver: "{{ ansible_local.openafs.bins['fileserver'] }}"
+afs_pts: "{{ ansible_local.openafs.bins['pts'] }}"
+afs_ptserver: "{{ ansible_local.openafs.bins['ptserver'] }}"
+afs_salvager: "{{ ansible_local.openafs.bins['salvager'] }}"
+afs_salvageserver: "{{ ansible_local.openafs.bins['salvageserver'] }}"
+afs_udebug: "{{ ansible_local.openafs.bins['udebug'] }}"
+afs_vlserver: "{{ ansible_local.openafs.bins['vlserver'] }}"
+afs_volserver: "{{ ansible_local.openafs.bins['volserver'] }}"
+afs_vos: "{{ ansible_local.openafs.bins['vos'] }}"
 
 # Directories
 afs_afsbosconfigdir: "{{ ansible_local.openafs.dirs['afsbosconfigdir'] }}"

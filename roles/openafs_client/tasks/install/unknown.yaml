@@ -1,0 +1,8 @@
+---
+- name: Unsupported install method or platform
+  fail:
+    msg: >
+      Searched
+      '{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ _afs_client_install_platform }}-{{ afs_module_install_method }}.yaml',
+      '{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ _afs_client_install_platform }}.yaml',
+      '{{ role_path }}/tasks/install/{{ afs_install_method }}.yaml'

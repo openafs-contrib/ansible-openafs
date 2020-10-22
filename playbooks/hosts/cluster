@@ -31,7 +31,7 @@ afs_cell = example.com
 [afs_clients:vars]
 afs_kdc_servers = afs01
 afs_kadmin_server = afs01
-afs_client_install_dkms = yes
+afs_module_install_method = dkms
 
 [afs_devel:vars]
 

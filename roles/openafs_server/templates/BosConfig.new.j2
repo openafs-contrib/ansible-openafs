@@ -3,25 +3,25 @@ restarttime 16 0 0 0 0
 checkbintime 3 0 5 0 0
 {% if 'afs_databases' in group_names %}
 bnode simple ptserver 1
-parm {{ afs_afssrvdir }}/ptserver{{ ' ' if afs_ptserver_opts else '' }}{{ afs_ptserver_opts }}
+parm {{ afs_ptserver }}{{ ' ' if afs_ptserver_opts else '' }}{{ afs_ptserver_opts }}
 end
 bnode simple vlserver 1
-parm {{ afs_afssrvdir }}/vlserver{{ ' ' if afs_vlserver_opts else '' }}{{ afs_vlserver_opts }}
+parm {{ afs_vlserver }}{{ ' ' if afs_vlserver_opts else '' }}{{ afs_vlserver_opts }}
 end
 {% endif %}
 {% if 'afs_fileservers' in group_names %}
 {% if afs_fileserver_type == 'dafs' %}
 bnode dafs dafs 1
-parm /usr/afs/bin/dafileserver{{ ' ' if afs_dafileserver_opts else '' }}{{ afs_dafileserver_opts }}
-parm /usr/afs/bin/davolserver{{ ' ' if afs_davolserver_opts else '' }}{{ afs_davolserver_opts }}
-parm /usr/afs/bin/salvageserver{{ ' ' if afs_salvageserver_opts else '' }}{{ afs_salvageserver_opts }}
-parm /usr/afs/bin/dasalvager{{ ' ' if afs_dasalvager_opts else '' }}{{ afs_dasalvager_opts }}
+parm {{ afs_dafileserver }}{{ ' ' if afs_dafileserver_opts else '' }}{{ afs_dafileserver_opts }}
+parm {{ afs_davolserver }}{{ ' ' if afs_davolserver_opts else '' }}{{ afs_davolserver_opts }}
+parm {{ afs_salvageserver }}{{ ' ' if afs_salvageserver_opts else '' }}{{ afs_salvageserver_opts }}
+parm {{ afs_dasalvager }}{{ ' ' if afs_dasalvager_opts else '' }}{{ afs_dasalvager_opts }}
 end
 {% else %}
 bnode fs fs 1
-parm /usr/afs/bin/fileserver{{ ' ' if afs_fileserver_opts else '' }}{{ afs_fileserver_opts }}
-parm /usr/afs/bin/volserver{{ ' ' if afs_volserver_opts else '' }}{{ afs_volserver_opts }}
-parm /usr/afs/bin/salvager{{ ' ' if afs_salvager_opts else '' }}{{ afs_salvager_opts }}
+parm {{ afs_fileserver }}{{ ' ' if afs_fileserver_opts else '' }}{{ afs_fileserver_opts }}
+parm {{ afs_volserver }}{{ ' ' if afs_volserver_opts else '' }}{{ afs_volserver_opts }}
+parm {{ afs_salvager }}{{ ' ' if afs_salvager_opts else '' }}{{ afs_salvager_opts }}
 end
 {% endif %}
 {% endif %}

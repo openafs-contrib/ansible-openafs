@@ -8,9 +8,23 @@
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
+- name: Verify install method
+  assert:
+    that:
+      - afs_install_method in ['managed', 'packages', 'bdist', 'scm']
+      - ansible_local.openafs is undefined or ansible_local.openafs.install_method == afs_install_method
+
 - include_tasks: "pre-install/firewall-{{ afs_firewall | default('none') }}.yaml"
-- import_tasks: "pre-install/directories.yaml"
-- include_tasks: "install/{{ afs_install_method }}.yaml"
+
+- name: Install client
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ _afs_client_install_platform }}-{{ afs_module_install_method }}.yaml"
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ _afs_client_install_platform }}.yaml"
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}.yaml"
+    - "{{ role_path }}/tasks/install/unknown.yaml"
+
+- import_tasks: "post-install/directories.yaml"
 - import_tasks: "post-install/configure.yaml"
 
 - name: Start OpenAFS client
@@ -18,7 +32,7 @@
   service:
     state: started
     enabled: yes
-    name: "{{ afs_client_service }}"
+    name: "{{ afs_client_service_name }}"
   register: afs_client_service_result
 
 - name: "Get mount information"
