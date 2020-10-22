@@ -4,6 +4,16 @@
   vars:
     afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   tasks:
+    - name: Prepare selinux
+      become: yes
+      selinux:
+        policy: targeted
+        state: "{{ enable_selinux | ternary('enable', 'permissive') }}"
+      when:
+        - ansible_selinux is defined
+        - ansible_selinux | type_debug == 'dict'
+        - ansible_selinux.status == 'enabled'
+
     - name: "Include openafs_robotest"
       import_role:
         name: "openafs_robotest"

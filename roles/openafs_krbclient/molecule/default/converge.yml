@@ -3,12 +3,33 @@
   hosts: afs_kdcs
   vars:
     afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
-  roles:
-    - openafs_krbserver
+  tasks:
+    - name: Prepare selinux
+      become: yes
+      selinux:
+        policy: targeted
+        state: "{{ enable_selinux | ternary('enable', 'permissive') }}"
+      when:
+        - ansible_selinux is defined
+        - ansible_selinux | type_debug == 'dict'
+        - ansible_selinux.status == 'enabled'
+
+    - import_role:
+        name: openafs_krbserver
 
 - name: Converge
   vars:
     afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   hosts: krbclients
-  roles:
-    - openafs_krbclient
+    - name: Prepare selinux
+      become: yes
+      selinux:
+        policy: targeted
+        state: "{{ enable_selinux | ternary('enable', 'permissive') }}"
+      when:
+        - ansible_selinux is defined
+        - ansible_selinux | type_debug == 'dict'
+        - ansible_selinux.status == 'enabled'
+
+    - import_role:
+        name: openafs_krbclient
