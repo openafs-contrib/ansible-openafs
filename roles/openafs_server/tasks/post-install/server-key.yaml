@@ -40,14 +40,6 @@
   notify:
     - Restart OpenAFS servers
 
-- name: Check for akeyconvert availability
-  stat:
-    path: "{{ afs_akeyconvert }}"
-  register: akeyconvert
-  changed_when: False
-
 - name: Set the service key
   become: yes
   command: "{{ afs_akeyconvert }}"
-  register: akeyconvert_results
-  when: keytab.changed and akeyconvert.stat.exists

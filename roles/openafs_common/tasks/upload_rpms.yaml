@@ -1,0 +1,28 @@
+---
+- name: Find rpm files to copy
+  local_action:
+    module: find
+    path: "{{ afs_rpm_dir }}/{{ afs_rpm_dist }}/{{ afs_rpm_arch }}"
+    patterns: '*.rpm'
+  register: find_results
+
+- set_fact:
+    uploaded_rpms: "{{ find_results.files | map(attribute='path') | list }}"
+
+- name: Verify rpm files found
+  fail:
+    msg: "RPMs not found in path {{ afs_rpm_dir }}/{{ afs_rpm_dist }}/{{ afs_rpm_arch }}"
+  when: uploaded_rpms | length == 0
+
+- name: Create rpm destination directory
+  file:
+    state: directory
+    path: "{{ afs_tmpdir }}/rpms"
+
+- name: Copy rpm files
+  copy:
+    src: "{{ rpm }}"
+    dest: "{{ afs_tmpdir }}/rpms/"
+  with_items: "{{ uploaded_rpms }}"
+  loop_control:
+    loop_var: rpm

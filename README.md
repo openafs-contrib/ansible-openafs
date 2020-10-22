@@ -10,10 +10,10 @@ distributed filesystem.
 
 ## Platforms supported
 
-* Centos/RHEL 6.x, 7.x, 8.x
-* Ubuntu 18.x
+* Centos/RHEL 7, 8
+* Debian 9, 10
 
-## Roles
+## Ansible roles
 
 * Kerberos client
 * Kerberos server
@@ -23,13 +23,11 @@ distributed filesystem.
 * OpenAFS development
 * OpenAFS Robot Framework test suite
 
-## Playbooks
+## Example playbooks
 
-* `kvm.yaml` - Setup a local KVM hypervisor for testing
-* `cell.yaml` - Deploy a Kerberos realm and OpenAFS cell
-* `realm.yaml` - Deplay a Kerberos realm
-* `robotest.yaml` - Install an OpenAFS Robot Framework test suite
-* `testcell.yaml` - Setup test realm and cell
+* build-bdist.yml - Build OpenAFS binaries
+* kerberos-realm.yml - Install and setup a Kerberos realm
+* openafs-cell.yml - Install and setup an OpenAFS cell
 
 ## License
 

@@ -1,0 +1,11 @@
+---
+- name: Unsupported platform
+  fail:
+    msg: >
+      Install method is '{{ afs_install_method }}'.
+      Platform is
+      '{{ ansible_distribution }}-{{ ansible_distribution_version }}',
+      '{{ ansible_distribution }}-{{ ansible_distribution_major_version }}',
+      '{{ ansible_distribution }}',
+      '{{ ansible_os_family }}',
+      '{{ ansible_system }}'.

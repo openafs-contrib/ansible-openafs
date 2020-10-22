@@ -8,7 +8,14 @@
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
-- set_fact:
+- name: Verify install method
+  assert:
+    that:
+      - afs_install_method in ['managed', 'packages', 'bdist', 'scm']
+      - ansible_local.openafs is undefined or ansible_local.openafs.install_method == afs_install_method
+
+- name: Determine security model name
+  set_fact:
     afs_security_model: selinux
   when:
     - ansible_selinux is defined
@@ -20,7 +27,14 @@
 - import_tasks: "pre-install/server-partitions.yaml"
 - include_tasks: "pre-install/firewall-{{ afs_firewall | default('none') }}.yaml"
 - include_tasks: "pre-install/security-policies-{{ afs_security_model | default('none') }}.yaml"
-- include_tasks: "install/{{ afs_install_method }}.yaml"
+
+- name: Install server
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ _afs_server_install_platform }}.yaml"
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}.yaml"
+    - "{{ role_path }}/tasks/install/unknown.yaml"
+
 - import_tasks: "post-install/server-config.yaml"
 - import_tasks: "post-install/server-key.yaml"
 - include_tasks: "post-install/security-contexts-{{ afs_security_model | default('none') }}.yaml"
@@ -28,7 +42,7 @@
 - name: Start the OpenAFS services
   become: yes
   service:
-    name: "{{ afs_server_service }}"
+    name: "{{ afs_server_service_name }}"
     state: started
     enabled: yes
   register: afs_server_service_result

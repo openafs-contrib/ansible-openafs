@@ -28,7 +28,7 @@ provisioner:
   inventory:
     group_vars:
       all:
-        enable_selinux: ${ENABLE_SELINUX-yes}
+        m_enable_selinux: ${M_ENABLE_SELINUX:-yes}
 verifier:
   name: ansible
 scenario:

@@ -1,0 +1,74 @@
+---
+- name: Prepare
+  hosts: all
+  tasks:
+    - name: Update RedHat kernel
+      when:
+        - m_update_kernel | default('yes') | bool
+        - ansible_os_family == 'RedHat'
+      become: yes
+      block:
+        - name: Update kernel
+          yum:
+            state: latest
+            name:
+              - kernel
+              - kernel-devel
+          register: yum_update_kernel
+        - name: Reboot
+          reboot:
+            reboot_timeout: 600
+          when: yum_update_kernel.changed
+
+- name: Build binary distribution
+  hosts: all
+  roles:
+    - openafs_devel
+  tasks:
+    - name: Checkout OpenAFS source code
+      git:
+        repo: "{{ m_gitrepo | default('git://git.openafs.org/openafs.git') }}"
+        version: "{{ m_gitref | default('master') }}"
+        dest: ~/openafs
+      register: checkout_results
+
+    - name: Build OpenAFS Transarc-style binary distribution
+      openafs_build:
+        target: dest
+        clean: "{{ checkout_results.changed }}"
+        projectdir: ~/openafs
+        configure_options:
+          enable:
+            - transarc-paths
+            - debug
+            - debug-kernel
+            - kernel-module
+          with:
+            - linux-kernel-packaging
+      register: build_results
+
+    - name: Build results
+      debug:
+        var: build_results
+
+    - set_fact:
+        dist: "{{ m_dist | default(ansible_distribution|lower + ansible_distribution_major_version) }}"
+        arch: "{{ ansible_architecture }}"
+        tarball: "openafs-{{ build_results.version }}-{{ build_results.sysname }}.tar.gz"
+
+    - name: Create tarball
+      archive:
+        path: "~/openafs/{{ build_results.sysname }}"
+        dest: "/tmp/{{ tarball }}"
+        format: gz
+
+    - name: Download
+      fetch:
+        flat: yes
+        src: "/tmp/{{ tarball }}"
+        dest: "~/.cache/ansible-openafs/binaries/bdist-transarc/{{ dist }}/{{ arch }}/{{ tarball }}"
+      register: fetch_results
+
+    - name: Downloaded
+      debug:
+        var: fetch_results.dest

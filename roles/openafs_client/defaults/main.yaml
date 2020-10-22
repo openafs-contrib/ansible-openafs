@@ -1,30 +1,29 @@
 ---
+# afs kernel module name; openafs or libafs
+afs_module: openafs
+
+# Specifies DKMS or kmod installation on RPM-based systems.
+afs_module_install_method: "{{ _afs_module_install_method | default('dkms') }}"
+
 # afs mountpoint
 afs_mountpoint: /afs
 
-# Install kernel module with DKMS
-afs_client_install_dkms: no
-
-# openafs kmod package release prefix
-afs_openafs_kmod_prefix: 1
-
-# afs filesystem mount point
-afs_cacheinfo_mount: "{{ afs_mountpoint }}"
-
 # afs cache mount point
-afs_cacheinfo_cache: /usr/vice/cache
+afs_cachedir: "{{ _afs_cachedir | default('/usr/vice/cache') }}"
 
 # afs cache size
-# TODO: create partition or autodecte
-afs_cacheinfo_size: 50000
+afs_cachesize: 50000
 
 # afsd options
 afs_afsd_opts: -dynroot -fakestat -afsdb
 
+# Service name
+afs_client_service_name: "{{ ansible_local.openafs.client_service_name }}"
+
 # Paths
-afs_afsd: "{{ ansible_local.openafs.paths['afsd'] }}"
-afs_fs: "{{ ansible_local.openafs.paths['fs'] }}"
-afs_vos: "{{ ansible_local.openafs.paths['vos'] }}"
+afs_afsd: "{{ ansible_local.openafs.bins['afsd'] }}"
+afs_fs: "{{ ansible_local.openafs.bins['fs'] }}"
+afs_vos: "{{ ansible_local.openafs.bins['vos'] }}"
 
 # Directories
-afs_viceetcdir: "{{ ansible_local.openafs.dirs['viceectdir'] }}"
+afs_viceetcdir: "{{ ansible_local.openafs.dirs['viceetcdir'] }}"

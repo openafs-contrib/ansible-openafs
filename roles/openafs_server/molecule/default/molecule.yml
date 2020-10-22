@@ -6,8 +6,8 @@ driver:
   provider:
     name: libvirt
 platforms:
-  - name: instance-server
-    box: ${BOX-generic/centos7}
+  - name: m-server-01
+    box: ${M_BOX:-generic/centos7}
     memory: 2048
     cpus: 1
     groups:
@@ -20,7 +20,8 @@ provisioner:
   inventory:
     group_vars:
       all:
-        enable_selinux: ${ENABLE_SELINUX-yes}
+        m_enable_selinux: ${M_ENABLE_SELINUX:-no}
+        m_with_client: ${m_with_client:-no}
 verifier:
   name: ansible
 scenario:

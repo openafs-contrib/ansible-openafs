@@ -8,11 +8,28 @@ afs_desc: Example
 # Kerberos realm name.
 afs_realm: EXAMPLE.COM
 
-# Path to locally generated files.
+# Path to files on controller to be uploaded to remote nodes.
 afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
+
+# Temporary directory on remote nodes.
+afs_tmpdir: /tmp/ansible-openafs
 
 # Installation method.
 afs_install_method: managed
 
-# OpenAFS yum/dnf repository for Red Hat based distros.
+# 'managed' installation method variables.
 afs_yum_repo: "https://download.sinenomine.net/openafs/rpms/el$releasever/$basearch"
+
+# 'package' installation method variables.
+afs_rpm_dir: "~/.cache/ansible-openafs/binaries/rpms"
+afs_rpm_dist: "{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}"
+afs_rpm_arch: "{{ ansible_architecture }}"
+
+# 'bdist' installation method variables.
+afs_bdist_dir: "~/.cache/ansible-openafs/binaries/bdist"
+afs_bdist_dist: "{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}"
+afs_bdist_arch: "{{ ansible_architecture }}"
+
+# 'scm' installation method variables.
+afs_scm_gitrepo: "git://git.openafs.org/openafs.git"
+afs_scm_gitref: "master"

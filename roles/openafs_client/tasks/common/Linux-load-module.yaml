@@ -1,0 +1,21 @@
+---
+- name: Get kernel modules
+  slurp:
+    src: /proc/modules
+  register: modules
+
+- name: Trace kernel modules
+  debug:
+    msg: "{{ modules.content | b64decode }}"
+    verbosity: 1
+
+- name: Load openafs kernel module
+  become: yes
+  command: modprobe {{ afs_module | default('openafs') }}
+  when: (modules.content | b64decode) is not search(afs_module | default('openafs'))
+
+- name: Verify the OpenAFS kernel module is loaded
+  wait_for:
+    path: /proc/modules
+    search_regex: "{{ afs_module | default('openafs') }}"
+    timeout: 5

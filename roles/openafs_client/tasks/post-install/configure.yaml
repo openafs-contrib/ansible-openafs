@@ -65,8 +65,9 @@
 
 - name: Update cache configuration
   become: yes
-  template:
-    src: cacheinfo.j2
+  copy:
+    content: |
+      {{ afs_mountpoint }}:{{ afs_cachedir }}:{{ afs_cachesize }}
     dest: "{{ afs_viceetcdir }}/cacheinfo"
     mode: 0644
     owner: root

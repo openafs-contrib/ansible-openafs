@@ -1,0 +1,84 @@
+---
+#
+# Install the OpenAFS kernel module with DKMS. This install method
+# requires a private yum repo populated with OpenAFS rpm packages.
+#
+
+- name: Add OpenAFS yum repo
+  become: yes
+  yum_repository:
+    name: openafs
+    description: OpenAFS yum repo
+    baseurl: "{{ afs_yum_repo }}"
+    gpgcheck: no
+
+- name: Add epel yum repo
+  become: yes
+  yum:
+    name: epel-release
+    state: present
+    update_cache: yes
+
+# Workaround missing dkms-openafs package requires. These
+# must be installed with a separate yum command before the
+# openafs rpms are installed.
+- name: Install dkms-openafs pre-requirements
+  become: yes
+  yum:
+    state: present
+    name:
+      - make
+      - "kernel-devel-{{ ansible_kernel }}"
+
+- name: Install OpenAFS client with DKMS
+  become: yes
+  yum:
+    state: present
+    name:
+      - openafs
+      - openafs-client
+      - dkms-openafs
+      - openafs-krb5
+
+- name: Get dkms status
+  command: /usr/sbin/dkms status
+  check_mode: no
+  changed_when: false
+  register: dkms_status
+
+- debug:
+    var: dkms_status
+    verbosity: 1
+
+- name: Verify openafs dkms status is installed
+  assert:
+    that:
+      dkms_status.stdout is regex('openafs, .* installed')
+
+- name: Get installation paths
+  openafs_get_install_paths:
+    package_manager_type: rpm
+  register: install_results
+
+- name: Store installation facts
+  become: yes
+  openafs_store_facts:
+    state: update
+    facts:
+      install_method: "{{ afs_install_method }}"
+      client_installed: yes
+      client_service_name: openafs-client
+      bins: "{{ install_results.bins }}"
+      dirs: "{{ install_results.dirs }}"
+
+- import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
+
+- name: Set client startup options
+  become: yes
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: "^AFSD_ARGS="
+    line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS client

@@ -1,0 +1,112 @@
+---
+#
+# Install prebuilt rpm packages and the kernel module with DKMS. These
+# packages must be available on the control node and will be uploaded
+# to the remote node and installed.
+#
+# The directory on the control node must contain packages for only one
+# OpenAFS version.
+#
+- name: Add epel yum repo
+  become: yes
+  yum:
+    name: epel-release
+    state: present
+    update_cache: yes
+
+- import_role:
+    name: openafs_common
+    tasks_from: upload_rpms
+
+- name: Find client userspace rpm filenames
+  find:
+    path: "{{ afs_tmpdir }}/rpms/"
+    use_regex: yes
+    patterns:
+      - "openafs-[0-9].*[.]rpm$"
+      - "openafs-client-.*[.]rpm$"
+      - "openafs-debuginfo-.*[.]rpm$"
+      - "openafs-docs-.*[.]rpm$"
+      - "openafs-krb5-.*[.]rpm$"
+      - "dkms-openafs-.*[.]rpm$"
+  register: find_rpms
+
+- set_fact:
+    userspace_rpms: "{{ find_rpms.files | map(attribute='path') | list }}"
+
+- name: Verify the rpm package files are present
+  assert:
+    that:
+      - userspace_rpms | select('search', '/openafs-[0-9]') | list | count == 1
+      - userspace_rpms | select('search', '/openafs-client-[0-9]') | list | count == 1
+      - userspace_rpms | select('search', '/dkms-openafs-[0-9]') | list | count == 1
+
+# Workaround missing dkms-openafs package requires. These must be installed
+# with a separate yum command before the openafs rpms are installed.
+- name: Install dkms-openafs pre-requirements
+  become: yes
+  yum:
+    state: present
+    name:
+      - make
+      - "kernel-devel-{{ ansible_kernel }}"
+
+- name: Install OpenAFS client rpm files with DKMS
+  become: yes
+  yum:
+    state: present
+    disable_gpg_check: yes
+    name: "{{ userspace_rpms }}"
+
+- name: Get dkms status
+  command: /usr/sbin/dkms status
+  check_mode: no
+  changed_when: false
+  register: dkms_status
+
+- debug:
+    var: dkms_status
+    verbosity: 1
+
+- name: Verify openafs dkms status is installed
+  assert:
+    that:
+      dkms_status.stdout is regex('openafs, .* installed')
+
+- name: Get installation paths
+  openafs_get_install_paths:
+    package_manager_type: rpm
+  register: install_results
+
+- name: Store installation facts
+  become: yes
+  openafs_store_facts:
+    state: update
+    facts:
+      install_method: "{{ afs_install_method }}"
+      client_installed: yes
+      client_service_name: openafs-client
+      bins: "{{ install_results.bins }}"
+      dirs: "{{ install_results.dirs }}"
+
+- name: Cleanup uploaded rpm files
+  file:
+    state: absent
+    path: "{{ afs_tmpdir }}/rpms/{{ rpm }}"
+  changed_when: false
+  with_items: "{{ uploaded_rpms }}"
+  when: uploaded_rpms is defined
+  loop_control:
+    loop_var: rpm
+
+- import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
+
+- name: Set client startup options
+  become: yes
+  lineinfile:
+    path: /etc/sysconfig/openafs
+    regexp: "^AFSD_ARGS="
+    line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS client
