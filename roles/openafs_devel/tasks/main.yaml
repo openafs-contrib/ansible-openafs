@@ -1,5 +1,9 @@
 ---
-- name: "Install development tools and libraries"
+- name: Gather
+  setup:
+  when: ansible_distribution is undefined
+
+- name: Install development tools and libraries
   include_tasks: "{{ afs_devel_install_tasks }}"
   with_first_found:
     - "install/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
