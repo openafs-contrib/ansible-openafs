@@ -1,8 +1,6 @@
 ---
-- name: Converge
+- name: Setup
   hosts: all
-  vars:
-    afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   tasks:
     - name: Prepare selinux
       become: yes
@@ -10,7 +8,6 @@
         policy: targeted
         state: "{{ m_enable_selinux | ternary('enforcing', 'permissive') }}"
       when:
-        - m_enable_selinux is defined
         - ansible_selinux is defined
         - ansible_selinux | type_debug == 'dict'
         - ansible_selinux.status == 'enabled'
@@ -27,6 +24,46 @@
           {{ hostvars[name].ansible_default_ipv4.address }}    {{ hostvars[name].ansible_hostname }}
           {% endfor %}
 
-    - name: "Include openafs_krbserver"
-      import_role:
+- name: Converge
+  hosts: primary_kdc
+  tasks:
+    - import_role:
         name: "openafs_krbserver"
+
+    - name: Create AFS service key
+      become: yes
+      no_log: yes
+      openafs_principal:
+        state: present
+        principal: afs/example.com
+        encryption_types:
+          - aes128-cts
+          - aes256-cts
+      register: service_key_results
+
+    - debug:
+        var: service_key_results
+
+    - name: Download keytab
+      become: yes
+      fetch:
+        flat: yes
+        src: "{{ service_key_results.keytab }}"
+        dest: "{{ molecule_ephemeral_directory }}/example.keytab"
+      register: download_results
+
+    - debug:
+        msg: "Downloaded: {{ download_results.dest }}"
+
+    - name: Create user principals
+      become: yes
+      no_log: yes
+      openafs_principal:
+        state: present
+        principal: "{{ item }}"
+        password: "secret"
+      with_items:
+        - user01/admin
+        - user01
+        - user02
+        - user03

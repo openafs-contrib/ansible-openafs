@@ -7,6 +7,7 @@ help:
 	@echo "  test   run molecule tests"
 
 lint:
+	pyflakes library/*.py
 	yamllint .
 	ansible-lint .
 
