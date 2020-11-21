@@ -62,6 +62,14 @@
     creates: "{{ afs_krbserver_principal }}"
   register: krb5_util_results
 
+- name: Create admin principal
+  become: yes
+  no_log: yes
+  openafs_principal:
+    state: present
+    principal: "{{ afs_admin_principal }}"
+    password: "{{ afs_admin_password }}"
+
 - name: Start kerberos key server
   become: yes
   service:
@@ -77,14 +85,3 @@
     enabled: yes
     state: started
   register: afs_krbserver_admin_service_result
-
-- name: Create admin principal
-  become: yes
-  command: >
-    {{ afs_kadmin_local }}
-    -r {{ afs_realm }}
-    -q "add_principal -pw {{ afs_admin_password }} {{ afs_admin_principal }}@{{ afs_realm }}"
-  register: kadmin_results
-  changed_when: >
-    kadmin_results.rc == 0
-    and not "already exists while creating" in kadmin_results.stderr
