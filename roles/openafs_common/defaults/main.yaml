@@ -6,7 +6,7 @@ afs_cell: example.com
 afs_desc: Example
 
 # Kerberos realm name.
-afs_realm: EXAMPLE.COM
+afs_realm: "{{ afs_cell | upper }}"
 
 # Path to files on controller to be uploaded to remote nodes.
 afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"

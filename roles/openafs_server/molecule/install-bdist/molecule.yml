@@ -23,10 +23,12 @@ provisioner:
   inventory:
     group_vars:
       all:
+        afs_cell: example.com
+        afs_service_keytab: ${M_KEYTAB:-../default/files/example-aes.keytab}
+        afs_install_method: bdist
         m_enable_selinux: no
         m_with_client: ${m_with_client:-no}
         m_transarc: ${M_TRANSARC:-no}
-        afs_install_method: bdist
 verifier:
   name: ansible
 scenario:

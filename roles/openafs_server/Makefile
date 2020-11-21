@@ -6,7 +6,7 @@ M_JOBS=8
 M_TESTS=\
   test-00 test-01 test-02 test-03 test-04 test-05 test-06 test-07 test-08 test-09 \
   test-10 test-11 test-12 test-13 test-14 test-15 test-16 test-17 test-18 test-19 \
-  test-20 test-21 test-22 test-23
+  test-20 test-21 test-22 test-23 test-24 test-25
 
 help:
 	@echo "usage: make <target>"
@@ -77,18 +77,22 @@ test-17:
 # TODO: akeyconvert not available on debian9
 #
 test-18:
-	M_BOX=generic/debian9  M_WITH_CLIENT=no  molecule $(M_ACTION) $(M_OPTS) -s install-bdist
+	M_BOX=generic/debian9  M_WITH_CLIENT=no  molecule $(M_ACTION) $(M_OPTS) -s default
 test-19:
+	M_BOX=generic/debian9  M_WITH_CLIENT=yes molecule $(M_ACTION) $(M_OPTS) -s default
+test-20:
+	M_BOX=generic/debian9  M_WITH_CLIENT=no  molecule $(M_ACTION) $(M_OPTS) -s install-bdist
+test-21:
 	M_BOX=generic/debian9  M_WITH_CLIENT=yes molecule $(M_ACTION) $(M_OPTS) -s install-bdist
 
 #
 # Debian 10
 #
-test-20:
-	M_BOX=generic/debian10 M_WITH_CLIENT=no  molecule $(M_ACTION) $(M_OPTS) -s default
-test-21:
-	M_BOX=generic/debian10 M_WITH_CLIENT=yes molecule $(M_ACTION) $(M_OPTS) -s default
 test-22:
-	M_BOX=generic/debian10 M_WITH_CLIENT=no  molecule $(M_ACTION) $(M_OPTS) -s install-bdist
+	M_BOX=generic/debian10 M_WITH_CLIENT=no  molecule $(M_ACTION) $(M_OPTS) -s default
 test-23:
+	M_BOX=generic/debian10 M_WITH_CLIENT=yes molecule $(M_ACTION) $(M_OPTS) -s default
+test-24:
+	M_BOX=generic/debian10 M_WITH_CLIENT=no  molecule $(M_ACTION) $(M_OPTS) -s install-bdist
+test-25:
 	M_BOX=generic/debian10 M_WITH_CLIENT=yes molecule $(M_ACTION) $(M_OPTS) -s install-bdist

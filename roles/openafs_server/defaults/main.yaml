@@ -1,9 +1,12 @@
 ---
-# Kerberos and AFS admin principal
+# AFS admin principal
 afs_admin_principal: admin
 
-# Kerberos and AFS admin password (random default)
+# AFS admin password (random default)
 afs_admin_password: "{{ lookup('password', afs_local_dir+'/afs_admin_password chars=ascii_letters,digits,hexdigits length=15') }}"
+
+# Kerberos keytab for AFS service
+afs_service_keytab: "{{ afs_local_dir }}/rxkad.keytab"
 
 # fileserver partitions
 afs_partitions:
@@ -42,9 +45,6 @@ afs_volserver_opts:
 # Legacy salvager options
 afs_salvager_opts:
 
-# Master kerberos kdc
-afs_kdc: "{{ groups['afs_kdcs'][0] }}"
-
 # Primary fileserver hostname
 afs_root_server: "{{ groups['afs_fileservers'][0] }}"
 
@@ -55,7 +55,7 @@ afs_root_part: a
 afs_server_service_name: "{{ ansible_local.openafs.server_service_name }}"
 
 # Paths
-afs_akeyconvert: "{{ ansible_local.openafs.bins['akeyconvert'] }}"
+afs_asetkey: "{{ ansible_local.openafs.bins['asetkey'] }}"
 afs_bos: "{{ ansible_local.openafs.bins['bos'] }}"
 afs_bosserver: "{{ ansible_local.openafs.bins['bosserver'] }}"
 afs_dafileserver: "{{ ansible_local.openafs.bins['dafileserver'] }}"

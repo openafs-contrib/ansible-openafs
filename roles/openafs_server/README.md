@@ -2,10 +2,23 @@
 
 Install and configure OpenAFS servers. This role installs both the fileserver
 and the database servers, which can be installed on the same hosts or different
-hosts.  Optionally, build and install from source code.
+hosts.
 
 This role configures the system to allow OpenAFS servers operate correctly in
-`selinux` enforcing mode.
+`selinux` enforcing mode when installing from RPM packages.
+
+## Requirements
+
+A kerberos realm is required before creating the OpenAFS services. This can be
+a pre-existing realm or can be created with the `openafs_krbserver` role.  A
+service principal is required and must be exported to a keytab file. See the
+`openafs_principal` module provided by the `openafs_krbserver` and the
+`realm.yml` example playbook.
+
+The servers may be installed from the distribution package manager if packages
+are available, installed from prebuilt binaries created by separate process or
+playbook (see the `openafs_devel` role and `build.yml` example playbook), or
+installed from source code from a git repository.
 
 ## Common Role Variables
 
@@ -19,7 +32,14 @@ The OpenAFS cell organization description.
 
     afs_realm: EXAMPLE.COM
 
-The Kerberos realm name.
+The Kerberos realm name. Defaults to the uppercased cellname.
+
+    afs_service_keytab: ~/.ansible-openafs/<cell>/rxkad.keytab
+
+The path to the keytab file containing the kerberos keys for the AFS service.
+The keytab file must already exist on the controller. It is recommended the
+keytab file be be encrypted with ansible-vault. See the `openafs_krbserver`
+role and `reaml.yml` playbook for an example.
 
     afs_install_method: managed
 
@@ -81,10 +101,6 @@ the default.
 
 The OpenAFS server command line options. See the OpenAFS man pages for the
 server processes.
-
-    afs_kdc:
-
-The Kerberos KDC hostname.
 
     afs_root_server:
     afs_root_part: a
