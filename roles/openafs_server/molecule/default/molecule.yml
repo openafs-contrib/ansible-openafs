@@ -20,6 +20,8 @@ provisioner:
   inventory:
     group_vars:
       all:
+        afs_cell: example.com
+        afs_service_keytab: ${M_KEYTAB:-files/example-aes.keytab}
         m_enable_selinux: ${M_ENABLE_SELINUX:-no}
         m_with_client: ${m_with_client:-no}
 verifier:

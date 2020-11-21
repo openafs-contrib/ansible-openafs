@@ -29,4 +29,3 @@ galaxy_info:
 
 dependencies:
   - openafs_common
-  - openafs_krbclient

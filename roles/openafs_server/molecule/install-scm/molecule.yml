@@ -23,12 +23,14 @@ provisioner:
   inventory:
     group_vars:
       all:
+        afs_cell: example.com
+        afs_service_keytab: ${M_KEYTAB:-../default/files/example-aes.keytab}
+        afs_install_method: scm
         m_enable_selinux: ${M_ENABLE_SELINUX:-no}
         m_with_client: ${M_WITH_CLIENT:-no}
         m_gitref: "${M_GITREF:-master}"
         m_gitrepo: "${M_GITREPO-git://git.openafs.org/openafs.git}"
         m_transarc: ${M_TRANSARC-no}
-        afs_install_method: scm
 verifier:
   name: ansible
 scenario:

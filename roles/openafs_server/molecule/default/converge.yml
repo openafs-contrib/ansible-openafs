@@ -28,12 +28,9 @@
 - name: Converge
   hosts: all
   vars:
-    afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
+    afs_local_dir: "{{ molecule_ephemeral_directory }}/{{ afs_cell }}"
     afs_bdist_dir: "~/.cache/ansible-openafs/binaries/bdist{{ m_transarc | ternary('-transarc', '') }}"
   tasks:
-    - import_role:
-        name: openafs_krbserver
-
     - import_role:
         name: openafs_server
 
