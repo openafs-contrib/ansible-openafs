@@ -2,10 +2,34 @@
 - name: Create a Kerberos realm
   hosts: afs_kdcs
   vars:
+    afs_cell: example.com
     afs_realm: EXAMPLE.COM
+    afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
+    afs_admin_principal: admin
+  roles:
+      - openafs_krbserver
   tasks:
-    - name: Connecting
-      wait_for_connection:
+    - name: Create AFS service key
+      become: yes
+      no_log: yes
+      openafs_principal:
+        state: present
+        principal: "afs/{{ afs_cell }}"
+        encryption_types:
+          - aes128-cts
+          - aes256-cts
+      register: service_key
 
-    - import_role:
-        name: openafs_krbserver
+    - name: Download service keytab
+      become: yes
+      fetch:
+        flat: yes
+        src: "{{ service_key.keytab }}"
+        dest: "{{ afs_local_dir }}/rxkad.keytab"
+
+    - name: Download admin keytab
+      become: yes
+      fetch:
+        flat: yes
+        src: "/var/lib/ansible-openafs/keytabs/{{ afs_admin_principal }}.keytab"
+        dest: "{{ afs_local_dir }}/{{ afs_admin_principal | replace('/', '.') }}.keytab"
