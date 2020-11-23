@@ -25,13 +25,68 @@
           {{ hostvars[name].ansible_default_ipv4.address }}    {{ hostvars[name].ansible_hostname }}
           {% endfor %}
 
-- name: Converge
-  hosts: all
+- name: Realm
+  hosts: afs_kdcs
   vars:
     afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
   tasks:
     - import_role:
         name: "openafs_krbserver"
+
+    - name: Create AFS service key
+      become: yes
+      no_log: yes
+      openafs_principal:
+        state: present
+        principal: afs/example.com
+        encryption_types:
+          - aes128-cts
+          - aes256-cts
+      register: service_key_results
+
+    - name: Download service keytab
+      become: yes
+      fetch:
+        flat: yes
+        src: "{{ service_key_results.keytab }}"
+        dest: "{{ afs_local_dir }}/rxkad.keytab"
+      register: download_results
+
+    - debug:
+        var: download_results
+
+    - name: Download admin keytab
+      become: yes
+      fetch:
+        flat: yes
+        src: "/var/lib/ansible-openafs/keytabs/{{ afs_admin_principal | d('admin') }}.keytab"
+        dest: "{{ afs_local_dir }}/{{ afs_admin_principal | d('admin') | replace('/', '.') }}.keytab"
+      register: download_results
+
+    - debug:
+        var: download_results
+
+    - name: Create user principals
+      become: yes
+      openafs_principal:
+        state: present
+        principal: "{{ item }}"
+      register: principals
+      with_items: "{{ afs_users }}"
+
+    - name: Download keytabs
+      become: yes
+      fetch:
+        flat: yes
+        src: "{{ item.keytab }}"
+        dest: "{{ afs_local_dir }}/keytabs/"
+      with_items: "{{ principals.results }}"
+
+- name: Converge
+  hosts: all
+  vars:
+    afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
+  tasks:
     - import_role:
         name: "openafs_krbclient"
     - import_role:

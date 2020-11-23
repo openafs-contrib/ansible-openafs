@@ -20,6 +20,10 @@ provisioner:
   inventory:
     group_vars:
       all:
+        afs_install_method: packages
+        afs_module_install_method: kmod
+        afs_users:
+          - user01
         m_enable_selinux: ${M_ENABLE_SELINUX:-no}
 verifier:
   name: ansible

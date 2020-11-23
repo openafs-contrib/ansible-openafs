@@ -20,16 +20,8 @@
 - name: Mount root volumes
   include: root-{{ ('-dynroot' in afs_afsd_opts) | ternary('dynamic','static') }}.yaml
 
-- name: Create principals
-  command: >
-    {{ afs_kadmin }}
-    -w {{ afs_admin_password }}
-    -p {{ afs_admin_principal }}@{{ afs_realm }}
-    -q "add_principal -pw {{ afs_user_password }} {{ item.name|replace('.','/') }}@{{ afs_realm }}"
-  with_items: "{{ afs_users }}"
-
 - name: Create users
-  command: "{{ afs_pts }} createuser -name {{ item.name|replace('/','.') }}"
+  command: "{{ afs_pts }} createuser -name {{ item | replace('/','.') }}"
   register: pts_result
   changed_when: pts_result.rc == 0
   failed_when: >
