@@ -12,8 +12,7 @@ This role configures the system to allow OpenAFS servers operate correctly in
 A kerberos realm is required before creating the OpenAFS services. This can be
 a pre-existing realm or can be created with the `openafs_krbserver` role.  A
 service principal is required and must be exported to a keytab file. See the
-`openafs_principal` module provided by the `openafs_krbserver` and the
-`realm.yml` example playbook.
+`kerberos-realm.yml` example playbook.
 
 The servers may be installed from the distribution package manager if packages
 are available, installed from prebuilt binaries created by separate process or
@@ -37,9 +36,9 @@ The Kerberos realm name. Defaults to the uppercased cellname.
     afs_service_keytab: ~/.ansible-openafs/<cell>/rxkad.keytab
 
 The path to the keytab file containing the kerberos keys for the AFS service.
-The keytab file must already exist on the controller. It is recommended the
-keytab file be be encrypted with ansible-vault. See the `openafs_krbserver`
-role and `reaml.yml` playbook for an example.
+The keytab file must already exist on the controller. It is recommended to
+encrypt the keytab file with ansible-vault. See the `keberos-realm.yml`
+example playbook.
 
     afs_install_method: managed
 
@@ -74,12 +73,9 @@ is `managed`. Supported values are:
 
 ## Server Role Variables
 
-    afs_admin_principal:
-    afs_admin_password: (undefined by default)
+    afs_admin_principal: admin
 
-A administrator principal and password to be used to set the AFS service key.
-The password is not defined by default and must be set on the command line (-e)
-or in a group variable, preferably encrypted with `ansible-vault`.
+An administrator username created and added to the UserList.
 
     afs_fileserver_type: dafs
 
