@@ -1,0 +1,25 @@
+---
+# Variable sanity checks and initialization.
+
+- name: Verify install method
+  assert:
+    that:
+      - afs_install_method is defined
+      - afs_install_method in ['managed', 'packages', 'bdist', 'scm']
+
+- name: Install method consistency check
+  fail:
+    msg: >
+      Install method '{{ afs_install_method }}' does not match
+      last used method '{{ ansible_local.openafs.install_method }}'.
+  when: >
+    ansible_local.openafs.install_method is defined
+    and ansible_local.openafs.install_method != afs_install_method
+
+- name: Set security model to selinux
+  set_fact:
+    afs_security_model: selinux
+  when:
+    - afs_security_model is undefined
+    - ansible_selinux.status is defined
+    - ansible_selinux.status == 'enabled'

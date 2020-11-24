@@ -8,12 +8,7 @@
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
-- name: Verify install method
-  assert:
-    that:
-      - afs_install_method in ['managed', 'packages', 'bdist', 'scm']
-      - ansible_local.openafs is undefined or ansible_local.openafs.install_method == afs_install_method
-
+- import_tasks: "pre-install/check-variables.yaml"
 - include_tasks: "pre-install/firewall-{{ afs_firewall | default('none') }}.yaml"
 
 - name: Install client

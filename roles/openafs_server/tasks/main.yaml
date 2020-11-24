@@ -1,5 +1,5 @@
 ---
-- name: Gather variables for each operating system
+- name: Gather operating specific specific variables
   include_vars: "{{ item }}"
   with_first_found:
     - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
@@ -8,21 +8,7 @@
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
-- name: Verify install method
-  assert:
-    that:
-      - afs_install_method in ['managed', 'packages', 'bdist', 'scm']
-      - ansible_local.openafs is undefined or ansible_local.openafs.install_method == afs_install_method
-
-- name: Determine security model name
-  set_fact:
-    afs_security_model: selinux
-  when:
-    - ansible_selinux is defined
-    - ansible_selinux | type_debug == 'dict'
-    - ansible_selinux.status == 'enabled'
-    - afs_security_model is undefined
-
+- import_tasks: "pre-install/check-variables.yaml"
 - import_tasks: "pre-install/server-etc-hosts.yaml"
 - import_tasks: "pre-install/server-partitions.yaml"
 - include_tasks: "pre-install/firewall-{{ afs_firewall | default('none') }}.yaml"
