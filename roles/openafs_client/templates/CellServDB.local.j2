@@ -1,8 +1,4 @@
 >{{ afs_csdb.cell }}    #{{ afs_csdb.desc }}
 {% for host in afs_csdb.hosts %}
-{% if host.clone %}
-[{{ host.ip }}]    #{{ host.name }}
-{% else %}
 {{ host.ip }}    #{{ host.name }}
-{% endif %}
 {% endfor %}

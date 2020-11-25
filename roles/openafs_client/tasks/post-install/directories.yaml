@@ -14,3 +14,5 @@
       mode: "0700"
     - path: "{{ afs_viceetcdir }}"
       mode: "0755"
+    - path: "{{ afs_viceetcdir }}/CellServDB.d"
+      mode: "0755"

@@ -2,22 +2,33 @@
 - name: Install OpenAFS servers
   hosts: afs_databases:afs_fileservers
   vars:
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
     afs_partitions:
       - a
       - b
-  roles:
-    - openafs_server
+  tasks:
+    - import_role:
+        name: openafs_common
+        tasks_from: generate_csdb
+    - import_role:
+        name: openafs_server
 
 - name: Create cell volumes
   hosts: "{{ afs_admin_client | default(groups['afs_clients'][0]) }}"
   vars:
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
     afs_volumes:
       - name: test
-  roles:
-    - openafs_client
-    - openafs_cell
+  tasks:
+    - import_role:
+        name: openafs_client
+    - import_role:
+        name: openafs_cell
 
 - name: Install OpenAFS clients
   hosts: afs_clients
-  roles:
-    - openafs_client
+  vars:
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+  tasks:
+    - import_role:
+        name: openafs_client

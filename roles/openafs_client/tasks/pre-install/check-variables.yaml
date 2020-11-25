@@ -23,3 +23,19 @@
     - afs_security_model is undefined
     - ansible_selinux.status is defined
     - ansible_selinux.status == 'enabled'
+
+- name: Load CellServDB values
+  set_fact:
+    afs_csdb: "{{ lookup('file', afs_csdb_file) | from_yaml }}"
+  when:
+    - afs_csdb is undefined
+    - afs_csdb_file is defined
+
+- name: Default CellServDB values
+  set_fact:
+    afs_csdb:
+      cell: "{{ afs_cell }}"
+      desc: "Cell name"
+      hosts: []
+  when:
+    - afs_csdb is undefined

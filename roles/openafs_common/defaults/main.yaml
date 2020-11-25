@@ -2,9 +2,6 @@
 # AFS cell name.
 afs_cell: example.com
 
-# AFS cell organization name.
-afs_desc: Example
-
 # Kerberos realm name.
 afs_realm: "{{ afs_cell | upper }}"
 
