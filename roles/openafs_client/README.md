@@ -2,6 +2,14 @@
 
 Install and configure OpenAFS clients.
 
+## Requirements
+
+Unless DNS SRV records have been configured to supply the OpenAFS database
+server addresses, the names and addresses of the OpenAFS databases to setup the
+server CellServDB files must be provided by the `afs_csdb` inventory variable,
+or a separate yaml file, the path of which is specifed by the `afs_csdb_file`
+variable.
+
 ## Common Role Variables
 
     afs_cell: example.com
@@ -15,6 +23,21 @@ The OpenAFS cell organization description.
     afs_realm: EXAMPLE.COM
 
 The Kerberos realm name.
+
+    afs_csdb:
+      cell: <cell name>
+      desc: <cell organization>
+      hosts:
+        - ip: <ipv4 address>
+          name: <hostname>
+          clone: <bool>
+        - ip: <ipv4 address>
+          name: <hostname>
+          clone: <bool>
+        ...
+
+The CellServDB information for the cell. This must be provided as a inventory
+variable or an external yaml file, the path specifed by `afs_csdb_file`.
 
     afs_install_method: managed
 

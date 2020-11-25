@@ -8,13 +8,9 @@ Common definitions for OpenAFS clients and servers.
 
 The OpenAFS cell name.
 
-    afs_desc: Example
-
-The OpenAFS cell organization description.
-
     afs_realm: EXAMPLE.COM
 
-The Kerberos realm name.
+The Kerberos realm name. Defaults to the uppercased cell name.
 
     afs_install_method: managed
 

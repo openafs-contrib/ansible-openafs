@@ -1,0 +1,37 @@
+---
+#
+# Generate a yaml formatted CellServDB file to distribute to servers and
+# clients. This should be run in a play on the database servers, before
+# OpenAFS is installed, to gather the primary IPv4 addresses of all
+# the servers in the cluster.  Set the 'afs_db_clone' host inventory
+# variable to true on servers designated to be clones.
+#
+- name: Verify the databases are in this play
+  assert:
+    that: groups['afs_databases'] | count > 0
+
+- name: Verify destination path is defined
+  assert:
+    that: afs_csdb_file is defined
+
+- name: Generate the csdb.yaml file
+  run_once: yes
+  delegate_to: localhost
+  block:
+    - name: Create the destination directory
+      file:
+        state: directory
+        path: "{{ afs_csdb_file | dirname }}"
+
+    - name: Generate the csdb.yaml file
+      copy:
+        dest: "{{ afs_csdb_file }}"
+        content: |
+          cell: {{ afs_cell }}
+          desc: {{ afs_desc | d('Cell name') }}
+          hosts:
+          {% for name in groups['afs_databases'] | sort %}
+            - ip: {{ hostvars[name].ansible_default_ipv4.address }}
+              name: {{ hostvars[name].inventory_hostname }}
+              clone: {{ hostvars[name].get('afs_db_clone', 'no') | bool }}
+          {% endfor %}

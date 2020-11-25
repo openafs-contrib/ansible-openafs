@@ -96,6 +96,14 @@
     pts_result.rc != 0
     and 'Entry for id already exists' not in pts_result.get('stderr','')
 
+- name: Ensure admin is a superuser
+  become: yes
+  lineinfile:
+    state: present
+    create: yes
+    line: "{{ afs_admin_principal | replace('/', '.') }}"
+    path: "{{ afs_afsconfdir }}/UserList"
+
 - name: Create root.afs volume
   become: yes
   command: >

@@ -25,11 +25,22 @@
           {{ hostvars[name].ansible_default_ipv4.address }}    {{ hostvars[name].ansible_hostname }}
           {% endfor %}
 
+- name: Generate csdb.yaml
+  hosts: afs_databases
+  vars:
+    afs_local_dir: "{{ molecule_ephemeral_directory }}/{{ afs_cell | d('example.com') }}"
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+  tasks:
+    - import_role:
+        name: openafs_common
+        tasks_from: generate_csdb
+
 - name: Converge
-  hosts: all
+  hosts: afs_fileservers:afs_databases
   vars:
     afs_local_dir: "{{ molecule_ephemeral_directory }}/{{ afs_cell }}"
     afs_bdist_dir: "~/.cache/ansible-openafs/binaries/bdist{{ m_transarc | ternary('-transarc', '') }}"
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
   tasks:
     - import_role:
         name: openafs_server

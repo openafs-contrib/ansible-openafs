@@ -1,101 +1,71 @@
 ---
-- name: Make local directory
-  run_once: true
-  delegate_to: localhost
-  file:
-    path: "{{ afs_local_dir }}"
-    state: directory
-    mode: 0755
+#
+# Update the server configuration files:
+#
+#   - ThisCell
+#   - CellServDB
+#   - BosConfig (via BosConfig.new)
+#   - krb.conf (if the realm name is different than the cell name)
+#
+# We cannot change the BosConfig directly since the bosserver may be
+# running, so create a shadow config file called BosConfig.ansible and
+# if that file is changed, create a BosConfig.new and notify a handler
+# to restart the bosserver to pivot the BosConfig.new to BosConfig
+# and load the new configuration.
+#
 
-- name: Generate cell configuration files
-  run_once: true
-  delegate_to: localhost
-  template:
-    src: "{{ item }}.j2"
-    dest: "{{ afs_local_dir }}/{{ item }}"
-  with_items:
-    - CellServDB
-    - ThisCell
-    - UserList
-
-- name: Create cell configuation directory
+- name: Create configuration directories
   become: yes
   file:
     state: directory
-    path: "{{ afs_afsconfdir }}"
-    mode: 0755
+    path: "{{ item.path }}"
+    mode: "{{ item.mode }}"
     owner: root
     group: root
+  loop:
+    - path: "{{ afs_afslocaldir }}"
+      mode: "700"
+    - path: "{{ afs_afsconfdir }}"
+      mode: "700"
+    - path: "{{ afs_afsbosconfigdir }}"
+      mode: "755"
 
-- name: Update cell configuration
-  become: yes
-  copy:
-    src: "{{ afs_local_dir }}/{{ item }}"
-    dest: "{{ afs_afsconfdir }}/{{ item }}"
-    mode: 0644
-    owner: root
-    group: root
-  with_items:
-    - CellServDB
-    - ThisCell
-    - UserList
-
-- name: Set authentication realm
-  become: yes
-  copy:
-    content: "{{ afs_realm }}"
-    dest: "{{ afs_afsconfdir }}/krb.conf"
-    mode: 0644
-    owner: root
-    group: root
-  when: afs_realm is defined and afs_realm.lower() != afs_cell
-
-- name: Create local server directory
-  become: yes
-  file:
-    state: directory
-    path: "{{ afs_afslocaldir }}"
-    mode: 0700
-    owner: root
-    group: root
-
-- name: Update local server configuration
+- name: Create configuration files
   become: yes
   template:
-    src: "{{ item }}.j2"
-    dest: "{{ afs_afslocaldir }}/{{ item }}"
-    mode: 0644
+    src: "{{ role_path }}/templates/{{ item.name }}.j2"
+    dest: "{{ item.path }}/{{ item.name }}"
     owner: root
     group: root
-  with_items:
-    - NetInfo
-  notify:
-    - Restart OpenAFS servers
+    mode: "644"
+  loop:
+    - name: ThisCell
+      path: "{{ afs_afsconfdir }}"
+    - name: CellServDB
+      path: "{{ afs_afsconfdir }}"
+    - name: BosConfig.ansible
+      path: "{{ afs_afsbosconfigdir }}"
+  register: config_files
 
-- name: Create the bosserver configuration directory
-  become: yes
-  file:
-    state: directory
-    path: "{{ afs_afsbosconfigdir }}"
-    owner: root
-    group: root
-
-- name: Check the bosserver configuration
-  become: yes
-  template:
-    src: "BosConfig.new.j2"
-    dest: "{{ afs_afsbosconfigdir }}/BosConfig.ansible"
-    mode: 0644
-    owner: root
-    group: root
-  register: bosconfig
-
-- name: Update the bosserver configuration
+- name: Create BosConfig.new file
   become: yes
   copy:
     src: "{{ afs_afsbosconfigdir }}/BosConfig.ansible"
     dest: "{{ afs_afsbosconfigdir }}/BosConfig.new"
     remote_src: yes
-  when: bosconfig.changed
+  when: (config_files.results | selectattr('dest', 'search', 'BosConfig') | list)[0].changed
   notify:
     - Restart OpenAFS servers
+
+- name: Create krb.conf
+  become: yes
+  copy:
+    content: "{{ afs_realm }}"
+    dest: "{{ afs_afsconfdir }}/krb.conf"
+    mode: "644"
+    owner: root
+    group: root
+  when: afs_realm != afs_cell.upper()
+
+# todo:
+#   - NetInfo

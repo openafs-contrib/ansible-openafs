@@ -82,10 +82,21 @@
         dest: "{{ afs_local_dir }}/keytabs/"
       with_items: "{{ principals.results }}"
 
+- name: Generate csdb.yaml
+  hosts: afs_databases
+  vars:
+    afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+  tasks:
+    - import_role:
+        name: openafs_common
+        tasks_from: generate_csdb
+
 - name: Converge
   hosts: all
   vars:
     afs_local_dir: "{{ molecule_ephemeral_directory }}/example.com"
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
   tasks:
     - import_role:
         name: "openafs_krbclient"
