@@ -1,4 +1,3 @@
 ---
 # Kerberos commands.
-afs_kadmin: "/usr/bin/kadmin"
 afs_kinit: "/usr/bin/kinit"

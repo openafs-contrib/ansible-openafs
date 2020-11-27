@@ -1,6 +1,5 @@
 ---
 # Kerberos commands.
-afs_kadmin: "/usr/bin/kadmin"
 afs_kdestroy: "/usr/bin/kdestroy"
 afs_kinit: "/usr/bin/kinit"
 
