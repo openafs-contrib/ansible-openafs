@@ -1,0 +1,299 @@
+---
+{%- if cookiecutter.update_kernel == 'yes' %}
+- name: Update kernel
+  hosts: all
+  tasks:
+    - name: Update kernel
+      become: yes
+  {%- if cookiecutter.os in ('centos7', 'centos8') %}
+      yum:
+        state: latest
+        name:
+          - kernel
+          - kernel-devel
+  {%- endif %}
+  {%- if cookiecutter.os in ('debian9', 'debian10') %}
+      apt:
+        state: latest
+        name: 'linux-image*'
+        only_upgrade: yes
+        update_cache: yes
+  {%- endif %}
+      register: update_kernel_results
+
+    - name: Reboot
+      become: yes
+      reboot:
+        reboot_timeout: 600
+      when: update_kernel_results.changed
+{%- endif %}
+
+{%- if cookiecutter.os in ('centos7', 'centos8') %}
+- name: Configure selinux mode
+  hosts: all
+  tasks:
+    - name: Configure selinux mode
+      become: yes
+      selinux:
+        policy: targeted
+        state: {{ cookiecutter.selinux_mode }}
+{%- endif %}
+
+- name: Configure hosts file
+  hosts: all
+  tasks:
+    - name: Configure /etc/hosts
+      become: yes
+      copy:
+        backup: yes
+        dest: /etc/hosts
+        content: |
+          127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+          ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+        {%- raw %}
+          {% for name in hostvars | sort %}
+          {{ hostvars[name].ansible_default_ipv4.address }}    {{ hostvars[name].ansible_hostname }}
+          {% endfor %}
+        {%- endraw %}
+
+{%- if cookiecutter.with_server == 'yes' %}
+- name: Generate csdb.yaml
+  hosts: afs_databases
+  tasks:
+    - import_role:
+        name: openafs_common
+        tasks_from: generate_csdb
+{%- endif %}
+
+{%- if cookiecutter.with_devel == 'yes'
+       or cookiecutter.with_krbclient == 'yes'
+       or cookiecutter.with_krbserver == 'yes'
+       or cookiecutter.with_common == 'yes'
+       or cookiecutter.with_client == 'yes'
+       or cookiecutter.with_server == 'yes'
+       or cookiecutter.with_cell == 'yes'
+       or cookiecutter.with_robotest == 'yes' %}
+- name: Converge
+  hosts: all
+  tasks:
+  {%- if cookiecutter.with_devel == 'yes' %}
+    - import_role:
+        name: openafs_devel
+  {%- endif %}
+  {%- if cookiecutter.build in ('bdist', 'rpms') %}
+
+    - name: Checkout source
+      git:
+        repo: "git://git.openafs.org/openafs.git"
+        version: "master"
+        dest: ~/openafs
+  {%- endif %}
+  {%- if cookiecutter.build == 'bdist' %}
+
+    - name: Build binary distribution
+      openafs_build:
+        {%- if cookiecutter.bdist_flavor == 'transarc' %}
+        target: dest
+        {%- else %}
+        target: install
+        {%- endif %}
+        clean: yes
+        projectdir: ~/openafs
+        destdir: ~/openafs/packaging/dest
+        configure_options:
+          enable:
+            - debug
+            - debug-kernel
+            - kernel-module
+            {%- if cookiecutter.bdist_flavor == 'transarc' %}
+            - transarc-paths
+            {%- endif %}
+          with:
+            - linux-kernel-packaging
+      register: build_results
+
+    {%- raw %}
+    - set_fact:
+        dist: "{{ ansible_distribution | lower + ansible_distribution_major_version }}"
+        arch: "{{ ansible_architecture }}"
+        tarball: "openafs-{{ build_results.version }}.tar.gz"
+
+    - name: Create tarball
+      archive:
+        path: "~/openafs/packaging/dest/"
+        dest: "/tmp/{{ tarball }}"
+        format: gz
+
+    - name: Download
+      fetch:
+        flat: yes
+        src: "/tmp/{{ tarball }}"
+        dest: "{{ afs_bdist_dir }}/{{ dist }}/{{ arch }}/{{ tarball }}"
+      register: fetch_results
+
+    - name: Downloaded
+      debug:
+        var: fetch_results.dest
+    {%- endraw %}
+  {%- elif cookiecutter.build == 'rpms' %}
+    {%- raw %}
+
+    - name: Autoconf
+      command:
+        cmd: ./regen.sh
+        chdir: ~/openafs
+
+    - name: Generate makefile
+      command:
+        cmd: ./configure --disable-kernel-module
+        chdir: ~/openafs
+
+    - name: Create source RPM
+      command:
+        cmd: make dist srpm
+        chdir: ~/openafs
+
+    - name: Create rpmbuild workspace
+      file:
+        state: directory
+        path: ~/openafs/packages/rpmbuild
+      register: mkdir_results
+
+    - name: Set build facts
+      set_fact:
+        workspace: "{{ mkdir_results.path }}"
+        dist: "{{ ansible_distribution | lower + ansible_distribution_major_version }}"
+        arch: "{{ ansible_architecture }}"
+
+    - name: Build RPMs
+      shell:
+        cmd: rpmbuild --rebuild --define "_topdir {{ workspace }}" packages/openafs-*.src.rpm
+        chdir: ~/openafs
+      register: rpmbuild_results
+
+    - debug:
+        msg: "{{ rpmbuild_results.stdout_lines[-20:] }}"
+
+    - find:
+        paths: "{{ workspace }}/RPMS"
+        recurse: yes
+        file_type: file
+        patterns: "*.rpm"
+      register: find_results
+
+    - set_fact:
+        rpms: "{{ find_results.files | map(attribute='path') | list }}"
+
+    - name: Download RPMs
+      fetch:
+        flat: yes
+        src: "{{ item }}"
+        dest: "{{ afs_rpm_dir }}/{{ dist }}/{{ arch }}/"
+      with_items: "{{ rpms }}"
+      register: fetch_results
+
+    - name: Downloaded
+      debug:
+        msg: "{{ fetch_results.results | map(attribute='dest') | list }}"
+    {%- endraw %}
+  {%- endif %}
+  {%- if cookiecutter.with_common == 'yes' %}
+
+    - import_role:
+        name: openafs_common
+
+    - name: Set openafs facts
+      become: yes
+      openafs_store_facts:
+        state: set
+        facts:
+          test1: this is a test
+          test2:
+            - item 1
+            - item 2
+          test3:
+            name1: value1
+            name2: value2
+
+    - name: Update openafs facts
+      become: yes
+      openafs_store_facts:
+        state: update
+        facts:
+          test3:
+            name3: value3
+  {%- endif %}
+  {%- if cookiecutter.with_krbclient == 'yes' %}
+
+    - import_role:
+        name: openafs_krbclient
+  {%- endif %}
+  {%- if cookiecutter.with_krbserver == 'yes' %}
+
+    - import_role:
+        name: "openafs_krbserver"
+    {%- raw %}
+
+    - name: Create AFS service key
+      become: yes
+      no_log: yes
+      openafs_principal:
+        state: present
+        principal: afs/{{ afs_cell }}
+        encryption_types:
+          - aes128-cts
+          - aes256-cts
+      register: service_key_results
+
+    - name: Download keytab
+      become: yes
+      fetch:
+        flat: yes
+        src: "{{ service_key_results.keytab }}"
+        dest: "{{ afs_service_keytab }}"
+      register: download_results
+
+    - debug:
+        msg: "Downloaded: {{ download_results.dest }}"
+
+    - name: Create user principals
+      become: yes
+      no_log: yes
+      openafs_principal:
+        state: present
+        principal: "{{ item }}"
+        password: "secret"
+      with_items:
+        - user01/admin
+        - user01
+        - user02
+        - user03
+    {%- endraw %}
+  {%- endif %}
+  {%- if cookiecutter.with_server == 'yes' %}
+
+    - import_role:
+        name: openafs_server
+  {%- endif %}
+  {%- if cookiecutter.with_client == 'yes' %}
+
+    - include_role:
+        name: openafs_client
+  {%- endif %}
+  {%- if cookiecutter.with_cell == 'yes' %}
+
+    - include_role:
+        name: openafs_cell
+  {%- endif %}
+  {%- if cookiecutter.with_robotest == 'yes' %}
+
+    - include_role:
+        name: openafs_robotest
+  {%- endif %}
+{%- endif %}
+
+{%- set playbooks = cookiecutter.with_playbooks.split(',') | reject('equalto', '') %}
+{%- for playbook in playbooks %}
+
+- import_playbook: {{ playbook }}
+{%- endfor %}

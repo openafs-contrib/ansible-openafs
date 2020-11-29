@@ -1,0 +1,48 @@
+# Copyright (c) 2019-2020 Sine Nomine Associates
+
+.PHONY: help lint test distclean
+
+COOK=@COOKIECUTTER@ \
+   --no-input -f -o molecule \
+   @TOPDIR@/cookiecutter/molecule-scenario @DRIVER_OPTIONS@ \
+   instance_name=@INSTANCE_PREFIX@devel \
+   with_devel=yes
+
+help:
+	@echo "usage: make <target>"
+	@echo ""
+	@echo "targets:"
+	@echo "  lint        run lint checks"
+	@echo "  test        run molecule scenarios"
+	@echo "  molecule    generate molecule scenarios"
+	@echo "  clean       remove molecule scenarios"
+	@echo ""
+
+lint:
+	pyflakes library/*.py
+	yamllint .
+	ansible-lint .
+
+test: molecule
+	molecule test --all
+
+molecule: Makefile
+	$(COOK) name=default
+	$(COOK) name=cen7            os=centos7
+	$(COOK) name=cen7-bdist      os=centos7 build=bdist
+	$(COOK) name=cen7-transarc   os=centos7 build=bdist bdist_flavor=transarc
+	$(COOK) name=cen7-rpms       os=centos7 build=rpms
+	$(COOK) name=cen8            os=centos8
+	$(COOK) name=cen8-bdist      os=centos8 build=bdist
+	$(COOK) name=cen8-transarc   os=centos8 build=bdist bdist_flavor=transarc
+	$(COOK) name=cen8-rpms       os=centos8 build=rpms
+	$(COOK) name=deb9            os=debian9
+	$(COOK) name=deb9-bdist      os=debian9 build=bdist
+	$(COOK) name=deb9-transarc   os=debian9 build=bdist bdist_flavor=transarc
+	$(COOK) name=deb10           os=debian10
+	$(COOK) name=deb10-bdist     os=debian10 build=bdist
+	$(COOK) name=deb10-transarc  os=debian10 build=bdist bdist_flavor=transarc
+	touch molecule
+
+clean:
+	rm -rf molecule

@@ -1,4 +1,13 @@
 ---
+- name: Generate csdb.yaml
+  hosts: afs_databases
+  vars:
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+  tasks:
+    - import_role:
+        name: openafs_common
+        tasks_from: generate_csdb
+
 - name: Install OpenAFS servers
   hosts: afs_databases:afs_fileservers
   vars:
@@ -8,13 +17,10 @@
       - b
   tasks:
     - import_role:
-        name: openafs_common
-        tasks_from: generate_csdb
-    - import_role:
         name: openafs_server
 
 - name: Create cell volumes
-  hosts: "{{ afs_admin_client | default(groups['afs_clients'][0]) }}"
+  hosts: afs_admin
   vars:
     afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
     afs_volumes:

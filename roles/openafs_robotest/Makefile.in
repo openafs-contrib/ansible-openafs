@@ -1,0 +1,38 @@
+# Copyright (c) 2019-2020 Sine Nomine Associates
+
+.PHONY: help lint test distclean
+
+COOK=@COOKIECUTTER@ \
+   --no-input -f -o molecule \
+   @TOPDIR@/cookiecutter/molecule-scenario @DRIVER_OPTIONS@ \
+   instance_name=@INSTANCE_PREFIX@robotest \
+   with_client=yes \
+   with_robotest=yes
+
+help:
+	@echo "usage: make <target>"
+	@echo ""
+	@echo "targets:"
+	@echo "  lint        run lint checks"
+	@echo "  test        run molecule scenarios"
+	@echo "  molecule    generate molecule scenarios"
+	@echo "  clean       remove molecule scenarios"
+	@echo ""
+
+lint:
+	yamllint .
+	ansible-lint .
+
+test: molecule
+	molecule test --all
+
+molecule: Makefile
+	$(COOK) name=default
+	$(COOK) name=cen7 os=centos7
+	$(COOK) name=cen8 os=centos8
+	$(COOK) name=deb9 os=debian9
+	$(COOK) name=deb10 os=debian10
+	touch molecule
+
+clean:
+	rm -rf molecule

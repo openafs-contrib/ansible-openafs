@@ -4,7 +4,6 @@
   vars:
     afs_cell: example.com
     afs_realm: EXAMPLE.COM
-    afs_local_dir: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
     afs_admin_principal: admin
   roles:
       - openafs_krbserver

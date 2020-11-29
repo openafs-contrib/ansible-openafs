@@ -1,0 +1,45 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+  {%- if cookiecutter.with_common == 'yes' %}
+    - name:  Verify openafs facts are defined
+      assert:
+        that: ansible_local.openafs is defined
+
+    - debug:
+        var: ansible_local.openafs
+
+    - name: Verify test facts are present
+      assert:
+        that:
+          - ansible_local.openafs.test1 is defined
+          - ansible_local.openafs.test2 is defined
+          - ansible_local.openafs.test3 is defined
+          - ansible_local.openafs.test4 is undefined
+
+    - name: Verfiy test facts
+      assert:
+        that:
+          - ansible_local.openafs.test1 == 'this is a test'
+          - ansible_local.openafs.test2 | count == 2
+          - ansible_local.openafs.test3.name1 == 'value1'
+          - ansible_local.openafs.test3.name2 == 'value2'
+          - ansible_local.openafs.test3.name3 == 'value3'
+  {%- endif %}
+  {%- if cookiecutter.with_krbserver == 'yes' %}
+    - debug:
+        msg: todo
+  {%- endif %}
+  {%- if cookiecutter.with_krbclient == 'yes' %}
+    - debug:
+        msg: todo
+  {%- endif %}
+  {%- if cookiecutter.with_server == 'yes' %}
+    - debug:
+        msg: todo
+  {%- endif %}
+  {%- if cookiecutter.with_client == 'yes' %}
+    - debug:
+        msg: todo
+  {%- endif %}
