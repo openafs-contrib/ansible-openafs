@@ -1,5 +1,6 @@
-ansible
-molecule
+python-vagrant
 molecule-vagrant
+molecule
+ansible
 pyflakes
 pytest

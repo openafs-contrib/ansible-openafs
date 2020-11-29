@@ -1,0 +1,46 @@
+# Copyright (c) 2019-2020 Sine Nomine Associates
+
+.PHONY: help lint test distclean
+
+COOK=@COOKIECUTTER@ \
+   --no-input -f -o molecule \
+   @TOPDIR@/cookiecutter/molecule-scenario @DRIVER_OPTIONS@ \
+   instance_name=@INSTANCE_PREFIX@playbooks \
+
+help:
+	@echo "usage: make <target>"
+	@echo ""
+	@echo "targets:"
+	@echo "  lint        run lint checks"
+	@echo "  test        run molecule scenarios"
+	@echo "  molecule    generate molecule scenarios"
+	@echo "  clean       remove molecule scenarios"
+	@echo ""
+
+lint:
+	yamllint .
+	ansible-lint .
+
+test: molecule
+	molecule test --all
+
+molecule: Makefile
+	$(COOK) name=default
+	$(COOK) name=default \
+	          number_instances=1 \
+	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
+	          with_playbooks=@TOPDIR@/playbooks/kerberos-realm.yml,@TOPDIR@/playbooks/openafs-cell.yml
+	$(COOK) name=build-bdist groups=builders with_playbooks=$(TOPDIR)/playbooks/build-bdist.yml
+	$(COOK) name=realm groups=afs_kdcs with_playbooks=$(TOPDIR)/playbooks/kerberos-realm.yml
+	$(COOK) name=cell-single \
+	          number_instances=1 \
+	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
+	          with_playbooks=@TOPDIR@/playbooks/kerberos-realm.yml,@TOPDIR@/playbooks/openafs-cell.yml
+	$(COOK) name=cell-cluster \
+	          number_instances=6 \
+			  groups=afs_kdcs:1+afs_databases:1+afs_fileservers:1,2,3+afs_admin:1+afs_clients:1,5,6 \
+	          with_playbooks=@TOPDIR@/playbooks/kerberos-realm.yml,@TOPDIR@/playbooks/openafs-cell.yml
+	touch molecule
+
+clean:
+	rm -rf molecule

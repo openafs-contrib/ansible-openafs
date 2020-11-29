@@ -1,0 +1,75 @@
+# Copyright (c) 2019-2020 Sine Nomine Associates
+
+.PHONY: help init lint test build docs clean distclean
+
+PYTHON=@PYTHON@
+
+help:
+	@echo "usage: make <target>"
+	@echo "targets:"
+	@echo "  init        install virtualenv"
+	@echo "  lint        run lint checks"
+	@echo "  test        run unit and molecule tests"
+	@echo "  doc         generate documents"
+	@echo "  scenarios   generate molecule scenarios"
+	@echo "  build       build ansible galaxy collection"
+	@echo "  clean       remove generated files and virtualenv"
+
+.venv/bin/activate: Makefile requirements.txt
+	test -d .venv || $(PYTHON) -m venv .venv
+	.venv/bin/pip install -U wheel
+	.venv/bin/pip install -U -r requirements.txt
+	touch .venv/bin/activate
+
+init: .venv/bin/activate
+
+build: init
+	ansible-galaxy collection build
+
+doc: init
+	@mkdir -p docs/modules
+	for m in roles/*/library/*.py; do \
+		modulepath=`dirname $$m`; \
+		modulename=`basename $$m .py`; \
+		ansible-doc -M $${modulepath} -t module $${modulename} > docs/modules/$${modulename}.txt; \
+	done
+
+lint:
+	$(MAKE) -C roles/openafs_krbserver lint
+	$(MAKE) -C roles/openafs_krbclient lint
+	$(MAKE) -C roles/openafs_common lint
+	$(MAKE) -C roles/openafs_devel lint
+	$(MAKE) -C roles/openafs_server lint
+	$(MAKE) -C roles/openafs_client lint
+	$(MAKE) -C roles/openafs_cell lint
+	$(MAKE) -C roles/openafs_robolint test
+
+scenarios:
+	for r in roles/*; do $(MAKE) -C $$r molecule; done
+	$(MAKE) -C tests/playbooks molecule
+
+test: test-modules test-roles test-playbooks
+
+test-modules:
+	$(MAKE) -C tests test
+
+test-roles:
+	$(MAKE) -C roles/openafs_krbserver test
+	$(MAKE) -C roles/openafs_krbclient test
+	$(MAKE) -C roles/openafs_common test
+	$(MAKE) -C roles/openafs_devel test
+	$(MAKE) -C roles/openafs_server test
+	$(MAKE) -C roles/openafs_client test
+	$(MAKE) -C roles/openafs_cell test
+	$(MAKE) -C roles/openafs_robotest test
+
+test-playbooks:
+	$(MAKE) -C tests/playbooks test
+
+clean:
+	rm -rf roles/*/molecule
+	rm -rf roles/*/Makefile
+	rm -rf tests/playbooks/molecule
+	rm -rf tests/playbooks/Makefile
+	rm -rf .venv
+	rm -f Makefile

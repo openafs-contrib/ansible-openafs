@@ -1,18 +1,10 @@
 ---
 #
-# Example play to build and install OpenAFS in the legacy
-# Transarc installation style.
-#
-# * builds the server and client binaries in one build step
-# * configure options for Transarc paths
-# * installs the binaries on the target system after the build completes
-# * logs of the build and installation are saved on the remote
-#   system in the `$HOME/src/openafs/.ansible` directory.
-# * run with -v to show the build and install results during the play
+# Example play to build and OpenAFS binaries.
 #
 
 - name: Build and install OpenAFS from source
-  hosts: afs_devel
+  hosts: builders
   roles:
     - openafs_devel
   tasks:
@@ -23,35 +15,24 @@
         version: master
       register: checkout_results
 
-    - name: Build OpenAFS Transarc-style binary distribution
+    - name: Build OpenAFS binary distribution
       openafs_build:
         projectdir: ~/src/openafs
         clean: "{{ checkout_results.changed }}"
         target: dest
         destdir: packaging/dest
-        state: kmodready
         configure_options:
           enable:
             - debug
             - transarc-paths
             - kernel-module
-          with: linux-kernel-packaging
-          without: swig
+          with:
+            - linux-kernel-packaging
+          without:
+            - swig
       register: build_results
 
     - name: Build results
       debug:
         var: build_results
-        verbosity: 1
-
-    - name: Install OpenAFS binaries
-      become: yes
-      openafs_install:
-        destdir: "{{ build_results.destdir }}"
-        logdir: /var/tmp/
-      register: install_results
-
-    - name: Install results
-      debug:
-        var: install_results
         verbosity: 1
