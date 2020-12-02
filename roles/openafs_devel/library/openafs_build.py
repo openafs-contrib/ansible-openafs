@@ -435,7 +435,6 @@ def configured_sysname(builddir):
     return ''
 
 
-
 def main():
     logger = logging.getLogger(__name__)
     results = dict(
@@ -670,8 +669,7 @@ def main():
 
     #
     # Copy the transarc-style distribution tree into a DESTDIR file tree
-    # for installation. Put root.server and root.client files into the
-    # root directory.
+    # for installation.
     #
     if destdir and target in ('dest', 'dest_nolibafs', 'dest_only_libafs'):
         logger.info('Copying transarc-style distribution files to %s' % destdir)
@@ -681,20 +679,8 @@ def main():
         dest = os.path.join(builddir, sysname, 'dest')
         if not os.path.isdir(dest):
             module.fail_json(msg='Missing dest directory: %s' % dest)
-        for d in ('bin', 'etc', 'include', 'lib', 'man'):
-            src = os.path.join(dest, d)
-            dst = os.path.join(destdir, d)
-            if os.path.isdir(src):
-                logger.debug('copy_tree("%s", "%s")' % (src, dst))
-                copy_tree(src, dst)
-                results['changed'] = True
-        for d in ('root.server', 'root.client'):
-            src = os.path.join(dest, d)
-            dst = destdir
-            if os.path.isdir(src):
-                logger.debug('copy_tree("%s", "%s")' % (src, dst))
-                copy_tree(src, dst)
-                results['changed'] = True
+        copy_tree(dest, destdir)
+        results['changed'] = True
 
     #
     # Copy security key utilities to a standard location.
