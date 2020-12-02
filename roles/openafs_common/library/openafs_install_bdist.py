@@ -207,7 +207,7 @@ def find_destdir(path, sysname=None):
     if not sysname:
         sysname = '*'
     roots = set(['bin', 'etc', 'include', 'lib', 'man', 'root.server', 'root.client'])
-    for pattern in ('/%s/dest' % sysname, '/dest'):
+    for pattern in ('/%s/dest' % sysname, '/dest', '/'):
         dirs = set(glob.glob(path + pattern))
         logger.debug('dirs=%s', dirs)
         for destdir in dirs:
@@ -332,12 +332,12 @@ def main():
                 with open('/etc/ld.so.conf.d/openafs.conf', 'w') as f:
                     for p in bins:
                         f.write('%s\n' % p)
-            rc, out, err = module.run_command([ldconfig], check_rc=True)
+            module.run_command([ldconfig], check_rc=True)
 
         if results['changed']:
             if results['kmods']:
                 logger.info('Updating module dependencies.')
-                rc, out, err = module.run_command([depmod, '-a'], check_rc=True)
+                module.run_command([depmod, '-a'], check_rc=True)
 
     msg = 'Install completed'
     logger.info(msg)
