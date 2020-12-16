@@ -47,6 +47,14 @@
       path: "{{ afs_afsbosconfigdir }}"
   register: config_files
 
+- name: Ensure admin is a superuser
+  become: yes
+  lineinfile:
+    state: present
+    create: yes
+    line: "{{ afs_admin_principal | replace('/', '.') }}"
+    path: "{{ afs_afsconfdir }}/UserList"
+
 - name: Create BosConfig.new file
   become: yes
   copy:
