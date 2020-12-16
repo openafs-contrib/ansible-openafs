@@ -8,7 +8,7 @@ Install and configure Kerberos workstation packages.
 
 The Kerberos realm name.
 
-    afs_kdcs: (not defined by default)
+    afs_kdc_servers: (not defined by default)
 
 Comma separated list of kdc host names to be set in the krb5.conf file. If this
 variable is not defined, the hostname of the hosts in the `afs_kdcs` inventory
