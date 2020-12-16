@@ -78,16 +78,16 @@ platforms:
 {%- for i in range(cookiecutter.number_instances | int) %}
   - name: {{ cookiecutter.instance_name }}-{{ '%02d' % (i+1) }}
   {%- if cookiecutter.driver == 'vagrant' %}
-    box: generic/{{ cookiecutter.os }}
+    box: {{ cookiecutter.driver_template_prefix }}/{{ cookiecutter.os }}
   {%- elif cookiecutter.driver == 'delegated' %}
     {%- if cookiecutter.os == 'centos7' %}
-    template: generic-centos-7
+    template: {{ cookiecutter.driver_template_prefix }}-centos-7
     {%- elif cookiecutter.os == 'centos8' %}
-    template: generic-centos-8
+    template: {{ cookiecutter.driver_template_prefix }}-centos-8
     {%- elif cookiecutter.os == 'debian9' %}
-    template: generic-debian-9
+    template: {{ cookiecutter.driver_template_prefix }}-debian-9
     {%- elif cookiecutter.os == 'debian10' %}
-    template: generic-debian-10
+    template: {{ cookiecutter.driver_template_prefix }}-debian-10
     {%- endif %}
   {%- endif %}
     memory: {{ cookiecutter.instance_mem }}

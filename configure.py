@@ -7,6 +7,7 @@ import argparse
 driver_option_names = [
     'driver',
     'driver_provider',
+    'driver_template_prefix',
     'driver_libvirt_host',
     'driver_libvirt_prepare',
     'driver_libvirt_logfile',

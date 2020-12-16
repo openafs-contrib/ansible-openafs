@@ -3,6 +3,7 @@
     "os": ["centos7", "centos8", "debian9", "debian10"],
     "driver": ["vagrant", "delegated"],
     "driver_provider": "",
+    "driver_template_prefix": "generic",
     "driver_libvirt_host": "localhost",
     "driver_libvirt_port": "22",
     "driver_libvirt_prepare": "",
