@@ -5,9 +5,9 @@ These example playbooks can be used as starting points for your playbooks.
 
 ## Playbooks
 
-* `kerberos-realm.yml` - example play to deploy a kerberos realm
-* `openafs-cell.yml`   - example plays to deploy an OpenAFS cell on one or more nodes
-* `build-bdist.yml`    - example plays to build and install OpenAFS from source
+* `build.yaml`  - build and install OpenAFS from source
+* `realm.yaml`  - deploy a kerberos realm
+* `cell.yaml`   - deploy an OpenAFS cell on one or more nodes
 
 ## Example Ansible Configuration
 

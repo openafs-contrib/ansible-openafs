@@ -6,7 +6,7 @@ distributed filesystem.
 ## System requirements
 
 * Ansible 2.7+
-* OpenAFS 1.6.5+, 1.8.x
+* OpenAFS 1.6.5+, 1.8.x, 1.9.x
 
 ## Platforms supported
 
@@ -17,7 +17,6 @@ distributed filesystem.
 
 * Kerberos client
 * Kerberos server
-* OpenAFS cell
 * OpenAFS client
 * OpenAFS server
 * OpenAFS development
@@ -25,9 +24,9 @@ distributed filesystem.
 
 ## Example playbooks
 
-* build-bdist.yml - Build OpenAFS binaries
-* kerberos-realm.yml - Install and setup a Kerberos realm
-* openafs-cell.yml - Install and setup an OpenAFS cell
+* build.yaml - Build OpenAFS binaries
+* realm.yaml - Install and setup a Kerberos realm
+* cell.yaml - Install and setup an OpenAFS cell
 
 ## License
 
@@ -35,7 +34,7 @@ BSD
 
 ## Author Information
 
-Copyright (c) 2018-2019 Sine Nomine Associates
+Copyright (c) 2018-2021 Sine Nomine Associates
 
 [1]: https://www.openafs.org/
 [2]: https://web.mit.edu/kerberos/

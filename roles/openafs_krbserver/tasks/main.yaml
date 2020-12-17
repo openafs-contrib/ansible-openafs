@@ -69,6 +69,18 @@
     state: present
     principal: "{{ afs_admin_principal }}"
     password: "{{ afs_admin_password }}"
+  register: admin_principal_results
+
+- name: Download admin keytab
+  become: yes
+  fetch:
+    flat: yes
+    src: "{{ admin_principal_results.keytab }}"
+    dest: "{{ afs_local_dir}}/admin.keytab"
+  register: download_results
+
+- debug:
+    msg: "Downloaded file {{ download_results.dest }}."
 
 - name: Start kerberos key server
   become: yes

@@ -8,6 +8,12 @@ afs_admin_password: "{{ lookup('password', afs_local_dir+'/afs_admin_password ch
 # Kerberos keytab for AFS service
 afs_service_keytab: "{{ afs_local_dir }}/rxkad.keytab"
 
+# Is this host a fileserver?
+afs_is_fileserver: "{{ 'afs_fileservers' in group_names }}"
+
+# Is this host a database server?
+afs_is_dbserver: "{{ 'afs_databases' in group_names }}"
+
 # fileserver partitions
 afs_partitions:
   - a
@@ -16,7 +22,7 @@ afs_partitions:
 afs_fileserver_type: dafs
 
 # bosserver options
-afs_bosserver_opts:
+afs_bosserver_opts: -pidfiles
 
 # ptserver options
 afs_ptserver_opts:

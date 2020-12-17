@@ -1,7 +1,7 @@
 restrictmode 0
 restarttime 16 0 0 0 0
 checkbintime 3 0 5 0 0
-{% if 'afs_databases' in group_names %}
+{% if afs_is_dbserver %}
 bnode simple ptserver 1
 parm {{ afs_ptserver }}{{ ' ' if afs_ptserver_opts else '' }}{{ afs_ptserver_opts }}
 end
@@ -9,7 +9,7 @@ bnode simple vlserver 1
 parm {{ afs_vlserver }}{{ ' ' if afs_vlserver_opts else '' }}{{ afs_vlserver_opts }}
 end
 {% endif %}
-{% if 'afs_fileservers' in group_names %}
+{% if afs_is_fileserver %}
 {% if afs_fileserver_type == 'dafs' %}
 bnode dafs dafs 1
 parm {{ afs_dafileserver }}{{ ' ' if afs_dafileserver_opts else '' }}{{ afs_dafileserver_opts }}

@@ -280,11 +280,6 @@
     - include_role:
         name: openafs_client
   {%- endif %}
-  {%- if cookiecutter.with_cell == 'yes' %}
-
-    - include_role:
-        name: openafs_cell
-  {%- endif %}
   {%- if cookiecutter.with_robotest == 'yes' %}
 
     - include_role:

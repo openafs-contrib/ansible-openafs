@@ -134,7 +134,7 @@ EXAMPLES = r'''
   openafs_principal:
     state: present
     principal: "{{ item }}"
-    password: "{{ intial_password }}
+    password: "{{ initial_password }}
   with_items:
     - alice
     - bob

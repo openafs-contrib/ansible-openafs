@@ -1,3 +1,0 @@
----
-# Kerberos commands.
-afs_kinit: "/usr/bin/kinit"

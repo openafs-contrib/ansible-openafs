@@ -1,0 +1,47 @@
+---
+#
+# Bootstrap the cell by creating the first user and the root volumes
+# with -localauth.  Creating the root.afs volume here allow the first
+# client to start without the -dynroot option enabled.
+#
+# The mounting of the root.cell volume and the setup of the ACLs
+# of the top directories are deferred, since those currently require
+# a client.
+#
+
+- name: Wait for database quorum
+  become: yes
+  openafs_wait_for_quorum:
+    sleep: 10
+    timeout: 600
+  when:
+    - afs_is_dbserver
+
+- name: Wait for fileserver registration
+  become: yes
+  openafs_wait_for_registration:
+    sleep: 10
+    timeout: 600
+  when:
+    - afs_is_fileserver
+
+- name: Bootstrap cell
+  become: yes
+  run_once: yes
+  block:
+    - name: Ensure administrator user exists
+      openafs_user:
+        state: present
+        user: "{{ afs_admin_principal | replace('/', '.') }}"
+        groups:
+          - system:administrators
+        localauth: yes
+
+    - name: Ensure root volumes exist
+      openafs_volume:
+        state: present
+        volume: "{{ item }}"
+        localauth: yes
+      with_items:
+        - root.afs
+        - root.cell

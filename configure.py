@@ -49,7 +49,6 @@ def main():
     config_files(
         config,
         'Makefile',
-        'roles/openafs_cell/Makefile',
         'roles/openafs_client/Makefile',
         'roles/openafs_common/Makefile',
         'roles/openafs_devel/Makefile',

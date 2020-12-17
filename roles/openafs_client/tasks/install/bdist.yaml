@@ -35,6 +35,7 @@
       install_method: "{{ afs_install_method }}"
       client_installed: yes
       client_service_name: openafs-client
+      client_options: "{{ afs_afsd_opts }}"
       bins: "{{ install_results.bins }}"
       dirs: "{{ install_results.dirs }}"
 

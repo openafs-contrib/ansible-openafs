@@ -25,7 +25,7 @@
 - import_tasks: "post-install/server-key.yaml"
 - include_tasks: "post-install/security-contexts-{{ afs_security_model | default('none') }}.yaml"
 
-- name: Start the OpenAFS services
+- name: Start services
   become: yes
   service:
     name: "{{ afs_server_service_name }}"
@@ -33,5 +33,4 @@
     enabled: yes
   register: afs_server_service_result
 
-- include_tasks: post-install/cell-bootstrap.yaml
-  run_once: yes
+- import_tasks: "post-install/bootstrap-cell.yaml"

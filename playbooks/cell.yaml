@@ -1,0 +1,69 @@
+---
+- name: Create CellServDB
+  hosts: afs_databases
+  vars:
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+  tasks:
+    - import_role:
+        name: openafs_common
+        tasks_from: generate_csdb
+
+- name: Install servers
+  hosts: afs_databases:afs_fileservers
+  vars:
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+    afs_partitions:
+      - a
+      - b
+  roles:
+    - openafs_server
+
+- name: Install clients
+  hosts: afs_clients
+  vars:
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+  roles:
+    - openafs_krbclient
+    - openafs_client
+
+- name: Setup new cell
+  hosts: afs_admin
+  vars:
+    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+  roles:
+    - openafs_krbclient
+    - openafs_client
+  tasks:
+    - name: Upload admin keytab
+      copy:
+        src: "{{ afs_local_dir }}/admin.keytab"
+        dest: admin.keytab
+
+    - name: Create top-level volumes
+      openafs_volume:
+        state: present
+        name: "{{ item.name }}"
+        mount: "{{ item.mount }}"
+        acl: "{{ item.acl }}"
+        replicas: 3
+      with_items:
+        - name: root.afs
+          mount: /afs
+          acl: "system:anyuser read"
+        - name: root.cell
+          mount: /afs/{{ afs_cell }}
+          acl: "system:anyuser read"
+        - name: test
+          mount: /afs/{{ afs_cell }}/test
+          acl:
+            - "system:anyuser read"
+            - "system:authuser write"
+
+    - name: Create users
+      openafs_user:
+        name: "{{ item }}"
+        group: tester
+      with_items:
+        - alice
+        - bob
+        - charlie

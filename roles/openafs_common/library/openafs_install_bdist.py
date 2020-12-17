@@ -272,7 +272,7 @@ def main():
     ldconfig = module.params['ldconfig']
     depmod = module.params['depmod']
 
-    if log_dir and not os.path.exists(log_dir):
+    if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     install_log = os.path.join(log_dir, 'openafs_install_bdist.log')
     results['logfiles'].append(install_log)
@@ -282,7 +282,7 @@ def main():
         format='%(asctime)s %(levelname)s %(message)s',
     )
 
-    logger.info('Starting openafs_install')
+    logger.info('Starting openafs_install_bdist')
     logger.debug('Parameters: %s' % pprint.pformat(module.params))
 
     if not os.path.isdir(path):
