@@ -27,6 +27,8 @@
       - name: test
   tasks:
     - import_role:
+        name: openafs_krbclient
+    - import_role:
         name: openafs_client
     - import_role:
         name: openafs_cell
@@ -36,5 +38,7 @@
   vars:
     afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
   tasks:
+    - import_role:
+        name: openafs_krbclient
     - import_role:
         name: openafs_client
