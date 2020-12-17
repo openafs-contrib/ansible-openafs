@@ -34,6 +34,7 @@
     "with_cell": "no",
     "with_robotest": "no",
     "with_playbooks": "",
+    "extra_vars": "",
     "_copy_without_render": [
         "files/*",
         "library/*"

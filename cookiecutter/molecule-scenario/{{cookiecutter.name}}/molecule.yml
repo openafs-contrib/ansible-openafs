@@ -138,6 +138,9 @@ provisioner:
       {%- elif cookiecutter.with_krbserver == 'yes' %}
         afs_service_keytab: "${MOLECULE_EPHEMERAL_DIRECTORY}/rxkad.keytab"
       {%- endif %}
+      {%- for e in cookiecutter.extra_vars.split(',') %}
+        {{ e | replace(':', ': ') }}
+      {%- endfor %}
 verifier:
   name: ansible
 scenario:
