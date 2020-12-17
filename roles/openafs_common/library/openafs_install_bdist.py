@@ -274,7 +274,7 @@ def main():
 
     if log_dir and not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    install_log = os.path.join(log_dir, 'openafs_install.log')
+    install_log = os.path.join(log_dir, 'openafs_install_bdist.log')
     results['logfiles'].append(install_log)
     logging.basicConfig(
         level=LOG_LEVELS[log_level],
