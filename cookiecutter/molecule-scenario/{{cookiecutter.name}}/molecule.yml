@@ -69,7 +69,6 @@ driver:
     port: {{ cookiecutter.driver_libvirt_port }}
     connection: ssh
   {%- endif %}
-    libvirt_uri: {{ cookiecutter.driver_libvirt_uri }}
     logfile: {{ cookiecutter.driver_libvirt_logfile }}
     loglevel: {{ cookiecutter.driver_libvirt_loglevel }}
     python_interpreter: {{ cookiecutter.driver_libvirt_python_interpreter }}

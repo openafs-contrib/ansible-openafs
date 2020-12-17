@@ -5,7 +5,6 @@
     "driver_provider": "",
     "driver_libvirt_host": "localhost",
     "driver_libvirt_port": "22",
-    "driver_libvirt_uri": "qemu:///system",
     "driver_libvirt_prepare": "",
     "driver_libvirt_logfile": "~/.cache/virt-up/virt-up.log",
     "driver_libvirt_loglevel": "info",
