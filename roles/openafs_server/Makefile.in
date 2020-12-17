@@ -57,6 +57,12 @@ molecule: Makefile
 	$(COOK) name=deb10-bdist-c       os=debian10 im=bdist   with_client=yes
 	$(COOK) name=deb10-scm           os=debian10 im=scm
 	$(COOK) name=deb10-scm-c         os=debian10 im=scm     with_client=yes
+	$(COOK) \
+	  name=cluster-1 \
+	  os=centos7 \
+	  im=bdist \
+	  number_instances=3 \
+	  groups=afs_kdcs:1+afs_databases:1,2,3+afs_fileservers:1,2,3
 	touch molecule
 
 clean:
