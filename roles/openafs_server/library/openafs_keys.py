@@ -10,7 +10,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = r'''
 ---
-module: openafs_add_keys
+module: openafs_keys
 
 short_description: Add kerberos service keys with asetkey.
 
@@ -30,6 +30,10 @@ requirements:
   - A keytab file containing the service keys must be copied to the server.
 
 options:
+  state:
+    description: c(present) to ensure keys are present in the keyfile(s)
+    required: false
+    type: str
 
   keytab:
     description: path to the keytab file on the remote node
@@ -66,11 +70,10 @@ EXAMPLES = r'''
 
 - name: Add service keys
   become: yes
-  openafs_add_keys:
-    keytab: "/usr/afs/etc/rxkad.keytab"
+  openafs_keys:
+    state: present
+    keytab: /usr/afs/etc/rxkad.keytab
     cell: example.com
-    realm: EXAMPLE.COM
-    asetkey: "/sbin/afs_asetkey"
 '''
 
 RETURN = r'''
@@ -125,12 +128,16 @@ service_principal:
   sample: "afs/example.com@EXAMPLE.COM"
 '''
 
-import os
-import struct
 import errno
-import re
 import json
+import logging
+import os
+import re
+import struct
+import pprint
 from ansible.module_utils.basic import AnsibleModule
+
+logger = logging.getLogger(__name__)
 
 KEYTAB_MAGIC = 0x0502
 KEYTAB_MAGIC_OLD = 0x0501
@@ -298,35 +305,42 @@ def main():
     )
     module = AnsibleModule(
             argument_spec=dict(
+                state=dict(type='str', choices=['present'], default='present'),
                 keytab=dict(type='path', required=True),
                 cell=dict(type='str', required=True),
                 realm=dict(type='str', default=None),
-                asetkey=dict(type='path', default=None),
             ),
             supports_check_mode=False,
     )
+    state = module.params['state']
     keytab = module.params['keytab']
     cell = module.params['cell']
     realm = module.params['realm']
-    asetkey = module.params['asetkey']
-
     if not realm:
         realm = cell.upper()
 
-    # Search for asetkey if not given. First check the installation
-    # facts, and if not found, try the PATH.
-    if not asetkey:
+    logfile = '/var/log/ansible-openafs/openafs_key_%d.log' % os.getuid()
+    logging.basicConfig(
+        level=logging.DEBUG,
+        filename=logfile,
+        format='%(asctime)s %(levelname)s %(message)s',
+    )
+    logger.info('Starting openafs_key')
+    logger.debug('Parameters: %s' % pprint.pformat(module.params))
+
+    def lookup_command(name):
         try:
             with open('/etc/ansible/facts.d/openafs.fact') as f:
                 facts = json.load(f)
-            asetkey = facts.get('bins', {}).get('asetkey', None)
+            cmd = facts['bins'][name]
         except:
-            pass
-    if not asetkey:
-        asetkey = module.get_bin_path('asetkey')
-    if not asetkey:
-        module.fail_json(msg='Unable to locate asetkey.')
-    results['asetkey'] = asetkey
+            cmd = module.get_bin_path(name)
+        if not cmd:
+            module.fail_json(msg='Unable to locate %s command.' % name)
+        return cmd
+
+    asetkey = lookup_command('asetkey')
+    logger.debug('asetkey=%s', asetkey)
 
     # Decode the keytab to find the kvnos, enctypes, and principals.
     keytab = Keytab(keytab)
@@ -338,6 +352,7 @@ def main():
         keys = keytab.find(service_principal)
     if not keys:
         msg = "Keys not found in keytab %s for cell '%s', realm '%s'." % (keytab.name, cell, realm)
+        logger.error(msg)
         module.fail_json(msg=msg, keys=keytab.entries)
 
     results['service_principal'] = service_principal
@@ -347,16 +362,19 @@ def main():
     rc, out, err = module.run_command([asetkey])
     usage = err.splitlines()
     if len(usage) == 0 or not 'usage' in usage[0]:
+        logger.error("Failed to get asetkey usage; rc=%d, out=%s, err=%s", rc, out, err)
         module.fail_json(msg="Failed to get asetkey usage.", asetkey=asetkey, rc=rc, out=out, err=err)
     have_extended_keys = False
     for line in usage:
         if "add <type> <kvno> <subtype> <keyfile> <princ>" in line:
             have_extended_keys = True
+    logger.debug("have_extended_keys=%s", "True" if have_extended_keys else "False")
     results['have_extended_keys'] = have_extended_keys
 
     # Retrieve the current keys to check for changes.
     rc, before, err = module.run_command([asetkey, 'list'])
     if rc != 0:
+        logger.error("Failed to list keys; rc=%d, out=%s, err=%s", rc, out, err)
         module.fail_json(msg="Failed to list keys.", asetkey=asetkey, rc=rc, out=out, err=err)
 
     # Add the keys.
@@ -374,12 +392,14 @@ def main():
         rc, out, err = module.run_command(args)
         results['debug'].append(dict(cmd=' '.join(args), rc=rc, out=out, err=err))
         if rc != 0:
-            module.fail_json(msg="asetkey add failed", rc=rc, out=out, err=err, keys=keys)
-    
+            logger.error("Failed asetkey add; rc=%d, out=%s, err=%s", rc, out, err)
+            module.fail_json(msg="Failed asetkey add", rc=rc, out=out, err=err, keys=keys)
+
     # Check for changes and return list of key version numbers. Avoid returning the
     # key values!
     rc, after, err = module.run_command([asetkey, 'list'])
     if rc != 0:
+        logger.error("Failed to list keys; rc=%d, out=%s, err=%s", rc, out, err)
         module.fail_json(msg="Failed to list keys.", asetkey=asetkey, rc=rc, out=out, err=err)
     if before != after:
         results['changed'] = True
