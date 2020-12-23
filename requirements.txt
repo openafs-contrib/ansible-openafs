@@ -4,4 +4,3 @@ molecule
 ansible
 pyflakes
 pytest
-rich < 9.5.0
