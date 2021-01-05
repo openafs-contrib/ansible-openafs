@@ -23,12 +23,12 @@
     owner: root
     group: root
   loop:
-    - path: "{{ afs_afslocaldir }}"
-      mode: "700"
     - path: "{{ afs_afsconfdir }}"
-      mode: "700"
-    - path: "{{ afs_afsbosconfigdir }}"
       mode: "755"
+    - path: "{{ afs_afslocaldir }}"
+      mode: "750"
+    - path: "{{ afs_afsbosconfigdir }}"
+      mode: "750"
 
 - name: Create configuration files
   become: yes
