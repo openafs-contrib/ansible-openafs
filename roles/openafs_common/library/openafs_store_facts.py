@@ -67,6 +67,7 @@ def main():
             facts = json.load(fp)
     except:
         facts = {}
+    old_facts = dict(facts) # Save a copy to check for changes.
 
     # If a existing fact dictionary with the new keys, if a dictionary
     # was given. Otherwise just set the new fact with the given value.
@@ -75,7 +76,7 @@ def main():
             facts[key] = value
         else:
             if not key in facts:
-               facts[key] = value
+                facts[key] = value
             elif isinstance(facts[key], dict) and isinstance(value, dict):
                 facts[key].update(value)
             elif isinstance(facts[key], list) and isinstance(value, list):
@@ -83,11 +84,12 @@ def main():
             else:
                 facts[key] = value
 
-    if not os.path.exists(factsdir):
-        os.makedirs(factsdir)
-    with open(factsfile, 'w') as fp:
-        json.dump(facts, fp, indent=2)
-    results['changed'] = True
+    if facts != old_facts:
+        if not os.path.exists(factsdir):
+            os.makedirs(factsdir)
+        with open(factsfile, 'w') as fp:
+            json.dump(facts, fp, indent=2)
+        results['changed'] = True
 
     # Update current facts.
     results['ansible_facts']['ansible_local']['openafs'] = facts
