@@ -9,10 +9,3 @@ afs_selinux_tools:
   - policycoreutils-python
   - setools-console
 afs_selinux_openafs_version: "1.1"
-
-# Note: The bosserver creates the /usr/vice/etc directory on startup if it does not
-# exist in order to create a symlink to the CellServDB for vos and pts. Be sure
-# to set the selinux context before bosserver starts.
-afs_selinux_top_dirs:
- - "/usr/afs"
- - "/usr/vice"

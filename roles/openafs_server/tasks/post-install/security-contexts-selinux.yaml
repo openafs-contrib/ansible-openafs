@@ -1,34 +1,4 @@
 ---
-- name: Create OpenAFS directories to be relabelled
+- name: SELinux relabel
   become: yes
-  file:
-    state: directory
-    path: "{{ item }}"
-    mode: 0755
-    owner: root
-    group: root
-  with_items: "{{ afs_selinux_top_dirs }}"
-  when: afs_selinux_top_dirs is defined
-
-- name: SELinux relabel OpenAFS directories
-  become: yes
-  command: restorecon -ir {{ item }}
-  with_items: "{{ afs_selinux_top_dirs }}"
-  when: afs_selinux_top_dirs is defined
-
-- name: Find vice partitions
-  become: yes
-  find:
-    paths: /
-    recurse: no
-    patterns: 'vicep*'
-    file_type: directory
-  register: find_vicep_results
-
-- set_fact:
-    vicep_paths: "{{ find_vicep_results.files | map(attribute='path') | list }}"
-
-- name: SELinux relabel vicep partitions
-  become: yes
-  command: restorecon -i {{ item }} {{ item }}/AlwaysAttach
-  with_items: "{{ vicep_paths }}"
+  openafs_selinux_relabel:
