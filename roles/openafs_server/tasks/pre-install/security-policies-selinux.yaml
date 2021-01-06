@@ -6,30 +6,26 @@
     state: present
   when: afs_selinux_tools is defined
 
-- name: Test for presence of openafs module in SELinux
+- name: Create directory for SELinux module definitions
   become: yes
-  shell: semodule -lstandard | grep -E '^openafs\s+{{ afs_selinux_openafs_version }}$'
-  register: module_result
-  changed_when: False
-  failed_when: False
+  file:
+    state: directory
+    path: /var/lib/ansible-openafs/selinux
+    mode: "0755"
+    owner: root
+    group: root
 
-- name: Copy the SELinux module for openafs server
+- name: Copy the SELinux module definitions for openafs server
   become: yes
   template:
-    dest: "/tmp/{{ item }}"
+    dest: "/var/lib/ansible-openafs/selinux/{{ item }}"
     src: "{{ role_path }}/templates/{{ item }}.j2"
-  when: module_result.rc > 0
   with_items:
     - openafs.te
     - openafs.fc
 
 - name: Build SELinux module for openafs server
   become: yes
-  command: "{{ item }}"
-  args:
-    chdir: "/tmp"
-  when: module_result.rc > 0
-  with_items:
-    - "checkmodule -M -m -o openafs.mod openafs.te"
-    - "semodule_package -o openafs.pp -m openafs.mod -f openafs.fc"
-    - "semodule -i openafs.pp"
+  openafs_selinux_module:
+    name: openafs
+    path: /var/lib/ansible-openafs/selinux

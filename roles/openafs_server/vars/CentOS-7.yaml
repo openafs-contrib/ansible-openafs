@@ -8,4 +8,3 @@ afs_firewall: firewalld
 afs_selinux_tools:
   - policycoreutils-python
   - setools-console
-afs_selinux_openafs_version: "1.1"

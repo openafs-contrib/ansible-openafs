@@ -3,6 +3,3 @@ _afs_server_install_platform: redhat
 
 # OS dependent variables
 afs_firewall: firewalld
-
-# SELinux
-afs_selinux_openafs_version: "1.1"
