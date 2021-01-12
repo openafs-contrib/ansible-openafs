@@ -32,14 +32,12 @@ molecule: Makefile
 	$(COOK) name=cen7-rpm       os=centos7  im=packages im_module=dkms
 	$(COOK) name=cen7-rpm-kmod  os=centos7  im=packages im_module=kmod
 	$(COOK) name=cen7-bdist     os=centos7  im=bdist
-	$(COOK) name=cen7-transarc  os=centos7  im=bdist    bdist_flavor=transarc
 	$(COOK) name=cen7-scm       os=centos7  im=scm
 	$(COOK) name=cen8           os=centos8  im=managed  im_module=dkms
 	$(COOK) name=cen8-kmod      os=centos8  im=managed  im_module=kmod
 	$(COOK) name=cen8-rpm       os=centos8  im=packages im_module=dkms
 	$(COOK) name=cen8-rpm-kmod  os=centos8  im=packages im_module=kmod
 	$(COOK) name=cen8-bdist     os=centos8  im=bdist
-	$(COOK) name=cen8-transarc  os=centos8  im=bdist    bdist_flavor=transarc
 	$(COOK) name=cen8-scm       os=centos8  im=scm
 	$(COOK) name=deb9           os=debian9  im=managed
 	$(COOK) name=deb9-bdist     os=debian9  im=bdist

@@ -14,22 +14,15 @@ afs_logdir: /var/log/ansible-openafs
 # Temporary directory on remote nodes.
 afs_tmpdir: /tmp/ansible-openafs
 
-# Installation method.
+# Installation method; one of; managed, package, bdist, scm
 afs_install_method: managed
 
-# 'managed' installation method variables.
+# Yum repository url or path for 'managed' installs on yum based systems.
 afs_yum_repo: "https://download.sinenomine.net/openafs/rpms/el$releasever/$basearch"
 
-# 'package' installation method variables.
-afs_rpm_dir: "~/.cache/ansible-openafs/binaries/rpms"
-afs_rpm_dist: "{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}"
-afs_rpm_arch: "{{ ansible_architecture }}"
+# Path to installation tarball on controller for non-managed installs.
+afs_install_archive:
 
-# 'bdist' installation method variables.
-afs_bdist_dir: "~/.cache/ansible-openafs/binaries/bdist"
-afs_bdist_dist: "{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}"
-afs_bdist_arch: "{{ ansible_architecture }}"
-
-# 'scm' installation method variables.
-afs_scm_gitrepo: "git://git.openafs.org/openafs.git"
-afs_scm_gitref: "master"
+# Git repository and branch info for builds and scm based installs.
+afs_git_repo: "git://git.openafs.org/openafs.git"
+afs_git_version: "master"

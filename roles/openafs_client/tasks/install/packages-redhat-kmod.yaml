@@ -14,17 +14,31 @@
 # A matching kmod-openafs-debuginfo is also installed if one is provided
 # in the set of rpm files.
 #
+- name: Verify the path to the installation tarball is specified
+  assert:
+    that:
+      - afs_install_archive is defined
+      - afs_install_archive != ''
 
-- import_role:
-    name: openafs_common
-    tasks_from: upload_rpms
+- debug:
+    msg: "Installing {{ afs_install_archive }}"
+
+- name: Create directory
+  file:
+    state: directory
+    path: "{{ afs_tmpdir }}/install"
+
+- name: Upload rpm package files
+  unarchive:
+    src: "{{ afs_install_archive }}"
+    dest: "{{ afs_tmpdir }}/install/"
 
 # Find the userspace rpm filenames for the client. We assume
 # all of the rpms in the staging directory belong to the same
 # version of OpenAFS.
 - name: Find client userspace rpm filenames
   find:
-    path: "{{ afs_tmpdir }}/rpms/"
+    path: "{{ afs_tmpdir }}/install/"
     use_regex: yes
     patterns:
       - "openafs-[0-9].*[.]rpm$"

@@ -26,23 +26,19 @@ is `managed`. Supported values are:
 
     afs_yum_repo: "https://download.sinenomine.net/openafs/rpms/el$releasever/$basearch"
 
-## `package` installation method variables
+## `packages` and `bdist` method variables
 
-    afs_rpm_dir: "~/.cache/ansible-openafs/binaries/rpms"
-    afs_rpm_dist: <distribution><major_version>
-    afs_rpm_arch: <architecture>
+    afs_install_archive:
 
-## `bdist` installation method variables
-
-    afs_bdist_dir: "~/.cache/ansible-openafs/binaries/bdist"
-    afs_bdist_dist: <distribution><major_version>
-    afs_bdist_arch: <architecture>
+Path to the compressed archive containing the installation files. Must be set
+if the installation method is `packages` or `bdist`.
 
 ## `scm` installation method variables
 
-    afs_scm_gitrepo: "git://git.openafs.org/openafs.git"
-    afs_scm_gitref: "master"
+    afs_git_repo: "git://git.openafs.org/openafs.git"
+    afs_git_version: master
 
+Git repository URL and the git reference to check out and build.
 
 License
 -------

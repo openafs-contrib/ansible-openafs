@@ -14,13 +14,28 @@
     state: present
     update_cache: yes
 
-- import_role:
-    name: openafs_common
-    tasks_from: upload_rpms
+- name: Verify the path to the installation tarball is specified
+  assert:
+    that:
+      - afs_install_archive is defined
+      - afs_install_archive != ''
+
+- debug:
+    msg: "Installing {{ afs_install_archive }}"
+
+- name: Create directory
+  file:
+    state: directory
+    path: "{{ afs_tmpdir }}/install"
+
+- name: Upload rpm package files
+  unarchive:
+    src: "{{ afs_install_archive }}"
+    dest: "{{ afs_tmpdir }}/install/"
 
 - name: Find client userspace rpm filenames
   find:
-    path: "{{ afs_tmpdir }}/rpms/"
+    path: "{{ afs_tmpdir }}/install/"
     use_regex: yes
     patterns:
       - "openafs-[0-9].*[.]rpm$"

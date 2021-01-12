@@ -112,24 +112,21 @@ provisioner:
       all:
         afs_cell: example.com
         afs_local_dir: "${MOLECULE_EPHEMERAL_DIRECTORY}"
-      {%- if cookiecutter.with_server == 'yes' %}
-        afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
-      {%- endif %}
       {%- if cookiecutter.im != 'default' %}
         afs_install_method: {{ cookiecutter.im }}
       {%- endif %}
-      {%- if cookiecutter.with_client == 'yes'
-             and cookiecutter.im in ('default', 'managed', 'packages') %}
-        afs_module_install_method: {{ cookiecutter.im_module }}
+      {%- if cookiecutter.im in ('bdist', 'rpms') %}
+        afs_install_archive: "${AFS_INSTALL_TARBALL}"
       {%- endif %}
-      {%- if cookiecutter.im == 'bdist' or cookiecutter.build == 'bdist' %}
-        {%- if cookiecutter.bdist_flavor == 'modern' %}
-        afs_bdist_dir: "~/.cache/ansible-openafs/binaries/bdist"
-        {%- elif cookiecutter.bdist_flavor == 'transarc' %}
-        afs_bdist_dir: "~/.cache/ansible-openafs/binaries/transarc"
-        {%- endif %}
-      {%- elif cookiecutter.im == 'packages' or cookiecutter.build == 'rpms' %}
-        afs_rpm_dir: "~/.cache/ansible-openafs/binaries/rpms"
+      {%- if cookiecutter.im == 'scm' or cookiecutter.build in ('bdist', 'rpms') %}
+        afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"
+        afs_git_version: "${AFS_GET_VERSION:-master}"
+      {%- endif %}
+      {%- if cookiecutter.with_server == 'yes' %}
+        afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
+      {%- endif %}
+      {%- if cookiecutter.with_client == 'yes' and cookiecutter.im in ('default', 'managed', 'packages') %}
+        afs_module_install_method: {{ cookiecutter.im_module }}
       {%- endif %}
       {%- if cookiecutter.with_krbserver == 'no' %}
         {%- if cookiecutter.with_server == 'yes' %}
@@ -138,9 +135,11 @@ provisioner:
       {%- elif cookiecutter.with_krbserver == 'yes' %}
         afs_service_keytab: "${MOLECULE_EPHEMERAL_DIRECTORY}/rxkad.keytab"
       {%- endif %}
-      {%- for e in cookiecutter.extra_vars.split(',') %}
+      {%- if cookiecutter.extra_vars %}
+        {%- for e in cookiecutter.extra_vars.split(',') %}
         {{ e | replace(':', ': ') }}
-      {%- endfor %}
+        {%- endfor %}
+      {%- endif %}
 verifier:
   name: ansible
 scenario:

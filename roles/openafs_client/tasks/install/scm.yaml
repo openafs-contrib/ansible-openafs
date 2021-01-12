@@ -21,8 +21,8 @@
   block:
     - name: Checkout source code
       git:
-        repo: "{{ afs_scm_gitrepo }}"
-        version: "{{ afs_scm_gitref }}"
+        repo: "{{ afs_git_repo }}"
+        version: "{{ afs_git_version }}"
         dest: ~/openafs
       register: checkout_results
 
@@ -62,8 +62,8 @@
 
 - name: Checkout source code
   git:
-    repo: "{{ afs_scm_gitrepo }}"
-    version: "{{ afs_scm_gitref }}"
+    repo: "{{ afs_git_repo }}"
+    version: "{{ afs_git_version }}"
     dest: ~/openafs-module
   register: checkout_module_results
 

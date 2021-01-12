@@ -11,14 +11,29 @@
     - ansible_selinux | type_debug == 'dict'
     - ansible_selinux.status == 'enabled'
 
-- import_role:
-    name: openafs_common
-    tasks_from: upload_bdist
+- name: Verify the path to the installation tarball is specified
+  assert:
+    that:
+      - afs_install_archive is defined
+      - afs_install_archive != ''
+
+- debug:
+    msg: "Installing {{ afs_install_archive }}"
+
+- name: Create directory
+  file:
+    state: directory
+    path: "{{ afs_tmpdir }}/install"
+
+- name: Upload binary distribution
+  unarchive:
+    src: "{{ afs_install_archive }}"
+    dest: "{{ afs_tmpdir }}/install/"
 
 - name: Install binary distribution
   become: yes
   openafs_install_bdist:
-    path: /tmp/ansible-openafs/bdist
+    path: "{{ afs_tmpdir }}/install"
     log_level: debug
     components:
       - common

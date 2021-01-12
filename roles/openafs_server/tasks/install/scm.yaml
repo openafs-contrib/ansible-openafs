@@ -16,8 +16,8 @@
 
 - name: Checkout source code
   git:
-    repo: "git://git.openafs.org/openafs.git"
-    version: "master"
+    repo: "{{ afs_git_repo }}"
+    version: "{{ afs_git_version }}"
     dest: ~/openafs
   register: checkout_results
 

@@ -75,6 +75,8 @@
        or cookiecutter.with_robotest == 'yes' %}
 - name: Converge
   hosts: all
+  vars:
+    builds: {{ cookiecutter.builds }}
   tasks:
   {%- if cookiecutter.with_devel == 'yes' %}
     - import_role:
@@ -82,17 +84,26 @@
   {%- endif %}
   {%- if cookiecutter.build in ('bdist', 'rpms') %}
 
+    {%- raw %}
     - name: Checkout source
       git:
-        repo: "git://git.openafs.org/openafs.git"
-        version: "master"
+        repo: "{{ afs_git_repo }}"
+        version: "{{ afs_git_version }}"
         dest: ~/openafs
+    {%- endraw %}
   {%- endif %}
   {%- if cookiecutter.build == 'bdist' %}
 
+    - name: Get version string
+      command:
+        cmd: build-tools/git-version .
+        chdir: ~/openafs
+      changed_when: false
+      register: git_version
+
     - name: Build binary distribution
       openafs_build:
-        {%- if cookiecutter.bdist_flavor == 'transarc' %}
+        {%- if cookiecutter.bdist_style == 'transarc' %}
         target: dest
         {%- else %}
         target: install
@@ -105,30 +116,40 @@
             - debug
             - debug-kernel
             - kernel-module
-            {%- if cookiecutter.bdist_flavor == 'transarc' %}
+            {%- if cookiecutter.bdist_style == 'transarc' %}
             - transarc-paths
             {%- endif %}
           with:
             - linux-kernel-packaging
       register: build_results
 
+    - set_fact:
+        {%- raw %}
+        osdist: "{{ ansible_distribution | lower + ansible_distribution_major_version }}"
+        arch: "{{ ansible_architecture }}"
+        version: "{{ git_version.stdout | replace('-', '_') }}"
+        {%- endraw %}
+        {%- if cookiecutter.build == 'bdist' %}
+        afsdist: bdist_{{ cookiecutter.bdist_style }}
+        {%- else %}
+        afsdist: {{ cookiecutter.build }}
+        {%- endif %}
+
     {%- raw %}
     - set_fact:
-        dist: "{{ ansible_distribution | lower + ansible_distribution_major_version }}"
-        arch: "{{ ansible_architecture }}"
-        tarball: "openafs-{{ build_results.version }}.tar.gz"
+        tarball: "openafs-{{ version }}-{{ osdist }}-{{ arch }}-{{ afsdist }}.tar.gz"
 
-    - name: Create tarball
+    - name: Create archive
       archive:
         path: "~/openafs/packaging/dest/"
-        dest: "/tmp/{{ tarball }}"
+        dest: "{{ tarball }}"
         format: gz
 
     - name: Download
       fetch:
         flat: yes
-        src: "/tmp/{{ tarball }}"
-        dest: "{{ afs_bdist_dir }}/{{ dist }}/{{ arch }}/{{ tarball }}"
+        src: "{{ tarball }}"
+        dest: "{{ builds }}/"
       register: fetch_results
 
     - name: Downloaded
@@ -136,7 +157,14 @@
         var: fetch_results.dest
     {%- endraw %}
   {%- elif cookiecutter.build == 'rpms' %}
+
     {%- raw %}
+    - name: Get version string
+      command:
+        cmd: build-tools/git-version .
+        chdir: ~/openafs
+      changed_when: false
+      register: git_version
 
     - name: Autoconf
       command:
@@ -162,8 +190,9 @@
     - name: Set build facts
       set_fact:
         workspace: "{{ mkdir_results.path }}"
-        dist: "{{ ansible_distribution | lower + ansible_distribution_major_version }}"
+        dist: "{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"
         arch: "{{ ansible_architecture }}"
+        version: "{{ git_version.stdout | replace('-', '_') }}"
 
     - name: Build RPMs
       shell:
@@ -174,27 +203,64 @@
     - debug:
         msg: "{{ rpmbuild_results.stdout_lines[-20:] }}"
 
-    - find:
-        paths: "{{ workspace }}/RPMS"
-        recurse: yes
-        file_type: file
-        patterns: "*.rpm"
-      register: find_results
+    - name: Create archive
+      archive:
+        path: "{{ workspace }}/RPMS/{{ ansible_architecture }}/*.rpm"
+        dest: "openafs-{{ version }}-{{ dist }}-{{ arch }}.rpms.tar.gz"
+        format: gz
 
-    - set_fact:
-        rpms: "{{ find_results.files | map(attribute='path') | list }}"
-
-    - name: Download RPMs
+    - name: Download
       fetch:
         flat: yes
-        src: "{{ item }}"
-        dest: "{{ afs_rpm_dir }}/{{ dist }}/{{ arch }}/"
-      with_items: "{{ rpms }}"
+        src: "openafs-{{ version }}-{{ dist }}-{{ arch }}.rpms.tar.gz"
+        dest: "{{ builds }}/"
       register: fetch_results
 
     - name: Downloaded
       debug:
-        msg: "{{ fetch_results.results | map(attribute='dest') | list }}"
+        msg: "{{ fetch_results.dest }}"
+    {%- endraw %}
+  {%- endif %}
+  {%- if cookiecutter.im in ('bdist', 'rpms') %}
+
+    - name: Lookup install tarball
+      when: afs_install_archive is undefined or afs_install_archive == ''
+      block:
+        - set_fact:
+            {%- raw %}
+            osdist: "{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"
+            arch: "{{ ansible_architecture }}"
+            {%- endraw %}
+            {%- if cookiecutter.im == 'bdist' %}
+            afsdist: bdist-{{ cookiecutter.bdist_style }}
+            {%- else %}
+            afsdist: {{ cookiecutter.im }}
+            {%- endif %}
+
+        {%- raw %}
+        - name: Lookup install tarballs
+          local_action:
+            module: find
+            path: "{{ builds }}"
+            patterns: "openafs-{{ afs_version | d('*') }}-{{ osdist }}-{{ arch }}.{{ afsdist }}.tar.gz"
+          register: find_results
+
+        - set_fact:
+            tarballs: "{{ find_results.files | map(attribute='path') | list | sort(reverse=True, case_sensitive=True) }}"
+
+        #- debug:
+        #    var: tarballs
+
+        - name: Verify install tarball was found
+          assert:
+            that: tarballs | count > 0
+            msg: "No binary distribution archives found in controller directory '{{ builds }}."
+
+        - set_fact:
+            afs_install_archive: "{{ tarballs[0] }}"
+
+        - debug:
+            var: afs_install_archive
     {%- endraw %}
   {%- endif %}
   {%- if cookiecutter.with_common == 'yes' %}
