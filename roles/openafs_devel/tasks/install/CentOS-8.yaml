@@ -23,9 +23,11 @@
       - glibc-devel
       - kernel-devel
       - krb5-devel
+      - libevent-devel
       - libtool
       - make
       - ncurses-devel
+      - openssl-devel
       - pam-devel
       - perl-devel
       - perl-ExtUtils-Embed
