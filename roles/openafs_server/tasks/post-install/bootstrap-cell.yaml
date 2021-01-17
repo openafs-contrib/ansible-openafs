@@ -22,6 +22,7 @@
   openafs_wait_for_registration:
     sleep: 10
     timeout: 600
+    signal: "{{ afs_registration_retry_signal | d('no') | bool }}"
   when:
     - afs_is_fileserver
 
