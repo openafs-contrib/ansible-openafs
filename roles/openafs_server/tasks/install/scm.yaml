@@ -21,17 +21,22 @@
     dest: ~/openafs
   register: checkout_results
 
+# Note: Build the kernel module too in case we also want
+#       to import the client role later. Doing a separate
+#       build later leads to issues with common libraries.
 - name: Build OpenAFS binaries
   openafs_build:
-    target: install_nolibafs
+    target: install
     clean: "{{ checkout_results.changed }}"
     projectdir: ~/openafs
     destdir: ~/openafs/packaging/dest
     configure_options:
       enable:
         - debug
-      disable:
-        - kernel-module
+        - debug-kernel
+        - kenel-module
+      with:
+        - linux-kernel-packaging
   register: build_results
 
 - name: Build results
@@ -53,6 +58,7 @@
       install_method: "{{ afs_install_method }}"
       server_installed: yes
       server_service_name: openafs-server
+      destdir: "{{ build_results.destdir }}"
       bins: "{{ install_results.bins }}"
       dirs: "{{ install_results.dirs }}"
 

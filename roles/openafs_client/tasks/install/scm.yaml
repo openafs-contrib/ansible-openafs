@@ -14,10 +14,8 @@
 - import_role:
     name: openafs_devel
 
-- name: Build userspace binaries
-  when: >
-    ansible_local.openafs.server_installed is undefined
-    or ansible_local.openafs.server_installed == 'no'
+- name: Build
+  when: ansible_local.openafs.destdir is undefined
   block:
     - name: Checkout source code
       git:
@@ -28,21 +26,26 @@
 
     - name: Build OpenAFS binaries
       openafs_build:
-        state: built
-        target: install_nolibafs
+        state: built-module
+        target: install
         clean: "{{ checkout_results.changed }}"
         projectdir: ~/openafs
         destdir: ~/openafs/packaging/dest
         configure_options:
           enable:
             - debug
-          disable:
-            - kernel-module
+            - debug-kernel
+            - kenel-module
+          with:
+            - linux-kernel-packaging
       register: build_results
 
     - name: Build results
       debug:
         var: build_results
+
+    - set_fact:
+        destdir: "{{ build_results.destdir }}"
 
     - name: Install binaries
       become: yes
@@ -56,55 +59,14 @@
       openafs_store_facts:
         state: update
         facts:
+          client_installed: yes
           install_method: "{{ afs_install_method }}"
+          client_service_name: openafs-client
+          client_options: "{{ afs_afsd_opts }}"
+          local_build: yes
+          destdir: "{{ build_results.destdir }}"
           bins: "{{ install_results.bins }}"
           dirs: "{{ install_results.dirs }}"
-
-- name: Checkout source code
-  git:
-    repo: "{{ afs_git_repo }}"
-    version: "{{ afs_git_version }}"
-    dest: ~/openafs-module
-  register: checkout_module_results
-
-- name: Build OpenAFS module
-  openafs_build:
-    state: built-module
-    target: install_only_libafs
-    clean: "{{ checkout_module_results.changed }}"
-    projectdir: ~/openafs-module
-    destdir: ~/openafs/packaging/dest
-    configure_options:
-      enable:
-        - debug
-        - debug-kernel
-        - kenel-module
-      with:
-        - linux-kernel-packaging
-  register: build_module_results
-
-- name: Build module results
-  debug:
-    var: build_module_results
-
-- name: Install module binaries
-  become: yes
-  openafs_install_bdist:
-    path: "{{ build_module_results.destdir }}"
-    log_level: debug
-  register: install_module_results
-
-- name: Store installation facts
-  become: yes
-  openafs_store_facts:
-    state: update
-    facts:
-      install_method: "{{ afs_install_method }}"
-      client_installed: yes
-      client_service_name: openafs-client
-      client_options: "{{ afs_afsd_opts }}"
-      bins: "{{ install_module_results.bins }}"
-      dirs: "{{ install_module_results.dirs }}"
 
 - name: Setup systemd service
   become: yes

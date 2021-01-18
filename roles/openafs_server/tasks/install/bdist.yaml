@@ -35,9 +35,6 @@
   openafs_install_bdist:
     path: "{{ afs_tmpdir }}/install"
     log_level: debug
-    components:
-      - common
-      - server
   register: install_results
 
 - name: Store installation facts

@@ -253,7 +253,7 @@ def main():
     )
     module = AnsibleModule(
         argument_spec=dict(
-            path=dict(type='path', required=True),
+            path=dict(type='path', required=True, aliases=['destdir']),
             exclude=dict(type='list', default=[]),
             sysname=dict(type='str', default=None),
             components=dict(type='list', default=['common', 'client', 'server']),
