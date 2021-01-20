@@ -49,6 +49,7 @@ is `managed`. Supported values are:
 * `bdist`: Install prebuilt binaries, modern or transarc paths.
 * `sdist`: Source distribution
 * `scm`: Checkout source code, build and install binaries.
+* `none`: Skip installation tasks
 
 ## `managed` installation method variables
 

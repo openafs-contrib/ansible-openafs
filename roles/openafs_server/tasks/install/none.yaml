@@ -1,0 +1,25 @@
+---
+#
+# Assume the OpenAFS binaries have already been installed
+# manually.  To use this method, be sure the binaries
+# have been installed, the service has been setup to start
+# the server processes (e.g., the systemd unit file), and
+# the installation facts have been written to the openafs.fact
+# file (json format).
+#
+
+- assert:
+    that:
+      - ansible_local.openafs is defined
+      - ansible_local.openafs.server_service_name is defined
+      - ansible_local.openafs.dirs is defined
+      - ansible_local.openafs.bins is defined
+    msg: Please define local facts when using 'none' install method.
+
+- name: Store installation facts
+  become: yes
+  openafs_store_facts:
+    state: update
+    facts:
+      install_method: none
+      server_installed: yes
