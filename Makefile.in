@@ -12,7 +12,9 @@ help:
 	@echo "  test        run unit and molecule tests"
 	@echo "  scenarios   generate molecule scenarios"
 	@echo "  build       build ansible galaxy collection"
-	@echo "  clean       remove generated files and virtualenv"
+	@echo "  reset       reset molecule temporary directories"
+	@echo "  clean       remove generated files"
+	@echo "  distclean   remove generated files and virtualenv"
 
 .venv/bin/activate: Makefile requirements.txt
 	test -d .venv || $(PYTHON) -m venv .venv
@@ -34,7 +36,7 @@ lint:
 	$(MAKE) -C roles/openafs_client lint
 	$(MAKE) -C roles/openafs_robolint test
 
-scenarios:
+molecule scenarios:
 	for r in roles/*; do $(MAKE) -C $$r molecule; done
 	$(MAKE) -C tests/playbooks molecule
 
@@ -55,10 +57,16 @@ test-roles:
 test-playbooks:
 	$(MAKE) -C tests/playbooks test
 
-clean:
+reset:
+	for r in roles/*; do $(MAKE) -C $$r reset; done
+	$(MAKE) -C tests/playbooks reset
+
+clean: reset
 	rm -rf roles/*/molecule
 	rm -rf roles/*/Makefile
 	rm -rf tests/playbooks/molecule
 	rm -rf tests/playbooks/Makefile
-	rm -rf .venv
 	rm -f Makefile
+
+distclean: clean
+	rm -rf .venv

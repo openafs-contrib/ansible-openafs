@@ -15,8 +15,8 @@ help:
 	@echo "  lint        run lint checks"
 	@echo "  test        run molecule scenarios"
 	@echo "  molecule    generate molecule scenarios"
+	@echo "  reset       reset molecule temporary directories"
 	@echo "  clean       remove molecule scenarios"
-	@echo ""
 
 lint:
 	pyflakes library/*.py
@@ -30,5 +30,12 @@ molecule: Makefile
 	$(COOK) name=default
 	touch molecule
 
-clean:
+reset:
+	@if [ -d molecule ]; then \
+		for s in `ls molecule`; do \
+			molecule reset -s $$s; \
+		done \
+	fi
+
+clean: reset
 	rm -rf molecule

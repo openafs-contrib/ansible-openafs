@@ -15,8 +15,8 @@ help:
 	@echo "  lint        run lint checks"
 	@echo "  test        run molecule scenarios"
 	@echo "  molecule    generate molecule scenarios"
+	@echo "  reset       reset molecule temporary directories"
 	@echo "  clean       remove molecule scenarios"
-	@echo ""
 
 lint:
 	pyflakes library/*.py
@@ -52,5 +52,12 @@ molecule: Makefile
 	  groups=afs_kdcs:1+afs_databases:1,2,3+afs_fileservers:1,2,3
 	touch molecule
 
-clean:
+reset:
+	@if [ -d molecule ]; then \
+		for s in `ls molecule`; do \
+			molecule reset -s $$s; \
+		done \
+	fi
+
+clean: reset
 	rm -rf molecule
