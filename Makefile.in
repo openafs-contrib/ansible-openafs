@@ -10,7 +10,6 @@ help:
 	@echo "  init        install virtualenv"
 	@echo "  lint        run lint checks"
 	@echo "  test        run unit and molecule tests"
-	@echo "  doc         generate documents"
 	@echo "  scenarios   generate molecule scenarios"
 	@echo "  build       build ansible galaxy collection"
 	@echo "  clean       remove generated files and virtualenv"
@@ -25,14 +24,6 @@ init: .venv/bin/activate
 
 build: init
 	ansible-galaxy collection build
-
-doc: init
-	@mkdir -p docs/modules
-	for m in roles/*/library/*.py; do \
-		modulepath=`dirname $$m`; \
-		modulename=`basename $$m .py`; \
-		ansible-doc -M $${modulepath} -t module $${modulename} > docs/modules/$${modulename}.txt; \
-	done
 
 lint:
 	$(MAKE) -C roles/openafs_krbserver lint
