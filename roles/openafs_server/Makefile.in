@@ -32,6 +32,7 @@ molecule: Makefile
 	$(COOK) name=cen7-selinux        os=centos7 selinux_mode=enforcing
 	$(COOK) name=cen7-rpm            os=centos7 im=packages
 	$(COOK) name=cen7-bdist          os=centos7 im=bdist
+	$(COOK) name=cen7-sdist          os=centos7 im=sdist
 	$(COOK) name=cen7-scm            os=centos7 im=scm
 	$(COOK) name=cen8                os=centos8
 	$(COOK) name=cen8-rpm            os=centos8 im=packages

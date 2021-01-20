@@ -16,7 +16,7 @@
     "instance_cpus": 1,
     "update_kernel": "no",
     "selinux_mode": ["permissive", "disabled", "enforcing"],
-    "im": ["default", "managed", "packages", "bdist", "scm"],
+    "im": ["default", "managed", "packages", "bdist", "sdist", "scm"],
     "im_module": ["dkms", "kmod"],
     "build": ["none", "bdist", "rpms"],
     "builds": "~/.cache/ansible-openafs/builds",

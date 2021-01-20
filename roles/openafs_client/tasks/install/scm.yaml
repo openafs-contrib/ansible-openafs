@@ -59,14 +59,19 @@
       openafs_store_facts:
         state: update
         facts:
+          install_method: scm
           client_installed: yes
-          install_method: "{{ afs_install_method }}"
-          client_service_name: openafs-client
-          client_options: "{{ afs_afsd_opts }}"
-          local_build: yes
           destdir: "{{ build_results.destdir }}"
           bins: "{{ install_results.bins }}"
           dirs: "{{ install_results.dirs }}"
+
+- name: Store installation facts
+  become: yes
+  openafs_store_facts:
+    state: update
+    facts:
+      client_service_name: openafs-client
+      client_options: "{{ afs_afsd_opts }}"
 
 - name: Setup systemd service
   become: yes

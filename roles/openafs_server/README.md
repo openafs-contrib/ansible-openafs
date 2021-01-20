@@ -67,6 +67,7 @@ is `managed`. Supported values are:
 * `managed`: Install with the distro's package manager, e.g., `yum`, `apt`.
 * `packages`: Install prebuilt packages, e.g. `rpm`
 * `bdist`: Install prebuilt binaries, modern or transarc paths.
+* `sdist`: Source distribution
 * `scm`: Checkout source code, build and install binaries.
 
 # `managed` installation method variables
@@ -75,12 +76,12 @@ is `managed`. Supported values are:
 
 Path to a yum repository containing OpenAFS packages.
 
-## `packages` and `bdist` method variables
+## `packages`,  `bdist`, and `sdist` method variables
 
     afs_install_archive:
 
 Path to the compressed archive containing the installation files. Must be set
-if the installation method is `packages` or `bdist`.
+if the installation method is `packages`, `bdist`, or `sdist`.
 
 ## `scm` installation method variables
 

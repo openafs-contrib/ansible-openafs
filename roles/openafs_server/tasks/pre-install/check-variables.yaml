@@ -5,7 +5,7 @@
   assert:
     that:
       - afs_install_method is defined
-      - afs_install_method in ['managed', 'packages', 'bdist', 'scm']
+      - afs_install_method in ['managed', 'packages', 'bdist', 'sdist', 'scm']
 
 - name: Install method consistency check
   fail:

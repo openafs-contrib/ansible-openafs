@@ -115,10 +115,10 @@ provisioner:
       {%- if cookiecutter.im != 'default' %}
         afs_install_method: {{ cookiecutter.im }}
       {%- endif %}
-      {%- if cookiecutter.im in ('bdist', 'rpms') %}
-        afs_install_archive: "${AFS_INSTALL_TARBALL}"
+      {%- if cookiecutter.im in ('rpms', 'bdist', 'sdist') %}
+        afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
       {%- endif %}
-      {%- if cookiecutter.im == 'scm' or cookiecutter.build in ('bdist', 'rpms') %}
+      {%- if cookiecutter.im == 'scm' or cookiecutter.build in ('rpms', 'bdist', 'sdist') %}
         afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"
         afs_git_version: "${AFS_GET_VERSION:-master}"
       {%- endif %}

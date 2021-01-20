@@ -21,7 +21,7 @@ afs_install_method: managed
 afs_yum_repo: "https://download.sinenomine.net/openafs/rpms/el$releasever/$basearch"
 
 # Path to installation tarball on controller for non-managed installs.
-afs_install_archive:
+afs_install_archive: ""
 
 # Git repository and branch info for builds and scm based installs.
 afs_git_repo: "git://git.openafs.org/openafs.git"

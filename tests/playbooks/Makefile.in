@@ -40,12 +40,37 @@ molecule: Makefile
 	          number_instances=1 \
 	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
 	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	$(COOK) name=cell-single-sdist \
+	          im=sdist \
+	          number_instances=1 \
+	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
+	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
 	$(COOK) name=cell-nodynroot \
 	          number_instances=1 \
 	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
 	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml \
 			  extra_vars=afs_afsd_opts:-debug
-	$(COOK) name=cell-cluster-1 \
+	$(COOK) name=cell-cluster-managed \
+	          number_instances=6 \
+			  groups=afs_kdcs:1+afs_databases:1+afs_fileservers:2,3+afs_admin:4+afs_clients:4,5,6 \
+			  extra_vars=afs_kdc_servers:m-playbooks-01,afs_kadmin_server:m-playbooks-01 \
+	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	$(COOK) name=cell-cluster-packages im=packages \
+	          number_instances=6 \
+			  groups=afs_kdcs:1+afs_databases:1+afs_fileservers:2,3+afs_admin:4+afs_clients:4,5,6 \
+			  extra_vars=afs_kdc_servers:m-playbooks-01,afs_kadmin_server:m-playbooks-01 \
+	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	$(COOK) name=cell-cluster-bdist im=bdist \
+	          number_instances=6 \
+			  groups=afs_kdcs:1+afs_databases:1+afs_fileservers:2,3+afs_admin:4+afs_clients:4,5,6 \
+			  extra_vars=afs_kdc_servers:m-playbooks-01,afs_kadmin_server:m-playbooks-01 \
+	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	$(COOK) name=cell-cluster-sdist im=sdist \
+	          number_instances=6 \
+			  groups=afs_kdcs:1+afs_databases:1+afs_fileservers:2,3+afs_admin:4+afs_clients:4,5,6 \
+			  extra_vars=afs_kdc_servers:m-playbooks-01,afs_kadmin_server:m-playbooks-01 \
+	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	$(COOK) name=cell-cluster-scm im=scm \
 	          number_instances=6 \
 			  groups=afs_kdcs:1+afs_databases:1+afs_fileservers:2,3+afs_admin:4+afs_clients:4,5,6 \
 			  extra_vars=afs_kdc_servers:m-playbooks-01,afs_kadmin_server:m-playbooks-01 \
