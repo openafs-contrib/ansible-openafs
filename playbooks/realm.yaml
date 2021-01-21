@@ -24,11 +24,11 @@
       fetch:
         flat: yes
         src: "{{ service_key.keytab }}"
-        dest: "{{ afs_local_dir }}/rxkad.keytab"
+        dest: "{{ afs_cell_files }}/rxkad.keytab"
 
     - name: Download admin keytab
       become: yes
       fetch:
         flat: yes
         src: "/var/lib/ansible-openafs/keytabs/{{ afs_admin_principal }}.keytab"
-        dest: "{{ afs_local_dir }}/{{ afs_admin_principal | replace('/', '.') }}.keytab"
+        dest: "{{ afs_cell_files }}/{{ afs_admin_principal | replace('/', '.') }}.keytab"

@@ -1,6 +1,6 @@
 ---
 # Kerberos and AFS admin password (read from a local file by default).
-afs_admin_password: "{{ lookup('password', afs_local_dir+'/afs_admin_password chars=ascii_letters,digits,hexdigits length=15') }}"
+afs_admin_password: "{{ lookup('password', afs_cell_files+'/afs_admin_password chars=ascii_letters,digits,hexdigits length=15') }}"
 
 # Install a webserver to publish test results; yes or no
 afs_robotest_install_webserver: yes

@@ -76,7 +76,7 @@
   fetch:
     flat: yes
     src: "{{ admin_principal_results.keytab }}"
-    dest: "{{ afs_local_dir}}/admin.keytab"
+    dest: "{{ afs_cell_files}}/admin.keytab"
   register: download_results
 
 - debug:

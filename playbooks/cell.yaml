@@ -2,7 +2,7 @@
 - name: Create CellServDB
   hosts: afs_databases
   vars:
-    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+    afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
   tasks:
     - import_role:
         name: openafs_common
@@ -11,7 +11,7 @@
 - name: Install servers
   hosts: afs_databases:afs_fileservers
   vars:
-    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+    afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
     afs_partitions:
       - a
       - b
@@ -21,7 +21,7 @@
 - name: Install clients
   hosts: afs_clients
   vars:
-    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+    afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
   roles:
     - openafs_krbclient
     - openafs_client
@@ -29,14 +29,14 @@
 - name: Setup new cell
   hosts: afs_admin
   vars:
-    afs_csdb_file: "{{ afs_local_dir }}/csdb.yaml"
+    afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
   roles:
     - openafs_krbclient
     - openafs_client
   tasks:
     - name: Upload admin keytab
       copy:
-        src: "{{ afs_local_dir }}/admin.keytab"
+        src: "{{ afs_cell_files }}/admin.keytab"
         dest: admin.keytab
 
     - name: Create top-level volumes

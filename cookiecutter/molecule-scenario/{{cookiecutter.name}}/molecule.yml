@@ -111,7 +111,7 @@ provisioner:
     group_vars:
       all:
         afs_cell: example.com
-        afs_local_dir: "${MOLECULE_EPHEMERAL_DIRECTORY}"
+        afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
       {%- if cookiecutter.im != 'default' %}
         afs_install_method: {{ cookiecutter.im }}
       {%- endif %}
