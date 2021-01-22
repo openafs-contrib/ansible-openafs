@@ -50,6 +50,12 @@ molecule: Makefile
 	  im=bdist \
 	  number_instances=3 \
 	  groups=afs_kdcs:1+afs_databases:1,2,3+afs_fileservers:1,2,3
+	$(COOK) \
+	  name=cluster-2 \
+	  os=centos7 \
+	  im=bdist \
+	  number_instances=5 \
+	  groups=afs_kdcs:1+afs_databases:1,2,3+afs_fileservers:4,5
 	touch molecule
 
 reset:

@@ -109,6 +109,12 @@ Determines which fileserver variation is setup when the host is a member of the
 modern demand-attach fileserver (`dafs`). The demand-attach (`dafs`) variant is
 the default.
 
+    afs_server_cold_start: detect
+
+Set to 'yes' to defer fileserver startup until database quorom is detected.
+Set to 'no' to skip cold start checks and tasks.
+Default is to detect by checking for the presence of the BosConfig file.
+
     afs_bosserver_opts:
     afs_ptserver_opts:
     afs_vlserver_opts:

@@ -17,6 +17,14 @@
   when:
     - afs_is_dbserver
 
+- name: "Fileserver cold start"
+  become: yes
+  command:
+    cmd: "{{ afs_bos }} start -server localhost -instance {{ afs_fileserver_type }} -localauth"
+  when:
+    - afs_is_fileserver
+    - afs_server_cold_start
+
 - name: Wait for fileserver registration
   become: yes
   openafs_wait_for_registration:

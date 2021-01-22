@@ -14,6 +14,12 @@ afs_is_fileserver: "{{ 'afs_fileservers' in group_names }}"
 # Is this host a database server?
 afs_is_dbserver: "{{ 'afs_databases' in group_names }}"
 
+# Fileserver cold start.
+# Set to 'yes' to defer fileserver startup until database quorom is detected.
+# Set to 'no' to skip cold start tasks.
+# Default is to detect by checking for the presence of the BosConfig file.
+afs_server_cold_start: detect
+
 # fileserver partitions
 afs_partitions:
   - a

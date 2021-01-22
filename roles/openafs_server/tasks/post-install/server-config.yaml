@@ -14,6 +14,20 @@
 # and load the new configuration.
 #
 
+- name: Check for cold start
+  when: afs_server_cold_start is undefined or afs_server_cold_start == 'detect'
+  block:
+    - name: Check for cold start
+      become: yes
+      stat:
+        path: "{{ afs_afsbosconfigdir }}/BosConfig"
+      register: bosconfig_stat
+    - set_fact:
+        afs_server_cold_start: "{{ not bosconfig_stat.stat.exists }}"
+
+- debug:
+    var: afs_server_cold_start
+
 - name: Create configuration directories
   become: yes
   file:
