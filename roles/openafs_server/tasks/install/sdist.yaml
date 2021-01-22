@@ -31,7 +31,7 @@
     loop_var: item_dir
   with_items:
     - "{{ afs_tmpdir }}/install"
-    - ~/openafs
+    - "{{ afs_topdir }}"
 
 - name: Upload source distribution
   unarchive:
@@ -50,14 +50,14 @@
   unarchive:
     remote_src: yes
     src: "{{ item_archive }}"
-    dest: ~/openafs
+    dest: "{{ afs_topdir }}"
   loop_control:
     loop_var: item_archive
   with_items: "{{ tarballs }}"
   register: unarchive_results
 
 - find:
-    path: ~/openafs/
+    path: "{{ afs_topdir }}/"
     file_type: directory
     patterns: "openafs*"
   register: find_results

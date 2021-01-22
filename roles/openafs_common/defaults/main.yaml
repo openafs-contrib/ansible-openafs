@@ -14,7 +14,10 @@ afs_logdir: /var/log/ansible-openafs
 # Temporary directory on remote nodes.
 afs_tmpdir: /tmp/ansible-openafs
 
-# Installation method; one of; managed, package, bdist, scm
+# Project build directory on remote nodes.
+afs_topdir: ~/openafs
+
+# Installation method; one of; managed, package, bdist, sdist, scm, none
 afs_install_method: managed
 
 # Yum repository url or path for 'managed' installs on yum based systems.

@@ -122,6 +122,11 @@ provisioner:
         afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"
         afs_git_version: "${AFS_GET_VERSION:-master}"
       {%- endif %}
+      {%- if cookiecutter.im in ('scm', 'sdist') %}
+        {%- if cookiecutter.topdir != '~/openafs' %}
+        afs_topdir: "{{ cookiecutter.topdir }}"
+        {%- endif %}
+      {%- endif %}
       {%- if cookiecutter.with_server == 'yes' %}
         afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
       {%- endif %}

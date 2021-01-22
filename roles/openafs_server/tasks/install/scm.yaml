@@ -18,7 +18,7 @@
   git:
     repo: "{{ afs_git_repo }}"
     version: "{{ afs_git_version }}"
-    dest: ~/openafs
+    dest: "{{ afs_topdir }}"
   register: checkout_results
 
 # Note: Build the kernel module too in case we also want
@@ -28,8 +28,8 @@
   openafs_build:
     target: install
     clean: "{{ checkout_results.changed }}"
-    projectdir: ~/openafs
-    destdir: ~/openafs/packaging/dest
+    projectdir: "{{ afs_topdir }}"
+    destdir: "{{ afs_topdir }}/packaging/dest"
     configure_options:
       enable:
         - debug

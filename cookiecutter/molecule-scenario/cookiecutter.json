@@ -20,6 +20,7 @@
     "im_module": ["dkms", "kmod"],
     "build": ["none", "bdist", "rpms"],
     "builds": "~/.cache/ansible-openafs/builds",
+    "topdir": "~/openafs",
     "bdist_style": ["modern", "transarc"],
     "service_keytab": "files/example-aes.keytab",
     "check_dependency": "no",

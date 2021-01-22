@@ -75,8 +75,6 @@
        or cookiecutter.with_robotest == 'yes' %}
 - name: Converge
   hosts: all
-  vars:
-    builds: {{ cookiecutter.builds }}
   tasks:
   {%- if cookiecutter.with_devel == 'yes' %}
     - import_role:
@@ -84,20 +82,18 @@
   {%- endif %}
   {%- if cookiecutter.build in ('bdist', 'rpms') %}
 
-    {%- raw %}
     - name: Checkout source
       git:
-        repo: "{{ afs_git_repo }}"
-        version: "{{ afs_git_version }}"
-        dest: ~/openafs
-    {%- endraw %}
+        repo: {% raw %}"{{ afs_git_repo }}"{% endraw %}
+        version: {% raw %}"{{ afs_git_version }}"{% endraw %}
+        dest: "{{ cookiecutter.topdir }}"
   {%- endif %}
   {%- if cookiecutter.build == 'bdist' %}
 
     - name: Get version string
       command:
         cmd: build-tools/git-version .
-        chdir: ~/openafs
+        chdir: "{{ cookiecutter.topdir }}"
       changed_when: false
       register: git_version
 
@@ -109,8 +105,8 @@
         target: install
         {%- endif %}
         clean: yes
-        projectdir: ~/openafs
-        destdir: ~/openafs/packaging/dest
+        projectdir: "{{ cookiecutter.topdir }}"
+        destdir: "{{ cookiecutter.topdir }}/packaging/dest"
         configure_options:
           enable:
             - debug
@@ -124,102 +120,96 @@
       register: build_results
 
     - set_fact:
-        {%- raw %}
-        osdist: "{{ ansible_distribution | lower + ansible_distribution_major_version }}"
-        arch: "{{ ansible_architecture }}"
-        version: "{{ git_version.stdout | replace('-', '_') }}"
-        {%- endraw %}
+        osdist: {% raw %}"{{ ansible_distribution | lower + ansible_distribution_major_version }}"{% endraw %}
+        arch: {% raw %}"{{ ansible_architecture }}"{% endraw %}
+        version: {% raw %}"{{ git_version.stdout | replace('-', '_') }}"{% endraw %}
         {%- if cookiecutter.build == 'bdist' %}
         afsdist: bdist_{{ cookiecutter.bdist_style }}
         {%- else %}
         afsdist: {{ cookiecutter.build }}
         {%- endif %}
 
-    {%- raw %}
     - set_fact:
-        tarball: "openafs-{{ version }}-{{ osdist }}-{{ arch }}.{{ afsdist }}.tar.gz"
+        tarball: {% raw %}"openafs-{{ version }}-{{ osdist }}-{{ arch }}.{{ afsdist }}.tar.gz"{% endraw %}
 
     - name: Create archive
       archive:
-        path: "~/openafs/packaging/dest/"
-        dest: "{{ tarball }}"
+        path: "{{ cookiecutter.topdir }}/packaging/dest/"
+        dest: {% raw %}"{{ tarball }}"{% endraw %}
         format: gz
 
     - name: Download
       fetch:
         flat: yes
-        src: "{{ tarball }}"
-        dest: "{{ builds }}/"
+        src: {% raw %}"{{ tarball }}"{% endraw %}
+        dest: "{{ cookiecutter.builds }}/"
       register: fetch_results
 
     - name: Downloaded
       debug:
         var: fetch_results.dest
-    {%- endraw %}
   {%- elif cookiecutter.build == 'rpms' %}
 
-    {%- raw %}
     - name: Get version string
       command:
         cmd: build-tools/git-version .
-        chdir: ~/openafs
+        chdir: "{{ cookiecutter.topdir }}"
       changed_when: false
       register: git_version
 
     - name: Autoconf
       command:
         cmd: ./regen.sh
-        chdir: ~/openafs
+        chdir: "{{ cookiecutter.topdir }}"
 
     - name: Generate makefile
       command:
         cmd: ./configure --disable-kernel-module
-        chdir: ~/openafs
+        chdir: "{{ cookiecutter.topdir }}"
 
     - name: Create source RPM
       command:
         cmd: make dist srpm
-        chdir: ~/openafs
+        chdir: "{{ cookiecutter.topdir }}"
 
     - name: Create rpmbuild workspace
       file:
         state: directory
-        path: ~/openafs/packages/rpmbuild
+        path: "{{ cookiecutter.topdir }}/packages/rpmbuild"
       register: mkdir_results
 
     - name: Set build facts
       set_fact:
-        workspace: "{{ mkdir_results.path }}"
-        dist: "{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"
-        arch: "{{ ansible_architecture }}"
-        version: "{{ git_version.stdout | replace('-', '_') }}"
+        workspace: {% raw %}"{{ mkdir_results.path }}"{% endraw %}
+        dist: {% raw %}"{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"{% endraw %}
+        arch: {% raw %}"{{ ansible_architecture }}"{% endraw %}
+        version: {% raw %}"{{ git_version.stdout | replace('-', '_') }}"{% endraw %}
 
     - name: Build RPMs
       shell:
-        cmd: rpmbuild --rebuild --define "_topdir {{ workspace }}" packages/openafs-*.src.rpm
-        chdir: ~/openafs
+        cmd: {% raw %}rpmbuild --rebuild --define "_topdir {{ workspace }}" packages/openafs-*.src.rpm{% endraw %}
+        chdir: "{{ cookiecutter.topdir }}"
       register: rpmbuild_results
 
     - debug:
-        msg: "{{ rpmbuild_results.stdout_lines[-20:] }}"
+        msg: {% raw %}"{{ rpmbuild_results.stdout_lines[-20:] }}"{% endraw %}
 
     - name: Create archive
       archive:
-        path: "{{ workspace }}/RPMS/{{ ansible_architecture }}/*.rpm"
-        dest: "openafs-{{ version }}-{{ dist }}-{{ arch }}.rpms.tar.gz"
+        path: {% raw %}"{{ workspace }}/RPMS/{{ ansible_architecture }}/*.rpm"{% endraw %}
+        dest: {% raw %}"openafs-{{ version }}-{{ dist }}-{{ arch }}.rpms.tar.gz"{% endraw %}
         format: gz
 
     - name: Download
       fetch:
         flat: yes
-        src: "openafs-{{ version }}-{{ dist }}-{{ arch }}.rpms.tar.gz"
-        dest: "{{ builds }}/"
+        src: {% raw %}"openafs-{{ version }}-{{ dist }}-{{ arch }}.rpms.tar.gz"{% endraw %}
+        dest: "{{ cookiecutter.builds }}/"
       register: fetch_results
 
     - name: Downloaded
       debug:
-        msg: "{{ fetch_results.dest }}"
-    {%- endraw %}
+        msg: {% raw %}"{{ fetch_results.dest }}"{% endraw %}
   {%- endif %}
   {%- if cookiecutter.im in ('bdist', 'rpms') %}
 
@@ -227,26 +217,23 @@
       when: afs_install_archive is undefined or afs_install_archive == ''
       block:
         - set_fact:
-            {%- raw %}
-            osdist: "{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"
-            arch: "{{ ansible_architecture }}"
-            {%- endraw %}
+            osdist: {% raw %}"{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"{% endraw %}
+            arch: {% raw %}"{{ ansible_architecture }}"{% endraw %}
             {%- if cookiecutter.im == 'bdist' %}
             afsdist: bdist-{{ cookiecutter.bdist_style }}
             {%- else %}
             afsdist: {{ cookiecutter.im }}
             {%- endif %}
 
-        {%- raw %}
         - name: Lookup install tarballs
           local_action:
             module: find
-            path: "{{ builds }}"
-            patterns: "openafs-{{ afs_version | d('*') }}-{{ osdist }}-{{ arch }}.{{ afsdist }}.tar.gz"
+            path: "{{ cookiecutter.builds }}"
+            patterns: {% raw %}"openafs-{{ afs_version | d('*') }}-{{ osdist }}-{{ arch }}.{{ afsdist }}.tar.gz"{% endraw %}
           register: find_results
 
         - set_fact:
-            tarballs: "{{ find_results.files | map(attribute='path') | list | sort(reverse=True, case_sensitive=True) }}"
+            tarballs: {% raw %}"{{ find_results.files | map(attribute='path') | list | sort(reverse=True, case_sensitive=True) }}"{% endraw %}
 
         #- debug:
         #    var: tarballs
@@ -254,14 +241,13 @@
         - name: Verify install tarball was found
           assert:
             that: tarballs | count > 0
-            msg: "No binary distribution archives found in controller directory '{{ builds }}."
+            msg: "No binary distribution archives found in controller directory '{{ cookiecutter.builds }}."
 
         - set_fact:
-            afs_install_archive: "{{ tarballs[0] }}"
+            afs_install_archive: {% raw %}"{{ tarballs[0] }}"{% endraw %}
 
         - debug:
             var: afs_install_archive
-    {%- endraw %}
   {%- endif %}
   {%- if cookiecutter.with_common == 'yes' %}
 
@@ -298,14 +284,13 @@
 
     - import_role:
         name: "openafs_krbserver"
-    {%- raw %}
 
     - name: Create AFS service key
       become: yes
       no_log: yes
       openafs_principal:
         state: present
-        principal: afs/{{ afs_cell }}
+        principal: {% raw %}"afs/{{ afs_cell }}"{% endraw %}
         encryption_types:
           - aes128-cts
           - aes256-cts
@@ -315,26 +300,25 @@
       become: yes
       fetch:
         flat: yes
-        src: "{{ service_key_results.keytab }}"
-        dest: "{{ afs_service_keytab }}"
+        src: {% raw %}"{{ service_key_results.keytab }}"{% endraw %}
+        dest: {% raw %} "{{ afs_service_keytab }}"{% endraw %}
       register: download_results
 
     - debug:
-        msg: "Downloaded: {{ download_results.dest }}"
+        msg: {% raw %}"Downloaded: {{ download_results.dest }}"{% endraw %}
 
     - name: Create user principals
       become: yes
       no_log: yes
       openafs_principal:
         state: present
-        principal: "{{ item }}"
+        principal: {% raw %}"{{ item }}"{% endraw %}
         password: "secret"
       with_items:
         - user01/admin
         - user01
         - user02
         - user03
-    {%- endraw %}
   {%- endif %}
   {%- if cookiecutter.with_server == 'yes' %}
 
