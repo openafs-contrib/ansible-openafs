@@ -36,14 +36,17 @@
 - name: Find client userspace rpm filenames
   find:
     path: "{{ afs_tmpdir }}/install/"
+    file_type: file
+    recurse: yes
     use_regex: yes
     patterns:
-      - "openafs-[0-9].*[.]rpm$"
+      - "openafs-v?[0-9].*[.]rpm$"
       - "openafs-client-.*[.]rpm$"
       - "openafs-debuginfo-.*[.]rpm$"
       - "openafs-docs-.*[.]rpm$"
       - "openafs-krb5-.*[.]rpm$"
       - "dkms-openafs-.*[.]rpm$"
+    exclude: ".*[.]src[.]rpm$"
   register: find_rpms
 
 - set_fact:
@@ -52,9 +55,9 @@
 - name: Verify the rpm package files are present
   assert:
     that:
-      - userspace_rpms | select('search', '/openafs-[0-9]') | list | count == 1
-      - userspace_rpms | select('search', '/openafs-client-[0-9]') | list | count == 1
-      - userspace_rpms | select('search', '/dkms-openafs-[0-9]') | list | count == 1
+      - userspace_rpms | select('search', '.*/openafs-v?[0-9][^/]*[.]rpm$') | list | count == 1
+      - userspace_rpms | select('search', '.*/openafs-client-v?[0-9][^/]*[.]rpm$') | list | count == 1
+      - userspace_rpms | select('search', '.*/dkms-openafs-v?[0-9][^/]*[.]rpm$') | list | count == 1
 
 # Workaround missing dkms-openafs package requires. These must be installed
 # with a separate yum command before the openafs rpms are installed.
