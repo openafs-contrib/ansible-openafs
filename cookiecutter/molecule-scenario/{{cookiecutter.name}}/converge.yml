@@ -137,7 +137,7 @@
 
     {%- raw %}
     - set_fact:
-        tarball: "openafs-{{ version }}-{{ osdist }}-{{ arch }}-{{ afsdist }}.tar.gz"
+        tarball: "openafs-{{ version }}-{{ osdist }}-{{ arch }}.{{ afsdist }}.tar.gz"
 
     - name: Create archive
       archive:

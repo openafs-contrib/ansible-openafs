@@ -115,7 +115,7 @@ provisioner:
       {%- if cookiecutter.im != 'default' %}
         afs_install_method: {{ cookiecutter.im }}
       {%- endif %}
-      {%- if cookiecutter.im in ('rpms', 'bdist', 'sdist') %}
+      {%- if cookiecutter.im in ('packages', 'bdist', 'sdist') %}
         afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
       {%- endif %}
       {%- if cookiecutter.im == 'scm' or cookiecutter.build in ('rpms', 'bdist', 'sdist') %}
