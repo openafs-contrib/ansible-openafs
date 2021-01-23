@@ -44,6 +44,7 @@ molecule: Makefile
 	$(COOK) name=deb10               os=debian10
 	$(COOK) name=deb10-bdist         os=debian10 im=bdist
 	$(COOK) name=deb10-scm           os=debian10 im=scm
+	$(COOK) name=deb10-deb           os=debian10 im=packages
 	$(COOK) \
 	  name=cluster-1 \
 	  os=centos7 \

@@ -1,8 +1,8 @@
 ---
 #
 # Install the OpenAFS server with RPM package files. The package
-# files are transferred to a temporary directory on the remote node
-# from the controller and then installed.
+# files are transferred from the controller to a temporary directory
+# on the remote node and then installed.
 #
 - name: Verify the path to the installation tarball is specified
   assert:
@@ -18,12 +18,12 @@
     state: directory
     path: "{{ afs_tmpdir }}/install"
 
-- name: Upload rpm package files
+- name: Upload package files
   unarchive:
     src: "{{ afs_install_archive }}"
     dest: "{{ afs_tmpdir }}/install/"
 
-- name: Find server rpm package filenames
+- name: Find server package filenames
   find:
     path: "{{ afs_tmpdir }}/install/"
     file_type: file
@@ -37,23 +37,23 @@
       - "openafs-krb5-.*[.]rpm$"
       - "openafs-server-.*[.]rpm$"
     exclude: ".*[.]src[.]rpm$"
-  register: find_rpms
+  register: find_packages
 
 - set_fact:
-    server_rpms: "{{ find_rpms.files | map(attribute='path') | list }}"
+    server_packages: "{{ find_packages.files | map(attribute='path') | list }}"
 
-- name: Verify the rpm package files are present
+- name: Verify the package files are present
   assert:
     that:
-      - server_rpms | select('search', '.*/openafs-v?[0-9][^/]*[.]rpm$') | list | count == 1
-      - server_rpms | select('search', '.*/openafs-server-v?[0-9][^/]*[.]rpm$') | list | count == 1
+      - server_packages | select('search', '.*/openafs-v?[0-9][^/]*[.]rpm$') | list | count == 1
+      - server_packages | select('search', '.*/openafs-server-v?[0-9][^/]*[.]rpm$') | list | count == 1
 
 - name: Install OpenAFS server packages
   become: yes
   yum:
     state: present
     disable_gpg_check: yes
-    name: "{{ server_rpms }}"
+    name: "{{ server_packages }}"
 
 - name: Get installation paths
   openafs_get_install_paths:

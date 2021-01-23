@@ -1,0 +1,81 @@
+---
+#
+# Install the OpenAFS client with deb package files. The package
+# files are transferred from the controller to a temporary directory
+# on the remote node and then installed.
+#
+- name: Verify the path to the installation tarball is specified
+  assert:
+    that:
+      - afs_install_archive is defined
+      - afs_install_archive != ''
+
+- debug:
+    msg: "Installing {{ afs_install_archive }}"
+
+- name: Create directory
+  file:
+    state: directory
+    path: "{{ afs_tmpdir }}/install"
+
+- name: Upload package files
+  unarchive:
+    src: "{{ afs_install_archive }}"
+    dest: "{{ afs_tmpdir }}/install/"
+
+- name: Find package filenames
+  find:
+    path: "{{ afs_tmpdir }}/install/"
+    file_type: file
+    recurse: yes
+    use_regex: yes
+    patterns:
+      - "openafs-.*[.]deb$"
+  register: find_packages
+
+- set_fact:
+    packages: "{{ find_packages.files | map(attribute='path') | list }}"
+
+- debug:
+    var: packages | sort
+
+- set_fact:
+    modules_dkms_deb: "{{ (packages | select('search', '.*/openafs-modules-dkms_.*[.]deb$') | list)[0] }}"
+    client_deb: "{{ (packages | select('search', '.*/openafs-client_.*[.]deb$') | list)[0] }}"
+    krb5_deb: "{{ (packages | select('search', '.*/openafs-krb5_.*[.]deb$') | list)[0] }}"
+
+- name: Install prereqs
+  become: yes
+  apt:
+    state: present
+    name: dkms
+
+- name: Install packages
+  become: yes
+  apt:
+    policy_rc_d: 101
+    deb: "{{ item_deb }}"
+  loop_control:
+    loop_var: item_deb
+  with_items:
+    # Order is significant.
+    - "{{ modules_dkms_deb }}"
+    - "{{ client_deb }}"
+    - "{{ krb5_deb }}"
+
+- name: Get installation paths
+  openafs_get_install_paths:
+    package_manager_type: apt
+  register: install_results
+
+- name: Store installation facts
+  become: yes
+  openafs_store_facts:
+    state: update
+    facts:
+      install_method: "{{ afs_install_method }}"
+      client_installed: yes
+      client_service_name: openafs-client
+      client_options: "{{ afs_afsd_opts }}"
+      bins: "{{ install_results.bins }}"
+      dirs: "{{ install_results.dirs }}"
