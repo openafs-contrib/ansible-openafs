@@ -118,7 +118,7 @@ Default is to detect by checking for the presence of the BosConfig file.
     afs_bosserver_opts:
     afs_ptserver_opts:
     afs_vlserver_opts:
-    afs_dafileserver_opts: -L
+    afs_dafileserver_opts:
     afs_davolserver_opts:
     afs_salvageserver_opts:
     afs_dasalvager_opts:

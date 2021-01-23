@@ -37,7 +37,7 @@ afs_ptserver_opts:
 afs_vlserver_opts:
 
 # DAFS fileserver options
-afs_dafileserver_opts: -L
+afs_dafileserver_opts:
 
 # DAFS volume server options
 afs_davolserver_opts:
