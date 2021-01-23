@@ -29,8 +29,8 @@ molecule: Makefile
 	          number_instances=1 \
 	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
 	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
-	$(COOK) name=build-bdist groups=builders with_playbooks=$(TOPDIR)/playbooks/build.yaml
-	$(COOK) name=realm groups=afs_kdcs with_playbooks=$(TOPDIR)/playbooks/realm.yaml
+	$(COOK) name=build-bdist groups=builders with_playbooks=@TOPDIR@/playbooks/build.yaml
+	$(COOK) name=realm groups=afs_kdcs with_playbooks=@TOPDIR@/playbooks/realm.yaml
 	$(COOK) name=cell-single \
 	          number_instances=1 \
 	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
