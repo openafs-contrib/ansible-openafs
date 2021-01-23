@@ -12,9 +12,7 @@
   hosts: afs_databases:afs_fileservers
   vars:
     afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
-    afs_partitions:
-      - a
-      - b
+    afs_pseudo_partitions: ['a', 'b', 'c']
   roles:
     - openafs_server
 

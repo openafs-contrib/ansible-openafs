@@ -20,9 +20,8 @@ afs_is_dbserver: "{{ 'afs_databases' in group_names }}"
 # Default is to detect by checking for the presence of the BosConfig file.
 afs_server_cold_start: detect
 
-# fileserver partitions
-afs_partitions:
-  - a
+# fileserver pseudo vice partition ids to be created (for testing)
+afs_pseudo_partitions: []
 
 # fileserver variation, one of: fs, dafs
 afs_fileserver_type: dafs
