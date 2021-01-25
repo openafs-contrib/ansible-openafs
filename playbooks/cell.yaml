@@ -1,33 +1,46 @@
 ---
+#
+# Create a new OpenAFS cell with a set of clients and servers. Run the
+# realm.yaml playbook before this to create a Kerberos realm, the service keys,
+# and an admin pricipal and keytab (or provide the same.)
+#
+
+# First retrieve the addresses of all of the database servers. The results are
+# saved in the csdb.yaml file on the controller. Alternatively, set the
+# afs_csdb inventory variable.
+
 - name: Create CellServDB
   hosts: afs_databases
-  vars:
-    afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
   tasks:
     - import_role:
         name: openafs_common
         tasks_from: generate_csdb
 
+#
+# Install and setup the fileservers and database servers.
+#
 - name: Install servers
   hosts: afs_databases:afs_fileservers
   vars:
-    afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
+    # Create fake /vicep partitions for testing purposes.
     afs_pseudo_partitions: ['a', 'b', 'c']
   roles:
     - openafs_server
 
+#
+# Install and setup the clients.
+#
 - name: Install clients
   hosts: afs_clients
-  vars:
-    afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
   roles:
     - openafs_krbclient
     - openafs_client
 
-- name: Setup new cell
+#
+# Create the top-level cell volumes and some initial users.
+#
+- name: New cell
   hosts: afs_admin
-  vars:
-    afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
   roles:
     - openafs_krbclient
     - openafs_client
@@ -57,7 +70,7 @@
             - "system:anyuser read"
             - "system:authuser write"
 
-    - name: Create users
+    - name: Create test users
       openafs_user:
         name: "{{ item }}"
         group: tester

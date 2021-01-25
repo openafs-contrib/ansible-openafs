@@ -8,6 +8,12 @@ afs_realm: "{{ afs_cell | upper }}"
 # Path to files on controller to be uploaded to remote nodes.
 afs_cell_files: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
 
+# CellServDB information (default is undefined.)
+# afs_csdb:
+
+# Path to the CellServDB yaml file on the controller.
+afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
+
 # Temporary directory on remote nodes.
 afs_tmpdir: /tmp/ansible-openafs
 
