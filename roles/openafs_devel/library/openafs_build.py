@@ -254,7 +254,15 @@ log = logging.getLogger(__name__)
 
 MAKEFILE_PATHS = """
 include ./src/config/Makefile.config
-all:
+short:
+	@echo afsbosconfigdir=$(afsbosconfigdir)
+	@echo afsconfdir=$(afsconfdir)
+	@echo afsdbdir=$(afsdbdir)
+	@echo afslocaldir=$(afslocaldir)
+	@echo afslogsdir=$(afslogsdir)
+	@echo viceetcdir=$(viceetcdir)
+
+long:
 	@echo afsbackupdir=$(afsbackupdir)
 	@echo afsbosconfigdir=$(afsbosconfigdir)
 	@echo afsconfdir=$(afsconfdir)
@@ -698,25 +706,17 @@ def main():
                 results['changed'] = True
 
     #
-    # Install readme files to indicate paths to data and configuration directories.
+    # Save configured build paths in a meta-data file for installation.
     #
     if destdir and target in ('install', 'install_nolibafs'):
-        datadirs = {
-            'afsbosconfigdir': 'OpenAFS BosServer configuration.',
-            'afsconfdir': 'OpenAFS server cell configuration.',
-            'afsdbdir': 'OpenAFS database files.',
-            'afslocaldir': 'OpenAFS server configuration.',
-            'viceetcdir': 'OpenAFS client cell configuration.',
+        filename = os.path.join(destdir, '.build-info.json')
+        build_info = {
+          'dirs': results['install_dirs']
         }
-        for d in datadirs:
-            confdir = re.sub(r'^/+', '', results['install_dirs'][d])
-            readme = os.path.join(destdir, confdir, 'README.%s' % d)
-            if not os.path.exists(os.path.dirname(readme)):
-                os.makedirs(os.path.dirname(readme))
-            with open(readme, 'w') as f:
-                f.write('%s\n' % datadirs[d])
+        with open(filename, 'w') as f:
+            f.write(json.dumps(build_info, indent=4))
 
-    logger.debug('Results: %s' % pprint.pformat(results))
+    log.debug('Results: %s' % pprint.pformat(results))
     results['msg'] = 'Build completed'
     log.info(results['msg'])
 

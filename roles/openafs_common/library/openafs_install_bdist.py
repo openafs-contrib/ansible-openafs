@@ -104,11 +104,11 @@ logfiles:
 import filecmp
 import fnmatch
 import glob
+import json
 import logging
 import os
 import platform
 import pprint
-import re
 import shutil
 from ansible.module_utils.basic import AnsibleModule
 
@@ -295,15 +295,20 @@ def main():
     if destdir:
         log.info("Installing %s from path '%s'." % (','.join(components), destdir))
         files = install_dest(destdir, components)
-        dirs = TRANSARC_INSTALL_DIRS
+        results['dirs'] = TRANSARC_INSTALL_DIRS
     else:
         log.info('Copying files from %s to /' % path)
         files = copy_tree(path, '/', exclude)
         dirs = {}
-        for f in files:
-            m = re.search(r'README\.(.*dir)$', f[0])
-            if m:
-                dirs[m.group(1)] = os.path.dirname(f[0])
+        filename = os.path.join(path, '.build-info.json')
+        if os.path.exists(filename):
+            log.info("Reading metadata file '%s'.", filename)
+            with open(filename) as f:
+                build_info = json.load(f)
+            log.info("build_info=%s", pprint.pformat(build_info))
+            dirs = build_info.get('dirs', {})
+            log.info("dirs=%s", pprint.pformat(dirs))
+        results['dirs'] = dirs
 
     for f in files:
         if f[1]:
@@ -315,7 +320,6 @@ def main():
             name = os.path.basename(f[0])
             bins[name] = f[0]
     results['bins'] = bins
-    results['dirs'] = dirs
 
     if platform.system() == 'Linux':
         for f in files:
