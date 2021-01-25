@@ -31,7 +31,7 @@ import re
 import time
 from ansible.module_utils.basic import AnsibleModule
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 def main():
     results = dict(
@@ -57,13 +57,13 @@ def main():
         filename=logfile,
         format='%(asctime)s %(levelname)s %(message)s',
     )
-    logger.info('Starting openafs_wait_for_quorum')
-    logger.debug('Parameters: %s' % pprint.pformat(module.params))
+    log.info('Starting openafs_wait_for_quorum')
+    log.debug('Parameters: %s' % pprint.pformat(module.params))
     if delay < 0:
-        logger.warning('Ignoring negative delay parameter.')
+        log.warning('Ignoring negative delay parameter.')
         delay = 0
     if sleep < 1:
-        logger.warning('Ignoring out of range sleep parameter.')
+        log.warning('Ignoring out of range sleep parameter.')
         sleep = 1
 
     def lookup_command(name):
@@ -88,18 +88,18 @@ def main():
         status = {'port': port, 'quorum': False}
         udebug = lookup_command('udebug')
         args = [udebug, '-server', 'localhost', '-port', str(port)]
-        logger.info('Running: %s', ' '.join(args))
+        log.info('Running: %s', ' '.join(args))
         rc, out, err = module.run_command(args)
-        logger.debug("Ran udebug: rc=%d, out=%s, err=%s", rc, out, err)
+        log.debug("Ran udebug: rc=%d, out=%s, err=%s", rc, out, err)
         if rc != 0:
-            logger.warning("Failed udebug: rc=%d, out=%s, err=%s", rc, out, err)
+            log.warning("Failed udebug: rc=%d, out=%s, err=%s", rc, out, err)
             return status
         status['udebug'] = out
         for line in out.splitlines():
             m = re.match(r'I am sync site', line)
             if m:
                 status['sync'] = True
-                logger.info('Local host is sync site.')
+                log.info('Local host is sync site.')
                 continue
             m = re.match(r'Recovery state ([0-9a-f]+)', line)
             if m:
@@ -109,7 +109,7 @@ def main():
             if m:
                 if m.group(1) != '0.0.0.0':
                     status['sync_host'] = m.group(1)
-                    logger.info('Remote host is sync site: %s', status['sync_host'])
+                    log.info('Remote host is sync site: %s', status['sync_host'])
                 continue
             m = re.match(r"Sync site's db version is (\d+)\.(\d+)", line)
             if m:
@@ -136,25 +136,25 @@ def main():
         pr = check_quorum(7002)
         vl = check_quorum(7003)
         if pr['quorum'] and vl['quorum']:
-            logger.info('Databases have quorum.')
+            log.info('Databases have quorum.')
             results['pr'] = pr
             results['vl'] = vl
             break
         now = int(time.time())
         if now > expires:
             if fail_on_timeout:
-                logger.error('Timeout expired.')
+                log.error('Timeout expired.')
                 module.fail_json(msg='Timeout expired. See log %s' % logfile)
             else:
-                logger.warning('Timeout expired.')
+                log.warning('Timeout expired.')
                 break
-        logger.info('Will retry in %d seconds.' % sleep)
+        log.info('Will retry in %d seconds.' % sleep)
         time.sleep(sleep)
         retries += 1
 
     results['retries'] = retries
-    logger.debug('Results: %s' % pprint.pformat(results))
-    logger.info('Exiting openafs_wait_for_quorum')
+    log.debug('Results: %s' % pprint.pformat(results))
+    log.info('Exiting openafs_wait_for_quorum')
     module.exit_json(**results)
 
 if __name__ == '__main__':

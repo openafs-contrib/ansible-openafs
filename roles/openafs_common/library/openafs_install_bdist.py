@@ -112,7 +112,7 @@ import re
 import shutil
 from ansible.module_utils.basic import AnsibleModule
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 LOG_LEVELS = {
     'debug': logging.DEBUG,
@@ -176,21 +176,21 @@ def copy_tree(src, dst, exclude=None):
         src_name = os.path.join(src, n)
         dst_name = os.path.join(dst, n)
         if is_exclusion(dst_name):
-            logger.info("Excluding '%s'.", dst_name)
+            log.info("Excluding '%s'.", dst_name)
         elif os.path.isdir(src_name):
             files.extend(copy_tree(src_name, dst_name, exclude))
         elif is_same(src_name, dst_name):
-            logger.info("Skipping '%s'; unchanged.", dst_name)
+            log.info("Skipping '%s'; unchanged.", dst_name)
             files.append((dst_name, False, is_executable(src_name)))
         elif os.path.islink(src_name):
             link_dest = os.readlink(src_name)
             if os.path.exists(dst_name):
                 os.remove(dst_name)
-            logger.debug("Creating symlink '%s'.", dst_name)
+            log.debug("Creating symlink '%s'.", dst_name)
             os.symlink(link_dest, dst_name)
             files.append((dst_name, True, False))
         else:
-            logger.debug("Copying '%s' to '%s'.", src_name, dst_name)
+            log.debug("Copying '%s' to '%s'.", src_name, dst_name)
             shutil.copy2(src_name, dst_name)
             files.append((dst_name, True, is_executable(src_name)))
     return files
@@ -203,16 +203,16 @@ def find_destdir(path, sysname=None):
     the server binaries, a 'root.client' directory for the client binaries,
     and a set of common directories.
     """
-    logger.debug('find_destdir: %s', path)
+    log.debug('find_destdir: %s', path)
     if not sysname:
         sysname = '*'
     roots = set(['bin', 'etc', 'include', 'lib', 'man', 'root.server', 'root.client'])
     for pattern in ('/%s/dest' % sysname, '/dest', '/'):
         dirs = set(glob.glob(path + pattern))
-        logger.debug('dirs=%s', dirs)
+        log.debug('dirs=%s', dirs)
         for destdir in dirs:
             subdirs = set(map(os.path.basename, glob.glob(destdir + '/*')))
-            logger.debug('subirs %s', subdirs)
+            log.debug('subirs %s', subdirs)
             if roots.issubset(subdirs):
                 return destdir
     return None
@@ -221,7 +221,7 @@ def install_dest(destdir, components, exclude=None):
     """
     Install Transarc-style distribution files.
     """
-    logger.debug('install_dest: %s', destdir)
+    log.debug('install_dest: %s', destdir)
     files = []
     if 'common' in components:
         for d in ('bin', 'etc', 'include', 'lib', 'man'):
@@ -282,22 +282,22 @@ def main():
         format='%(asctime)s %(levelname)s %(message)s',
     )
 
-    logger.info('Starting openafs_install_bdist')
-    logger.debug('Parameters: %s' % pprint.pformat(module.params))
+    log.info('Starting openafs_install_bdist')
+    log.debug('Parameters: %s' % pprint.pformat(module.params))
 
     if not os.path.isdir(path):
         msg = 'Directory not found: %s' % path
-        logger.error(msg)
+        log.error(msg)
         module.fail_json(msg=msg)
 
     sysname = module.params['sysname']
     destdir = find_destdir(path, sysname)
     if destdir:
-        logger.info("Installing %s from path '%s'." % (','.join(components), destdir))
+        log.info("Installing %s from path '%s'." % (','.join(components), destdir))
         files = install_dest(destdir, components)
         dirs = TRANSARC_INSTALL_DIRS
     else:
-        logger.info('Copying files from %s to /' % path)
+        log.info('Copying files from %s to /' % path)
         files = copy_tree(path, '/', exclude)
         dirs = {}
         for f in files:
@@ -323,7 +323,7 @@ def main():
                 results['kmods'].append(f[0])
 
         if results['changed']:
-            logger.info('Updating shared object cache.')
+            log.info('Updating shared object cache.')
             bins = set()
             for f in files:
                 if f[0].endswith('.so'):
@@ -336,12 +336,13 @@ def main():
 
         if results['changed']:
             if results['kmods']:
-                logger.info('Updating module dependencies.')
+                log.info('Updating module dependencies.')
                 module.run_command([depmod, '-a'], check_rc=True)
 
     msg = 'Install completed'
-    logger.info(msg)
+    log.info(msg)
     results['msg'] = msg
+    log.info('results=%s', pprint.pformat(results))
     module.exit_json(**results)
 
 if __name__ == '__main__':

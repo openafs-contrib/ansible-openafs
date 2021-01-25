@@ -137,7 +137,7 @@ import struct
 import pprint
 from ansible.module_utils.basic import AnsibleModule
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 KEYTAB_MAGIC = 0x0502
 KEYTAB_MAGIC_OLD = 0x0501
@@ -325,8 +325,8 @@ def main():
         filename=logfile,
         format='%(asctime)s %(levelname)s %(message)s',
     )
-    logger.info('Starting openafs_key')
-    logger.debug('Parameters: %s' % pprint.pformat(module.params))
+    log.info('Starting openafs_key')
+    log.debug('Parameters: %s' % pprint.pformat(module.params))
 
     def lookup_command(name):
         try:
@@ -340,7 +340,7 @@ def main():
         return cmd
 
     asetkey = lookup_command('asetkey')
-    logger.debug('asetkey=%s', asetkey)
+    log.debug('asetkey=%s', asetkey)
 
     # Decode the keytab to find the kvnos, enctypes, and principals.
     keytab = Keytab(keytab)
@@ -352,7 +352,7 @@ def main():
         keys = keytab.find(service_principal)
     if not keys:
         msg = "Keys not found in keytab %s for cell '%s', realm '%s'." % (keytab.name, cell, realm)
-        logger.error(msg)
+        log.error(msg)
         module.fail_json(msg=msg, keys=keytab.entries)
 
     results['service_principal'] = service_principal
@@ -362,19 +362,19 @@ def main():
     rc, out, err = module.run_command([asetkey])
     usage = err.splitlines()
     if len(usage) == 0 or not 'usage' in usage[0]:
-        logger.error("Failed to get asetkey usage; rc=%d, out=%s, err=%s", rc, out, err)
+        log.error("Failed to get asetkey usage; rc=%d, out=%s, err=%s", rc, out, err)
         module.fail_json(msg="Failed to get asetkey usage.", asetkey=asetkey, rc=rc, out=out, err=err)
     have_extended_keys = False
     for line in usage:
         if "add <type> <kvno> <subtype> <keyfile> <princ>" in line:
             have_extended_keys = True
-    logger.debug("have_extended_keys=%s", "True" if have_extended_keys else "False")
+    log.debug("have_extended_keys=%s", "True" if have_extended_keys else "False")
     results['have_extended_keys'] = have_extended_keys
 
     # Retrieve the current keys to check for changes.
     rc, before, err = module.run_command([asetkey, 'list'])
     if rc != 0:
-        logger.error("Failed to list keys; rc=%d, out=%s, err=%s", rc, out, err)
+        log.error("Failed to list keys; rc=%d, out=%s, err=%s", rc, out, err)
         module.fail_json(msg="Failed to list keys.", asetkey=asetkey, rc=rc, out=out, err=err)
 
     # Add the keys.
@@ -392,14 +392,14 @@ def main():
         rc, out, err = module.run_command(args)
         results['debug'].append(dict(cmd=' '.join(args), rc=rc, out=out, err=err))
         if rc != 0:
-            logger.error("Failed asetkey add; rc=%d, out=%s, err=%s", rc, out, err)
+            log.error("Failed asetkey add; rc=%d, out=%s, err=%s", rc, out, err)
             module.fail_json(msg="Failed asetkey add", rc=rc, out=out, err=err, keys=keys)
 
     # Check for changes and return list of key version numbers. Avoid returning the
     # key values!
     rc, after, err = module.run_command([asetkey, 'list'])
     if rc != 0:
-        logger.error("Failed to list keys; rc=%d, out=%s, err=%s", rc, out, err)
+        log.error("Failed to list keys; rc=%d, out=%s, err=%s", rc, out, err)
         module.fail_json(msg="Failed to list keys.", asetkey=asetkey, rc=rc, out=out, err=err)
     if before != after:
         results['changed'] = True

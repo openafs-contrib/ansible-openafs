@@ -35,7 +35,7 @@ import struct
 import time
 from ansible.module_utils.basic import AnsibleModule
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 def quad_dotted(unpacked_address):
     packed_address = struct.pack('!I', unpacked_address)
@@ -239,13 +239,13 @@ def main():
         filename=logfile,
         format='%(asctime)s %(levelname)s %(message)s',
     )
-    logger.info('Starting openafs_wait_for_registration')
-    logger.debug('Parameters: %s' % pprint.pformat(module.params))
+    log.info('Starting openafs_wait_for_registration')
+    log.debug('Parameters: %s' % pprint.pformat(module.params))
     if delay < 0:
-        logger.warning('Ignoring negative delay parameter.')
+        log.warning('Ignoring negative delay parameter.')
         delay = 0
     if sleep < 1:
-        logger.warning('Ignoring out of range sleep parameter.')
+        log.warning('Ignoring out of range sleep parameter.')
         sleep = 1
 
     def lookup_command(name):
@@ -304,17 +304,17 @@ def main():
         cmdline = ' '.join(args)
         retries = 120
         while True:
-            logger.debug('Running: %s', cmdline)
+            log.debug('Running: %s', cmdline)
             rc, out, err = module.run_command(args)
-            logger.debug('Ran: %s, rc=%d, out=%s, err=%s', cmdline, rc, out, err)
+            log.debug('Ran: %s, rc=%d, out=%s, err=%s', cmdline, rc, out, err)
             if done(rc, out, err):
                 return out
             if retries == 0 or not retry(rc, out, err):
-                logger.error("Failed: %s, rc=%d, err=%s", cmdline, rc, err)
+                log.error("Failed: %s, rc=%d, err=%s", cmdline, rc, err)
                 module.fail_json(
                     dict(msg='Command failed. See %s for details.' % logfile,
                         cmdline=cmdline, rc=rc, out=out, err=err))
-            logger.warning("Failed: %s, rc=%d, err=%s; %d retr%s left.",
+            log.warning("Failed: %s, rc=%d, err=%s; %d retr%s left.",
                 cmdline, rc, err, retries, ('ies' if retries > 1 else 'y'))
             retries -= 1
             time.sleep(5)
@@ -357,7 +357,7 @@ def main():
                 servers.append(dict(uuid=uuid, addrs=addrs))
                 uuid = None
                 addrs = []
-        logger.debug("servers=%s", servers)
+        log.debug("servers=%s", servers)
         return servers
 
     def lookup_uuid():
@@ -368,11 +368,11 @@ def main():
         path = os.path.join(lookup_directory('afslocaldir'), 'sysid')
         if not os.path.exists(path):
             # The sysid file is created by the filserver process.
-            logger.info("Waiting for sysid file '%s'.", path)
+            log.info("Waiting for sysid file '%s'.", path)
             return None
-        logger.debug("Reading sysid file '%s'.", path)
+        log.debug("Reading sysid file '%s'.", path)
         sysid = Sysid(path)
-        logger.debug('sysid=%s', sysid)
+        log.debug('sysid=%s', sysid)
         return sysid.uuid
 
     def lookup_bnode():
@@ -380,18 +380,18 @@ def main():
         Lookup the active fileserver bnode name; 'fs', 'dafs', or None.
         """
         path = os.path.join(lookup_directory('afsbosconfigdir'), 'BosConfig')
-        logger.debug("Reading BosConfig file '%s'.", path)
+        log.debug("Reading BosConfig file '%s'.", path)
         with open(path) as f:
             bosconfig = f.read()
         bnodes = re.findall(r'bnode (fs|dafs) \S+ 1', bosconfig)
         if len(bnodes) == 0:
-            logger.warning('No active fileserver bnodes found in BosConfig.')
+            log.warning('No active fileserver bnodes found in BosConfig.')
             return None
         if len(bnodes) > 1:
-            logger.warning('Too many active fileserver bnodes found in BosConfig.')
+            log.warning('Too many active fileserver bnodes found in BosConfig.')
             return None
         bnode = bnodes[0]
-        logger.debug('fileserver bnode is %s', bnode)
+        log.debug('fileserver bnode is %s', bnode)
         return bnode
 
     def lookup_pid():
@@ -403,16 +403,16 @@ def main():
             return None
         path = os.path.join(lookup_directory('afslocaldir'), '%s.file.pid' % bnode)
         try:
-            logger.debug("Reading pid file '%s'.", path)
+            log.debug("Reading pid file '%s'.", path)
             with open(path) as f:
                 pid = int(f.read())
         except IOError as e:
-            logger.warning("Unable to read pid file '%s'; %s", path, e)
+            log.warning("Unable to read pid file '%s'; %s", path, e)
             return None
         except ValueError as e:
-            logger.warning("Unable to convert pid file '%s' contents to int; %s", path, e)
+            log.warning("Unable to convert pid file '%s' contents to int; %s", path, e)
             return None
-        logger.debug('fileserver pid is %d', pid)
+        log.debug('fileserver pid is %d', pid)
         return pid
 
     #
@@ -432,24 +432,24 @@ def main():
             registered_uuids = [s['uuid'] for s in servers]
             if uuid in registered_uuids:
                 results['uuid'] = str(uuid)
-                logger.info('Fileserver uuid %s is registered.', uuid)
+                log.info('Fileserver uuid %s is registered.', uuid)
                 break
         if signal and retries > 0:
             pid = lookup_pid()
             if pid:
-                logger.info('Running: kill -XCPU %d', pid)
+                log.info('Running: kill -XCPU %d', pid)
                 module.run_command(['kill', '-XCPU', '%d' % pid])
         now = int(time.time())
         if now > expires:
-            logger.error('Timeout expired.')
+            log.error('Timeout expired.')
             module.fail_json(msg='Timeout expired. See log %s' % logfile)
-        logger.info('Will retry in %d seconds.' % sleep)
+        log.info('Will retry in %d seconds.' % sleep)
         time.sleep(sleep)
         retries += 1
 
     results['retries'] = retries
-    logger.debug('Results: %s' % pprint.pformat(results))
-    logger.info('Exiting openafs_wait_for_registration')
+    log.debug('Results: %s' % pprint.pformat(results))
+    log.info('Exiting openafs_wait_for_registration')
     module.exit_json(**results)
 
 if __name__ == '__main__':

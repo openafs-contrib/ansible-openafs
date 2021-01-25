@@ -250,6 +250,8 @@ import json
 from multiprocessing import cpu_count
 from ansible.module_utils.basic import AnsibleModule
 
+log = logging.getLogger(__name__)
+
 MAKEFILE_PATHS = """
 include ./src/config/Makefile.config
 all:
@@ -331,17 +333,16 @@ def tail(s, n=256):
     else:
         return s[-n:]
 
-def run_command(name, command, cwd, module, logger, logdir, results):
+def run_command(name, command, cwd, module, logdir, results):
     """Run a command and log the stdout and stderr.
 
     :arg command: command argument list
     :arg cwd: current directory to run the command
     :arg module: the ansible module object
-    :arg logger: the logger object
     :arg logdir: where to place stdout and stderr logs
     :arg results: the module results dictionary
     """
-    logger.info('[%s] %s' % (cwd, ' '.join(command)))
+    log.info('[%s] %s' % (cwd, ' '.join(command)))
     rc, out, err = module.run_command(command, cwd=cwd)
     logfile_out = os.path.join(logdir, '%s.out' % name)
     with open(logfile_out, 'w') as f:
@@ -354,7 +355,7 @@ def run_command(name, command, cwd, module, logger, logdir, results):
         results['changed'] = True
         results['logfiles'].append(logfile_err)
     if rc != 0:
-        logger.error('%s failed; rc=%d' % (name, rc))
+        log.error('%s failed; rc=%d' % (name, rc))
         module.fail_json(
             msg='%s command failed. See log files %s and %s' % \
                 (name, logfile_out, logfile_err),
@@ -436,7 +437,6 @@ def configured_sysname(builddir):
 
 
 def main():
-    logger = logging.getLogger(__name__)
     results = dict(
         changed=False,
         msg='',
@@ -502,8 +502,8 @@ def main():
     )
     results['logfiles'].append(build_log)
 
-    logger.info('Starting build')
-    logger.debug('Parameters: %s' % pprint.pformat(module.params))
+    log.info('Starting build')
+    log.debug('Parameters: %s' % pprint.pformat(module.params))
 
     #
     # Setup paths.
@@ -513,12 +513,12 @@ def main():
     else:
         builddir = projectdir
     results['builddir'] = builddir
-    logger.debug("builddir='%s'", builddir)
+    log.debug("builddir='%s'", builddir)
 
     gitdir = os.path.abspath(os.path.join(projectdir, '.git'))
     if not (os.path.exists(gitdir) and os.path.isdir(gitdir)):
         gitdir = None
-    logger.debug("gitdir='%s'.", gitdir)
+    log.debug("gitdir='%s'.", gitdir)
 
     #
     # Don't bother doing a build on a unchanged git repo.
@@ -528,20 +528,20 @@ def main():
         git = [module.get_bin_path('git', required=True), 'diff-files', '--quiet']
         rc, out, err = module.run_command(git, cwd=projectdir)
         if rc != 0:
-            logger.info('git repo is dirty')
+            log.info('git repo is dirty')
         else:
             git = [module.get_bin_path('git', required=True), 'show-ref', '--hash', 'HEAD']
             rc, out, err = module.run_command(git, cwd=projectdir)
             if rc == 0:
                 git_sha1 = out.splitlines()[0]
-                logger.info('Current sha1 %s', git_sha1)
+                log.info('Current sha1 %s', git_sha1)
                 results['git_sha1'] = git_sha1
 
     if not clean and git_sha1 and os.path.exists(os.path.join(logdir, 'results.json')):
         saved_results = {}
         with open(os.path.join(logdir, 'results.json')) as f:
             saved_results = json.load(f)
-            logger.debug('saved results=%s', saved_results)
+            log.debug('saved results=%s', saved_results)
         if git_sha1 == saved_results.get('git_sha1'):
             saved_results['changed'] = False
             saved_results['msg'] = 'Build skipped; no changes since last build.'
@@ -551,28 +551,28 @@ def main():
     # Cleanup previous build.
     #
     if not clean:
-        logger.info('Skipping clean.')
+        log.info('Skipping clean.')
     else:
         if gitdir:
             clean_command = [
                 module.get_bin_path('git', required=True),
                 'clean', '-f', '-d', '-x', '--exclude=.ansible',
             ]
-            run_command('clean', clean_command, projectdir, module, logger, logdir, results)
+            run_command('clean', clean_command, projectdir, module, logdir, results)
         for pattern in ('*.out', '*.err', '*.json'):
             for oldlog in glob.glob(os.path.join(logdir, pattern)):
                 os.remove(oldlog)
         if builddir != projectdir and os.path.exists(builddir):
             if builddir == '/':
                 module.fail_json(msg='Refusing to remove "/" builddir!')
-            logger.info('Removing old build directory %s' % builddir)
+            log.info('Removing old build directory %s' % builddir)
             shutil.rmtree(builddir)
 
     #
     # Setup build directory. (This must be done after the clean step.)
     #
     if not os.path.isdir(builddir):
-        logger.info('Creating build directory %s' % builddir)
+        log.info('Creating build directory %s' % builddir)
         os.makedirs(builddir)
     if destdir:
         destdir = abspath(builddir, destdir) # makefiles need the full path
@@ -583,7 +583,7 @@ def main():
     #
     if version:
         version_file = os.path.join(projectdir, '.version')
-        logger.info('Writing version %s to file %s' % (version, version_file))
+        log.info('Writing version %s to file %s' % (version, version_file))
         with open(version_file, 'w') as f:
             f.write(version)
 
@@ -593,7 +593,7 @@ def main():
     #
     rc, out, err = module.run_command(['./git-version', builddir], cwd=os.path.join(builddir, 'build-tools'))
     if rc != 0:
-        logger.info('Unable to determine version string.')
+        log.info('Unable to determine version string.')
     else:
         results['version'] = out
 
@@ -603,7 +603,7 @@ def main():
     regen_command = [os.path.join(projectdir, 'regen.sh')]
     if not manpages:
         regen_command.append('-q')
-    run_command('regen', regen_command, projectdir, module, logger, logdir, results)
+    run_command('regen', regen_command, projectdir, module, logdir, results)
 
     #
     # Run configure.
@@ -614,9 +614,9 @@ def main():
     else:
         args = []
     configure_command.extend(args)
-    run_command('configure', configure_command, builddir, module, logger, logdir, results)
+    run_command('configure', configure_command, builddir, module, logdir, results)
     results['sysname'] = configured_sysname(builddir)
-    logger.info("configured sysname is '%s'.", results['sysname'])
+    log.info("configured sysname is '%s'.", results['sysname'])
 
     #
     # Get installation directories.
@@ -644,7 +644,7 @@ def main():
         make_command.append(target)
     if destdir and not target.startswith('dest'):
         make_command.append('DESTDIR=%s' % destdir)
-    run_command('make', make_command, builddir, module, logger, logdir, results)
+    run_command('make', make_command, builddir, module, logdir, results)
 
     #
     # `make` may silently fail to build a kernel module for the running kernel
@@ -654,17 +654,17 @@ def main():
     kmod_pattern = os.path.join(builddir, 'src', 'libafs', 'MODLOAD-*', '*afs.ko')
     results['kmods'] = glob.glob(kmod_pattern)
     if state == 'built-module':
-        logger.info('Checking for kernel module for %s.' % platform.release())
+        log.info('Checking for kernel module for %s.' % platform.release())
         modloads = []
         for kmod in results['kmods']:
             pattern = r'/MODLOAD-%s-[A-Z]*/(lib|open)afs\.ko$' % platform.release()
             m = re.search(pattern, kmod)
             if m:
                 modloads.append(kmod)
-        logger.info('Modules found: %s' % ' '.join(modloads))
+        log.info('Modules found: %s' % ' '.join(modloads))
         if not modloads:
             results['msg'] = 'Loadable kernel module not found for %s' % platform.release()
-            logger.error(results['msg'])
+            log.error(results['msg'])
             module.fail_json(**results)
 
     #
@@ -672,7 +672,7 @@ def main():
     # for installation.
     #
     if destdir and target in ('dest', 'dest_nolibafs', 'dest_only_libafs'):
-        logger.info('Copying transarc-style distribution files to %s' % destdir)
+        log.info('Copying transarc-style distribution files to %s' % destdir)
         sysname = configured_sysname(builddir)
         if not sysname:
             module.fail_json(msg='Unable to get destdir; sysname not found.')
@@ -686,14 +686,14 @@ def main():
     # Copy security key utilities to a standard location.
     #
     if destdir and target in ('install', 'install_nolibafs', 'dest', 'dest_nolibafs'):
-        logger.info('Copying security key utilities to %s' % destdir)
+        log.info('Copying security key utilities to %s' % destdir)
         for p in ('asetkey', 'akeyconvert'):
             src = os.path.join(builddir, 'src', 'aklog', p)
             dst = os.path.join(destdir, 'usr', 'sbin')
             if os.path.isfile(src):
                 if not os.path.isdir(dst):
                     os.makedirs(dst)
-                logger.debug('shutil.copy2("%s", "%s")' % (src, dst))
+                log.debug('shutil.copy2("%s", "%s")' % (src, dst))
                 shutil.copy2(src, dst)
                 results['changed'] = True
 
@@ -718,7 +718,7 @@ def main():
 
     logger.debug('Results: %s' % pprint.pformat(results))
     results['msg'] = 'Build completed'
-    logger.info(results['msg'])
+    log.info(results['msg'])
 
     #
     # Save results.

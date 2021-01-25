@@ -96,7 +96,7 @@ import re
 import time
 from ansible.module_utils.basic import AnsibleModule
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 def main():
     results = dict(
@@ -126,11 +126,11 @@ def main():
         filename=logfile,
         format='%(asctime)s %(levelname)s %(message)s',
     )
-    logger.info('Starting openafs_user')
-    logger.debug('Parameters: %s' % pprint.pformat(module.params))
+    log.info('Starting openafs_user')
+    log.debug('Parameters: %s' % pprint.pformat(module.params))
 
     def die(msg):
-        logger.error(msg)
+        log.error(msg)
         module.fail_json(msg=msg, note='See log %s for details.' % logfile)
 
     def lookup_command(name):
@@ -149,9 +149,9 @@ def main():
         Run a command.
         """
         cmdline = ' '. join(args)
-        logger.debug('Running: %s', cmdline)
+        log.debug('Running: %s', cmdline)
         rc, out, err = module.run_command(args)
-        logger.debug('Ran: %s, rc=%d, out=%s, err=%s', cmdline, rc, out, err)
+        log.debug('Ran: %s, rc=%d, out=%s, err=%s', cmdline, rc, out, err)
         if rc != 0:
             die('Failed: %s, rc=%d, out=%s, err=%s' % (cmdline, rc, out, err))
 
@@ -190,17 +190,17 @@ def main():
         cmdline = ' '.join(args)
         retries = 120
         while True:
-            logger.debug('Running: %s', cmdline)
+            log.debug('Running: %s', cmdline)
             rc, out, err = module.run_command(args)
-            logger.debug('Ran: %s, rc=%d, out=%s, err=%s', cmdline, rc, out, err)
+            log.debug('Ran: %s, rc=%d, out=%s, err=%s', cmdline, rc, out, err)
             if is_done(rc, out, err):
                 return out
             if retries == 0 or not should_retry(err):
-                logger.error("Failed: %s, rc=%d, err=%s", cmdline, rc, err)
+                log.error("Failed: %s, rc=%d, err=%s", cmdline, rc, err)
                 module.fail_json(
                     dict(msg='Command failed. See %s for details.' % logfile,
                         cmdline=cmdline, rc=rc, out=out, err=err))
-            logger.warning("Failed: %s, rc=%d, err=%s; %d retr%s left.",
+            log.warning("Failed: %s, rc=%d, err=%s; %d retr%s left.",
                 cmdline, rc, err, retries, ('ies' if retries > 1 else 'y'))
             retries -= 1
             time.sleep(2)
@@ -221,7 +221,7 @@ def main():
             if rc == 0:
                 return True
             if rc == 1 and "User or group doesn't exist" in err:
-                logger.warning("User %s not found.", name)
+                log.warning("User %s not found.", name)
                 return False # Retry
             return False
         out = run_pts(['examine', '-nameorid', name], is_done)
@@ -300,7 +300,7 @@ def main():
                 results['changed'] = True
                 return True
             if rc == 0 and "User or group doesn't exist" in err:
-                logger.warning("User %s not found.", name)
+                log.warning("User %s not found.", name)
                 return True
             return False
         run_pts(['delete', '-nameorid', name], is_done)
@@ -321,8 +321,8 @@ def main():
     else:
         module.fail_json(msg="Internal error: invalid state %s" % state)
 
-    logger.debug('Results: %s' % pprint.pformat(results))
-    logger.info('Exiting openafs_user')
+    log.debug('Results: %s' % pprint.pformat(results))
+    log.info('Exiting openafs_user')
     module.exit_json(**results)
 
 if __name__ == '__main__':
