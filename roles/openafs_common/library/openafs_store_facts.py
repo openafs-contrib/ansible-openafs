@@ -41,14 +41,29 @@ EXAMPLES = r'''
 
 import json
 import logging
+import logging.handlers
 import os
 import pprint
 
 from ansible.module_utils.basic import AnsibleModule
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('openafs_store_facts')
+
+def setup_logging():
+    level = logging.INFO
+    fmt = '%(levelname)s %(name)s %(message)s'
+    address = '/dev/log'
+    if not os.path.exists(address):
+        address = ('localhost', 514)
+    facility = logging.handlers.SysLogHandler.LOG_USER
+    formatter = logging.Formatter(fmt)
+    handler = logging.handlers.SysLogHandler(address, facility)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.setLevel(level)
 
 def main():
+    setup_logging()
     results = dict(
         changed=False,
         ansible_facts={'ansible_local':{'openafs':{}}},
@@ -61,21 +76,12 @@ def main():
             ),
             supports_check_mode=False,
     )
-
+    log.info('Parameters: %s', pprint.pformat(module.params))
     state = module.params['state']
     factsdir = module.params['factsdir']
     factsfile = os.path.join(factsdir, 'openafs.fact')
     tmpdir = '/tmp/ansible-openafs'
     tmpfile = os.path.join(tmpdir, 'openafs.fact')
-
-    logging.basicConfig(
-        level=logging.DEBUG,
-        filename='/var/log/ansible-openafs/openafs_store_facts.log',
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
-
-    log.info('Starting openafs_store_facts')
-    log.debug('Parameters: %s' % pprint.pformat(module.params))
 
     try:
         with open(factsfile) as fp:

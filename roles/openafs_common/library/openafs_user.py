@@ -90,15 +90,31 @@ user:
 
 import json
 import logging
+import logging.handlers
 import os
 import pprint
 import re
 import time
+
 from ansible.module_utils.basic import AnsibleModule
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('openafs_user')
+
+def setup_logging():
+    level = logging.INFO
+    fmt = '%(levelname)s %(name)s %(message)s'
+    address = '/dev/log'
+    if not os.path.exists(address):
+        address = ('localhost', 514)
+    facility = logging.handlers.SysLogHandler.LOG_USER
+    formatter = logging.Formatter(fmt)
+    handler = logging.handlers.SysLogHandler(address, facility)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.setLevel(level)
 
 def main():
+    setup_logging()
     results = dict(
         changed=False,
     )
@@ -113,25 +129,17 @@ def main():
             ),
             supports_check_mode=False,
     )
+    log.info('Parameters: %s', pprint.pformat(module.params))
     state = module.params['state']
     user = module.params['user']
     groups = set(module.params['groups'])
     localauth = module.params['localauth']
     auth_user = module.params['auth_user']
     auth_keytab = module.params['auth_keytab']
-    logfile = '/var/log/ansible-openafs/openafs_user_%d.log' % os.getuid()
-
-    logging.basicConfig(
-        level=logging.DEBUG,
-        filename=logfile,
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
-    log.info('Starting openafs_user')
-    log.debug('Parameters: %s' % pprint.pformat(module.params))
 
     def die(msg):
         log.error(msg)
-        module.fail_json(msg=msg, note='See log %s for details.' % logfile)
+        module.fail_json(msg=msg)
 
     def lookup_command(name):
         try:
@@ -198,8 +206,7 @@ def main():
             if retries == 0 or not should_retry(err):
                 log.error("Failed: %s, rc=%d, err=%s", cmdline, rc, err)
                 module.fail_json(
-                    dict(msg='Command failed. See %s for details.' % logfile,
-                        cmdline=cmdline, rc=rc, out=out, err=err))
+                    dict(msg='Command failed.', cmdline=cmdline, rc=rc, out=out, err=err))
             log.warning("Failed: %s, rc=%d, err=%s; %d retr%s left.",
                 cmdline, rc, err, retries, ('ies' if retries > 1 else 'y'))
             retries -= 1

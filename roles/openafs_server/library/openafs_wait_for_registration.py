@@ -24,18 +24,32 @@ EXAMPLES = r'''
 RETURN = r'''
 '''
 
-import shlex
 import json
 import logging
+import logging.handlers
 import os
 import pprint
 import re
 import socket
 import struct
 import time
+
 from ansible.module_utils.basic import AnsibleModule
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('openafs_wait_for_registration')
+
+def setup_logging():
+    level = logging.INFO
+    fmt = '%(levelname)s %(name)s %(message)s'
+    address = '/dev/log'
+    if not os.path.exists(address):
+        address = ('localhost', 514)
+    facility = logging.handlers.SysLogHandler.LOG_USER
+    formatter = logging.Formatter(fmt)
+    handler = logging.handlers.SysLogHandler(address, facility)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.setLevel(level)
 
 def quad_dotted(unpacked_address):
     packed_address = struct.pack('!I', unpacked_address)
@@ -216,6 +230,7 @@ class Sysid:
             ">".format(self=self)
 
 def main():
+    setup_logging()
     results = dict(
         changed=False,
     )
@@ -228,19 +243,12 @@ def main():
             ),
             supports_check_mode=False,
     )
+    log.info('Parameters: %s', pprint.pformat(module.params))
     timeout = module.params['timeout']
     delay = module.params['delay']
     sleep = module.params['sleep']
     signal = module.params['signal']
-    logfile = '/var/log/ansible-openafs/openafs_wait_for_registration.log'
 
-    logging.basicConfig(
-        level=logging.DEBUG,
-        filename=logfile,
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
-    log.info('Starting openafs_wait_for_registration')
-    log.debug('Parameters: %s' % pprint.pformat(module.params))
     if delay < 0:
         log.warning('Ignoring negative delay parameter.')
         delay = 0
@@ -312,8 +320,7 @@ def main():
             if retries == 0 or not retry(rc, out, err):
                 log.error("Failed: %s, rc=%d, err=%s", cmdline, rc, err)
                 module.fail_json(
-                    dict(msg='Command failed. See %s for details.' % logfile,
-                        cmdline=cmdline, rc=rc, out=out, err=err))
+                    dict(msg='Command failed.', cmdline=cmdline, rc=rc, out=out, err=err))
             log.warning("Failed: %s, rc=%d, err=%s; %d retr%s left.",
                 cmdline, rc, err, retries, ('ies' if retries > 1 else 'y'))
             retries -= 1
@@ -442,14 +449,13 @@ def main():
         now = int(time.time())
         if now > expires:
             log.error('Timeout expired.')
-            module.fail_json(msg='Timeout expired. See log %s' % logfile)
+            module.fail_json(msg='Timeout expired')
         log.info('Will retry in %d seconds.' % sleep)
         time.sleep(sleep)
         retries += 1
 
     results['retries'] = retries
-    log.debug('Results: %s' % pprint.pformat(results))
-    log.info('Exiting openafs_wait_for_registration')
+    log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
 
 if __name__ == '__main__':

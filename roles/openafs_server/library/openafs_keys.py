@@ -131,13 +131,28 @@ service_principal:
 import errno
 import json
 import logging
+import logging.handlers
 import os
+import pprint
 import re
 import struct
-import pprint
+
 from ansible.module_utils.basic import AnsibleModule
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('openafs_keys')
+
+def setup_logging():
+    level = logging.INFO
+    fmt = '%(levelname)s %(name)s %(message)s'
+    address = '/dev/log'
+    if not os.path.exists(address):
+        address = ('localhost', 514)
+    facility = logging.handlers.SysLogHandler.LOG_USER
+    formatter = logging.Formatter(fmt)
+    handler = logging.handlers.SysLogHandler(address, facility)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.setLevel(level)
 
 KEYTAB_MAGIC = 0x0502
 KEYTAB_MAGIC_OLD = 0x0501
@@ -298,6 +313,7 @@ class Keytab:
         return entries
 
 def main():
+    setup_logging()
     results = dict(
         changed=False,
         debug=[],
@@ -312,21 +328,12 @@ def main():
             ),
             supports_check_mode=False,
     )
-    state = module.params['state']
+    log.info('Parameters: %s', pprint.pformat(module.params))
     keytab = module.params['keytab']
     cell = module.params['cell']
     realm = module.params['realm']
     if not realm:
         realm = cell.upper()
-
-    logfile = '/var/log/ansible-openafs/openafs_key_%d.log' % os.getuid()
-    logging.basicConfig(
-        level=logging.DEBUG,
-        filename=logfile,
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
-    log.info('Starting openafs_key')
-    log.debug('Parameters: %s' % pprint.pformat(module.params))
 
     def lookup_command(name):
         try:
@@ -408,6 +415,7 @@ def main():
         if m:
             results['imported'].append(dict(type=m.group(1), kvno=m.group(2), eno=m.group(3)))
 
+    log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
 
 if __name__ == '__main__':

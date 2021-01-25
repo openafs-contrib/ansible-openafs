@@ -250,7 +250,7 @@ import json
 from multiprocessing import cpu_count
 from ansible.module_utils.basic import AnsibleModule
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('openafs_build')
 
 MAKEFILE_PATHS = """
 include ./src/config/Makefile.config
@@ -511,7 +511,7 @@ def main():
     results['logfiles'].append(build_log)
 
     log.info('Starting build')
-    log.debug('Parameters: %s' % pprint.pformat(module.params))
+    log.debug('Parameters: %s', pprint.pformat(module.params))
 
     #
     # Setup paths.

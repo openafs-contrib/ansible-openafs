@@ -33,17 +33,6 @@ options:
       List of file patterns to be excluded.
     type: list
 
-  log_dir:
-    description: >
-      Absolute path to the installation logs for troubleshooting.
-    type: path
-    default: /var/log/ansible-openafs
-
-  log_level:
-    description: >
-      Logging level name.
-    type: str
-
 author:
   - Michael Meffie
 '''
@@ -60,7 +49,6 @@ EXAMPLES = r'''
   openafs_install:
     path: /tmp/openafs/bdist
     exclude: /usr/vice/etc/*
-    log_dir: /tmp/openafs/logs
 '''
 
 RETURN = r'''
@@ -106,22 +94,28 @@ import fnmatch
 import glob
 import json
 import logging
+import logging.handlers
 import os
 import platform
 import pprint
 import shutil
+
 from ansible.module_utils.basic import AnsibleModule
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('openafs_install_bdist')
 
-LOG_LEVELS = {
-    'debug': logging.DEBUG,
-    'info': logging.INFO,
-    'warn': logging.WARNING,
-    'warning': logging.WARNING,
-    'error': logging.ERROR,
-    'critical': logging.CRITICAL,
-}
+def setup_logging():
+    level = logging.INFO
+    fmt = '%(levelname)s %(name)s %(message)s'
+    address = '/dev/log'
+    if not os.path.exists(address):
+        address = ('localhost', 514)
+    facility = logging.handlers.SysLogHandler.LOG_USER
+    formatter = logging.Formatter(fmt)
+    handler = logging.handlers.SysLogHandler(address, facility)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.setLevel(level)
 
 TRANSARC_INSTALL_DIRS = {
     'afsbosconfigdir': '/usr/afs/local',
@@ -242,6 +236,7 @@ def install_dest(destdir, components, exclude=None):
     return files
 
 def main():
+    setup_logging()
     results = dict(
         changed=False,
         msg='',
@@ -257,33 +252,17 @@ def main():
             exclude=dict(type='list', default=[]),
             sysname=dict(type='str', default=None),
             components=dict(type='list', default=['common', 'client', 'server']),
-            log_dir=dict(type='path', default='/var/log/ansible-openafs'),
-            log_level=dict(type='str', choices=LOG_LEVELS.keys(), default='info'),
             ldconfig=dict(type='path', default='/sbin/ldconfig'),
             depmod=dict(type='path', default='/sbin/depmod'),
         ),
         supports_check_mode=False
     )
+    log.info('Parameters: %s', pprint.pformat(module.params))
     path = module.params['path']
     exclude = module.params['exclude']
     components = module.params['components']
-    log_dir = module.params['log_dir']
-    log_level = module.params['log_level']
     ldconfig = module.params['ldconfig']
     depmod = module.params['depmod']
-
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    install_log = os.path.join(log_dir, 'openafs_install_bdist.log')
-    results['logfiles'].append(install_log)
-    logging.basicConfig(
-        level=LOG_LEVELS[log_level],
-        filename=install_log,
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
-
-    log.info('Starting openafs_install_bdist')
-    log.debug('Parameters: %s' % pprint.pformat(module.params))
 
     if not os.path.isdir(path):
         msg = 'Directory not found: %s' % path
@@ -346,7 +325,7 @@ def main():
     msg = 'Install completed'
     log.info(msg)
     results['msg'] = msg
-    log.info('results=%s', pprint.pformat(results))
+    log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
 
 if __name__ == '__main__':

@@ -185,13 +185,28 @@ volume:
 
 import json
 import logging
+import logging.handlers
 import os
 import pprint
 import re
 import time
+
 from ansible.module_utils.basic import AnsibleModule
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('openafs_volume')
+
+def setup_logging():
+    level = logging.INFO
+    fmt = '%(levelname)s %(name)s %(message)s'
+    address = '/dev/log'
+    if not os.path.exists(address):
+        address = ('localhost', 514)
+    facility = logging.handlers.SysLogHandler.LOG_USER
+    formatter = logging.Formatter(fmt)
+    handler = logging.handlers.SysLogHandler(address, facility)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.setLevel(level)
 
 # Cached items.
 _commands = {}
@@ -200,6 +215,7 @@ _afsroot = None
 _dynroot = None
 
 def main():
+    setup_logging()
     results = dict(
         changed=False,
     )
@@ -219,6 +235,7 @@ def main():
             ),
             supports_check_mode=False,
     )
+    log.info('Parameters: %s', pprint.pformat(module.params))
     state = module.params['state']
     volume = module.params['volume']
     server = module.params['server']
@@ -234,18 +251,9 @@ def main():
     if mount and not mount.startswith('/'):
         module.fail_json(msg='Invalid parameter: mount must be an asolute path; %s' % mount)
 
-    logfile = '/var/log/ansible-openafs/openafs_volume_%d.log' % os.getuid()
-    logging.basicConfig(
-        level=logging.DEBUG,
-        filename=logfile,
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
-    log.info('Starting openafs_volume')
-    log.debug('Parameters: %s' % pprint.pformat(module.params))
-
     def die(msg):
         log.error(msg)
-        module.fail_json(msg=msg, note='See log %s for details.' % logfile)
+        module.fail_json(msg=msg)
 
     def lookup_command(name):
         """

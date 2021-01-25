@@ -34,7 +34,6 @@
   become: yes
   openafs_install_bdist:
     path: "{{ afs_tmpdir }}/install"
-    log_level: debug
   register: install_results
 
 - name: Store installation facts

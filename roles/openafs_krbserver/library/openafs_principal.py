@@ -177,11 +177,30 @@ realm:
   sample: EXAMPLE.COM
 '''
 
+import logging
+import logging.handlers
 import os
+import pprint
+
 from ansible.module_utils.basic import AnsibleModule
 
+log = logging.getLogger('openafs_principal')
+
+def setup_logging():
+    level = logging.INFO
+    fmt = '%(levelname)s %(name)s %(message)s'
+    address = '/dev/log'
+    if not os.path.exists(address):
+        address = ('localhost', 514)
+    facility = logging.handlers.SysLogHandler.LOG_USER
+    formatter = logging.Formatter(fmt)
+    handler = logging.handlers.SysLogHandler(address, facility)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.setLevel(level)
 
 def main():
+    setup_logging()
     results = dict(
         changed=False,
         debug=[],
@@ -197,6 +216,7 @@ def main():
             ),
             supports_check_mode=False,
     )
+    log.info('Parameters: %s', pprint.pformat(module.params))
     state = module.params['state']
     principal = module.params['principal']
     password = module.params['password']
@@ -311,6 +331,7 @@ def main():
     else:
         die('Internal error; invalid state: %s' % state)
 
+    log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
 
 if __name__ == '__main__':

@@ -49,14 +49,30 @@ version": null
 """
 
 import logging
+import logging.handlers
 import os
 import pprint
 import re
+
 from ansible.module_utils.basic import AnsibleModule
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('openafs_selinux_module')
+
+def setup_logging():
+    level = logging.INFO
+    fmt = '%(levelname)s %(name)s %(message)s'
+    address = '/dev/log'
+    if not os.path.exists(address):
+        address = ('localhost', 514)
+    facility = logging.handlers.SysLogHandler.LOG_USER
+    formatter = logging.Formatter(fmt)
+    handler = logging.handlers.SysLogHandler(address, facility)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.setLevel(level)
 
 def main():
+    setup_logging()
     results = dict(
         changed=False,
     )
@@ -68,16 +84,9 @@ def main():
             ),
             supports_check_mode=False,
     )
-
+    log.info('Parameters: %s', pprint.pformat(module.params))
     name = module.params['name']
     path = module.params['path']
-
-    logfile = '/var/log/ansible-openafs/openafs_selinux_module.log'
-    logging.basicConfig(
-        level=logging.DEBUG,
-        filename=logfile,
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
 
     def die(msg):
         log.error(msg)
@@ -100,9 +109,6 @@ def main():
 
     def semodule(*args):
         return run_command('semodule', *args)
-
-    log.info('Starting openafs_selinux_module')
-    log.debug('Parameters: %s' % pprint.pformat(module.params))
 
     if not name:
         die("Module name is required.")
@@ -148,8 +154,7 @@ def main():
         semodule('-i', pp)
         results['changed'] = True
 
-    log.debug('Results: %s' % pprint.pformat(results))
-    log.info('Exiting openafs_selinux_module')
+    log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
 
 if __name__ == '__main__':

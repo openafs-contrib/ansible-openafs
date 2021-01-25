@@ -31,7 +31,26 @@ EXAMPLES = r'''
 
 import os
 import fnmatch
+import logging
+import logging.handlers
+import pprint
+
 from ansible.module_utils.basic import AnsibleModule
+
+log = logging.getLogger('openafs_get_install_paths')
+
+def setup_logging():
+    level = logging.INFO
+    fmt = '%(levelname)s %(name)s %(message)s'
+    address = '/dev/log'
+    if not os.path.exists(address):
+        address = ('localhost', 514)
+    facility = logging.handlers.SysLogHandler.LOG_USER
+    formatter = logging.Formatter(fmt)
+    handler = logging.handlers.SysLogHandler(address, facility)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.setLevel(level)
 
 package_managers = {
     'rpm': {
@@ -85,6 +104,7 @@ def list_files(module, pm):
                 yield line
 
 def main():
+    setup_logging()
     results = dict(
         changed=False,
         bins={},
@@ -96,6 +116,7 @@ def main():
             ),
             supports_check_mode=False,
     )
+    log.info('Parameters: %s', pprint.pformat(module.params))
 
     pm = package_managers[module.params['package_manager_type']]
 
@@ -122,6 +143,7 @@ def main():
     # package type.
     results['dirs'] = pm['dirs']
 
+    log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
 
 if __name__ == '__main__':

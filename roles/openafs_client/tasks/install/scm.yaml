@@ -51,7 +51,6 @@
       become: yes
       openafs_install_bdist:
         path: "{{ build_results.destdir }}"
-        log_level: debug
       register: install_results
 
     - name: Store installation facts

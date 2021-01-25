@@ -1,9 +1,1 @@
 ---
-- name: Create log directory
-  become: yes
-  file:
-    state: directory
-    path: "{{ afs_logdir }}"
-    owner: "{{ ansible_user }}"
-    group: root
-    mode: '0755'

@@ -32,11 +32,26 @@ RETURN = r"""
 import glob
 import json
 import logging
+import logging.handlers
 import os
 import pprint
+
 from ansible.module_utils.basic import AnsibleModule
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('openafs_selinux_relabel')
+
+def setup_logging():
+    level = logging.INFO
+    fmt = '%(levelname)s %(name)s %(message)s'
+    address = '/dev/log'
+    if not os.path.exists(address):
+        address = ('localhost', 514)
+    facility = logging.handlers.SysLogHandler.LOG_USER
+    formatter = logging.Formatter(fmt)
+    handler = logging.handlers.SysLogHandler(address, facility)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.setLevel(level)
 
 # Note: The bosserver creates the /usr/vice/etc directory if it does not
 # exist in order to create a symlink to the server configuration. Be sure
@@ -44,6 +59,7 @@ log = logging.getLogger(__name__)
 top_dirs = ['/usr/afs', '/usr/vice']
 
 def main():
+    setup_logging()
     results = dict(
         changed=False,
     )
@@ -52,13 +68,7 @@ def main():
             ),
             supports_check_mode=False,
     )
-
-    logfile = '/var/log/ansible-openafs/openafs_selinux_relabel.log'
-    logging.basicConfig(
-        level=logging.DEBUG,
-        filename=logfile,
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
+    log.info('Parameters: %s', pprint.pformat(module.params))
 
     def restorecon(*args):
         restorecon = module.get_bin_path('restorecon', required=True)
@@ -69,9 +79,6 @@ def main():
         if rc != 0:
             log.error("Command failed: %s, rc=%d, err=%s", cmdline, rc, err)
             module.fail_json(msg="Command failed", cmd=cmdline, out=out, err=err)
-
-    log.info('Starting openafs_selinux_relabel')
-    log.debug('Parameters: %s' % pprint.pformat(module.params))
 
     factsfile = '/etc/ansible/facts.d/openafs.fact'
     try:
@@ -108,8 +115,7 @@ def main():
             json.dump(facts, fp, indent=2)
         results['changed'] = True
 
-    log.debug('Results: %s' % pprint.pformat(results))
-    log.info('Exiting openafs_selinux_relabel')
+    log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
 
 if __name__ == '__main__':
