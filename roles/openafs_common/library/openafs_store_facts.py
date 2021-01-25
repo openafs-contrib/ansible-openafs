@@ -40,9 +40,13 @@ EXAMPLES = r'''
 '''
 
 import json
+import logging
 import os
+import pprint
 
 from ansible.module_utils.basic import AnsibleModule
+
+log = logging.getLogger(__name__)
 
 def main():
     results = dict(
@@ -61,20 +65,28 @@ def main():
     state = module.params['state']
     factsdir = module.params['factsdir']
     factsfile = os.path.join(factsdir, 'openafs.fact')
+    tmpdir = '/tmp/ansible-openafs'
+    tmpfile = os.path.join(tmpdir, 'openafs.fact')
+
+    logging.basicConfig(
+        level=logging.DEBUG,
+        filename='/var/log/ansible-openafs/openafs_store_facts.log',
+        format='%(asctime)s %(levelname)s %(message)s',
+    )
+
+    log.info('Starting openafs_store_facts')
+    log.debug('Parameters: %s' % pprint.pformat(module.params))
 
     try:
         with open(factsfile) as fp:
             facts = json.load(fp)
     except:
         facts = {}
-    old_facts = dict(facts) # Save a copy to check for changes.
 
-    # If a existing fact dictionary with the new keys, if a dictionary
-    # was given. Otherwise just set the new fact with the given value.
     for key, value in module.params['facts'].items():
         if state == 'set':
             facts[key] = value
-        else:
+        elif state == 'update':
             if not key in facts:
                 facts[key] = value
             elif isinstance(facts[key], dict) and isinstance(value, dict):
@@ -83,16 +95,29 @@ def main():
                 facts[key].append(value)
             else:
                 facts[key] = value
+        else:
+            module.fail_json(msg='Internal error: unknown state %s' % state)
 
-    if facts != old_facts:
+    # Write our facts to a temp file and check for changes.
+    if not os.path.exists(tmpdir):
+        os.makedirs(tmpdir)
+    with open(tmpfile, 'w') as fp:
+        log.debug("Writing '%s'.", tmpfile)
+        json.dump(facts, fp, indent=2)
+    old_sha1 = module.sha1(factsfile)  # Returns None if file does not exist.
+    new_sha1 = module.sha1(tmpfile)
+    log.debug('old_sha1=%s, new_sha1=%s', old_sha1, new_sha1)
+
+    if old_sha1 != new_sha1:
         if not os.path.exists(factsdir):
             os.makedirs(factsdir)
-        with open(factsfile, 'w') as fp:
-            json.dump(facts, fp, indent=2)
+        module.preserved_copy(tmpfile, factsfile)
+        log.info("Facts file '%s' changed.", factsfile)
         results['changed'] = True
 
-    # Update current facts.
+    # Update local facts in the current play.
     results['ansible_facts']['ansible_local']['openafs'] = facts
+    log.info('results=%s', pprint.pformat(results))
     module.exit_json(**results)
 
 if __name__ == '__main__':
