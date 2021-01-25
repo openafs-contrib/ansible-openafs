@@ -47,6 +47,7 @@
         localauth: yes
 
     - name: Ensure root volumes exist
+      when: afs_create_root
       openafs_volume:
         state: present
         volume: "{{ item }}"

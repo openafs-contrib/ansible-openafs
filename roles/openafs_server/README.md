@@ -129,12 +129,6 @@ Default is to detect by checking for the presence of the BosConfig file.
 The OpenAFS server command line options. See the OpenAFS man pages for the
 server processes.
 
-    afs_root_server:
-    afs_root_part: a
-
-The primary fileserver hostname and AFS fileserver partition id. The cell root
-volume (root.afs, root.cell) will be created on this fileserver partition.
-
 ## License
 
 BSD

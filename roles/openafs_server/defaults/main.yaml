@@ -23,6 +23,10 @@ afs_server_cold_start: detect
 # fileserver pseudo vice partition ids to be created (for testing)
 afs_pseudo_partitions: []
 
+# Ensure the root.afs and root.cell volumes exist. (The root.afs volume
+# is required for non-dynroot clients to start.)
+afs_create_root: yes
+
 # fileserver variation, one of: fs, dafs
 afs_fileserver_type: dafs
 
@@ -55,12 +59,6 @@ afs_volserver_opts:
 
 # Legacy salvager options
 afs_salvager_opts:
-
-# Primary fileserver hostname
-afs_root_server: "{{ groups['afs_fileservers'][0] }}"
-
-# Primary fileserver vice partition id
-afs_root_part: a
 
 # Service name
 afs_server_service_name: "{{ ansible_local.openafs.server_service_name }}"
