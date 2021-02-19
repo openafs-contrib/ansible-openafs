@@ -3,7 +3,7 @@
 .PHONY: help lint test distclean
 
 COOK=@COOKIECUTTER@ \
-   --no-input -f -o molecule \
+   --no-input -f -o molecule.old \
    @TOPDIR@/cookiecutter/molecule-scenario @DRIVER_OPTIONS@ \
    instance_name=@INSTANCE_PREFIX@server \
    with_server=yes
@@ -57,7 +57,7 @@ molecule: Makefile
 	  im=bdist \
 	  number_instances=5 \
 	  groups=afs_kdcs:1+afs_databases:1,2,3+afs_fileservers:4,5
-	touch molecule
+	touch molecule.old
 
 reset:
 	@if [ -d molecule ]; then \

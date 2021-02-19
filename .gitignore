@@ -5,4 +5,6 @@ ansible.cfg
 *.pyc
 __pycache__/
 Makefile
-molecule/
+molecule.old/
+molecule.yml
+prepare.yml

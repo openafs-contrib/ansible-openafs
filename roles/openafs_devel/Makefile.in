@@ -3,7 +3,7 @@
 .PHONY: help lint test distclean
 
 COOK=@COOKIECUTTER@ \
-   --no-input -f -o molecule \
+   --no-input -f -o molecule.old \
    @TOPDIR@/cookiecutter/molecule-scenario @DRIVER_OPTIONS@ \
    instance_name=@INSTANCE_PREFIX@devel \
    with_devel=yes
@@ -42,7 +42,7 @@ molecule: Makefile
 	$(COOK) name=deb10                os=debian10
 	$(COOK) name=deb10-bdist-modern   os=debian10 build=bdist bdist_style=modern
 	$(COOK) name=deb10-bdist-transarc os=debian10 build=bdist bdist_style=transarc
-	touch molecule
+	touch molecule.old
 
 reset:
 	@if [ -d molecule ]; then \
