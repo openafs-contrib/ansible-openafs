@@ -1,4 +1,5 @@
 .*
+!.gitignore
 *.retry
 ansible.cfg
 *.tar.gz

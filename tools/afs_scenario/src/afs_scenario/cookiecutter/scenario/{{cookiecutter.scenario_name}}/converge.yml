@@ -1,0 +1,37 @@
+---
+{%- if cookiecutter.selinux_mode %}
+- name: Configure selinux mode
+  hosts: all
+  tasks:
+    - name: Configure selinux mode
+      become: yes
+      selinux:
+        policy: targeted
+        state: {{ cookiecutter.selinux_mode }}
+      when:
+        - ansible_selinux.status is defined
+        - ansible_selinux.status == 'enabled'
+{% endif %}
+{%- if cookiecutter.role_name == 'openafs_server' %}
+
+- name: Generate csdb.yaml
+  hosts: afs_databases
+  tasks:
+    - import_role:
+        name: openafs_common
+        tasks_from: generate_csdb
+{% endif %}
+{%- if cookiecutter.playbooks.paths %}
+  {%- for playbook in cookiecutter.playbooks.paths %}
+
+- import_playbook: {{ playbook }}
+  {%- endfor %}
+{%- endif %}
+{%- if cookiecutter.role_name %}
+
+- name: Converge
+  hosts: all
+  tasks:
+    - import_role:
+        name: {{ cookiecutter.role_name }}
+{%- endif %}

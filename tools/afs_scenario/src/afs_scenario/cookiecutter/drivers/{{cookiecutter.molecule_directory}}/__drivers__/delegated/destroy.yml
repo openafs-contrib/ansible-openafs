@@ -1,5 +1,4 @@
 ---
-{%- if cookiecutter.driver == 'delegated' and cookiecutter.driver_provider == 'libvirt' %}
 {%- raw %}
 - name: Add hypervisor
   hosts: localhost
@@ -31,4 +30,3 @@
       loop: "{{ molecule_yml.platforms }}"
       register: virt_up
 {%- endraw %}
-{%- endif %}

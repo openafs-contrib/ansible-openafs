@@ -1,0 +1,126 @@
+---
+dependency:
+  name: galaxy
+[% if driver is defined %]
+driver:
+  name: [[ driver.name ]]
+  [% if driver.provider is defined %]
+  provider:
+    name: [[ driver.provider ]]
+  [% endif %]
+  [% if driver.options is defined %]
+  options:
+    [[ driver.options | to_nice_yaml | indent ]]
+  [%- endif %]
+[% endif %]
+[% if platforms is defined %]
+platforms:
+{%- for i in range(cookiecutter.num_instances | int) %}
+  - name: [[ platforms.instance_prefix ]]{{ cookiecutter.instance_name }}-{{ '%02d' % (i+1) }}
+[% if driver is defined %]
+    [% if driver.name == 'vagrant' %]
+    box: "${AFS_IMAGE:-generic/centos7}"
+    [% elif driver.name == 'delegated' and driver.provider == 'libvirt' %]
+    template: "${AFS_IMAGE:-generic-centos-7}"
+    [% endif %]
+[% endif %]
+  {%- if cookiecutter.groups['%d' % (i+1)] %}
+    groups:
+    {%- for group in cookiecutter.groups['%d' % (i+1)] %}
+      - {{ group }}
+    {%- endfor %}
+  {%- endif %}
+{%- endfor %}
+[% endif %]
+provisioner:
+  name: ansible
+  [% if driver is defined and driver.name == 'delegated' %]
+  playbooks:
+    cleanup: ../__drivers__/delegated/cleanup.yml
+    create: ../__drivers__/delegated/create.yml
+    destroy: ../__drivers__/delegated/destroy.yml
+    prepare: ../__drivers__/delegated/prepare.yml
+  [% endif %]
+  inventory:
+    group_vars:
+      all:
+        afs_realm: "{{ cookiecutter.realm }}"
+        afs_cell: "{{ cookiecutter.cell }}"
+        afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
+    {%- if cookiecutter.role_name %}
+    {#- ============================================================================ -#}
+    {%- if cookiecutter.role_name == 'openafs_devel' %}
+        afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"
+        afs_git_version: "${AFS_GIT_VERSION:-master}"
+        afs_builds: "${AFS_BUILDS:-~/.cache/ansible-openafs/builds}"
+    {%- endif %}
+    {#- ============================================================================ -#}
+    {%- if cookiecutter.role_name == 'openafs_client' %}
+        afs_install_method: "{{ cookiecutter.install_method }}"
+      {%- if cookiecutter.install_method in ('default', 'managed', 'packages') %}
+        afs_module_install_method: "{{ cookiecutter.module_install_method }}"
+      {%- endif %}
+      {%- if cookiecutter.install_method in ('packages', 'bdist', 'sdist') %}
+        afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
+      {%- elif cookiecutter.install_method == 'scm' %}
+        afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"
+        afs_git_version: "${AFS_GIT_VERSION:-master}"
+      {%- endif %}
+    {%- endif %}
+    {#- ============================================================================ -#}
+    {%- if cookiecutter.role_name == 'openafs_server' %}
+        afs_install_method: "{{ cookiecutter.install_method }}"
+        afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
+        afs_pseudo_partitions: ['a', 'b']
+        afs_service_keytab: "../__files__/example-aes.keytab"
+      {%- if cookiecutter.install_method in ('packages', 'bdist', 'sdist') %}
+        afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
+      {%- elif cookiecutter.install_method == 'scm' %}
+        afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"
+        afs_git_version: "${AFS_GIT_VERSION:-master}"
+      {%- endif %}
+    {%- endif %}
+    {#- ============================================================================ #}
+    {%- else %}{#- if cookiecutter.role_name #}
+        afs_builds: "${AFS_BUILDS:-~/.cache/ansible-openafs/builds}"
+        afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
+        afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"
+        afs_git_version: "${AFS_GIT_VERSION:-master}"
+        afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
+        afs_install_method: "{{ cookiecutter.install_method }}"
+        afs_module_install_method: "{{ cookiecutter.module_install_method }}"
+        afs_pseudo_partitions: ['a', 'b']
+        #afs_service_keytab: "../__files__/example-aes.keytab"
+    {%- endif %}{#- if cookiecutter.role_name #}
+verifier:
+  name: ansible
+scenario:
+  create_sequence:
+    - create
+    - prepare
+  check_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - check
+    - destroy
+  converge_sequence:
+    - create
+    - prepare
+    - converge
+  destroy_sequence:
+    - cleanup
+    - destroy
+  test_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    {# - idempotence -#}
+    {# - side_effect -#}
+    - cleanup
+    - destroy

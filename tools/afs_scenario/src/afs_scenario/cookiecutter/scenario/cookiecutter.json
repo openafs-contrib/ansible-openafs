@@ -1,0 +1,13 @@
+{
+    "scenario_name": "default",
+    "role_name": "",
+    "playbooks": {"paths": []},
+    "instance_name": "server",
+    "num_instances": "1",
+    "groups": {},
+    "realm": "EXAMPLE.COM",
+    "cell": "example.com",
+    "install_method": "managed",
+    "module_install_method": "dkms",
+    "selinux_mode": ""
+}

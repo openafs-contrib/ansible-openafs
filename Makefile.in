@@ -20,6 +20,7 @@ help:
 	test -d .venv || $(PYTHON) -m venv .venv
 	.venv/bin/pip install -U wheel
 	.venv/bin/pip install -U -r requirements.txt
+	.venv/bin/pip install -U tools/afs_scenario
 	touch .venv/bin/activate
 
 init: .venv/bin/activate

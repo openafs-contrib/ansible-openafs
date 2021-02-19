@@ -1,0 +1,2 @@
+graft src/afs_scenario
+global-exclude *.pyc *.pyo *.pyd __pycache__ *.so
