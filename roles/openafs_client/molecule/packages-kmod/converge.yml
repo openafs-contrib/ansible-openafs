@@ -1,0 +1,12 @@
+---
+- import_playbook: ../__playbooks__/lookup_install_archive.yml
+
+- name: Converge
+  hosts: all
+  tasks:
+    - assert:
+        that:
+          - afs_install_archive is defined
+          - afs_install_archive != ''
+    - import_role:
+        name: openafs_client

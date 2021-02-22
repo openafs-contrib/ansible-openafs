@@ -1,0 +1,14 @@
+---
+- name: Generate csdb.yaml
+  hosts: afs_databases
+  tasks:
+    - import_role:
+        name: openafs_common
+        tasks_from: generate_csdb
+
+
+- name: Converge
+  hosts: all
+  tasks:
+    - import_role:
+        name: openafs_server

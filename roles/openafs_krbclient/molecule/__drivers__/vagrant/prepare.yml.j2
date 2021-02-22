@@ -1,0 +1,14 @@
+---
+- name: Wait for instances
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Waiting for system to start
+      wait_for_connection:
+[% if prepare is defined %]
+[% if prepare.import_playbook is defined %]
+
+- name: Prepare instances
+  import_playbook: [[ prepare.import_playbook ]]
+[% endif %]
+[% endif %]

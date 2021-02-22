@@ -1,0 +1,5 @@
+---
+
+- import_playbook: ../../../../playbooks/realm.yaml
+
+- import_playbook: ../../../../playbooks/cell.yaml

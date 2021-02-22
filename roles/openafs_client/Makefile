@@ -1,60 +1,51 @@
-# Copyright (c) 2019-2020 Sine Nomine Associates
+# Copyright (c) 2019-2021 Sine Nomine Associates
 
-.PHONY: help lint test distclean
+S=default
 
-COOK=cookiecutter \
-   --no-input -f -o molecule.old \
-   /home/mmeffie/src/ansible-openafs/cookiecutter/molecule-scenario driver=delegated driver_provider=libvirt driver_template_prefix=devel driver_libvirt_host=localhost \
-   instance_name=m-client \
-   with_client=yes
+.PHONY: help lint init test reset create
 
 help:
 	@echo "usage: make <target>"
 	@echo ""
 	@echo "targets:"
-	@echo "  lint        run lint checks"
-	@echo "  test        run molecule scenarios"
-	@echo "  molecule    generate molecule scenarios"
-	@echo "  reset       reset molecule temporary directories"
-	@echo "  clean       remove molecule scenarios"
+	@echo "  init    initialize molecule scenarios"
+	@echo "  lint    run lint checks"
+	@echo "  test    run a single molecule scenario"
+	@echo "  tests   run a series of molecule scenarios"
+	@echo "  reset   reset molecule temporary directories"
+	@echo "  create  create molecule boilerplate"
 
-lint:
+init:
+	afs-scenario init
+
+lint: init
+	pyflakes library/*.py
 	yamllint .
 	ansible-lint .
 
-test: molecule
-	molecule test --all
+test: init
+	molecule test -s $(S)
 
-molecule: Makefile
-	$(COOK) name=default
-	$(COOK) name=cen7           os=centos7  im=managed  im_module=dkms
-	$(COOK) name=cen7-kmod      os=centos7  im=managed  im_module=kmod
-	$(COOK) name=cen7-rpm       os=centos7  im=packages im_module=dkms
-	$(COOK) name=cen7-rpm-kmod  os=centos7  im=packages im_module=kmod
-	$(COOK) name=cen7-bdist     os=centos7  im=bdist
-	$(COOK) name=cen7-sdist     os=centos7  im=sdist
-	$(COOK) name=cen7-scm       os=centos7  im=scm
-	$(COOK) name=cen8           os=centos8  im=managed  im_module=dkms
-	$(COOK) name=cen8-kmod      os=centos8  im=managed  im_module=kmod
-	$(COOK) name=cen8-rpm       os=centos8  im=packages im_module=dkms
-	$(COOK) name=cen8-rpm-kmod  os=centos8  im=packages im_module=kmod
-	$(COOK) name=cen8-bdist     os=centos8  im=bdist
-	$(COOK) name=cen8-scm       os=centos8  im=scm
-	$(COOK) name=deb9           os=debian9  im=managed
-	$(COOK) name=deb9-bdist     os=debian9  im=bdist
-	$(COOK) name=deb9-scm       os=debian9  im=scm
-	$(COOK) name=deb10          os=debian10 im=managed
-	$(COOK) name=deb10-bdist    os=debian10 im=bdist
-	$(COOK) name=deb10-scm      os=debian10 im=scm
-	$(COOK) name=deb10-deb      os=debian10 im=packages
-	touch molecule
+.tests:
+	echo '# scenario  image' > .tests
+
+tests: init .tests
+	@grep -v '^#' .tests | while read s i; do \
+		echo "Running test $$s on image $$i"; \
+		AFS_IMAGE=$$i molecule test -s $$s || \
+		(echo "FAIL: scenario $$s image $$i"; exit 1); \
+		echo "PASS: scenario $$s image $$i"; \
+	done
 
 reset:
-	@if [ -d molecule ]; then \
-		for s in `ls molecule`; do \
-			molecule reset -s $$s; \
-		done \
-	fi
+	ls molecule | grep -v '^__' | while read s; do molecule reset -s $$s; done
 
-clean: reset
-	rm -rf molecule
+create: Makefile
+	afs-scenario create -s default -r openafs_client -g afs_clients --install-method=managed --module-install-method=dkms
+	afs-scenario create -s managed-dkms -r openafs_client -g afs_clients --install-method=managed --module-install-method=dkms
+	afs-scenario create -s managed-kmod -r openafs_client -g afs_clients --install-method=managed --module-install-method=kmod
+	afs-scenario create -s packages-dkms -r openafs_client -g afs_clients --install-method=packages --module-install-method=dkms
+	afs-scenario create -s packages-kmod -r openafs_client -g afs_clients --install-method=packages --module-install-method=kmod
+	afs-scenario create -s bdist -r openafs_client -g afs_clients --install-method=bdist
+	afs-scenario create -s sdist -r openafs_client -g afs_clients --install-method=sdist
+	afs-scenario create -s scm -r openafs_client -g afs_clients --install-method=scm

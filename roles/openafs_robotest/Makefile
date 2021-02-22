@@ -1,45 +1,44 @@
-# Copyright (c) 2019-2020 Sine Nomine Associates
+# Copyright (c) 2019-2021 Sine Nomine Associates
 
-.PHONY: help lint test distclean
+S=default
 
-COOK=cookiecutter \
-   --no-input -f -o molecule.old \
-   /home/mmeffie/src/ansible-openafs/cookiecutter/molecule-scenario driver=delegated driver_provider=libvirt driver_template_prefix=devel driver_libvirt_host=localhost \
-   instance_name=m-robotest \
-   with_client=yes \
-   with_robotest=yes
+.PHONY: help lint init test reset create
 
 help:
 	@echo "usage: make <target>"
 	@echo ""
 	@echo "targets:"
-	@echo "  lint        run lint checks"
-	@echo "  test        run molecule scenarios"
-	@echo "  molecule    generate molecule scenarios"
-	@echo "  reset       reset molecule temporary directories"
-	@echo "  clean       remove molecule scenarios"
+	@echo "  init    initialize molecule scenarios"
+	@echo "  lint    run lint checks"
+	@echo "  test    run a single molecule scenario"
+	@echo "  tests   run a series of molecule scenarios"
+	@echo "  reset   reset molecule temporary directories"
+	@echo "  create  create molecule boilerplate"
 
-lint:
+init:
+	afs-scenario init
+
+lint: init
+	pyflakes library/*.py
 	yamllint .
 	ansible-lint .
 
-test: molecule
-	molecule test --all
+test: init
+	molecule test -s $(S)
 
-molecule: Makefile
-	$(COOK) name=default
-	$(COOK) name=cen7 os=centos7
-	$(COOK) name=cen8 os=centos8
-	$(COOK) name=deb9 os=debian9
-	$(COOK) name=deb10 os=debian10
-	touch molecule
+.tests:
+	echo '# scenario  image' > .tests
+
+tests: init .tests
+	@grep -v '^#' .tests | while read s i; do \
+		echo "Running test $$s on image $$i"; \
+		AFS_IMAGE=$$i molecule test -s $$s || \
+		(echo "FAIL: scenario $$s image $$i"; exit 1); \
+		echo "PASS: scenario $$s image $$i"; \
+	done
 
 reset:
-	@if [ -d molecule ]; then \
-		for s in `ls molecule`; do \
-			molecule reset -s $$s; \
-		done \
-	fi
+	ls molecule | grep -v '^__' | while read s; do molecule reset -s $$s; done
 
-clean: reset
-	rm -rf molecule
+create: Makefile
+	afs-scenario create -r openafs_robotest -g afs_clients -g afs_databases -g afs_fileservers

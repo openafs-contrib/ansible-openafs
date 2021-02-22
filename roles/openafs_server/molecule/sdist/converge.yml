@@ -1,0 +1,19 @@
+---
+- name: Generate csdb.yaml
+  hosts: afs_databases
+  tasks:
+    - import_role:
+        name: openafs_common
+        tasks_from: generate_csdb
+
+- import_playbook: ../__playbooks__/lookup_install_archive.yml
+
+- name: Converge
+  hosts: all
+  tasks:
+    - assert:
+        that:
+          - afs_install_archive is defined
+          - afs_install_archive != ''
+    - import_role:
+        name: openafs_server

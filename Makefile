@@ -7,7 +7,7 @@ PYTHON=/usr/bin/python3
 help:
 	@echo "usage: make <target>"
 	@echo "targets:"
-	@echo "  init        install virtualenv"
+	@echo "  venv        install virtualenv"
 	@echo "  lint        run lint checks"
 	@echo "  test        run unit and molecule tests"
 	@echo "  scenarios   generate molecule scenarios"
@@ -23,7 +23,7 @@ help:
 	.venv/bin/pip install -U tools/afs_scenario
 	touch .venv/bin/activate
 
-init: .venv/bin/activate
+venv: .venv/bin/activate
 
 build: init
 	ansible-galaxy collection build
@@ -63,11 +63,6 @@ reset:
 	$(MAKE) -C tests/playbooks reset
 
 clean: reset
-	rm -rf roles/*/molecule
-	rm -rf roles/*/Makefile
-	rm -rf tests/playbooks/molecule
-	rm -rf tests/playbooks/Makefile
-	rm -f Makefile
 
 distclean: clean
 	rm -rf .venv
