@@ -5,7 +5,6 @@ ansible.cfg
 *.tar.gz
 *.pyc
 __pycache__/
-Makefile
 molecule.old/
 molecule.yml
 prepare.yml

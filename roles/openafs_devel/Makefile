@@ -2,10 +2,10 @@
 
 .PHONY: help lint test distclean
 
-COOK=@COOKIECUTTER@ \
+COOK=cookiecutter \
    --no-input -f -o molecule.old \
-   @TOPDIR@/cookiecutter/molecule-scenario @DRIVER_OPTIONS@ \
-   instance_name=@INSTANCE_PREFIX@devel \
+   /home/mmeffie/src/ansible-openafs/cookiecutter/molecule-scenario driver=delegated driver_provider=libvirt driver_template_prefix=devel driver_libvirt_host=localhost \
+   instance_name=m-devel \
    with_devel=yes
 
 help:
@@ -42,7 +42,7 @@ molecule: Makefile
 	$(COOK) name=deb10                os=debian10
 	$(COOK) name=deb10-bdist-modern   os=debian10 build=bdist bdist_style=modern
 	$(COOK) name=deb10-bdist-transarc os=debian10 build=bdist bdist_style=transarc
-	touch molecule.old
+	touch molecule
 
 reset:
 	@if [ -d molecule ]; then \

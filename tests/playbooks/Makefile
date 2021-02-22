@@ -2,10 +2,10 @@
 
 .PHONY: help lint test distclean
 
-COOK=@COOKIECUTTER@ \
+COOK=cookiecutter \
    --no-input -f -o molecule.old \
-   @TOPDIR@/cookiecutter/molecule-scenario @DRIVER_OPTIONS@ \
-   instance_name=@INSTANCE_PREFIX@playbooks \
+   /home/mmeffie/src/ansible-openafs/cookiecutter/molecule-scenario driver=delegated driver_provider=libvirt driver_template_prefix=devel driver_libvirt_host=localhost \
+   instance_name=m-playbooks \
 
 help:
 	@echo "usage: make <target>"
@@ -28,54 +28,54 @@ molecule: Makefile
 	$(COOK) name=default \
 	          number_instances=1 \
 	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
-	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
-	$(COOK) name=build-bdist groups=builders with_playbooks=@TOPDIR@/playbooks/build.yaml
-	$(COOK) name=realm groups=afs_kdcs with_playbooks=@TOPDIR@/playbooks/realm.yaml
+	          with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/realm.yaml,/home/mmeffie/src/ansible-openafs/playbooks/cell.yaml
+	$(COOK) name=build-bdist groups=builders with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/build.yaml
+	$(COOK) name=realm groups=afs_kdcs with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/realm.yaml
 	$(COOK) name=cell-single \
 	          number_instances=1 \
 	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
-	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	          with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/realm.yaml,/home/mmeffie/src/ansible-openafs/playbooks/cell.yaml
 	$(COOK) name=cell-single-rpms \
 	          im=packages \
 	          number_instances=1 \
 	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
-	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	          with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/realm.yaml,/home/mmeffie/src/ansible-openafs/playbooks/cell.yaml
 	$(COOK) name=cell-single-sdist \
 	          im=sdist \
 	          number_instances=1 \
 	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
-	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	          with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/realm.yaml,/home/mmeffie/src/ansible-openafs/playbooks/cell.yaml
 	$(COOK) name=cell-nodynroot \
 	          number_instances=1 \
 	          groups=afs_kdcs+afs_databases+afs_fileservers+afs_admin+afs_clients \
-	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml \
+	          with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/realm.yaml,/home/mmeffie/src/ansible-openafs/playbooks/cell.yaml \
 			  extra_vars=afs_afsd_opts:-debug
 	$(COOK) name=cell-cluster-managed \
 	          number_instances=6 \
 			  groups=afs_kdcs:1+afs_databases:1+afs_fileservers:2,3+afs_admin:4+afs_clients:4,5,6 \
 			  extra_vars=afs_kdc_servers:m-playbooks-01,afs_kadmin_server:m-playbooks-01 \
-	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	          with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/realm.yaml,/home/mmeffie/src/ansible-openafs/playbooks/cell.yaml
 	$(COOK) name=cell-cluster-packages im=packages \
 	          number_instances=6 \
 			  groups=afs_kdcs:1+afs_databases:1+afs_fileservers:2,3+afs_admin:4+afs_clients:4,5,6 \
 			  extra_vars=afs_kdc_servers:m-playbooks-01,afs_kadmin_server:m-playbooks-01 \
-	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	          with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/realm.yaml,/home/mmeffie/src/ansible-openafs/playbooks/cell.yaml
 	$(COOK) name=cell-cluster-bdist im=bdist \
 	          number_instances=6 \
 			  groups=afs_kdcs:1+afs_databases:1+afs_fileservers:2,3+afs_admin:4+afs_clients:4,5,6 \
 			  extra_vars=afs_kdc_servers:m-playbooks-01,afs_kadmin_server:m-playbooks-01 \
-	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	          with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/realm.yaml,/home/mmeffie/src/ansible-openafs/playbooks/cell.yaml
 	$(COOK) name=cell-cluster-sdist im=sdist \
 	          number_instances=6 \
 			  groups=afs_kdcs:1+afs_databases:1+afs_fileservers:2,3+afs_admin:4+afs_clients:4,5,6 \
 			  extra_vars=afs_kdc_servers:m-playbooks-01,afs_kadmin_server:m-playbooks-01 \
-	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
+	          with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/realm.yaml,/home/mmeffie/src/ansible-openafs/playbooks/cell.yaml
 	$(COOK) name=cell-cluster-scm im=scm \
 	          number_instances=6 \
 			  groups=afs_kdcs:1+afs_databases:1+afs_fileservers:2,3+afs_admin:4+afs_clients:4,5,6 \
 			  extra_vars=afs_kdc_servers:m-playbooks-01,afs_kadmin_server:m-playbooks-01 \
-	          with_playbooks=@TOPDIR@/playbooks/realm.yaml,@TOPDIR@/playbooks/cell.yaml
-	touch molecule.old
+	          with_playbooks=/home/mmeffie/src/ansible-openafs/playbooks/realm.yaml,/home/mmeffie/src/ansible-openafs/playbooks/cell.yaml
+	touch molecule
 
 reset:
 	@if [ -d molecule ]; then \

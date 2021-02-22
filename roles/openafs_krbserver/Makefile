@@ -2,10 +2,10 @@
 
 .PHONY: help lint test distclean
 
-COOK=@COOKIECUTTER@ \
+COOK=cookiecutter \
    --no-input -f -o molecule.old \
-   @TOPDIR@/cookiecutter/molecule-scenario @DRIVER_OPTIONS@ \
-   instance_name=@INSTANCE_PREFIX@krbserver \
+   /home/mmeffie/src/ansible-openafs/cookiecutter/molecule-scenario driver=delegated driver_provider=libvirt driver_template_prefix=devel driver_libvirt_host=localhost \
+   instance_name=m-krbserver \
    with_krbserver=yes
 
 help:
@@ -28,7 +28,7 @@ test: molecule
 
 molecule: Makefile
 	$(COOK) name=default
-	touch molecule.old
+	touch molecule
 
 reset:
 	@if [ -d molecule ]; then \

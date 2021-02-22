@@ -2,11 +2,12 @@
 
 .PHONY: help lint test distclean
 
-COOK=@COOKIECUTTER@ \
+COOK=cookiecutter \
    --no-input -f -o molecule.old \
-   @TOPDIR@/cookiecutter/molecule-scenario @DRIVER_OPTIONS@ \
-   instance_name=@INSTANCE_PREFIX@common \
-   with_common=yes
+   /home/mmeffie/src/ansible-openafs/cookiecutter/molecule-scenario driver=delegated driver_provider=libvirt driver_template_prefix=devel driver_libvirt_host=localhost \
+   instance_name=m-robotest \
+   with_client=yes \
+   with_robotest=yes
 
 help:
 	@echo "usage: make <target>"
@@ -19,7 +20,6 @@ help:
 	@echo "  clean       remove molecule scenarios"
 
 lint:
-	pyflakes library/*.py
 	yamllint .
 	ansible-lint .
 
@@ -28,7 +28,11 @@ test: molecule
 
 molecule: Makefile
 	$(COOK) name=default
-	touch molecule.old
+	$(COOK) name=cen7 os=centos7
+	$(COOK) name=cen8 os=centos8
+	$(COOK) name=deb9 os=debian9
+	$(COOK) name=deb10 os=debian10
+	touch molecule
 
 reset:
 	@if [ -d molecule ]; then \

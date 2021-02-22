@@ -2,7 +2,7 @@
 
 .PHONY: help init lint test build docs clean distclean
 
-PYTHON=@PYTHON@
+PYTHON=/usr/bin/python3
 
 help:
 	@echo "usage: make <target>"
