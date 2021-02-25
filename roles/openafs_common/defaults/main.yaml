@@ -12,7 +12,7 @@ afs_cell_files: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
 # afs_csdb:
 
 # Path to the CellServDB yaml file on the controller.
-afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
+# afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
 
 # Temporary directory on remote nodes.
 afs_tmpdir: /tmp/ansible-openafs
