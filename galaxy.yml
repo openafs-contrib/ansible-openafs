@@ -1,6 +1,6 @@
 namespace: openafs_contrib
 name: openafs
-version: 0.9.0
+version: 1.0.0-rc1
 readme: README.md
 authors:
 - Michael Meffie <mmeffie@sinenomine.net>
@@ -14,6 +14,3 @@ tags:
   - openafs
 dependencies: {}
 repository: 'https://github.com/openafs-contrib/ansible-openafs'
-# documentation: http://docs.example.com
-# homepage: http://example.com
-# issues: http://example.com/issue/tracker
