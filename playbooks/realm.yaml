@@ -1,17 +1,20 @@
 ---
 - name: Create a Kerberos realm
   hosts: afs_kdcs
+  collections:
+    - openafs_contrib.openafs
   vars:
     afs_cell: example.com
     afs_realm: EXAMPLE.COM
     afs_admin_principal: admin
-  roles:
-      - openafs_krbserver
   tasks:
+    - import_role:
+        name: openafs_krbserver
+
     - name: Create AFS service key
       become: yes
       no_log: yes
-      openafs_principal:
+      openafs_contrib.openafs.openafs_principal:
         state: present
         principal: "afs/{{ afs_cell }}"
         encryption_types:

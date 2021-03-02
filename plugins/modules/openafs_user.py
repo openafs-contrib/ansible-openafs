@@ -63,7 +63,7 @@ options:
 
 EXAMPLES = r'''
 - name: Create users
-  openafs_user:
+  openafs_contrib.openafs.openafs_user:
      name: "{{ item }}"
      group: tester
   with_items:

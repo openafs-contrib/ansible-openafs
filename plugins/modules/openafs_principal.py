@@ -100,7 +100,7 @@ options:
 EXAMPLES = r'''
 - name: Create an AFS service key
   become: yes
-  openafs_principal:
+  openafs_contrib.openafs.openafs_principal:
     principal: afs/example.com
     encryption_types:
       - aes128-cts:normal
@@ -116,14 +116,14 @@ EXAMPLES = r'''
 
 - name: Generate new keys
   become: yes
-  openafs_principal:
+  openafs_contrib.openafs.openafs_principal:
     state: rekey
     principal: afs/example.com
 
 # Requires an old version of Kerberos.
 - name: Obsolete DES key for testing
   become: yes
-  openafs_principal:
+  openafs_contrib.openafs.openafs_principal:
     state: present
     service: afs
     principal: afs/broken.com
@@ -131,7 +131,7 @@ EXAMPLES = r'''
 
 - name: Create some user principals
   become: yes
-  openafs_principal:
+  openafs_contrib.openafs.openafs_principal:
     state: present
     principal: "{{ item }}"
     password: "{{ initial_password }}

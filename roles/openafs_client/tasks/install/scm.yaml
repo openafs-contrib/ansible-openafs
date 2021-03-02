@@ -12,7 +12,7 @@
     - ansible_selinux.status == 'enabled'
 
 - import_role:
-    name: openafs_devel
+    name: openafs_contrib.openafs.openafs_devel
 
 - name: Build
   when: ansible_local.openafs.destdir is undefined
@@ -25,7 +25,7 @@
       register: checkout_results
 
     - name: Build OpenAFS binaries
-      openafs_build:
+      openafs_contrib.openafs.openafs_build:
         state: built-module
         target: install
         clean: "{{ checkout_results.changed }}"
@@ -49,13 +49,13 @@
 
     - name: Install binaries
       become: yes
-      openafs_install_bdist:
+      openafs_contrib.openafs.openafs_install_bdist:
         path: "{{ build_results.destdir }}"
       register: install_results
 
     - name: Store installation facts
       become: yes
-      openafs_store_facts:
+      openafs_contrib.openafs.openafs_store_facts:
         state: update
         facts:
           install_method: scm
@@ -66,7 +66,7 @@
 
 - name: Store installation facts
   become: yes
-  openafs_store_facts:
+  openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
       client_service_name: openafs-client

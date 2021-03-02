@@ -39,14 +39,14 @@ author:
 
 EXAMPLES = r'''
 - name: Build OpenAFS from source
-  openafs_build:
+  openafs_contrib.openafs.openafs_build:
     projectdir: ~/src/openafs
     target: install
     path: /tmp/openafs/bdist
 
 - name: Install OpenAFS binaries as root
   become: yes
-  openafs_install:
+  openafs_contrib.openafs.openafs_install:
     path: /tmp/openafs/bdist
     exclude: /usr/vice/etc/*
 '''

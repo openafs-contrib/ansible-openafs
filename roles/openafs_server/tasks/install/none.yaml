@@ -18,7 +18,7 @@
 
 - name: Store installation facts
   become: yes
-  openafs_store_facts:
+  openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
       install_method: none

@@ -11,6 +11,8 @@
 
 - name: Create CellServDB
   hosts: afs_databases
+  collections:
+    - openafs_contrib.openafs
   tasks:
     - import_role:
         name: openafs_common
@@ -21,37 +23,49 @@
 #
 - name: Install servers
   hosts: afs_databases:afs_fileservers
+  collections:
+    - openafs_contrib.openafs
   vars:
     # Create fake /vicep partitions for testing purposes.
     afs_pseudo_partitions: ['a', 'b', 'c']
-  roles:
-    - openafs_server
+  tasks:
+    - import_role:
+        name: openafs_server
 
 #
 # Install and setup the clients.
 #
 - name: Install clients
   hosts: afs_clients
-  roles:
-    - openafs_krbclient
-    - openafs_client
+  collections:
+    - openafs_contrib.openafs
+  tasks:
+    - import_role:
+        name: openafs_krbclient
+    - import_role:
+        name: openafs_client
 
 #
 # Create the top-level cell volumes and some initial users.
 #
 - name: New cell
   hosts: afs_admin
-  roles:
-    - openafs_krbclient
-    - openafs_client
+  collections:
+    - openafs_contrib.openafs
   tasks:
+    - import_role:
+        name: openafs_krbclient
+
+    - import_role:
+        name: openafs_client
+
     - name: Upload admin keytab
       copy:
         src: "{{ afs_cell_files }}/admin.keytab"
         dest: admin.keytab
 
     - name: Create top-level volumes
-      openafs_volume:
+      openafs_contrib.openafs.openafs_volume:
         state: present
         name: "{{ item.name }}"
         mount: "{{ item.mount }}"
@@ -71,7 +85,7 @@
             - "system:authuser write"
 
     - name: Create test users
-      openafs_user:
+      openafs_contrib.openafs.openafs_user:
         name: "{{ item }}"
         group: tester
       with_items:

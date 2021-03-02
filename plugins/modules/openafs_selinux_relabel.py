@@ -23,7 +23,7 @@ description:
 EXAMPLES = r"""
 - name: Relabel
   become: yes
-  openafs_selinux_relabel:
+  openafs_contrib.openafs.openafs_selinux_relabel:
 """
 
 RETURN = r"""

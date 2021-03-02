@@ -65,7 +65,7 @@
 - name: Create admin principal
   become: yes
   no_log: yes
-  openafs_principal:
+  openafs_contrib.openafs.openafs_principal:
     state: present
     principal: "{{ afs_admin_principal }}"
     password: "{{ afs_admin_password }}"

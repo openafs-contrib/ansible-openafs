@@ -29,13 +29,13 @@
       changed_when: false
 
 - name: Get installation paths
-  openafs_get_install_paths:
+  openafs_contrib.openafs.openafs_get_install_paths:
     package_manager_type: apt
   register: install_results
 
 - name: Store installation facts
   become: yes
-  openafs_store_facts:
+  openafs_contrib.openafs.openafs_store_facts:
     facts:
       install_method: "{{ afs_install_method }}"
       server_installed: yes

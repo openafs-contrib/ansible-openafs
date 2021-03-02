@@ -9,4 +9,4 @@
           - afs_install_archive is defined
           - afs_install_archive != ''
     - import_role:
-        name: openafs_client
+        name: openafs_contrib.openafs.openafs_client

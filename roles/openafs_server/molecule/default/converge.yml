@@ -3,7 +3,7 @@
   hosts: afs_databases
   tasks:
     - import_role:
-        name: openafs_common
+        name: openafs_contrib.openafs.openafs_common
         tasks_from: generate_csdb
 
 
@@ -11,4 +11,4 @@
   hosts: all
   tasks:
     - import_role:
-        name: openafs_server
+        name: openafs_contrib.openafs.openafs_server

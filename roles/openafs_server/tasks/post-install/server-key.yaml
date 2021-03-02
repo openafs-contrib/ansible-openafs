@@ -10,7 +10,7 @@
 
 - name: Add service keys
   become: yes
-  openafs_keys:
+  openafs_contrib.openafs.openafs_keys:
     state: present
     keytab: "{{ afs_afsconfdir }}/rxkad.keytab"
     cell: "{{ afs_cell }}"

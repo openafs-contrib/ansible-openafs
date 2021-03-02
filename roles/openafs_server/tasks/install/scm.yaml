@@ -12,7 +12,7 @@
     - ansible_selinux.status == 'enabled'
 
 - import_role:
-    name: openafs_devel
+    name: openafs_contrib.openafs.openafs_devel
 
 - name: Checkout source code
   git:
@@ -25,7 +25,7 @@
 #       to import the client role later. Doing a separate
 #       build later leads to issues with common libraries.
 - name: Build OpenAFS binaries
-  openafs_build:
+  openafs_contrib.openafs.openafs_build:
     target: install
     clean: "{{ checkout_results.changed }}"
     projectdir: "{{ afs_topdir }}"
@@ -45,13 +45,13 @@
 
 - name: Install binary distribution
   become: yes
-  openafs_install_bdist:
+  openafs_contrib.openafs.openafs_install_bdist:
     path: "{{ build_results.destdir }}"
   register: install_results
 
 - name: Store installation facts
   become: yes
-  openafs_store_facts:
+  openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
       install_method: scm

@@ -32,13 +32,13 @@
 
 - name: Install binary distribution
   become: yes
-  openafs_install_bdist:
+  openafs_contrib.openafs.openafs_install_bdist:
     path: "{{ afs_tmpdir }}/install"
   register: install_results
 
 - name: Store installation facts
   become: yes
-  openafs_store_facts:
+  openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
       install_method: "{{ afs_install_method }}"

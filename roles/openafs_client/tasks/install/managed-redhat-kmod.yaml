@@ -49,13 +49,13 @@
       - "kmod-openafs-{{ rpm_query.stdout }}-1.{{ ansible_kernel | regex_replace('-', '_') }}"
 
 - name: Get installation paths
-  openafs_get_install_paths:
+  openafs_contrib.openafs.openafs_get_install_paths:
     package_manager_type: rpm
   register: install_results
 
 - name: Store installation facts
   become: yes
-  openafs_store_facts:
+  openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
       install_method: "{{ afs_install_method }}"

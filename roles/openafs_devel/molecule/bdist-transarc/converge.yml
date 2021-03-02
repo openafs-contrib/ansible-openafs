@@ -3,7 +3,7 @@
   hosts: all
   tasks:
     - import_role:
-        name: openafs_devel
+        name: openafs_contrib.openafs.openafs_devel
 
     - name: Checkout source
       git:
@@ -19,7 +19,7 @@
       register: git_version
 
     - name: Build binary distribution
-      openafs_build:
+      openafs_contrib.openafs.openafs_build:
         target: dest
         clean: yes
         projectdir: "~/openafs"

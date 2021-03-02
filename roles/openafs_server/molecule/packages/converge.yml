@@ -3,7 +3,7 @@
   hosts: afs_databases
   tasks:
     - import_role:
-        name: openafs_common
+        name: openafs_contrib.openafs.openafs_common
         tasks_from: generate_csdb
 
 - import_playbook: ../__playbooks__/lookup_install_archive.yml
@@ -16,4 +16,4 @@
           - afs_install_archive is defined
           - afs_install_archive != ''
     - import_role:
-        name: openafs_server
+        name: openafs_contrib.openafs.openafs_server

@@ -70,7 +70,7 @@ EXAMPLES = r'''
 
 - name: Add service keys
   become: yes
-  openafs_keys:
+  openafs_contrib.openafs.openafs_keys:
     state: present
     keytab: /usr/afs/etc/rxkad.keytab
     cell: example.com

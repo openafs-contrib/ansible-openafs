@@ -18,7 +18,7 @@
   hosts: afs_databases
   tasks:
     - import_role:
-        name: openafs_common
+        name: openafs_contrib.openafs.openafs_common
         tasks_from: generate_csdb
 {% endif %}
 {%- if cookiecutter.playbooks.paths %}
@@ -33,5 +33,5 @@
   hosts: all
   tasks:
     - import_role:
-        name: {{ cookiecutter.role_name }}
+        name: {{ cookiecutter.namespace }}.{{ cookiecutter.collection }}.{{ cookiecutter.role_name }}
 {%- endif %}

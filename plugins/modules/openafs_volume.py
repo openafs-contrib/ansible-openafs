@@ -119,7 +119,7 @@ options:
 
 EXAMPLES = r"""
 - name: Create afs root volume
-  openafs_volume:
+  openafs_contrib.openafs.openafs_volume:
     state: present
     name: root.afs
     mount: /afs
@@ -127,7 +127,7 @@ EXAMPLES = r"""
     replicas: 3
 
 - name: Create cell root volume
-  openafs_volume:
+  openafs_contrib.openafs.openafs_volume:
     state: present
     name: root.cell
     mount: /afs/example.com
@@ -135,7 +135,7 @@ EXAMPLES = r"""
     replicas: 3
 
 - name: Create a volume
-  openafs_volume:
+  openafs_contrib.openafs.openafs_volume:
     state: present
     name: test
     mount: /afs/example.com/test
@@ -145,7 +145,7 @@ EXAMPLES = r"""
       - "system:authuser write"
 
 - name: Alternate acl format
-  openafs_volume:
+  openafs_contrib.openafs.openafs_volume:
     state: present
     name: test
     mount: /afs/example.com/test

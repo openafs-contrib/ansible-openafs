@@ -1,5 +1,7 @@
 {
     "scenario_name": "default",
+    "namespace": "openafs_contrib",
+    "collection": "openafs",
     "role_name": "",
     "playbooks": {"paths": []},
     "instance_name": "server",

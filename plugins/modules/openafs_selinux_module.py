@@ -38,7 +38,7 @@ EXAMPLES = r"""
 
 - name: Build SELinux module for openafs server
   become: yes
-  openafs_selinux_module:
+  openafs_contrib.openafs.openafs_selinux_module:
     name: openafs
     path: /var/lib/ansible-openafs/selinux
 """

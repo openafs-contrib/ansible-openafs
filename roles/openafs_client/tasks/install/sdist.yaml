@@ -21,7 +21,7 @@
           - afs_install_archive != ''
 
     - import_role:
-        name: openafs_devel
+        name: openafs_contrib.openafs.openafs_devel
 
     - debug:
         msg: "Installing {{ afs_install_archive }}"
@@ -72,7 +72,7 @@
     #       to import the client role later. Doing a separate
     #       build later leads to issues with common libraries.
     - name: Build OpenAFS binaries
-      openafs_build:
+      openafs_contrib.openafs.openafs_build:
         target: install
         clean: "{{ unarchive_results.changed }}"
         projectdir: "{{ sourcedir }}"
@@ -92,13 +92,13 @@
 
     - name: Install binary distribution
       become: yes
-      openafs_install_bdist:
+      openafs_contrib.openafs.openafs_install_bdist:
         path: "{{ build_results.destdir }}"
       register: install_results
 
     - name: Store installation facts
       become: yes
-      openafs_store_facts:
+      openafs_contrib.openafs.openafs_store_facts:
         state: update
         facts:
           install_method: sdist
@@ -111,7 +111,7 @@
   become: yes
   block:
     - name: Store installation facts
-      openafs_store_facts:
+      openafs_contrib.openafs.openafs_store_facts:
         state: update
         facts:
           client_service_name: openafs-client

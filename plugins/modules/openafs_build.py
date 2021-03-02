@@ -147,11 +147,11 @@ author:
 
 EXAMPLES = r'''
 - name: Build OpenAFS from source
-  openafs_build:
+  openafs_contrib.openafs.openafs_build:
     projectdir: ~/src/openafs
 
 - name: Build OpenAFS server binaries for RHEL
-  openafs_build:
+  openafs_contrib.openafs.openafs_build:
     state: built
     projectdir: ~/src/openafs
     clean: yes
@@ -177,7 +177,7 @@ EXAMPLES = r'''
   when: ansible_os_family == 'RedHat'
 
 - name: Build OpenAFS legacy distribution
-  openafs_build:
+  openafs_contrib.openafs.openafs_build:
     state: built-module
     projectdir: ~/src/openafs
     clean: yes

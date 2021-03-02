@@ -11,7 +11,7 @@
 
 - name: Wait for database quorum
   become: yes
-  openafs_wait_for_quorum:
+  openafs_contrib.openafs.openafs_wait_for_quorum:
     sleep: 10
     timeout: 600
   when:
@@ -27,7 +27,7 @@
 
 - name: Wait for fileserver registration
   become: yes
-  openafs_wait_for_registration:
+  openafs_contrib.openafs.openafs_wait_for_registration:
     sleep: 10
     timeout: 600
     signal: "{{ afs_registration_retry_signal | d('no') | bool }}"
@@ -39,7 +39,7 @@
   run_once: yes
   block:
     - name: Ensure administrator user exists
-      openafs_user:
+      openafs_contrib.openafs.openafs_user:
         state: present
         user: "{{ afs_admin_principal | replace('/', '.') }}"
         groups:
@@ -48,7 +48,7 @@
 
     - name: Ensure root volumes exist
       when: afs_create_root
-      openafs_volume:
+      openafs_contrib.openafs.openafs_volume:
         state: present
         volume: "{{ item }}"
         localauth: yes

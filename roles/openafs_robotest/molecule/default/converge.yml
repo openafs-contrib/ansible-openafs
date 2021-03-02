@@ -3,23 +3,23 @@
   hosts: afs_databases
   tasks:
     - import_role:
-        name: openafs_common
+        name: openafs_contrib.openafs.openafs_common
         tasks_from: generate_csdb
 
 - name: Converge
   hosts: all
   tasks:
     - import_role:
-        name: openafs_krbserver
+        name: openafs_contrib.openafs.openafs_krbserver
 
     - import_role:
-        name: openafs_krbclient
+        name: openafs_contrib.openafs.openafs_krbclient
 
     - import_role:
-        name: openafs_server
+        name: openafs_contrib.openafs.openafs_server
 
     - import_role:
-        name: openafs_client
+        name: openafs_contrib.openafs.openafs_client
 
     - import_role:
-        name: openafs_robotest
+        name: openafs_contrib.openafs.openafs_robotest
