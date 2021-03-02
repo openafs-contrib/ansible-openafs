@@ -2,7 +2,7 @@ import setuptools
 import re
 
 name = 'afs_scenario'
-description='Create molecule scenarios for ansible-openafs roles'
+description='Create templated molecule scenarios for openafs_contrib.openafs playbooks and roles.'
 
 def find_version():
     text = open('src/%s/__init__.py' % name).read()
@@ -15,6 +15,7 @@ setuptools.setup(
     author_email='mmeffie@sinenomine.net',
     description=description,
     long_description=description,
+    url='https://github.com/openafs-contrib/ansible-openafs/tree/master/tools/afs_scenario',
     packages=setuptools.find_packages(where='src'),
     package_dir={'': 'src'},
     include_package_data=True,
