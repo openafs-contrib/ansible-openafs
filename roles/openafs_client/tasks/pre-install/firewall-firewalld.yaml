@@ -4,7 +4,7 @@
 
 - name: Permit afs3 traffic
   become: yes
-  firewalld:
+  ansible.posix.firewalld:
     port: 7000-7009/udp
     state: enabled
     immediate: "{{ (ansible_facts.services['firewalld.service'].state == 'running') | ternary('yes','no') }}"
