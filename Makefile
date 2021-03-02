@@ -11,9 +11,10 @@ help:
 	@echo "  lint        run lint checks"
 	@echo "  test        run unit and molecule tests"
 	@echo "  scenarios   generate molecule scenarios"
-	@echo "  build       build ansible galaxy collection"
+	@echo "  build       build openafs collection"
+	@echo "  install     install openafs collection"
 	@echo "  reset       reset molecule temporary directories"
-	@echo "  clean       remove generated files"
+	@echo "  distclean   remove generated files"
 	@echo "  distclean   remove generated files and virtualenv"
 
 .venv/bin/activate: Makefile requirements.txt
@@ -25,8 +26,11 @@ help:
 
 venv: .venv/bin/activate
 
-build: init
+build: distclean
 	ansible-galaxy collection build
+
+install: build
+	ansible-galaxy collection install openafs_contrib-openafs-*.tar.gz --force
 
 lint:
 	$(MAKE) -C roles/openafs_krbserver lint
@@ -62,7 +66,9 @@ reset:
 	for r in roles/*; do $(MAKE) -C $$r reset; done
 	$(MAKE) -C tests/playbooks reset
 
-clean: reset
+clean:
+	rm -rf openafs_contrib-openafs-*.tar.gz
 
 distclean: clean
+	$(MAKE) -C tools/afs_scenario distclean
 	rm -rf .venv
