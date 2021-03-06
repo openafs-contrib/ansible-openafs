@@ -3,4 +3,4 @@
   hosts: all
   tasks:
     - import_role:
-        name: openafs_contrib.openafs.openafs_krbclient
+        name: openafs_krbclient

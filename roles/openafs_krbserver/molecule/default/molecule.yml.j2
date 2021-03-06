@@ -38,7 +38,7 @@ provisioner:
   inventory:
     group_vars:
       all:
-        afs_cell: "example.com"
+        afs_realm: "${AFS_REALM:-EXAMPLE.COM}"
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
 verifier:
   name: ansible
