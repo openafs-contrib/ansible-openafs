@@ -1,4 +1,3 @@
 ---
-_afs_client_install_platform: redhat
 _afs_cachedir: /usr/vice/cache
 afs_firewall: firewalld

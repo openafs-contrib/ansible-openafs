@@ -1,6 +1,4 @@
 ---
-_afs_server_install_platform: redhat
-
 # OS dependent variables
 afs_firewall: firewalld
 
