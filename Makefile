@@ -1,8 +1,10 @@
-# Copyright (c) 2019-2020 Sine Nomine Associates
+# Copyright (c) 2019-2021 Sine Nomine Associates
 
-.PHONY: help init lint test build docs clean distclean
+.PHONY: help init lint test build install clean distclean
 
 PYTHON=/usr/bin/python3
+VERSION=1.0.0-rc1
+UPDATE=--force
 
 help:
 	@echo "usage: make <target>"
@@ -14,7 +16,7 @@ help:
 	@echo "  build       build openafs collection"
 	@echo "  install     install openafs collection"
 	@echo "  reset       reset molecule temporary directories"
-	@echo "  distclean   remove generated files"
+	@echo "  clean       remove generated files"
 	@echo "  distclean   remove generated files and virtualenv"
 
 .venv/bin/activate: Makefile requirements.txt
@@ -26,11 +28,14 @@ help:
 
 venv: .venv/bin/activate
 
-build: distclean
-	ansible-galaxy collection build
+builds/openafs_contrib-openafs-$(VERSION).tar.gz:
+	mkdir -p builds
+	ansible-galaxy collection build --output-path builds .
+
+build: builds/openafs_contrib-openafs-$(VERSION).tar.gz
 
 install: build
-	ansible-galaxy collection install openafs_contrib-openafs-*.tar.gz --force
+	ansible-galaxy collection install $(UPDATE) builds/openafs_contrib-openafs-$(VERSION).tar.gz
 
 lint:
 	$(MAKE) -C roles/openafs_krbserver lint
@@ -67,8 +72,9 @@ reset:
 	$(MAKE) -C tests/playbooks reset
 
 clean:
-	rm -rf openafs_contrib-openafs-*.tar.gz
+	$(MAKE) -C tests clean
+	$(MAKE) -C tools/afs_scenario clean
 
 distclean: clean
 	$(MAKE) -C tools/afs_scenario distclean
-	rm -rf .venv
+	rm -rf .venv builds

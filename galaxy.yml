@@ -3,13 +3,19 @@ name: openafs
 version: 1.0.0-rc1
 readme: README.md
 authors:
-- Michael Meffie <mmeffie@sinenomine.net>
-- Cheyenne Wills <cwills@sinenomine.net>
-- Mark Vitale <mvitale@sinenomine.net>
-
+  - Michael Meffie <mmeffie@sinenomine.net>
+  - Cheyenne Wills <cwills@sinenomine.net>
+  - Mark Vitale <mvitale@sinenomine.net>
 description: Playbooks, roles, and modules to deploy the OpenAFS distributed filesystem.
 license: BSD-2-Clause
 tags:
   - openafs
+build_ignore:
+  - .gitignore
+  - .venv
+  - builds
+  - tools
+  - roles/*/.env.yml
+  - roles/*/.tests
 dependencies: {}
 repository: 'https://github.com/openafs-contrib/ansible-openafs'
