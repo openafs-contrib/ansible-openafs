@@ -41,4 +41,4 @@ reset:
 	ls molecule | grep -v '^__' | while read s; do molecule reset -s $$s; done
 
 create: Makefile
-	afs-scenario create -r openafs_robotest -g afs_clients -g afs_databases -g afs_fileservers
+	afs-scenario create -r openafs_robotest -g afs_clients

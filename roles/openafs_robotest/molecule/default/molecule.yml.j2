@@ -24,10 +24,7 @@ platforms:
     [% endif %]
 [% endif %]
     groups:
-      - afs_kdcs
       - afs_clients
-      - afs_databases
-      - afs_fileservers
 [% endif %]
 provisioner:
   name: ansible
@@ -41,14 +38,12 @@ provisioner:
   inventory:
     group_vars:
       all:
-        afs_cell: "example.com"
+        afs_cell: "${AFS_CELL:-example.com}"
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
-        afs_install_method: "managed"
-        afs_module_install_method: "dkms"
-        afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
-        afs_pseudo_partitions: ['a', 'b']
-        afs_service_keytab: "../__files__/example-aes.keytab"
+        afs_install_method: "${AFS_INSTALL_METHOD:-managed}"
+        afs_module_install_method: "${AFS_MODULE_INSTALL_METHOD:-dkms}"
         afs_robotest_install_webserver: no
+        afs_robotest_fileservers: "${AFS_ROBOTEST_FILESERVERS}"
 verifier:
   name: ansible
 scenario:
