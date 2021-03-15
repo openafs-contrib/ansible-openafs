@@ -47,8 +47,8 @@ lint:
 	$(MAKE) -C roles/openafs_robolint test
 
 molecule scenarios:
-	for r in roles/*; do $(MAKE) -C $$r molecule; done
-	$(MAKE) -C tests/playbooks molecule
+	for r in roles/*; do $(MAKE) -C $$r init; done
+	$(MAKE) -C tests/playbooks init
 
 test: test-modules test-roles test-playbooks
 
