@@ -1,5 +1,6 @@
 ---
 galaxy_info:
+  namespace: openafs_contrib
   role_name: openafs_common
   author: Michael Meffie
   description: OpenAFS base role

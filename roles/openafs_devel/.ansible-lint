@@ -2,3 +2,5 @@ skip_list:
   # Skip the bogus warning: 'Tasks that run when changed should likely be handlers'
   - ANSIBLE0016
   - '503'
+  # TODO: Convert to explicit modes
+  - risky-file-permissions

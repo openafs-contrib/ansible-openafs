@@ -52,4 +52,3 @@
 
         - debug:
             var: afs_install_archive
-

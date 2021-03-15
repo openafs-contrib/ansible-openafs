@@ -17,7 +17,6 @@ init:
 	afs-scenario init
 
 lint: init
-	pyflakes library/*.py
 	yamllint .
 	ansible-lint .
 

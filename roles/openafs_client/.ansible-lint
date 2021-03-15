@@ -1,3 +1,7 @@
 skip_list:
+  - unnamed-task
+  - empty-string-compare
   # Skip the bogus warning about rsync.
   - '303'
+  # TODO: Convert to explicit modes
+  - risky-file-permissions

@@ -1,5 +1,6 @@
 ---
 galaxy_info:
+  namespace: openafs_contrib
   role_name: openafs_krbclient
   author: Michael Meffie
   description: Kerberos client

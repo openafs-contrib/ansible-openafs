@@ -1,5 +1,6 @@
 ---
 galaxy_info:
+  namespace: openafs_contrib
   role_name: openafs_client
   author: Michael Meffie
   description: OpenAFS client
@@ -28,4 +29,4 @@ galaxy_info:
     - openafs
 
 dependencies:
-  - openafs_common
+  - openafs_contrib.openafs.openafs_common

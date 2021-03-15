@@ -1,6 +1,5 @@
 python-vagrant
-molecule-vagrant
-molecule
-ansible
+molecule[ansible,vagrant]
+ansible-lint
 pyflakes
 pytest

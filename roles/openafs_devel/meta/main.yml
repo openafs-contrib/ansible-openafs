@@ -1,6 +1,7 @@
 ---
 galaxy_info:
-  role_name: openafs_contrib.openafs.openafs_devel
+  namespace: openafs_contrib
+  role_name: openafs_devel
   author: Michael Meffie
   description: OpenAFS development
   company: Sine Nomine Associates
@@ -28,4 +29,4 @@ galaxy_info:
     - openafs
 
 dependencies:
-  - openafs_common
+  - openafs_contrib.openafs.openafs_common

@@ -17,5 +17,6 @@ build_ignore:
   - tools
   - roles/*/.env.yml
   - roles/*/.tests
+  - roles/*/.cache
 dependencies: {}
 repository: 'https://github.com/openafs-contrib/ansible-openafs'

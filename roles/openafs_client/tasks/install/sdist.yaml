@@ -26,10 +26,10 @@
     - name: Ensure tar is installed
       become: yes
       yum:
-      state: present
-      name:
-        - tar
-        - gzip
+        state: present
+        name:
+          - tar
+          - gzip
 
     - debug:
         msg: "Installing {{ afs_install_archive }}"
