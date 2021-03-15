@@ -17,6 +17,14 @@
       - afs_install_archive is defined
       - afs_install_archive != ''
 
+- name: Ensure tar is installed
+  become: yes
+  yum:
+    state: present
+    name:
+      - tar
+      - gzip
+
 - debug:
     msg: "Installing {{ afs_install_archive }}"
 

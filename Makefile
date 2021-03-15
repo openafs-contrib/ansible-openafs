@@ -44,7 +44,6 @@ lint:
 	$(MAKE) -C roles/openafs_devel lint
 	$(MAKE) -C roles/openafs_server lint
 	$(MAKE) -C roles/openafs_client lint
-	$(MAKE) -C roles/openafs_robolint test
 
 molecule scenarios:
 	for r in roles/*; do $(MAKE) -C $$r init; done
@@ -62,7 +61,6 @@ test-roles:
 	$(MAKE) -C roles/openafs_devel test
 	$(MAKE) -C roles/openafs_server test
 	$(MAKE) -C roles/openafs_client test
-	$(MAKE) -C roles/openafs_robotest test
 
 test-playbooks:
 	$(MAKE) -C tests/playbooks test

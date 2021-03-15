@@ -20,7 +20,6 @@ distributed filesystem.
 * OpenAFS client
 * OpenAFS server
 * OpenAFS development
-* OpenAFS Robot Framework test suite
 
 ## Example playbooks
 

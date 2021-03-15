@@ -23,6 +23,14 @@
     - import_role:
         name: openafs_contrib.openafs.openafs_devel
 
+    - name: Ensure tar is installed
+      become: yes
+      yum:
+      state: present
+      name:
+        - tar
+        - gzip
+
     - debug:
         msg: "Installing {{ afs_install_archive }}"
 
