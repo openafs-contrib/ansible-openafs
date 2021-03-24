@@ -5,6 +5,4 @@ ansible.cfg
 *.tar.gz
 *.pyc
 __pycache__/
-molecule.old/
-molecule.yml
-prepare.yml
+.cache/

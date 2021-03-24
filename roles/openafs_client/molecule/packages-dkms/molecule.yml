@@ -1,0 +1,50 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+platforms:
+  - name: m-role-client-01
+    box: "${AFS_IMAGE:-generic/centos7}"
+    groups:
+      - afs_clients
+provisioner:
+  name: ansible
+  inventory:
+    group_vars:
+      all:
+        afs_cell: "example.com"
+        afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
+        afs_install_method: "packages"
+        afs_module_install_method: "dkms"
+        afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
+verifier:
+  name: ansible
+scenario:
+  create_sequence:
+    - create
+    - prepare
+  check_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - check
+    - destroy
+  converge_sequence:
+    - create
+    - prepare
+    - converge
+  destroy_sequence:
+    - cleanup
+    - destroy
+  test_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - cleanup
+    - destroy

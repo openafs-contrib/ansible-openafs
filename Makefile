@@ -19,11 +19,11 @@ help:
 	@echo "  clean       remove generated files"
 	@echo "  distclean   remove generated files and virtualenv"
 
-.venv/bin/activate: Makefile requirements.txt
+.venv/bin/activate:
 	test -d .venv || $(PYTHON) -m venv .venv
-	.venv/bin/pip install -U wheel
-	.venv/bin/pip install -U -r requirements.txt
-	.venv/bin/pip install -U tools/afs_scenario
+	.venv/bin/pip install -U pip
+	.venv/bin/pip install wheel
+	.venv/bin/pip install molecule[ansible] molecule-vagrant molecule-virtup python-vagrant ansible-lint pyflakes pytest
 	touch .venv/bin/activate
 
 venv: .venv/bin/activate
@@ -44,10 +44,6 @@ lint:
 	$(MAKE) -C roles/openafs_devel lint
 	$(MAKE) -C roles/openafs_server lint
 	$(MAKE) -C roles/openafs_client lint
-
-molecule scenarios:
-	for r in roles/*; do $(MAKE) -C $$r init; done
-	$(MAKE) -C tests/playbooks init
 
 test: test-modules test-roles test-playbooks
 

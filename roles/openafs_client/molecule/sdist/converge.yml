@@ -1,4 +1,6 @@
 ---
+- import_playbook: ../__playbooks__/preamble.yml
+
 - import_playbook: ../__playbooks__/lookup_install_archive.yml
 
 - name: Converge

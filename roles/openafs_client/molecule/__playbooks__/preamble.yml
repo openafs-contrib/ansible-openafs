@@ -1,0 +1,93 @@
+---
+- name: Update kernel
+  hosts: all
+  tasks:
+    - set_fact:
+        afs_prep_update_kernel: "{{ lookup('env', 'AFS_PREP_UPDATE_KERNEL') | d('yes', true) | bool }}"
+      when: afs_prep_update_kernel is undefined
+
+    - name: Update kernel
+      when:
+        - afs_prep_update_kernel
+        - ansible_pkg_mgr in ('yum', 'dnf')
+      become: yes
+      block:
+        - name: Update kernel with yum
+          yum:
+            state: latest
+            name:
+              - kernel
+          register: yum_update_results
+
+        - name: Reboot
+          reboot:
+            reboot_timeout: 600
+          when: yum_update_results.changed
+
+        - name: Re-gather facts
+          setup:
+
+        - name: Update kernel headers with yum
+          yum:
+            state: present
+            name: "kernel-devel-uname-r == {{ ansible_kernel }}"
+
+    - name: Update kernel
+      when:
+        - afs_prep_update_kernel
+        - ansible_pkg_mgr == 'apt'
+      become: yes
+      block:
+        - name: Update kernel with apt
+          apt:
+            state: latest
+            name: 'linux-image*'
+            only_upgrade: yes
+            update_cache: yes
+          register: apt_update_results
+
+        - name: Reboot
+          reboot:
+            reboot_timeout: 600
+          when: apt_update_results.changed
+
+        - name: Re-gather facts
+          setup:
+
+        - name: Update kernel headers with apt
+          apt:
+            state: present
+            name: linux-headers-{{ ansible_kernel }}
+
+- name: Configure hosts file
+  hosts: all
+  tasks:
+    - name: Configure /etc/hosts
+      become: yes
+      copy:
+        backup: yes
+        dest: /etc/hosts
+        content: |
+          127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+          ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+          {% for name in hostvars | sort %}
+          {{ hostvars[name].ansible_default_ipv4.address }}    {{ hostvars[name].ansible_hostname }}
+          {% endfor %}
+
+- name: Setup selinux mode
+  hosts: all
+  tasks:
+    - set_fact:
+        afs_prep_selinux_mode: "{{ lookup('env', 'AFS_PREP_SELINUX_MODE') | d('permissive', true) }}"
+      when: afs_prep_selinux_mode is undefined
+
+    - name: Configure selinux mode
+      become: yes
+      selinux:
+        policy: targeted
+        state: "{{ afs_prep_selinux_mode }}"
+      when:
+        - afs_prep_selinux_mode in ('permissive', 'enforcing', 'disabled')
+        - ansible_selinux is defined
+        - ansible_selinux.status is defined
+        - ansible_selinux.status == 'enabled'

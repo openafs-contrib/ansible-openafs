@@ -3,7 +3,7 @@
   hosts: all
   tasks:
     - import_role:
-        name: openafs.openafs_devel
+        name: openafs_devel
 
     - name: Checkout source
       git:

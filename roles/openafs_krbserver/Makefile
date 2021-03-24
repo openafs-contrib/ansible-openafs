@@ -1,43 +1,33 @@
 # Copyright (c) 2019-2021 Sine Nomine Associates
 
-S=default
+MOLECULE_DRIVER ?= vagrant
 
-.PHONY: help init lint test reset create
+.PHONY: help init lint test test-all reset
 
 help:
 	@echo "usage: make <target>"
 	@echo ""
 	@echo "targets:"
-	@echo "  init    initialize molecule scenarios"
-	@echo "  lint    run lint checks"
-	@echo "  test    run a single molecule scenario"
-	@echo "  tests   run a series of molecule scenarios"
-	@echo "  reset   reset molecule temporary directories"
-	@echo "  create  create molecule boilerplate"
+	@echo "  lint     run lint checks"
+	@echo "  test     run a single molecule scenario"
+	@echo "  test-all run a series of molecule scenarios"
+	@echo "  reset    reset molecule temporary directories"
+	@echo ""
+	@echo "environment:"
+	@echo "  MOLECULE_DRIVER=<name> (default: vagrant)"
 
-init:
-	afs-scenario init
-
-lint: init
+lint:
 	yamllint .
 	ansible-lint .
 
-test: init
-	molecule test -s $(S)
+test:
+	molecule test -d $(MOLECULE_DRIVER) -s default
 
-.tests:
-	echo '# scenario  image' > .tests
-
-tests: init .tests
-	@grep -v '^#' .tests | while read s i; do \
-		echo "Running test $$s on image $$i"; \
-		AFS_IMAGE=$$i molecule test -s $$s || \
-		(echo "FAIL: scenario $$s image $$i"; exit 1); \
-		echo "PASS: scenario $$s image $$i"; \
-	done
+test-all:
+	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s default
+	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s default
+	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s default
+	@echo "ok"
 
 reset:
-	ls molecule | grep -v '^__' | while read s; do molecule reset -s $$s; done
-
-create: Makefile
-	afs-scenario create -r openafs_krbserver -g afs_kdcs
+	molecule reset -s default

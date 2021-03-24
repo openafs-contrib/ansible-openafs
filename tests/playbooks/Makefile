@@ -1,56 +1,46 @@
 # Copyright (c) 2019-2021 Sine Nomine Associates
 
-S=default
+MOLECULE_DRIVER ?= vagrant
+PLAYBOOKS ?= ../../playbooks
 
-.PHONY: help lint init test tests reset create
+.PHONY: help lint init test reset test-all \
+	test-centos-7 test-centos-8 test-debian-10
 
 help:
 	@echo "usage: make <target>"
 	@echo ""
 	@echo "targets:"
-	@echo "  init    initialize molecule scenarios"
-	@echo "  lint    run lint checks"
-	@echo "  test    run a single molecule scenario"
-	@echo "  tests   run a series of molecule scenarios"
-	@echo "  reset   reset molecule temporary directories"
-	@echo "  create  create molecule boilerplate"
+	@echo "  lint     run lint checks"
+	@echo "  test     run a single molecule scenario"
+	@echo "  test-all run a series of molecule scenarios"
+	@echo "  reset    reset molecule temporary directories"
 
-init:
-	afs-scenario init
-
-lint: init
+lint:
 	yamllint $(PLAYBOOKS)
 	ansible-lint $(PLAYBOOKS)
 
-test: init
-	molecule test -s $(S)
+test:
+	molecule test -d $(MOLECULE_DRIVER) -s default
 
-.tests:
-	echo '# scenario  envfile' > .tests
+test-all: test-centos-7 test-centos-8 test-debian-10
+	@echo "ok"
 
-tests: init .tests
-	@grep -v '^#' .tests | while read s e; do \
-		echo "Running test $$s on with vars $$e"; \
-		molecule --env-file .env/$${e}.yml test -s $$s || \
-		(echo "FAIL: scenario $$s vars $$e"; exit 1); \
-		echo "PASS: scenario $$s vars $$e"; \
-	done
+test-centos-7:
+	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s realm
+	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s default
+	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s cluster
+
+test-centos-8:
+	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s realm
+	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s default
+	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s cluster
+
+test-debian-10:
+	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s realm
+	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s default
+	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s cluster
 
 reset:
-	ls molecule | grep -v '^__' | while read s; do molecule reset -s $$s; done
-
-# Playbooks
-PLAYBOOKS=../../../../playbooks
-NEWREALM=-p $(PLAYBOOKS)/realm.yaml
-NEWCELL=-p $(PLAYBOOKS)/realm.yaml -p $(PLAYBOOKS)/cell.yaml
-
-# Server configurations.
-C0=-n 1 -g afs_kdcs
-C1=-n 1 -g afs_kdcs -g afs_databases -g afs_fileservers -g afs_admin -g afs_clients
-C2=-n 6 -g afs_kdcs=1 -g afs_databases=1 -g afs_fileservers=2,3 -g afs_admin=4 -g afs_clients=4,5,6
-
-create: Makefile
-	afs-scenario create -s default $(NEWCELL) $(C1)
-	afs-scenario create -s realm   $(NEWREALM) $(C0)
-	afs-scenario create -s cluster $(NEWCELL) $(C2)
-
+	molecule reset -s default
+	molecule reset -s realm
+	molecule reset -s cluster

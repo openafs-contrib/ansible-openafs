@@ -1,6 +1,0 @@
-{
-    "molecule_directory": "molecule",
-    "_copy_without_render": [
-        "*.py"
-    ]
-}

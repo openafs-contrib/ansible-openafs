@@ -1,10 +1,5 @@
 ---
-- name: Generate csdb.yaml
-  hosts: afs_databases
-  tasks:
-    - import_role:
-        name: openafs_contrib.openafs.openafs_common
-        tasks_from: generate_csdb
+- import_playbook: ../__playbooks__/preamble.yml
 
 - import_playbook: ../__playbooks__/lookup_install_archive.yml
 
