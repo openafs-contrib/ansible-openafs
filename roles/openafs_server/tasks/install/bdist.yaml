@@ -24,6 +24,7 @@
     name:
       - tar
       - gzip
+  when: ansible_pkg_mgr in ('yum', 'dnf')
 
 - debug:
     msg: "Installing {{ afs_install_archive }}"
