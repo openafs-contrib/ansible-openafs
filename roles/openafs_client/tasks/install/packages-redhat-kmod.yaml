@@ -75,7 +75,7 @@
 # kmod-openafs-debuginfo file will also be installed if present.
 - name: Find kmod rpm filenames
   find:
-    path: "{{ afs_tmpdir }}/rpms/"
+    path: "{{ afs_tmpdir }}/install/"
     patterns: "kmod-openafs-*.rpm"
   register: find_kmods
 
@@ -141,7 +141,7 @@
 - name: Cleanup uploaded rpm files
   file:
     state: absent
-    path: "{{ afs_tmpdir }}/rpms/{{ rpm }}"
+    path: "{{ afs_tmpdir }}/install/{{ rpm }}"
   changed_when: false
   with_items: "{{ uploaded_rpms }}"
   when: uploaded_rpms is defined
