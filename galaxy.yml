@@ -1,6 +1,6 @@
 namespace: openafs_contrib
 name: openafs
-version: 1.0.0-rc2
+version: 1.0.0-rc3
 readme: README.md
 authors:
   - Michael Meffie <mmeffie@sinenomine.net>
