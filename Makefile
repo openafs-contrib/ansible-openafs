@@ -3,7 +3,7 @@
 .PHONY: help init lint test build install clean distclean
 
 PYTHON=/usr/bin/python3
-VERSION=1.0.0-rc3
+VERSION=1.0.0-rc4
 UPDATE=--force
 
 help:
