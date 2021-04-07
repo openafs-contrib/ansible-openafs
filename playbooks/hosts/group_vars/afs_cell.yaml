@@ -1,0 +1,22 @@
+---
+# Example group variables.
+
+#
+# Example afs_csdb. Provide the values in your inventory if your db
+# addresses are fixed. For testing environments, generate the external
+# csdb.yaml file with the generate_csdb task.
+#
+# afs_csdb:
+#   cell: example.com
+#   desc: My Example Cell
+#   hosts:
+#     - ip: 192.168.122.219
+#       name: afs02
+#       clone: no
+#     - ip: 192.168.122.154
+#       name: afs03
+#       clone: no
+#     - ip: 192.168.122.195
+#       name: afs04
+#       clone: no
+#

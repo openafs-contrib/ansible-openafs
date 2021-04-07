@@ -12,6 +12,35 @@ The OpenAFS cell name.
 
 The Kerberos realm name. Defaults to the uppercased cell name.
 
+    afs_csdb: (undefined by default)
+
+The CellServDB information for this cell. Example:
+
+    afs_csdb:
+      cell: example.com
+      desc: Cell name
+      hosts:
+        - ip: 192.168.122.219
+          name: afs02
+          clone: no
+        - ip: 192.168.122.154
+          name: afs03
+          clone: no
+        - ip: 192.168.122.195
+          name: afs04
+          clone: no
+
+The `afs_csdb` should provided in your inventory. If not defined, the
+`afs_csdb` is read from the external yaml file located at `afs_csdb_file`.
+
+    afs_csdb_file: {{ afs_cell_files }}/csdb.yaml
+
+The path to the enternal yaml file containing CellServDB information for the
+cell. This file is read when the `afs_csdb` is not defined in the inventory.
+The `afs_csdb_file` can be created in a playbook with the `generate_csdb`
+task. This can be useful in to automatically create a usable CellServDB file
+in a test environment.
+
     afs_install_method: managed
 
 The method used to install OpenAFS on the remote node. The default value

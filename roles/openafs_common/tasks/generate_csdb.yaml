@@ -10,20 +10,20 @@
   assert:
     that: groups['afs_databases'] | count > 0
 
-- name: Verify destination path is defined
-  assert:
-    that: afs_csdb_file is defined
-
 - name: Generate the csdb.yaml file
   run_once: yes
   delegate_to: localhost
   block:
+    - debug:
+        msg: "Updating {{ afs_csdb_file }}"
+
     - name: Create the destination directory
       file:
         state: directory
         path: "{{ afs_csdb_file | dirname }}"
+      when: afs_csdb_file | dirname | count > 0
 
-    - name: Generate the csdb.yaml file
+    - name: Update the csdb.yaml file
       copy:
         dest: "{{ afs_csdb_file }}"
         content: |

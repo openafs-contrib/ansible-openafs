@@ -8,11 +8,27 @@ afs_realm: "{{ afs_cell | upper }}"
 # Path to files on controller to be uploaded to remote nodes.
 afs_cell_files: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
 
-# CellServDB information (default is undefined.)
+# CellServDB information. Undefined by default. Should be defined in your
+# inventory or the external csdb.yaml file should be created by the generate_csdb
+# task.
+#
 # afs_csdb:
+#   cell: example.com
+#   desc: Cell name
+#   hosts:
+#     - ip: 192.168.122.219
+#       name: afs02
+#       clone: no
+#     - ip: 192.168.122.154
+#       name: afs03
+#       clone: no
+#     - ip: 192.168.122.195
+#       name: afs04
+#       clone: no
 
-# Path to the CellServDB yaml file on the controller.
-# afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
+# Path to the CellServDB yaml file on the controller. This file is only
+# used when afs_csdb is not defined in your inventory.
+afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
 
 # Temporary directory on remote nodes.
 afs_tmpdir: /tmp/ansible-openafs

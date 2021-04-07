@@ -14,9 +14,10 @@
   collections:
     - openafs_contrib.openafs
   tasks:
-    - import_role:
+    - include_role:
         name: openafs_common
         tasks_from: generate_csdb
+      when: afs_csdb is undefined
 
 #
 # Install and setup the fileservers and database servers.
