@@ -67,8 +67,6 @@ reset:
 
 clean:
 	$(MAKE) -C tests clean
-	$(MAKE) -C tools/afs_scenario clean
 
 distclean: clean
-	$(MAKE) -C tools/afs_scenario distclean
 	rm -rf .venv builds
