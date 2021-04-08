@@ -66,7 +66,8 @@ reset:
 	$(MAKE) -C tests/playbooks reset
 
 clean:
+	rm -rf builds
 	$(MAKE) -C tests clean
 
 distclean: clean
-	rm -rf .venv builds
+	rm -rf .venv
