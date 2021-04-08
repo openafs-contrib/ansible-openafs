@@ -209,7 +209,7 @@ def main():
             argument_spec=dict(
                 state=dict(type='str', choices=['present', 'absent', 'rekey'], default='present'),
                 principal=dict(type='str', required=True),
-                password=dict(type='str'),
+                password=dict(type='str', no_log=True),
                 enctypes=dict(type='list', aliases=['enctype','encryption_type', 'encryption_types', 'keysalts']),
                 keytabs=dict(type='path', default='/var/lib/ansible-openafs/keytabs'),
                 kadmin=dict(type='path'),
