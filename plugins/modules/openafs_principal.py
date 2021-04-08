@@ -84,6 +84,12 @@ options:
     required: false
     default: false
 
+  keytab_name:
+    description: Alternative keytab name.
+    type: str
+    requried: false
+    default: principal name with '/' characters replaced by '.' characters.
+
   keytabs:
     desciption: Keytab storage directory on the KDC
     type: path
@@ -211,6 +217,7 @@ def main():
                 principal=dict(type='str', required=True),
                 password=dict(type='str', no_log=True),
                 enctypes=dict(type='list', aliases=['enctype','encryption_type', 'encryption_types', 'keysalts']),
+                keytab_name=dict(type='str'),
                 keytabs=dict(type='path', default='/var/lib/ansible-openafs/keytabs'),
                 kadmin=dict(type='path'),
             ),
@@ -221,6 +228,7 @@ def main():
     principal = module.params['principal']
     password = module.params['password']
     enctypes = module.params['enctypes']
+    keytab_name = module.params['keytab_name']
     keytabs = module.params['keytabs']
     kadmin = module.params['kadmin']
 
@@ -229,7 +237,11 @@ def main():
     else:
         realm = None
 
-    keytab = '%s/%s.keytab' % (keytabs, principal.replace('/', '.'))
+    if not keytab_name:
+        keytab_name = principal.replace('/', '.')
+    if not keytab_name.endswith('.keytab'):
+        keytab_name += '.keytab'
+    keytab = '%s/%s' % (keytabs, keytab_name)
 
     if not kadmin:
         kadmin = module.get_bin_path('kadmin.local', required=True)
