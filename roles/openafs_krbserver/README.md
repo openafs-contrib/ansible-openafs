@@ -9,18 +9,17 @@ Kerberos database and the first administrator principal.
 
 The Kerberos realm name.
 
-    afs_kerberos_master_password: (random by default)
+    afs_krb_master_password: (random by default)
 
 The secret Kerberos database master password. The password is a random string
 by default. It should be set on the command line (-e) or in a group variable,
 preferably encrypted with `ansible-vault`.
 
-    afs_admin_principal: admin
-    afs_admin_password: (undefined by default)
+    afs_krb_admin_principal: root/admin
+    afs_krb_admin_password: (random by default)
 
-A administrator principal to be created by this role.  The password is not
-defined by default and must be set on the command line (-e) or in a group
-variable, preferably encrypted with `ansible-vault`.
+A administrator principal to be created by this role.  The password is random
+by default and should be encrypted with `ansible-vault`.
 
 ##  License
 

@@ -73,7 +73,7 @@
   become: yes
   command: >
     {{ afs_kdb5_util }}
-    -P {{ afs_kerberos_master_password }}
+    -P {{ afs_krb_master_password }}
     -r {{ afs_realm }}
     create -s
   args:
@@ -85,8 +85,9 @@
   no_log: yes
   openafs_contrib.openafs.openafs_principal:
     state: present
-    principal: "{{ afs_admin_principal }}"
-    password: "{{ afs_admin_password }}"
+    principal: "{{ afs_krb_admin_principal }}"
+    password: "{{ afs_krb_admin_password }}"
+    acl: "*"
   register: admin_principal_results
 
 - name: Download admin keytab
@@ -94,11 +95,12 @@
   fetch:
     flat: yes
     src: "{{ admin_principal_results.keytab }}"
-    dest: "{{ afs_cell_files }}/admin.keytab"
+    dest: "{{ afs_realm_files }}/"
   register: download_results
 
-- debug:
-    msg: "Downloaded file {{ download_results.dest }}."
+- name: Downloaded.
+  debug:
+    var: download_results.dest
 
 - name: Start kerberos key server
   become: yes
