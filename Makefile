@@ -38,6 +38,7 @@ install: build
 	ansible-galaxy collection install $(UPDATE) builds/openafs_contrib-openafs-$(VERSION).tar.gz
 
 lint:
+	pyflakes plugins/modules/*.py
 	$(MAKE) -C roles/openafs_krbserver lint
 	$(MAKE) -C roles/openafs_krbclient lint
 	$(MAKE) -C roles/openafs_common lint

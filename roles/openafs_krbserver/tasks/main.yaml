@@ -20,6 +20,24 @@
     - "install-packages/{{ ansible_os_family }}.yaml"
     - "unknown.yaml"
 
+- name: Store installation facts
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      bins:
+        kdb5_util: "{{ afs_kdb5_util }}"
+      krbserver:
+        krb5_conf: "{{ afs_krbserver_krb5_conf }}"
+        kdc_conf: "{{ afs_krbserver_kdc_conf  }}"
+        kadm5_acl: "{{ afs_krbserver_kadm5_acl }}"
+        kadm5_keytab: "{{ afs_krbserver_kadm5_keytab | d('omit') }}"
+        principal: "{{ afs_krbserver_principal | d('omit')}}"
+        stash: "{{ afs_krbserver_stash | d('omit') }}"
+        dict:  "{{ afs_krbserver_dict | d('omit') }}"
+        kdc_service: "{{ afs_krbserver_kdc_service }}"
+        admin_service: "{{ afs_krbserver_admin_service }}"
+
 - name: Set default realm
   become: yes
   template:
@@ -40,16 +58,16 @@
   notify:
     - Restart kerberos key server
 
-- name: Configure kerberos admin server
+- name: Ensure acl file exists
   become: yes
-  template:
-    src: kadm5.acl.j2
+  copy:
+    force: no
     dest: "{{ afs_krbserver_kadm5_acl }}"
+    content: |
+      # kadmin acls
     owner: root
     group: root
     mode: 0600
-  notify:
-    - Restart kerberos admin server
 
 - name: Create kerberos kdc database
   become: yes

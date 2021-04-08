@@ -84,6 +84,12 @@ options:
     required: false
     default: false
 
+  acl:
+    description: Administrative permissions
+    type: str
+    required: false
+    default: None
+
   keytab_name:
     description: Alternative keytab name.
     type: str
@@ -183,10 +189,12 @@ realm:
   sample: EXAMPLE.COM
 '''
 
+import json
 import logging
 import logging.handlers
 import os
 import pprint
+import re
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -205,6 +213,17 @@ def setup_logging():
     log.addHandler(handler)
     log.setLevel(level)
 
+def load_facts():
+    try:
+        with open('/etc/ansible/facts.d/openafs.fact') as f:
+            facts = json.load(f)
+        krbserver = facts.get('krbserver', {})
+    except Exception as e:
+        log.warn('Unable to load krbserver facts: %s' % (str(e)))
+        krbserver = {}
+    log.debug('krbserver facts: %s' % (pprint.pformat(krbserver)))
+    return krbserver
+
 def main():
     setup_logging()
     results = dict(
@@ -217,6 +236,7 @@ def main():
                 principal=dict(type='str', required=True),
                 password=dict(type='str', no_log=True),
                 enctypes=dict(type='list', aliases=['enctype','encryption_type', 'encryption_types', 'keysalts']),
+                acl=dict(type='str'),
                 keytab_name=dict(type='str'),
                 keytabs=dict(type='path', default='/var/lib/ansible-openafs/keytabs'),
                 kadmin=dict(type='path'),
@@ -228,6 +248,7 @@ def main():
     principal = module.params['principal']
     password = module.params['password']
     enctypes = module.params['enctypes']
+    acl = module.params['acl']
     keytab_name = module.params['keytab_name']
     keytabs = module.params['keytabs']
     kadmin = module.params['kadmin']
@@ -245,6 +266,8 @@ def main():
 
     if not kadmin:
         kadmin = module.get_bin_path('kadmin.local', required=True)
+
+    facts = load_facts() # Read our installation facts.
 
     results['principal'] = principal
     results['kadmin'] = kadmin
@@ -310,6 +333,89 @@ def main():
             die('Failed to create keytab; file not found.')
         results['changed'] = True
 
+    def read_acl_file():
+        """
+        Slurp acl file into a list of lines.
+        """
+        kadm5_acl = facts.get('kadm5_acl', None)
+        if not kadm5_acl:
+            die('Unable to read kadm5.acl; path not found in local facts.')
+        log.info('Reading %s', kadm5_acl)
+        with open(kadm5_acl) as fh:
+            lines = fh.readlines()
+        return lines
+
+    def write_acl_file(lines):
+        kadm5_acl = facts.get('kadm5_acl', None)
+        if not kadm5_acl:
+            die('Unable to write kadm5.acl; path not found in local facts.')
+        log.info('Updating %s', kadm5_acl)
+        with open(kadm5_acl, 'w') as fh:
+            for line in lines:
+                fh.write(line)
+        results['changed'] = True
+
+    def add_acl(principal, permissions):
+        """
+        Add permissions for a principal to the ACL file.
+        """
+        found = False
+        output = []
+        for line in read_acl_file():
+            m = re.match(r'^\s*#', line)
+            if m:
+                output.append(line)
+                continue
+            m = re.match(r'^\s*$', line)
+            if m:
+                output.append(line)
+                continue
+            m = re.match(r'^\s*(\S+)\s+(\S+)', line)
+            if m:
+                # Note: To keep this simple, we don't bother with the wildcard
+                #       matching.
+                if m.group(1) == principal and m.group(2) == permissions:
+                    log.debug("Permissions '%s' for principal '%s' already present in acl file.",
+                               permissions, principal)
+                    return # Already present.
+                if m.group(1) == principal:
+                    found = True
+                    line = '%s %s\n' % (principal, permissions) # Update in place.
+                    log.info("Updating line in acl file: '%s'" % (line))
+                    output.append(line)
+                    continue
+            output.append(line)
+        if not found:
+            line = '%s %s\n' % (principal, permissions)
+            log.info("Adding line to acl file: '%s'" % (line))
+            output.append(line)
+        write_acl_file(output)
+
+    def remove_acl(principal):
+        """
+        Remove the permissions for a principal.
+        """
+        found = False
+        output = []
+        for line in read_acl_file():
+            m = re.match(r'^\s*#', line)
+            if m:
+                output.append(line)
+                continue
+            m = re.match(r'^\s*$', line)
+            if m:
+                output.append(line)
+                continue
+            m = re.match(r'^\s*(\S+)\s+(\S+)', line)
+            if m:
+                if m.group(1) == principal:
+                    found = True   # remove this line
+                    log.info("Removing line from acl file: '%s'" % (line))
+                    continue
+            output.append(line)
+        if found:
+            write_acl_file(output)
+
     if state == 'present':
         metadata = get_principal()
         if not metadata:
@@ -318,6 +424,8 @@ def main():
             metadata = get_principal()
             if not metadata:
                 die('Failed to add principal.')
+        if acl:
+            add_acl(principal, acl)
         if not os.path.exists(keytab):
             ktadd()
         results['metadata'] = metadata
@@ -340,6 +448,7 @@ def main():
             delete_principal()
         if get_principal():
             die('Failed to delete principal.')
+        remove_acl(principal)
     else:
         die('Internal error; invalid state: %s' % state)
 
