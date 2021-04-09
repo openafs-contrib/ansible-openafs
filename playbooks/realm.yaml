@@ -24,7 +24,7 @@
       become: yes
       openafs_principal:
         state: present
-        principal: "{{ afs_admin | replace('.', '/') }}"
+        principal: "{{ afs_admin }}"
         acl: "*"
       register: admin_princ_results
 

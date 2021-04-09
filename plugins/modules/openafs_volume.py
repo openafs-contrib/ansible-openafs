@@ -105,6 +105,7 @@ options:
       - The user must be a member of the c(system:administrators) group and
         must be a server superuser, that is, set in the c(UserList) file on
         each server in the cell.
+      - Old kerberos 4 '.' separators are automatically converted to modern '/' separators.
       - This option may only be used if a client is installed on the remote node.
     type: str
     default: admin
@@ -247,6 +248,10 @@ def main():
     localauth = module.params['localauth']
     auth_user = module.params['auth_user']
     auth_keytab = module.params['auth_keytab']
+
+    # Convert k4 to k5 name.
+    if '.' in auth_user and not '/' in auth_user:
+        auth_user = auth_user.replace('.', '/')
 
     if mount and not mount.startswith('/'):
         module.fail_json(msg='Invalid parameter: mount must be an asolute path; %s' % mount)

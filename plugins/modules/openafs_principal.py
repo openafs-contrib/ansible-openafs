@@ -62,6 +62,7 @@ options:
     description:
       - Kerberos principal name.
       - The name should be provided without the REALM component.
+      - Old kerberos 4 '.' separators are automatically converted to modern '/' separators.
     type: str
     required: true
 
@@ -257,6 +258,10 @@ def main():
         principal, realm = principal.split('@', 1)
     else:
         realm = None
+
+    # Convert k4 to k5 name.
+    if '.' in principal and not '/' in principal:
+        principal = principal.replace('.', '/')
 
     if not keytab_name:
         keytab_name = principal.replace('/', '.')
