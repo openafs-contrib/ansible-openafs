@@ -33,8 +33,9 @@ afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
 # Admin user.
 afs_admin: "{{ ansible_user }}.admin"
 
-# Regular user.
+# Regular user. Set afs_user_id to 0 to let the ptserver select the next available pts id.
 afs_user: "{{ ansible_user }}"
+afs_user_id: "{{ ansible_user_uid }}"
 
 # Temporary directory on remote nodes.
 afs_tmpdir: /tmp/ansible-openafs

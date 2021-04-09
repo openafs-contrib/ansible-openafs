@@ -50,8 +50,11 @@ An adminstrative user name. This is the `pts` user name, for example: `jdoe.admi
 The default value is `{{ ansible_user }}.admin`.
 
     afs_user: <username>
+    afs_user_id: <id>
 
-A regular user name and pts id. The default value is `ansible_user`.
+A regular user name and pts id. The default value is `ansible_user` and
+the default id is `ansible_user_uid`. Set `afs_user_id` to 0 to let the
+ptserver select the next available id.
 
     afs_install_method: managed
 

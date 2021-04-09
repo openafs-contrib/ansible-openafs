@@ -20,16 +20,27 @@ description:
     This requires a keytab for a user in the system:adminstrators
     group and a member of the UserList on all of the database servers.
 options:
+
   state:
     description:
       - c(present) create user and groups when not present
       - c(absent) remove user when not present
     type: str
     default: present
+
   user:
     description: AFS username.
     type: str
     required: true
+
+  id:
+    description:
+      - AFS pts id.
+      - The next available id will be selected if omitted or 0.
+    type: int
+    required: false
+    default: 0
+
   groups:
     description:
       - The AFS group names the user is a member.
@@ -37,12 +48,14 @@ options:
     type: list
     required: false
     aliases=['group']
- localauth:
+
+  localauth:
     description:
       - Indicates if the c(-localauth) option is to be used for authentication.
       - This option should only be used when running on a server.
     type: bool
     default: no
+
   auth_user:
     description:
       - The afs user name to be used when c(localauth) is False.
@@ -52,6 +65,7 @@ options:
       - This option may only be used if a client is installed on the remote node.
     type: str
     default: admin
+
   auth_keytab:
     description:
       - The path on the remote host to the keytab file to be used to authenticate.
@@ -122,6 +136,7 @@ def main():
             argument_spec=dict(
                 state=dict(type='str', choices=['present', 'absent'], default='present'),
                 user=dict(type='str', aliases=['name']),
+                id=dict(type='int', default=0),
                 groups=dict(type='list', default=[], aliases=['group']),
                 localauth=dict(type='bool', default=False),
                 auth_user=dict(type='str', default='admin'),
@@ -132,6 +147,7 @@ def main():
     log.info('Parameters: %s', pprint.pformat(module.params))
     state = module.params['state']
     user = module.params['user']
+    userid = module.params['id']
     groups = set(module.params['groups'])
     localauth = module.params['localauth']
     auth_user = module.params['auth_user']
@@ -259,7 +275,7 @@ def main():
                 members.add(m.group(1))
         return list(members)
 
-    def pts_createuser(name):
+    def pts_createuser(name, userid):
         """
         Ensure a user exists.
         """
@@ -269,8 +285,15 @@ def main():
                 return True
             if rc == 1 and "Entry for name already exists" in err:
                 return True
+            if rc == 1 and "Entry for id already exists" in err:
+                m = re.search(r'unable to create user (\S+) with id (\d+)', err)
+                if m and m.group(1) == name and int(m.group(2)) ==  userid:
+                    return True
             return False
-        run_pts(['createuser', '-name', name], is_done)
+        cmd = ['createuser', '-name', name]
+        if userid:
+            cmd.extend(['-id', str(userid)])
+        run_pts(cmd, is_done)
 
     def pts_creategroup(name):
         """
@@ -316,7 +339,7 @@ def main():
         login()
 
     if state == 'present':
-        pts_createuser(user)
+        pts_createuser(user, userid)
         for group in groups:
             if not group.startswith('system:'):
                 pts_creategroup(group)

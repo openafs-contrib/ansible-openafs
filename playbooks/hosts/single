@@ -31,6 +31,10 @@ afs_clients
 [afs_cell:vars]
 afs_realm = EXAMPLE.COM
 afs_cell = example.com
+#afs_security_model = none
+
+[afs_clients:vars]
+#afs_module_install_method = kmod
 
 [afs_devel:vars]
 
