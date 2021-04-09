@@ -12,7 +12,7 @@
 
     - name: Create AFS service key.
       become: yes
-      openafs_contrib.openafs.openafs_principal:
+      openafs_principal:
         state: present
         principal: "afs/{{ afs_cell }}"
         encryption_types:
@@ -22,7 +22,7 @@
 
     - name: Create admin principal.
       become: yes
-      openafs_contrib.openafs.openafs_principal:
+      openafs_principal:
         state: present
         principal: "{{ afs_admin | replace('.', '/') }}"
         acl: "*"
@@ -30,7 +30,7 @@
 
     - name: Create user principal.
       become: yes
-      openafs_contrib.openafs.openafs_principal:
+      openafs_principal:
         state: present
         principal: "{{ afs_user }}"
       register: user_princ_results

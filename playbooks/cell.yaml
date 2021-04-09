@@ -68,7 +68,7 @@
         name: openafs_common
 
     - name: Create top-level volumes
-      openafs_contrib.openafs.openafs_volume:
+      openafs_volume:
         state: present
         name: "{{ item.name }}"
         mount: "{{ item.mount }}"
@@ -90,7 +90,7 @@
             - "system:authuser write"
 
     - name: Create test user
-      openafs_contrib.openafs.openafs_user:
+      openafs_user:
         name: "{{ afs_user }}"
         id: "{{ afs_user_id }}"
         group: tester
