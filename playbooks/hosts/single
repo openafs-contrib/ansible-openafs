@@ -20,7 +20,7 @@ afs01
 [afs_devel]
 afs01
 
-[afs_admin]
+[afs_admin_client]
 afs01
 
 [afs_cell:children]

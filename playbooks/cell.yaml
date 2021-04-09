@@ -50,7 +50,7 @@
 # Create the top-level cell volumes and some initial users.
 #
 - name: New cell
-  hosts: afs_admin
+  hosts: afs_admin_client
   collections:
     - openafs_contrib.openafs
   tasks:

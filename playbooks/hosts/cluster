@@ -16,7 +16,7 @@ afs[05:06]
 [afs_clients]
 afs[07:09]
 
-[afs_admin]
+[afs_admin_client]
 afs07
 
 [afs_devel]

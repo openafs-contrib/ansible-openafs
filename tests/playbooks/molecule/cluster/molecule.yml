@@ -20,7 +20,7 @@ platforms:
   - name: m-playbook-server-04
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
-      - afs_admin
+      - afs_admin_client
       - afs_clients
   - name: m-playbook-server-05
     box: "${AFS_IMAGE:-generic/centos7}"
