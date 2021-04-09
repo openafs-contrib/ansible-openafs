@@ -30,6 +30,12 @@ afs_cell_files: "{{ '~/.ansible-openafs' | expanduser }}/{{ afs_cell }}"
 # used when afs_csdb is not defined in your inventory.
 afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
 
+# Admin user.
+afs_admin: "{{ ansible_user }}.admin"
+
+# Regular user.
+afs_user: "{{ ansible_user }}"
+
 # Temporary directory on remote nodes.
 afs_tmpdir: /tmp/ansible-openafs
 

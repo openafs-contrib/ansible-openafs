@@ -24,7 +24,7 @@
       become: yes
       openafs_contrib.openafs.openafs_principal:
         state: present
-        principal: "{{ ansible_user }}/admin"
+        principal: "{{ afs_admin | replace('.', '/') }}"
         acl: "*"
       register: admin_princ_results
 
@@ -32,7 +32,7 @@
       become: yes
       openafs_contrib.openafs.openafs_principal:
         state: present
-        principal: "{{ ansible_user }}"
+        principal: "{{ afs_user }}"
       register: user_princ_results
 
     - name: Download keytabs.

@@ -41,7 +41,7 @@
     - name: Ensure administrator user exists
       openafs_contrib.openafs.openafs_user:
         state: present
-        user: "{{ afs_admin_principal | replace('/', '.') }}"
+        user: "{{ afs_admin }}"
         groups:
           - system:administrators
         localauth: yes

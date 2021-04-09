@@ -41,6 +41,18 @@ The `afs_csdb_file` can be created in a playbook with the `generate_csdb`
 task. This can be useful in to automatically create a usable CellServDB file
 in a test environment.
 
+The CellServDB information for the cell. This must be provided as a inventory
+variable or an external yaml file, the path specifed by `afs_csdb_file`.
+
+    afs_admin: <username>.admin
+
+An adminstrative user name. This is the `pts` user name, for example: `jdoe.admin`
+The default value is `{{ ansible_user }}.admin`.
+
+    afs_user: <username>
+
+A regular user name and pts id. The default value is `ansible_user`.
+
     afs_install_method: managed
 
 The method used to install OpenAFS on the remote node. The default value

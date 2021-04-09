@@ -1,12 +1,7 @@
 ---
-# AFS admin principal
-afs_admin_principal: admin
-
-# AFS admin password (random default)
-afs_admin_password: "{{ lookup('password', afs_cell_files+'/afs_admin_password chars=ascii_letters,digits,hexdigits length=15') }}"
-
-# Kerberos keytab for AFS service
-afs_service_keytab: "{{ afs_cell_files }}/rxkad.keytab"
+# The Kerberos keytab for AFS service on the controller to be uploaded to
+# the servers.
+afs_service_keytab: "{{ afs_cell_files }}/afs.{{ afs_cell }}.keytab"
 
 # Is this host a fileserver?
 afs_is_fileserver: "{{ 'afs_fileservers' in group_names }}"

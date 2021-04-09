@@ -37,7 +37,7 @@ The OpenAFS cell organization description.
 
 The Kerberos realm name. Defaults to the uppercased cellname.
 
-    afs_service_keytab: ~/.ansible-openafs/<cell>/rxkad.keytab
+    afs_service_keytab: ~/.ansible-openafs/<cell>/afs.<cell>.keytab
 
 The path to the keytab file containing the kerberos keys for the AFS service.
 The keytab file must already exist on the controller. It is recommended to
@@ -58,6 +58,15 @@ example playbook.
 
 The CellServDB information for the cell. This must be provided as a inventory
 variable or an external yaml file, the path specifed by `afs_csdb_file`.
+
+    afs_admin: <username>.admin
+
+An adminstrative user name. This is the `pts` user name, for example: `jdoe.admin`
+The default value is `{{ ansible_user }}.admin`.
+
+    afs_user: <username>
+
+A regular user name. The default value is `{{ ansible_user }}`.
 
     afs_install_method: managed
 
@@ -97,10 +106,6 @@ Git repository URL and the git reference to check out and build.
     afs_git_version: "master"
 
 ## Server Role Variables
-
-    afs_admin_principal: admin
-
-An administrator username created and added to the UserList.
 
     afs_fileserver_type: dafs
 
