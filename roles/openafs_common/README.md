@@ -12,6 +12,10 @@ The OpenAFS cell name.
 
 The Kerberos realm name. Defaults to the uppercased cell name.
 
+    afs_cell_files: ~/.ansible_openafs/cell/<cell>
+
+Location of cell specific files on the controller.
+
     afs_csdb: (undefined by default)
 
 The CellServDB information for this cell. Example:
