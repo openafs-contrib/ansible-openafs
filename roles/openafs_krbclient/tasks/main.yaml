@@ -20,6 +20,16 @@
     - "install-packages/{{ ansible_os_family }}.yaml"
     - "unknown.yaml"
 
+- name: Store installation facts
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      bins:
+        kadmin: "{{ afs_kadmin }}"
+        kdestroy: "{{ afs_kdestroy }}"
+        kinit: "{{ afs_kinit }}"
+
 - name: Configure kerberos
   become: yes
   template:
