@@ -32,7 +32,7 @@
         kdc_conf: "{{ afs_krbserver_kdc_conf  }}"
         kadm5_acl: "{{ afs_krbserver_kadm5_acl }}"
         kadm5_keytab: "{{ afs_krbserver_kadm5_keytab | d('omit') }}"
-        principal: "{{ afs_krbserver_principal | d('omit')}}"
+        principal: "{{ afs_krbserver_principal | d('omit') }}"
         stash: "{{ afs_krbserver_stash | d('omit') }}"
         dict:  "{{ afs_krbserver_dict | d('omit') }}"
         kdc_service: "{{ afs_krbserver_kdc_service }}"
