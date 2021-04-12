@@ -39,15 +39,16 @@ options:
 EXAMPLES = r'''
 '''
 
-import json
-import logging
-import logging.handlers
-import os
-import pprint
+import json                     # noqa: E402
+import logging                  # noqa: E402
+import logging.handlers         # noqa: E402
+import os                       # noqa: E402
+import pprint                   # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 log = logging.getLogger('openafs_store_facts')
+
 
 def setup_logging():
     level = logging.INFO
@@ -62,11 +63,12 @@ def setup_logging():
     log.addHandler(handler)
     log.setLevel(level)
 
+
 def main():
     setup_logging()
     results = dict(
         changed=False,
-        ansible_facts={'ansible_local':{'openafs':{}}},
+        ansible_facts={'ansible_local': {'openafs': {}}},
     )
     module = AnsibleModule(
             argument_spec=dict(
@@ -86,14 +88,14 @@ def main():
     try:
         with open(factsfile) as fp:
             facts = json.load(fp)
-    except:
+    except Exception:
         facts = {}
 
     for key, value in module.params['facts'].items():
         if state == 'set':
             facts[key] = value
         elif state == 'update':
-            if not key in facts:
+            if key not in facts:
                 facts[key] = value
             elif isinstance(facts[key], dict) and isinstance(value, dict):
                 facts[key].update(value)
@@ -125,6 +127,7 @@ def main():
     results['ansible_facts']['ansible_local']['openafs'] = facts
     log.info('results=%s', pprint.pformat(results))
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()

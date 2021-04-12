@@ -24,17 +24,18 @@ EXAMPLES = r'''
 RETURN = r'''
 '''
 
-import json
-import logging
-import logging.handlers
-import os
-import pprint
-import re
-import time
+import json                     # noqa: E402
+import logging                  # noqa: E402
+import logging.handlers         # noqa: E402
+import os                       # noqa: E402
+import pprint                   # noqa: E402
+import re                       # noqa: E402
+import time                     # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 log = logging.getLogger('openafs_wait_for_quorum')
+
 
 def setup_logging():
     level = logging.INFO
@@ -48,6 +49,7 @@ def setup_logging():
     handler.setFormatter(formatter)
     log.addHandler(handler)
     log.setLevel(level)
+
 
 def main():
     setup_logging()
@@ -85,7 +87,7 @@ def main():
             with open('/etc/ansible/facts.d/openafs.fact') as f:
                 facts = json.load(f)
             cmd = facts['bins'][name]
-        except:
+        except Exception:
             cmd = module.get_bin_path(name)
         if not cmd:
             module.fail_json(msg='Unable to locate %s command.' % name)
@@ -119,7 +121,8 @@ def main():
             if m:
                 if m.group(1) != '0.0.0.0':
                     status['sync_host'] = m.group(1)
-                    log.info('Remote host is sync site: %s', status['sync_host'])
+                    log.info('Remote host is sync site: %s',
+                             status['sync_host'])
                 continue
             m = re.match(r"Sync site's db version is (\d+)\.(\d+)", line)
             if m:
@@ -165,6 +168,7 @@ def main():
     results['retries'] = retries
     log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()

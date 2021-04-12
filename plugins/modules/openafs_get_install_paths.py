@@ -29,15 +29,16 @@ options:
 EXAMPLES = r'''
 '''
 
-import os
-import fnmatch
-import logging
-import logging.handlers
-import pprint
+import os                   # noqa: E402
+import fnmatch              # noqa: E402
+import logging              # noqa: E402
+import logging.handlers     # noqa: E402
+import pprint               # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule   # noqa: E402
 
 log = logging.getLogger('openafs_get_install_paths')
+
 
 def setup_logging():
     level = logging.INFO
@@ -51,6 +52,7 @@ def setup_logging():
     handler.setFormatter(formatter)
     log.addHandler(handler)
     log.setLevel(level)
+
 
 package_managers = {
     'rpm': {
@@ -68,7 +70,9 @@ package_managers = {
         'aliases': {},
     },
     'apt': {
-        'query_packages': ['/usr/bin/dpkg-query', '--show', '--showformat', '${Package}\\n'],
+        'query_packages': [
+            '/usr/bin/dpkg-query', '--show', '--showformat', '${Package}\\n'
+        ],
         'query_files': ['/usr/bin/dpkg-query', '--listfiles'],
         'dirs': {
             'afsbosconfigdir': '/etc/openafs',
@@ -97,11 +101,13 @@ def list_files(module, pm):
         if line.startswith('openafs'):
             packages.append(line)
     if packages:
-        rc, out, err = module.run_command(pm['query_files'] + packages, check_rc=True)
+        rc, out, err = \
+            module.run_command(pm['query_files'] + packages, check_rc=True)
         for line in out.splitlines():
             line = line.strip()
             if line and os.path.exists(line):
                 yield line
+
 
 def main():
     setup_logging()
@@ -111,10 +117,10 @@ def main():
         dirs={},
     )
     module = AnsibleModule(
-            argument_spec=dict(
-                package_manager_type=dict(choices=['rpm', 'apt'], default='rpm'),
-            ),
-            supports_check_mode=False,
+        argument_spec=dict(
+            package_manager_type=dict(choices=['rpm', 'apt'], default='rpm'),
+        ),
+        supports_check_mode=False,
     )
     log.info('Parameters: %s', pprint.pformat(module.params))
 
@@ -133,9 +139,11 @@ def main():
         name = pm['aliases'].get(basename, basename)
         if exclude(f):
             continue
-        if os.path.isfile(f) and os.access(f, os.X_OK) and not '.build-id' in f:
-            if results['bins'].get(name) != f:
-                results['bins'][name] = f
+        if os.path.isfile(f) \
+           and os.access(f, os.X_OK) \
+           and '.build-id' not in f \
+           and results['bins'].get(name) != f:
+            results['bins'][name] = f
 
     # Add package specific directory paths. Ideally we would query the
     # installed binaries for the paths, but we don't have a good way to do that
@@ -145,6 +153,7 @@ def main():
 
     log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()

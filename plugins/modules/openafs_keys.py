@@ -128,18 +128,19 @@ service_principal:
   sample: "afs/example.com@EXAMPLE.COM"
 '''
 
-import errno
-import json
-import logging
-import logging.handlers
-import os
-import pprint
-import re
-import struct
+import errno                    # noqa: E402
+import json                     # noqa: E402
+import logging                  # noqa: E402
+import logging.handlers         # noqa: E402
+import os                       # noqa: E402
+import pprint                   # noqa: E402
+import re                       # noqa: E402
+import struct                   # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 log = logging.getLogger('openafs_keys')
+
 
 def setup_logging():
     level = logging.INFO
@@ -154,10 +155,11 @@ def setup_logging():
     log.addHandler(handler)
     log.setLevel(level)
 
+
 KEYTAB_MAGIC = 0x0502
 KEYTAB_MAGIC_OLD = 0x0501
 
-# See https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml
+# See https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml       # noqa: E501
 ENCTYPES = {
     1: 'des-cbc-crc',
     2: 'des-cbc-md4',
@@ -181,6 +183,7 @@ ENCTYPES = {
     65: 'subkey-keymaterial',
 }
 DES_ENCTYPES = (1, 2, 3, 15)
+
 
 class Keytab:
     """
@@ -214,7 +217,6 @@ class Keytab:
     #       counted_octet_string key;
     #   };
 
-
     def __init__(self, filename):
         self.entries = []
         self.name = filename
@@ -228,7 +230,7 @@ class Keytab:
         data = f.read(size)
         if len(data) != size:
             raise IOError("Failed to read keytab data.")
-        return struct.unpack(fmt, data) # returns a tuple
+        return struct.unpack(fmt, data)  # returns a tuple
 
     def _read_bytes(self, f):
         """
@@ -256,9 +258,9 @@ class Keytab:
         for _ in range(0, numc):
             components.append(self._read_string(f))
         if version != KEYTAB_MAGIC_OLD:
-            self._read_data(f, "!L") # read past name_type
+            self._read_data(f, "!L")  # read past name_type
         timestamp, vno8, eno = self._read_data(f, "!LBH")
-        self._read_bytes(f) # read past key
+        self._read_bytes(f)  # read past key
         principal = "%s@%s" % ('/'.join(components), realm)
         entry = {
             'realm': realm,
@@ -294,7 +296,8 @@ class Keytab:
                 raise ValueError("File {0} is not keytab.".format(path))
             while offset < file_size:
                 f.seek(offset)
-                size, = self._read_data(f, "!l") # record size, not including this field
+                # record size, not including this field
+                size, = self._read_data(f, "!l")
                 entry = self._read_entry(f, version)
                 self.entries.append(entry)
                 # Calculate next record location.
@@ -311,6 +314,7 @@ class Keytab:
             if e['principal'] == principal:
                 entries.append(e)
         return entries
+
 
 def main():
     setup_logging()
@@ -340,7 +344,7 @@ def main():
             with open('/etc/ansible/facts.d/openafs.fact') as f:
                 facts = json.load(f)
             cmd = facts['bins'][name]
-        except:
+        except Exception:
             cmd = module.get_bin_path(name)
         if not cmd:
             module.fail_json(msg='Unable to locate %s command.' % name)
@@ -358,7 +362,8 @@ def main():
         service_principal = '%s@%s' % (cell, realm)
         keys = keytab.find(service_principal)
     if not keys:
-        msg = "Keys not found in keytab %s for cell '%s', realm '%s'." % (keytab.name, cell, realm)
+        msg = "Keys not found in keytab %s for cell '%s', realm '%s'." % \
+              (keytab.name, cell, realm)
         log.error(msg)
         module.fail_json(msg=msg, keys=keytab.entries)
 
@@ -368,55 +373,67 @@ def main():
     # Check asetkey usage to determine how to add keys.
     rc, out, err = module.run_command([asetkey])
     usage = err.splitlines()
-    if len(usage) == 0 or not 'usage' in usage[0]:
-        log.error("Failed to get asetkey usage; rc=%d, out=%s, err=%s", rc, out, err)
-        module.fail_json(msg="Failed to get asetkey usage.", asetkey=asetkey, rc=rc, out=out, err=err)
+    if len(usage) == 0 or 'usage' not in usage[0]:
+        log.error("Failed to get asetkey usage; rc=%d, out=%s, err=%s",
+                  rc, out, err)
+        module.fail_json(msg="Failed to get asetkey usage.",
+                         asetkey=asetkey, rc=rc, out=out, err=err)
     have_extended_keys = False
     for line in usage:
         if "add <type> <kvno> <subtype> <keyfile> <princ>" in line:
             have_extended_keys = True
-    log.debug("have_extended_keys=%s", "True" if have_extended_keys else "False")
+    log.debug("have_extended_keys=%s",
+              "True" if have_extended_keys else "False")
     results['have_extended_keys'] = have_extended_keys
 
     # Retrieve the current keys to check for changes.
     rc, before, err = module.run_command([asetkey, 'list'])
     if rc != 0:
         log.error("Failed to list keys; rc=%d, out=%s, err=%s", rc, out, err)
-        module.fail_json(msg="Failed to list keys.", asetkey=asetkey, rc=rc, out=out, err=err)
+        module.fail_json(msg="Failed to list keys.",
+                         asetkey=asetkey, rc=rc, out=out, err=err)
 
     # Add the keys.
     for e in keys:
         kvno = str(e['kvno'])
         eno = str(e['eno'])
         if have_extended_keys:
-            args = [asetkey, 'add', 'rxkad_krb5', kvno, eno, keytab.name, service_principal]
+            args = [asetkey, 'add', 'rxkad_krb5', kvno, eno, keytab.name,
+                    service_principal]
         else:
-            # Old versions only support DES. OpenAFS 1.6.5 up to 1.8.0 will read non-DES
-            # keys from rxkad.keytab directly, so we just ignore them here and hope for the best.
+            # Old versions only support DES. OpenAFS 1.6.5 up to 1.8.0 will
+            # read non-DES keys from rxkad.keytab directly, so we just ignore
+            # them here and hope for the best.
             if eno not in DES_ENCTYPES:
                 continue
             args = [asetkey, 'add', kvno, keytab.name, service_principal]
         rc, out, err = module.run_command(args)
-        results['debug'].append(dict(cmd=' '.join(args), rc=rc, out=out, err=err))
+        results['debug'].append(dict(cmd=' '.join(args),
+                                rc=rc, out=out, err=err))
         if rc != 0:
-            log.error("Failed asetkey add; rc=%d, out=%s, err=%s", rc, out, err)
-            module.fail_json(msg="Failed asetkey add", rc=rc, out=out, err=err, keys=keys)
+            log.error("Failed asetkey add; rc=%d, out=%s, err=%s",
+                      rc, out, err)
+            module.fail_json(msg="Failed asetkey add",
+                             rc=rc, out=out, err=err, keys=keys)
 
-    # Check for changes and return list of key version numbers. Avoid returning the
-    # key values!
+    # Check for changes and return list of key version numbers. Avoid returning
+    # the key values!
     rc, after, err = module.run_command([asetkey, 'list'])
     if rc != 0:
         log.error("Failed to list keys; rc=%d, out=%s, err=%s", rc, out, err)
-        module.fail_json(msg="Failed to list keys.", asetkey=asetkey, rc=rc, out=out, err=err)
+        module.fail_json(msg="Failed to list keys.",
+                         asetkey=asetkey, rc=rc, out=out, err=err)
     if before != after:
         results['changed'] = True
     for line in after.splitlines():
         m = re.match(r'^(\w+)+\s+kvno\s+(\d+)\s+enctype\s+(\d+)', line)
         if m:
-            results['imported'].append(dict(type=m.group(1), kvno=m.group(2), eno=m.group(3)))
+            results['imported'].append(dict(type=m.group(1), kvno=m.group(2),
+                                            eno=m.group(3)))
 
     log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()

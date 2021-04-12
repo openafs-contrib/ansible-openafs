@@ -33,11 +33,11 @@ description:
   - Out-of-tree builds are supported by specifying a build directory with the
     I(builddir) option.
 
-  - Before the build starts, C(git clean) is run in the I(projectdir) directory to
-    remove all untracked files when I(clean) is true and a C(.git) directory is
-    found in the C(projectdir). All of the files and directories are removed from
-    the I(builddir) when I(clean) is true and an out-of-tree build is being
-    done.
+  - Before the build starts, C(git clean) is run in the I(projectdir) directory
+    to remove all untracked files when I(clean) is true and a C(.git) directory
+    is found in the C(projectdir). All of the files and directories are removed
+    from the I(builddir) when I(clean) is true and an out-of-tree build is
+    being done.
 
   - A check for a loadable kernel module is done after the build completes when
     the I(state) is C(built-module).  Be sure the I(target) and
@@ -58,10 +58,10 @@ options:
   state:
     description:
       - C(built) Run regen.sh, configure, make
-      - C(built-module) After build is complete, also verify a kernel module was
-        built for the current running kernel version. Be sure the target
-        and configure options are set to build a client when this state is
-        in use.
+      - C(built-module) After build is complete, also verify a kernel module
+        was built for the current running kernel version. Be sure the target
+        and configure options are set to build a client when this state is in
+        use.
     type: str
     default: complete
 
@@ -89,7 +89,8 @@ options:
 
   clean:
     description:
-      - Run C(git clean) in the I(projectdir) when it contains a C(.git) directory.
+      - Run C(git clean) in the I(projectdir) when it contains a C(.git)
+        directory.
       - Remove the I(builddir), if different than the I(projectdir).
       - A I(clean) build should be done if the source files in I(projectdir) or
         the I(configure_options) have been changed since the last time
@@ -131,8 +132,10 @@ options:
 
   destdir:
     description:
-      - The destination directory for C(install) and C(dest) targets and variants.
-      - The tree staged in this directory may be installed with the M(openafs_install) module.
+      - The destination directory for C(install) and C(dest) targets and
+        variants.
+      - The tree staged in this directory may be installed with the
+        M(openafs_install) module.
     default: I(projectdir)/packaging/dest
     type: path
 
@@ -217,7 +220,8 @@ destdir:
   sample: /home/tycobb/projects/myproject/packaging/dest
 
 logdir:
-  description: Absolute path to the log files. Maybe used for M(openafs_install).
+  description: Absolute path to the log files. May be used for
+               M(openafs_install).
   return: always
   type: string
   sample: /home/tycobb/projects/myproject/.ansible
@@ -239,20 +243,20 @@ kmods:
     - /home/tycobb/projects/myproject/src/libafs/MODLOAD-5.1.0-SP/openafs.ko
 '''
 
-import glob
-import logging
-import os
-import platform
-import pprint
-import re
-import shutil
-import json
-from multiprocessing import cpu_count
-from ansible.module_utils.basic import AnsibleModule
+import glob       # noqa: E402
+import logging    # noqa: E402
+import os         # noqa: E402
+import platform   # noqa: E402
+import pprint     # noqa: E402
+import re         # noqa: E402
+import shutil     # noqa: E402
+import json       # noqa: E402
+from multiprocessing import cpu_count  # noqa: E402
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 log = logging.getLogger('openafs_build')
 
-MAKEFILE_PATHS = """
+MAKEFILE_PATHS = r"""
 include ./src/config/Makefile.config
 short:
 	@echo afsbosconfigdir=$(afsbosconfigdir)
@@ -287,10 +291,12 @@ long:
 	@echo sbindir=$(sbindir)
 	@echo sysconfdir=$(sysconfdir)
 	@echo viceetcdir=$(viceetcdir)
-"""
+"""  # noqa: W191,E101
+
 
 class FileError(Exception):
     pass
+
 
 def copy_tree(src, dst):
     """Copy an entire directory tree.
@@ -326,6 +332,7 @@ def copy_tree(src, dst):
             outputs.append(dst_name)
     return outputs
 
+
 def abspath(base, rel):
     """ Get absolute path name relative to a base directory. """
     prev = os.getcwd()
@@ -334,12 +341,14 @@ def abspath(base, rel):
     os.chdir(prev)
     return path
 
+
 def tail(s, n=256):
     """ Get the last n chars of a string. """
     if len(s) <= n:
         return s
     else:
         return s[-n:]
+
 
 def run_command(name, command, cwd, module, logdir, results):
     """Run a command and log the stdout and stderr.
@@ -365,12 +374,13 @@ def run_command(name, command, cwd, module, logdir, results):
     if rc != 0:
         log.error('%s failed; rc=%d' % (name, rc))
         module.fail_json(
-            msg='%s command failed. See log files %s and %s' % \
+            msg='%s command failed. See log files %s and %s' %
                 (name, logfile_out, logfile_err),
             rc=rc,
             stdout=tail(out),
             stderr=tail(err),
         )
+
 
 def _od2a(options, prefix=None):
     args = []
@@ -388,6 +398,7 @@ def _od2a(options, prefix=None):
             args.append(_o2a(k, v))
     return args
 
+
 def _ol2a(options, prefix=None):
     args = []
     for v in options:
@@ -396,6 +407,7 @@ def _ol2a(options, prefix=None):
         else:
             args.append(_o2a(v, prefix=prefix))
     return args
+
 
 def _o2a(name, value=None, prefix=None):
     if prefix:
@@ -409,6 +421,7 @@ def _o2a(name, value=None, prefix=None):
     else:
         arg = '--%s=%s' % (name, value)
     return arg
+
 
 def options_to_args(options):
     """ Convert option dictionary to a list of command line arguments.
@@ -426,6 +439,7 @@ def options_to_args(options):
         args.append(_o2a(options))
     return args
 
+
 def configured_sysname(builddir):
     """ Get the afs sysname from the results of configure.
 
@@ -434,12 +448,12 @@ def configured_sysname(builddir):
     """
     config_log = os.path.join(builddir, 'config.log')
     try:
-      with open(config_log) as f:
-          for line in f.readlines():
-              m = re.match(r"AFS_SYSNAME='([^']*)'", line)
-              if m:
-                  return m.group(1)
-    except:
+        with open(config_log) as f:
+            for line in f.readlines():
+                m = re.match(r"AFS_SYSNAME='([^']*)'", line)
+                if m:
+                    return m.group(1)
+    except Exception:
         pass
     return ''
 
@@ -533,26 +547,37 @@ def main():
     #
     git_sha1 = None
     if gitdir:
-        git = [module.get_bin_path('git', required=True), 'diff-files', '--quiet']
+        git = [
+            module.get_bin_path('git', required=True),
+            'diff-files',
+            '--quiet',
+        ]
         rc, out, err = module.run_command(git, cwd=projectdir)
         if rc != 0:
             log.info('git repo is dirty')
         else:
-            git = [module.get_bin_path('git', required=True), 'show-ref', '--hash', 'HEAD']
+            git = [
+                module.get_bin_path('git', required=True),
+                'show-ref',
+                '--hash',
+                'HEAD',
+            ]
             rc, out, err = module.run_command(git, cwd=projectdir)
             if rc == 0:
                 git_sha1 = out.splitlines()[0]
                 log.info('Current sha1 %s', git_sha1)
                 results['git_sha1'] = git_sha1
 
-    if not clean and git_sha1 and os.path.exists(os.path.join(logdir, 'results.json')):
+    results_json = os.path.join(logdir, 'results.json')
+    if not clean and git_sha1 and os.path.exists(results_json):
         saved_results = {}
-        with open(os.path.join(logdir, 'results.json')) as f:
+        with open(results_json) as f:
             saved_results = json.load(f)
             log.debug('saved results=%s', saved_results)
         if git_sha1 == saved_results.get('git_sha1'):
             saved_results['changed'] = False
-            saved_results['msg'] = 'Build skipped; no changes since last build.'
+            saved_results['msg'] = \
+                'Build skipped; no changes since last build.'
             module.exit_json(**saved_results)
 
     #
@@ -566,7 +591,8 @@ def main():
                 module.get_bin_path('git', required=True),
                 'clean', '-f', '-d', '-x', '--exclude=.ansible',
             ]
-            run_command('clean', clean_command, projectdir, module, logdir, results)
+            run_command('clean', clean_command, projectdir, module,
+                        logdir, results)
         for pattern in ('*.out', '*.err', '*.json'):
             for oldlog in glob.glob(os.path.join(logdir, pattern)):
                 os.remove(oldlog)
@@ -583,7 +609,7 @@ def main():
         log.info('Creating build directory %s' % builddir)
         os.makedirs(builddir)
     if destdir:
-        destdir = abspath(builddir, destdir) # makefiles need the full path
+        destdir = abspath(builddir, destdir)  # makefiles need the full path
         results['destdir'] = destdir
 
     #
@@ -599,7 +625,8 @@ def main():
     # Report the version string. This is read from the .version file if
     # present, otherwise it is generated from `git describe`.
     #
-    rc, out, err = module.run_command(['./git-version', builddir], cwd=os.path.join(builddir, 'build-tools'))
+    cwd = os.path.join(builddir, 'build-tools')
+    rc, out, err = module.run_command(['./git-version', builddir], cwd=cwd)
     if rc != 0:
         log.info('Unable to determine version string.')
     else:
@@ -622,7 +649,8 @@ def main():
     else:
         args = []
     configure_command.extend(args)
-    run_command('configure', configure_command, builddir, module, logdir, results)
+    run_command('configure', configure_command, builddir, module, logdir,
+                results)
     results['sysname'] = configured_sysname(builddir)
     log.info("configured sysname is '%s'.", results['sysname'])
 
@@ -631,15 +659,18 @@ def main():
     #
     with open(os.path.join(builddir, '.Makefile.dirs'), 'w') as f:
         f.write(MAKEFILE_PATHS)
-    rc, out, err = module.run_command([make, '-f', '.Makefile.dirs'], cwd=builddir)
+    rc, out, err = module.run_command([make, '-f', '.Makefile.dirs'],
+                                      cwd=builddir)
     if rc != 0:
-        module.fail_json(msg='Failed to find installation directories: %s' % err)
+        module.fail_json(
+            msg='Failed to find installation directories: %s' % err)
     for line in out.splitlines():
         line = line.rstrip()
         if '=' in line:
             name, value = line.split('=', 1)
             if value.startswith('//'):
-                value = value.replace('//', '/', 1)  # Cleanup leading double slashes.
+                # Cleanup leading double slashes.
+                value = value.replace('//', '/', 1)
             results['install_dirs'][name] = value
 
     #
@@ -659,19 +690,22 @@ def main():
     # version (or any version). Let's fail early instead of finding out later
     # when we try to start the cache manager.
     #
-    kmod_pattern = os.path.join(builddir, 'src', 'libafs', 'MODLOAD-*', '*afs.ko')
+    kmod_pattern = \
+        os.path.join(builddir, 'src', 'libafs', 'MODLOAD-*', '*afs.ko')
     results['kmods'] = glob.glob(kmod_pattern)
     if state == 'built-module':
         log.info('Checking for kernel module for %s.' % platform.release())
         modloads = []
         for kmod in results['kmods']:
-            pattern = r'/MODLOAD-%s-[A-Z]*/(lib|open)afs\.ko$' % platform.release()
+            pattern = \
+                r'/MODLOAD-%s-[A-Z]*/(lib|open)afs\.ko$' % platform.release()
             m = re.search(pattern, kmod)
             if m:
                 modloads.append(kmod)
         log.info('Modules found: %s' % ' '.join(modloads))
         if not modloads:
-            results['msg'] = 'Loadable kernel module not found for %s' % platform.release()
+            results['msg'] = \
+                'Loadable kernel module not found for %s' % platform.release()
             log.error(results['msg'])
             module.fail_json(**results)
 
@@ -693,7 +727,9 @@ def main():
     #
     # Copy security key utilities to a standard location.
     #
-    if destdir and target in ('install', 'install_nolibafs', 'dest', 'dest_nolibafs'):
+    install_targets = \
+        ['install', 'install_nolibafs', 'dest', 'dest_nolibafs']
+    if destdir and target in install_targets:
         log.info('Copying security key utilities to %s' % destdir)
         for p in ('asetkey', 'akeyconvert'):
             src = os.path.join(builddir, 'src', 'aklog', p)
@@ -727,6 +763,7 @@ def main():
         f.write(json.dumps(results, indent=4))
 
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()

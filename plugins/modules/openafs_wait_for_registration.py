@@ -24,19 +24,20 @@ EXAMPLES = r'''
 RETURN = r'''
 '''
 
-import json
-import logging
-import logging.handlers
-import os
-import pprint
-import re
-import socket
-import struct
-import time
+import json                     # noqa: E402
+import logging                  # noqa: E402
+import logging.handlers         # noqa: E402
+import os                       # noqa: E402
+import pprint                   # noqa: E402
+import re                       # noqa: E402
+import socket                   # noqa: E402
+import struct                   # noqa: E402
+import time                     # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 log = logging.getLogger('openafs_wait_for_registration')
+
 
 def setup_logging():
     level = logging.INFO
@@ -51,9 +52,11 @@ def setup_logging():
     log.addHandler(handler)
     log.setLevel(level)
 
+
 def quad_dotted(unpacked_address):
     packed_address = struct.pack('!I', unpacked_address)
     return socket.inet_ntoa(packed_address)
+
 
 class UUID:
     """
@@ -62,14 +65,15 @@ class UUID:
     _s = struct.Struct('!I H H B B 6B')
     size = _s.size
 
-    def __init__(self, time_low=0, time_mid=0, time_hi=0, clock_hi=0, clock_low=0, node=None):
+    def __init__(self, time_low=0, time_mid=0, time_hi=0, clock_hi=0,
+                 clock_low=0, node=None):
         self.time_low = time_low
         self.time_mid = time_mid
         self.time_hi = time_hi
         self.clock_hi = clock_hi
         self.clock_low = clock_low
         if node is None:
-            self.node = (0,0,0,0,0,0)
+            self.node = (0, 0, 0, 0, 0, 0)
         else:
             self.node = node
 
@@ -134,7 +138,7 @@ class UUID:
         time_hi = int(g[2], base=16)
         clock_hi = int(g[3], base=16)
         clock_low = int(g[4], base=16)
-        node = tuple([int(g[5][i:i+2], base=16) for i in range(0,12,2)])
+        node = tuple([int(g[5][i:i+2], base=16) for i in range(0, 12, 2)])
         return UUID(time_low, time_mid, time_hi, clock_hi, clock_low, node)
 
     def __eq__(self, other):
@@ -156,14 +160,16 @@ class UUID:
             self.node != other.node
 
     def __hash__(self):
-        return hash((self.time_low, self.time_mid, self.time_hi, self.clock_hi, self.clock_low, self.node))
+        return hash((self.time_low, self.time_mid, self.time_hi, self.clock_hi,
+                    self.clock_low, self.node))
 
     def __str__(self):
         """
         Return string representation of the UUID.
         """
         sep = ''
-        return "{:08x}-{:04x}-{:04x}-{:02x}{}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}"\
+        return "{:08x}-{:04x}-{:04x}-{:02x}{}{:02x}-"\
+               "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}"\
             .format(self.time_low, self.time_mid, self.time_hi,
                     self.clock_hi, sep, self.clock_low, *self.node)
 
@@ -177,6 +183,7 @@ class UUID:
             " clock_low={s.clock_low}"\
             " node={s.node}"\
             ">".format(s=self)
+
 
 class Sysid:
     MAGIC = 0x88aabbcc
@@ -201,7 +208,7 @@ class Sysid:
         Returns:
             Sysid: self
         """
-        magic,version = struct.unpack('=I I', data[0:8])
+        magic, version = struct.unpack('=I I', data[0:8])
         if magic != self.MAGIC:
             raise ValueError('Bad magic value: 0x%0x' % magic)
         if version != self.VERSION:
@@ -209,10 +216,12 @@ class Sysid:
         uuid = UUID.decode(data[8:24])
         num_addrs, = struct.unpack('=I', data[24:28])
         if not 0 <= num_addrs <= 255:
-            raise ValueError('Bad number of addresses: 0x%s' % data[24:28].hex())
+            raise ValueError('Bad number of addresses: 0x%s' %
+                             data[24:28].hex())
         expected = 28 + (4 * num_addrs)
         if len(data) != expected:
-            raise ValueError('Bad data length: expected=%d, found=%d' % (expected, len(data)))
+            raise ValueError('Bad data length: expected=%d, found=%d' %
+                             (expected, len(data)))
         unpacked_addrs = struct.unpack('!{0}I'.format(num_addrs), data[28:])
         self.magic = magic
         self.version = version
@@ -228,6 +237,7 @@ class Sysid:
             " uuid={self.uuid}"\
             " addrs={self.addrs}"\
             ">".format(self=self)
+
 
 def main():
     setup_logging()
@@ -265,7 +275,8 @@ def main():
             with open('/etc/ansible/facts.d/openafs.fact') as f:
                 facts = json.load(f)
             cmd = facts['bins'][name]
-        except:
+        except Exception as e:
+            log.warning("Unable to load facts: %s", e)
             cmd = module.get_bin_path(name)
         if not cmd:
             module.fail_json(msg='Unable to locate %s command.' % name)
@@ -279,7 +290,8 @@ def main():
             with open('/etc/ansible/facts.d/openafs.fact') as f:
                 facts = json.load(f)
             dir = facts['dirs'][name]
-        except:
+        except Exception as e:
+            log.warning("Unable to load facts: %s", e)
             module.fail_json(msg='Unable to locate %s directory.' % name)
         return dir
 
@@ -296,11 +308,11 @@ def main():
             if "no quorum elected" in err:
                 return True
             if "invalid RPC (RX) operation" in err:
-                return True # May occur during server startup.
+                return True  # May occur during server startup.
             if "Couldn't read/write the database" in err:
-                return True # May occur during server startup.
+                return True  # May occur during server startup.
             if "no such entry" in err:
-                return True # Retry not found!
+                return True  # Retry not found!
             return False
 
         if done is None:
@@ -320,9 +332,11 @@ def main():
             if retries == 0 or not retry(rc, out, err):
                 log.error("Failed: %s, rc=%d, err=%s", cmdline, rc, err)
                 module.fail_json(
-                    dict(msg='Command failed.', cmdline=cmdline, rc=rc, out=out, err=err))
+                    dict(msg='Command failed.', cmdline=cmdline, rc=rc,
+                         out=out, err=err))
             log.warning("Failed: %s, rc=%d, err=%s; %d retr%s left.",
-                cmdline, rc, err, retries, ('ies' if retries > 1 else 'y'))
+                        cmdline, rc, err, retries,
+                        ('ies' if retries > 1 else 'y'))
             retries -= 1
             time.sleep(5)
 
@@ -339,13 +353,14 @@ def main():
             if "no quorum elected" in err:
                 return True
             if "invalid RPC (RX) operation" in err:
-                return True # May occur during server startup.
+                return True  # May occur during server startup.
             if "Couldn't read/write the database" in err:
-                return True # May occur during server startup.
+                return True  # May occur during server startup.
             return False
 
         vos = lookup_command('vos')
-        out = run_command([vos, 'listaddrs', '-noresolve', '-printuuid'], done=done, retry=retry)
+        out = run_command([vos, 'listaddrs', '-noresolve', '-printuuid'],
+                          done=done, retry=retry)
         servers = []
         uuid = None
         addrs = []
@@ -359,8 +374,9 @@ def main():
             if m:
                 addrs.append(m.group(1))
                 continue
-            m = re.match(r'$', line) # Records are terminated with a blank line.
+            m = re.match(r'$', line)
             if m:
+                # Records are terminated with a blank line.
                 servers.append(dict(uuid=uuid, addrs=addrs))
                 uuid = None
                 addrs = []
@@ -395,7 +411,7 @@ def main():
             log.warning('No active fileserver bnodes found in BosConfig.')
             return None
         if len(bnodes) > 1:
-            log.warning('Too many active fileserver bnodes found in BosConfig.')
+            log.warning('Too many fileserver bnodes found in BosConfig.')
             return None
         bnode = bnodes[0]
         log.debug('fileserver bnode is %s', bnode)
@@ -408,7 +424,8 @@ def main():
         bnode = lookup_bnode()
         if not bnode:
             return None
-        path = os.path.join(lookup_directory('afslocaldir'), '%s.file.pid' % bnode)
+        path = os.path.join(lookup_directory('afslocaldir'),
+                            '%s.file.pid' % bnode)
         try:
             log.debug("Reading pid file '%s'.", path)
             with open(path) as f:
@@ -417,14 +434,15 @@ def main():
             log.warning("Unable to read pid file '%s'; %s", path, e)
             return None
         except ValueError as e:
-            log.warning("Unable to convert pid file '%s' contents to int; %s", path, e)
+            log.warning("Unable to convert pid file '%s' contents to int; %s",
+                        path, e)
             return None
         log.debug('fileserver pid is %d', pid)
         return pid
 
     #
-    # Wait for VLDB registration. We check for our uuid in the VLDB, and if
-    # not present, send a signal to the fileserver to expedite the registration.
+    # Wait for VLDB registration. We check for our uuid in the VLDB, and if not
+    # present, send a signal to the fileserver to expedite the registration.
     # The fileserver will retry to register every 5 minutes as well.
     #
     if delay:
@@ -457,6 +475,7 @@ def main():
     results['retries'] = retries
     log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()

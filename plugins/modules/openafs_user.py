@@ -62,16 +62,20 @@ options:
       - The user must be a member of the c(system:administrators) group and
         must be a server superuser, that is, set in the c(UserList) file on
         each server in the cell.
-      - Old kerberos 4 '.' separators are automatically converted to modern '/' separators.
-      - This option may only be used if a client is installed on the remote node.
+      - Old kerberos 4 '.' separators are automatically converted to modern '/'
+        separators.
+      - This option may only be used if a client is installed on the remote
+        node.
     type: str
     default: admin
 
   auth_keytab:
     description:
-      - The path on the remote host to the keytab file to be used to authenticate.
+      - The path on the remote host to the keytab file to be used to
+        authenticate.
       - The keytab file must already be present on the remote host.
-      - This option may only be used if a client is installed on the remote node.
+      - This option may only be used if a client is installed on the remote
+        node.
     type: str
     default: admin.keytab
 '''
@@ -103,17 +107,18 @@ user:
         - tester
 '''
 
-import json
-import logging
-import logging.handlers
-import os
-import pprint
-import re
-import time
+import json                     # noqa: E402
+import logging                  # noqa: E402
+import logging.handlers         # noqa: E402
+import os                       # noqa: E402
+import pprint                   # noqa: E402
+import re                       # noqa: E402
+import time                     # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 log = logging.getLogger('openafs_user')
+
 
 def setup_logging():
     level = logging.INFO
@@ -128,6 +133,7 @@ def setup_logging():
     log.addHandler(handler)
     log.setLevel(level)
 
+
 def main():
     setup_logging()
     results = dict(
@@ -135,7 +141,9 @@ def main():
     )
     module = AnsibleModule(
             argument_spec=dict(
-                state=dict(type='str', choices=['present', 'absent'], default='present'),
+                state=dict(type='str',
+                           choices=['present', 'absent'],
+                           default='present'),
                 user=dict(type='str', aliases=['name']),
                 id=dict(type='int', default=0),
                 groups=dict(type='list', default=[], aliases=['group']),
@@ -155,7 +163,7 @@ def main():
     auth_keytab = module.params['auth_keytab']
 
     # Convert k4 to k5 name.
-    if '.' in auth_user and not '/' in auth_user:
+    if '.' in auth_user and '/' not in auth_user:
         auth_user = auth_user.replace('.', '/')
 
     def die(msg):
@@ -167,7 +175,7 @@ def main():
             with open('/etc/ansible/facts.d/openafs.fact') as f:
                 facts = json.load(f)
             cmd = facts['bins'][name]
-        except:
+        except Exception:
             cmd = module.get_bin_path(name)
         if not cmd:
             module.fail_json(msg='Unable to locate %s command.' % name)
@@ -205,11 +213,11 @@ def main():
             if "no quorum elected" in err:
                 return True
             if "invalid RPC (RX) operation" in err:
-                return True # May occur during server startup.
+                return True  # May occur during server startup.
             if "Couldn't read/write the database" in err:
-                return True # May occur during server startup.
+                return True  # May occur during server startup.
             if "User or group doesn't exist" in err:
-                return True # Retry not found!
+                return True  # Retry not found!
             return False
 
         pts = lookup_command('pts')
@@ -227,9 +235,11 @@ def main():
             if retries == 0 or not should_retry(err):
                 log.error("Failed: %s, rc=%d, err=%s", cmdline, rc, err)
                 module.fail_json(
-                    dict(msg='Command failed.', cmdline=cmdline, rc=rc, out=out, err=err))
+                    dict(msg='Command failed.', cmdline=cmdline, rc=rc,
+                         out=out, err=err))
             log.warning("Failed: %s, rc=%d, err=%s; %d retr%s left.",
-                cmdline, rc, err, retries, ('ies' if retries > 1 else 'y'))
+                        cmdline, rc, err, retries,
+                        ('ies' if retries > 1 else 'y'))
             retries -= 1
             time.sleep(2)
 
@@ -245,13 +255,15 @@ def main():
             'flags': r'flags: (.....),',
             'quota': r'group quota: (\d+|unlimited)\.'
         }
+
         def is_done(rc, out, err):
             if rc == 0:
                 return True
             if rc == 1 and "User or group doesn't exist" in err:
                 log.warning("User %s not found.", name)
-                return False # Retry
+                return False  # Retry
             return False
+
         out = run_pts(['examine', '-nameorid', name], is_done)
         entry = {}
         for name, pattern in pts_fields.items():
@@ -261,7 +273,7 @@ def main():
                 value = int(value)
             elif name == 'quota':
                 if value == 'unlimited':
-                    continue # no quota
+                    continue  # no quota
                 value = int(value)
             entry[name] = value
         return entry
@@ -291,10 +303,12 @@ def main():
             if rc == 1 and "Entry for name already exists" in err:
                 return True
             if rc == 1 and "Entry for id already exists" in err:
-                m = re.search(r'unable to create user (\S+) with id (\d+)', err)
-                if m and m.group(1) == name and int(m.group(2)) ==  userid:
+                pattern = r'unable to create user (\S+) with id (\d+)'
+                m = re.search(pattern, err)
+                if m and m.group(1) == name and int(m.group(2)) == userid:
                     return True
             return False
+
         cmd = ['createuser', '-name', name]
         if userid:
             cmd.extend(['-id', str(userid)])
@@ -359,6 +373,7 @@ def main():
     log.debug('Results: %s' % pprint.pformat(results))
     log.info('Exiting openafs_user')
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()

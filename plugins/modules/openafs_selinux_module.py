@@ -48,15 +48,16 @@ module": "/var/lib/ansible-openafs/selinux/openafs.mod",
 version": null
 """
 
-import logging
-import logging.handlers
-import os
-import pprint
-import re
+import logging                  # noqa: E402
+import logging.handlers         # noqa: E402
+import os                       # noqa: E402
+import pprint                   # noqa: E402
+import re                       # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule   # noqa: E402
 
 log = logging.getLogger('openafs_selinux_module')
+
 
 def setup_logging():
     level = logging.INFO
@@ -70,6 +71,7 @@ def setup_logging():
     handler.setFormatter(formatter)
     log.addHandler(handler)
     log.setLevel(level)
+
 
 def main():
     setup_logging()
@@ -156,6 +158,7 @@ def main():
 
     log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()

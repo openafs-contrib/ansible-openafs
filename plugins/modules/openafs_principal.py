@@ -62,7 +62,8 @@ options:
     description:
       - Kerberos principal name.
       - The name should be provided without the REALM component.
-      - Old kerberos 4 '.' separators are automatically converted to modern '/' separators.
+      - Old kerberos 4 '.' separators are automatically converted to modern '/'
+        separators.
     type: str
     required: true
 
@@ -190,16 +191,17 @@ realm:
   sample: EXAMPLE.COM
 '''
 
-import json
-import logging
-import logging.handlers
-import os
-import pprint
-import re
+import json                     # noqa: E402
+import logging                  # noqa: E402
+import logging.handlers         # noqa: E402
+import os                       # noqa: E402
+import pprint                   # noqa: E402
+import re                       # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule   # noqa: E402
 
 log = logging.getLogger('openafs_principal')
+
 
 def setup_logging():
     level = logging.INFO
@@ -214,6 +216,7 @@ def setup_logging():
     log.addHandler(handler)
     log.setLevel(level)
 
+
 def load_facts():
     try:
         with open('/etc/ansible/facts.d/openafs.fact') as f:
@@ -225,6 +228,7 @@ def load_facts():
     log.debug('krbserver facts: %s' % (pprint.pformat(krbserver)))
     return krbserver
 
+
 def main():
     setup_logging()
     results = dict(
@@ -233,13 +237,18 @@ def main():
     )
     module = AnsibleModule(
             argument_spec=dict(
-                state=dict(type='str', choices=['present', 'absent', 'rekey'], default='present'),
+                state=dict(type='str',
+                           choices=['present', 'absent', 'rekey'],
+                           default='present'),
                 principal=dict(type='str', required=True),
                 password=dict(type='str', no_log=True),
-                enctypes=dict(type='list', aliases=['enctype','encryption_type', 'encryption_types', 'keysalts']),
+                enctypes=dict(type='list',
+                              aliases=['enctype', 'encryption_type',
+                                       'encryption_types', 'keysalts']),
                 acl=dict(type='str'),
                 keytab_name=dict(type='str'),
-                keytabs=dict(type='path', default='/var/lib/ansible-openafs/keytabs'),
+                keytabs=dict(type='path',
+                             default='/var/lib/ansible-openafs/keytabs'),
                 kadmin=dict(type='path'),
             ),
             supports_check_mode=False,
@@ -260,7 +269,7 @@ def main():
         realm = None
 
     # Convert k4 to k5 name.
-    if '.' in principal and not '/' in principal:
+    if '.' in principal and '/' not in principal:
         principal = principal.replace('.', '/')
 
     if not keytab_name:
@@ -272,7 +281,7 @@ def main():
     if not kadmin:
         kadmin = module.get_bin_path('kadmin.local', required=True)
 
-    facts = load_facts() # Read our installation facts.
+    facts = load_facts()  # Read our installation facts.
 
     results['principal'] = principal
     results['kadmin'] = kadmin
@@ -303,7 +312,7 @@ def main():
     def get_principal():
         metadata = None
         out, err = run('get_principal', principal)
-        if not 'Principal does not exist' in err:
+        if 'Principal does not exist' not in err:
             metadata = out.splitlines()
         return metadata
 
@@ -380,12 +389,14 @@ def main():
                 # Note: To keep this simple, we don't bother with the wildcard
                 #       matching.
                 if m.group(1) == principal and m.group(2) == permissions:
-                    log.debug("Permissions '%s' for principal '%s' already present in acl file.",
-                               permissions, principal)
-                    return # Already present.
+                    # Already present.
+                    log.debug("Permissions '%s' for principal '%s' already "
+                              "present in acl file.", permissions, principal)
+                    return
                 if m.group(1) == principal:
+                    # Update in place.
                     found = True
-                    line = '%s %s\n' % (principal, permissions) # Update in place.
+                    line = '%s %s\n' % (principal, permissions)
                     log.info("Updating line in acl file: '%s'" % (line))
                     output.append(line)
                     continue
@@ -424,7 +435,7 @@ def main():
     if state == 'present':
         metadata = get_principal()
         if not metadata:
-            delete_keytab() # Remove stale keytab, if present.
+            delete_keytab()  # Remove stale keytab, if present.
             add_principal()
             metadata = get_principal()
             if not metadata:
@@ -439,7 +450,7 @@ def main():
         if get_principal():
             ktadd(rekey=True)
         else:
-            delete_keytab() # Remove stale keytab, if present.
+            delete_keytab()  # Remove stale keytab, if present.
             add_principal()
             ktadd()
         metadata = get_principal()
@@ -459,6 +470,7 @@ def main():
 
     log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()

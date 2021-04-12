@@ -29,16 +29,17 @@ EXAMPLES = r"""
 RETURN = r"""
 """
 
-import glob
-import json
-import logging
-import logging.handlers
-import os
-import pprint
+import glob                     # noqa: E402
+import json                     # noqa: E402
+import logging                  # noqa: E402
+import logging.handlers         # noqa: E402
+import os                       # noqa: E402
+import pprint                   # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 log = logging.getLogger('openafs_selinux_relabel')
+
 
 def setup_logging():
     level = logging.INFO
@@ -53,10 +54,12 @@ def setup_logging():
     log.addHandler(handler)
     log.setLevel(level)
 
+
 # Note: The bosserver creates the /usr/vice/etc directory if it does not
 # exist in order to create a symlink to the server configuration. Be sure
 # to set the selinux context on /usr/vice before the bosserver starts.
 top_dirs = ['/usr/afs', '/usr/vice']
+
 
 def main():
     setup_logging()
@@ -78,13 +81,14 @@ def main():
         rc, out, err = module.run_command(cmdargs)
         if rc != 0:
             log.error("Command failed: %s, rc=%d, err=%s", cmdline, rc, err)
-            module.fail_json(msg="Command failed", cmd=cmdline, out=out, err=err)
+            module.fail_json(msg="Command failed", cmd=cmdline,
+                             out=out, err=err)
 
     factsfile = '/etc/ansible/facts.d/openafs.fact'
     try:
         with open(factsfile) as fp:
             facts = json.load(fp)
-    except:
+    except Exception:
         facts = {}
 
     changed = []
@@ -117,6 +121,7 @@ def main():
 
     log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()

@@ -89,20 +89,21 @@ logfiles:
     - /tmp/logs/install.log
 '''
 
-import filecmp
-import fnmatch
-import glob
-import json
-import logging
-import logging.handlers
-import os
-import platform
-import pprint
-import shutil
+import filecmp            # noqa: E402
+import fnmatch            # noqa: E402
+import glob               # noqa: E402
+import json               # noqa: E402
+import logging            # noqa: E402
+import logging.handlers   # noqa: E402
+import os                 # noqa: E402
+import platform           # noqa: E402
+import pprint             # noqa: E402
+import shutil             # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 log = logging.getLogger('openafs_install_bdist')
+
 
 def setup_logging():
     level = logging.INFO
@@ -117,6 +118,7 @@ def setup_logging():
     log.addHandler(handler)
     log.setLevel(level)
 
+
 TRANSARC_INSTALL_DIRS = {
     'afsbosconfigdir': '/usr/afs/local',
     'afsconfdir': '/usr/afs/etc',
@@ -127,8 +129,10 @@ TRANSARC_INSTALL_DIRS = {
     'viceetcdir': '/usr/vice/etc',
 }
 
+
 class FileError(Exception):
     pass
+
 
 def copy_tree(src, dst, exclude=None):
     """Copy an entire directory tree.
@@ -140,7 +144,7 @@ def copy_tree(src, dst, exclude=None):
     :arg exclude: list of patterns (glob notation) to exclude
     :returns: a list of tuples of the files/symlinks copied and skipped
     """
-    files = [] # list of (<path>, <changed>, <executable>) tubles
+    files = []  # list of (<path>, <changed>, <executable>) tuples
     if exclude is None:
         exclude = []
 
@@ -156,7 +160,10 @@ def copy_tree(src, dst, exclude=None):
         return False
 
     def is_executable(fn):
-        return os.path.exists(fn) and os.path.isfile(fn) and os.access(fn, os.X_OK)
+        return \
+          os.path.exists(fn) \
+          and os.path.isfile(fn) \
+          and os.access(fn, os.X_OK)
 
     if not os.path.isdir(src):
         raise FileError("Cannot copy tree '%s': not a directory." % src)
@@ -189,6 +196,7 @@ def copy_tree(src, dst, exclude=None):
             files.append((dst_name, True, is_executable(src_name)))
     return files
 
+
 def find_destdir(path, sysname=None):
     """
     Search for a legacy dest directory in the binary distribution. The legacy
@@ -200,7 +208,8 @@ def find_destdir(path, sysname=None):
     log.debug('find_destdir: %s', path)
     if not sysname:
         sysname = '*'
-    roots = set(['bin', 'etc', 'include', 'lib', 'man', 'root.server', 'root.client'])
+    roots = set(['bin', 'etc', 'include', 'lib', 'man', 'root.server',
+                'root.client'])
     for pattern in ('/%s/dest' % sysname, '/dest', '/'):
         dirs = set(glob.glob(path + pattern))
         log.debug('dirs=%s', dirs)
@@ -210,6 +219,7 @@ def find_destdir(path, sysname=None):
             if roots.issubset(subdirs):
                 return destdir
     return None
+
 
 def install_dest(destdir, components, exclude=None):
     """
@@ -221,7 +231,7 @@ def install_dest(destdir, components, exclude=None):
         for d in ('bin', 'etc', 'include', 'lib', 'man'):
             src = '%s/%s' % (destdir, d)
             if d == 'etc':
-                dst = '/usr/bin' # Put misc programs in the PATH.
+                dst = '/usr/bin'  # Put misc programs in the PATH.
             else:
                 dst = '/%s' % d
             files.extend(copy_tree(src, dst, exclude))
@@ -234,6 +244,7 @@ def install_dest(destdir, components, exclude=None):
         dst = '/'
         files.extend(copy_tree(src, dst, exclude))
     return files
+
 
 def main():
     setup_logging()
@@ -251,7 +262,8 @@ def main():
             path=dict(type='path', required=True, aliases=['destdir']),
             exclude=dict(type='list', default=[]),
             sysname=dict(type='str', default=None),
-            components=dict(type='list', default=['common', 'client', 'server']),
+            components=dict(type='list',
+                            default=['common', 'client', 'server']),
             ldconfig=dict(type='path', default='/sbin/ldconfig'),
             depmod=dict(type='path', default='/sbin/depmod'),
         ),
@@ -272,7 +284,8 @@ def main():
     sysname = module.params['sysname']
     destdir = find_destdir(path, sysname)
     if destdir:
-        log.info("Installing %s from path '%s'." % (','.join(components), destdir))
+        log.info("Installing %s from path '%s'." %
+                 (','.join(components), destdir))
         files = install_dest(destdir, components)
         results['dirs'] = TRANSARC_INSTALL_DIRS
     else:
@@ -327,6 +340,7 @@ def main():
     results['msg'] = msg
     log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()

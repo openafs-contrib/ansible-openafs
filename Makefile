@@ -23,7 +23,8 @@ help:
 	test -d .venv || $(PYTHON) -m venv .venv
 	.venv/bin/pip install -U pip
 	.venv/bin/pip install wheel
-	.venv/bin/pip install molecule[ansible] molecule-vagrant molecule-virtup python-vagrant ansible-lint pyflakes pytest
+	.venv/bin/pip install molecule[ansible] molecule-vagrant molecule-virtup \
+                  python-vagrant ansible-lint flake8 pyflakes pytest
 	touch .venv/bin/activate
 
 venv: .venv/bin/activate
@@ -38,6 +39,7 @@ install: build
 	ansible-galaxy collection install $(UPDATE) builds/openafs_contrib-openafs-$(VERSION).tar.gz
 
 lint:
+	flake8 plugin/modules/*.py
 	pyflakes plugins/modules/*.py
 	$(MAKE) -C roles/openafs_krbserver lint
 	$(MAKE) -C roles/openafs_krbclient lint
