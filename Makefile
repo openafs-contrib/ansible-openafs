@@ -1,6 +1,6 @@
 # Copyright (c) 2019-2021 Sine Nomine Associates
 
-.PHONY: help init lint test build install clean distclean
+.PHONY: help init lint test docs build install clean distclean
 
 PYTHON=/usr/bin/python3
 VERSION=1.0.0-rc5
@@ -12,7 +12,7 @@ help:
 	@echo "  venv        install virtualenv"
 	@echo "  lint        run lint checks"
 	@echo "  test        run unit and molecule tests"
-	@echo "  scenarios   generate molecule scenarios"
+	@echo "  docs        generate documentation"
 	@echo "  build       build openafs collection"
 	@echo "  install     install openafs collection"
 	@echo "  reset       reset molecule temporary directories"
@@ -24,10 +24,14 @@ help:
 	.venv/bin/pip install -U pip
 	.venv/bin/pip install wheel
 	.venv/bin/pip install molecule[ansible] molecule-vagrant molecule-virtup \
-                  python-vagrant ansible-lint flake8 pyflakes pytest
+                          python-vagrant ansible-lint flake8 pyflakes pytest \
+                          sphinx sphinx-rtd-theme
 	touch .venv/bin/activate
 
-venv: .venv/bin/activate
+init venv: .venv/bin/activate
+
+docs:
+	$(MAKE) -C docs html
 
 builds/openafs_contrib-openafs-$(VERSION).tar.gz:
 	mkdir -p builds
@@ -70,6 +74,7 @@ reset:
 
 clean:
 	rm -rf builds
+	rm -rf docs/build
 	$(MAKE) -C tests clean
 
 distclean: clean
