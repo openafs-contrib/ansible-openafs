@@ -11,7 +11,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = r'''
 ---
-module: openafs_install
+module: openafs_install_bdist
 
 short_description: Install OpenAFS binaries built from source
 

@@ -12,7 +12,7 @@ DOCUMENTATION = r'''
 ---
 module: openafs_store_facts
 
-short_description: Store OpenAFS facts in a json file.
+short_description: Store OpenAFS facts in a json file
 
 description:
   - Store facts in the json formatted c(openafs.fact) file on the remote
@@ -34,6 +34,9 @@ options:
     description: Path to the c(openafs.fact) file
     type: path
     default: /etc/ansible/facts.d
+
+author:
+  - Michael Meffie
 '''
 
 EXAMPLES = r'''

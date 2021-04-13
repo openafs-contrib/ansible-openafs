@@ -5,11 +5,12 @@ Ansible OpenAFS Collection
    :maxdepth: 2
    :caption: Contents:
 
-
+   intro
+   quickstart
+   modules
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

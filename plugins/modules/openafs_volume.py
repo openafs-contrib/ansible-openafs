@@ -11,7 +11,9 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r"""
 ---
 module: openafs_volume
+
 short_description: Create an OpenAFS volume
+
 description:
   - Create or remove a volume.
   - Optionally, create read-only volumes, and release the volume.
@@ -30,7 +32,6 @@ options:
     description:
       - c(present) ensure the volume is present, c(absent) ensure the volume is
         removed
-
     type: str
     required: no
     default: c(present)
@@ -44,17 +45,12 @@ options:
   server:
     description:
       - The initial volume fileserver location.
-
       - If provided, should be the hostname or fileserver address.
-
       - If not provided, the first fileserver address from c(vos listaddrs)
         will be used.
-
       - The volume will not be moved if it already exists on a different
         server.
-
       - This option is ignored when the state is c(absent).
-
     type: str
     default: first fileserver entry found in VLDB
 
@@ -180,6 +176,9 @@ options:
 
     type: str
     default: admin.keytab
+
+author:
+  - Michael Meffie
 """
 
 EXAMPLES = r"""
@@ -223,21 +222,23 @@ EXAMPLES = r"""
 RETURN = r"""
 acl:
   description: List of acl strings set in the volume root directory
-  returned: on success
-  type: list of strings
+  returned: success
+  type: list
   sample:
     - "system:anyuser":
         - r
         - l
+
 mount:
   description: Mount point path
-  returned: on success
+  returned: success
   type: str
-  sample: "/afs/.example.com/test/foo",
+  sample: "/afs/.example.com/test/foo"
+
 volume:
   description: Volume information
-  returned: on success
-  type: dictionary
+  returned: success
+  type: dict
   sample:
     name: foo
     rw: 536870927

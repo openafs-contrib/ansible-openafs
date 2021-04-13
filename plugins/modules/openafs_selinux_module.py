@@ -11,19 +11,28 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r"""
 ---
 module: openafs_selinux_module
+
 short_description: Create and install an selinux module from input files
+
 description: Build the selinux module from the given input files.
+
 options:
+
   state:
     description: c(present) is currently the only supported state.
+
   name:
     description: name of the selinux module
     default: openafs
+
   path:
     description:
       - Path to the Type Enforcement (te) and File Context (fc) input files and
         the destination path of the output pp and mod files.
     default: /var/lib/ansible-openafs/selinux
+
+author:
+  - Michael Meffie
 """
 
 EXAMPLES = r"""
@@ -44,8 +53,16 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-module": "/var/lib/ansible-openafs/selinux/openafs.mod",
-version": null
+module:
+  description: Path to the module
+  returned: success
+  type: str
+  sample: "/var/lib/ansible-openafs/selinux/openafs.mod"
+
+version:
+  description: Module version
+  returned: success
+  type: str
 """
 
 import logging                  # noqa: E402

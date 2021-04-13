@@ -12,7 +12,7 @@ DOCUMENTATION = r'''
 ---
 module: openafs_get_install_paths
 
-short_description: Detect installation paths.
+short_description: Detect installation paths
 
 description:
   - Gather the paths to installed OpenAFS programs from the
@@ -24,6 +24,9 @@ options:
     choices:
       - rpm
       - deb
+
+author:
+  - Michael Meffie
 '''
 
 EXAMPLES = r'''

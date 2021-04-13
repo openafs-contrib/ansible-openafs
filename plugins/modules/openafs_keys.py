@@ -12,16 +12,15 @@ DOCUMENTATION = r'''
 ---
 module: openafs_keys
 
-short_description: Add kerberos service keys with asetkey.
+short_description: Add kerberos service keys with asetkey
 
 description:
   - Import the service keys from a keytab file using the OpenAFS
     C(asetkey) utility.
 
-  - Note: This module uses C(asetkey) rather than the newer C(akeyconvert)
+  - This module uses C(asetkey) rather than the newer C(akeyconvert)
     since C(akeyconvert) is not available on all platforms yet.
 
-requirements:
   - Before running this module, be sure C(asetkey) is installed
 
   - The C(asetkey) program requires the server C(CellServDB)
@@ -30,6 +29,7 @@ requirements:
   - A keytab file containing the service keys must be copied to the server.
 
 options:
+
   state:
     description: c(present) to ensure keys are present in the keyfile(s)
     required: false
@@ -56,6 +56,9 @@ options:
     required: false
     type: path
     default: Search the local facts, search the path.
+
+author:
+  - Michael Meffie
 '''
 
 EXAMPLES = r'''
@@ -77,7 +80,7 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
-asetkey: "/usr/sbin/asetkey",
+asetkey:
   description: asetkey path found
   type: path
   returned: success
@@ -94,32 +97,30 @@ keys:
   type: list
   returned: success
   sample:
-    keys
-      - enctype: aes256-cts-hmac-sha1-96
-        eno: 18
-        kvno: 3
-        principal: afs/example.com@EXAMPLE.COM
-        realm: EXAMPLE.COM
-        timestamp: 1605734384
-      - enctype: aes128-cts-hmac-sha1-96
-        eno: 17
-        kvno: 3
-        principal: afs/example.com@EXAMPLE.COM
-        realm: EXAMPLE.COM
-        timestamp: 1605734384
+    - enctype: aes256-cts-hmac-sha1-96
+      eno: 18
+      kvno: 3
+      principal: afs/example.com@EXAMPLE.COM
+      realm: EXAMPLE.COM
+      timestamp: 1605734384
+    - enctype: aes128-cts-hmac-sha1-96
+      eno: 17
+      kvno: 3
+      principal: afs/example.com@EXAMPLE.COM
+      realm: EXAMPLE.COM
+      timestamp: 1605734384
 
 imported:
   description: Imported key versions
   type: list
   returned: success
   sample:
-    imported:
-      - eno: 17
-        kvno: 3
-        type: rxkad_krb5
-      - eno: 18
-        kvno: 3
-        type: rxkad_krb5
+    - eno: 17
+      kvno: 3
+      type: rxkad_krb5
+    - eno: 18
+      kvno: 3
+      type: rxkad_krb5
 
 service_principal:
   description: kerberos service principal

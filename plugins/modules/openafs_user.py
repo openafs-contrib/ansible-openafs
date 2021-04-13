@@ -11,7 +11,9 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: openafs_user
+
 short_description: Create an OpenAFS user
+
 description:
   - Create or remove a user.
   - Optionally create new groups and add the user to groups.
@@ -19,6 +21,7 @@ description:
   - Keytab based authentication may be used on client nodes.
     This requires a keytab for a user in the system:adminstrators
     group and a member of the UserList on all of the database servers.
+
 options:
 
   state:
@@ -29,13 +32,13 @@ options:
     default: present
 
   user:
-    description: AFS username.
+    description: The OpenAFS username.
     type: str
     required: true
 
   id:
     description:
-      - AFS pts id.
+      - The OpenAFS pts id.
       - The next available id will be selected if omitted or 0.
     type: int
     required: false
@@ -43,11 +46,12 @@ options:
 
   groups:
     description:
-      - The AFS group names the user is a member.
+      - The OpenAFS group names the user is a member.
       - Non-system groups will be created.
     type: list
     required: false
-    aliases=['group']
+    aliases:
+      - group
 
   localauth:
     description:
@@ -78,6 +82,9 @@ options:
         node.
     type: str
     default: admin.keytab
+
+author:
+  - Michael Meffie
 '''
 
 EXAMPLES = r'''

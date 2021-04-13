@@ -12,7 +12,7 @@ DOCUMENTATION = r'''
 ---
 module: openafs_principal
 
-short_description: Create principals and keytab files.
+short_description: Create principals and keytab files
 
 description:
   - Create a kerberos principal on a primary KDC using C(kadmin.local) and
@@ -109,6 +109,9 @@ options:
     type: path
     required: false
     default: search PATH
+
+author:
+  - Michael Meffie
 '''
 
 EXAMPLES = r'''

@@ -10,11 +10,6 @@ distribution from source code.
 
 Keys for Solaris Studio installation.
 
-## Modules
-
-    openafs_build: Build OpenAFS binaries
-    openafs_install: Install OpenAFS binaries
-
 ## License
 
 BSD

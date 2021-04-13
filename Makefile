@@ -2,9 +2,12 @@
 
 .PHONY: help init lint test docs build install clean distclean
 
-PYTHON=/usr/bin/python3
-VERSION=1.0.0-rc5
-UPDATE=--force
+PYTHON := /usr/bin/python3
+VERSION := 1.0.0-rc5
+UPDATE := --force
+MODULES := $(wildcard plugins/modules/openafs_*.py)
+EXTRACTED := $(patsubst plugins/modules/%.py,docs/source/modules/%.rst,$(MODULES))
+ACPATH := $(realpath $(CURDIR)/../../..)
 
 help:
 	@echo "usage: make <target>"
@@ -25,12 +28,17 @@ help:
 	.venv/bin/pip install wheel
 	.venv/bin/pip install molecule[ansible] molecule-vagrant molecule-virtup \
                           python-vagrant ansible-lint flake8 pyflakes pytest \
-                          sphinx sphinx-rtd-theme
+                          sphinx sphinx-rtd-theme ansible-doc-extractor
 	touch .venv/bin/activate
 
 init venv: .venv/bin/activate
 
-docs:
+docs/source/modules/%.rst: plugins/modules/%.py
+	mkdir -p docs/source/modules
+	ANSIBLE_COLLECTIONS_PATHS=$(ACPATH) \
+	ansible-doc-extractor docs/source/modules $<
+
+doc docs: $(EXTRACTED)
 	$(MAKE) -C docs html
 
 builds/openafs_contrib-openafs-$(VERSION).tar.gz:
@@ -75,6 +83,7 @@ reset:
 clean:
 	rm -rf builds
 	rm -rf docs/build
+	rm -rf docs/source/modules/*.rst
 	$(MAKE) -C tests clean
 
 distclean: clean

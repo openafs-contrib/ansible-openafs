@@ -14,8 +14,31 @@ module: openafs_wait_for_registration
 
 short_description: Wait for the fileserver VLDB registration
 
-description:
+description: todo
 
+options:
+  timeout:
+    description: todo
+    type: int
+    default: 600
+
+  delay:
+    description: todo
+    type: int
+    default: 0
+
+  sleep:
+    description: todo
+    type: int
+    default: 20
+
+  signal:
+    description: todo
+    type: bool
+    default: True
+
+author:
+  - Michael Meffie
 '''
 
 EXAMPLES = r'''

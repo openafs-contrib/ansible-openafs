@@ -11,13 +11,20 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r"""
 ---
 module: openafs_selinux_relabel
-short_description: Relabel selinux context for server files.
+
+short_description: Relabel selinux context for server files
+
 description:
   - Relabel the server directories after the files have been installed
     and the configuration files updated.
   - Relabel the partition directories and the AlwaysAttach file, when present.
   - Safe the list of directories relabelled in the openafs local facts file
     to avoid running restorecon on subsequent plays.
+
+options: {}
+
+author:
+  - Michael Meffie
 """
 
 EXAMPLES = r"""

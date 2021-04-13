@@ -46,7 +46,7 @@ description:
 
   - An installation file tree is created in the I(destdir) directory when the
     I(target) starts with C(install) or C(dest). The files in I(destdir) may be
-    installed with the M(openafs_install) module.
+    installed with the M(openafs_install_bdist) module.
 
   - See the C(openafs_devel) role for tasks to install required build tools and
     libraries on various platforms.
@@ -135,7 +135,7 @@ options:
       - The destination directory for C(install) and C(dest) targets and
         variants.
       - The tree staged in this directory may be installed with the
-        M(openafs_install) module.
+        M(openafs_install_bdist) module.
     default: I(projectdir)/packaging/dest
     type: path
 
@@ -145,7 +145,7 @@ options:
     type: dict
 
 author:
-  - Michael Meffie (@meffie)
+  - Michael Meffie
 '''
 
 EXAMPLES = r'''
@@ -221,7 +221,7 @@ destdir:
 
 logdir:
   description: Absolute path to the log files. May be used for
-               M(openafs_install).
+               M(openafs_install_bdist).
   return: always
   type: string
   sample: /home/tycobb/projects/myproject/.ansible
