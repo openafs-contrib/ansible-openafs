@@ -1,6 +1,6 @@
 # Copyright (c) 2019-2021 Sine Nomine Associates
 
-.PHONY: help init lint test docs build install clean distclean
+.PHONY: help init lint test docs preview build install clean distclean
 
 PYTHON := /usr/bin/python3
 VERSION := 1.0.0-rc5
@@ -40,6 +40,9 @@ docs/source/modules/%.rst: plugins/modules/%.py
 
 doc docs: $(EXTRACTED)
 	$(MAKE) -C docs html
+
+preview: docs
+	xdg-open docs/build/html/index.html
 
 builds/openafs_contrib-openafs-$(VERSION).tar.gz:
 	mkdir -p builds

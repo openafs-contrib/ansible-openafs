@@ -41,7 +41,7 @@ Documentation: [https://openafs-ansible-collection.readthedocs.io][2]
 * `openafs_store_facts` Store OpenAFS facts in a json file
 * `openafs_user` Create an OpenAFS user
 * `openafs_volume` Create an OpenAFS volume
-* `openafs_wait_for_quorum` Wait for the dbserver connection and quorom
+* `openafs_wait_for_quorum` Wait for the dbserver connection and quorum
 * `openafs_wait_for_registration` Wait for the fileserver VLDB registration
 
 ## License

@@ -12,7 +12,7 @@ DOCUMENTATION = r'''
 ---
 module: openafs_wait_for_quorum
 
-short_description: Wait for the dbserver connection and quorom
+short_description: Wait for the dbserver connection and quorum
 
 description: todo
 

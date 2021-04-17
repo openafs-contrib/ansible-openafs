@@ -17,8 +17,8 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Ansible OpenAFS Collection'
-copyright = '2021, Sine Nomine Associates'
+project = 'Ansible Collection for OpenAFS'
+copyright = '2018-2021, Sine Nomine Associates'
 author = 'Sine Nomine Associates'
 
 

@@ -1,7 +1,7 @@
 .. _openafs_wait_for_quorum_module:
 
 
-openafs_wait_for_quorum -- Wait for the dbserver connection and quorom
+openafs_wait_for_quorum -- Wait for the dbserver connection and quorum
 ======================================================================
 
 .. contents::

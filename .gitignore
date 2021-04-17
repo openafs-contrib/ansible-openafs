@@ -6,3 +6,4 @@ ansible.cfg
 *.pyc
 __pycache__/
 .cache/
+docs/build/

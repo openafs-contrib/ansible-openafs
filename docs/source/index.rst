@@ -1,16 +1,13 @@
-Ansible OpenAFS Collection
-==========================
+Ansible Collection for OpenAFS
+==============================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    intro
-   quickstart
+   install
+   playbooks
+   roles
    modules
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
+   license
