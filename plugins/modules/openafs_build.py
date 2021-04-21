@@ -75,7 +75,7 @@ options:
   builddir:
     description:
       - The path for out-of-tree builds.
-    default: C(projectdir)
+    default: <projectdir>
     type: path
 
   logdir:
@@ -85,7 +85,7 @@ options:
       - The logdir may not be a subdirectory of the C(builddir) when doing
         an out-of-tree build.
     type: path
-    default: C(projectdir)/.ansible
+    default: <projectdir>/.ansible
 
   clean:
     description:
@@ -136,7 +136,7 @@ options:
         variants.
       - The tree staged in this directory may be installed with the
         M(openafs_install_bdist) module.
-    default: I(projectdir)/packaging/dest
+    default: <projectdir>/packaging/dest
     type: path
 
   configure_options:
@@ -215,7 +215,7 @@ builddir:
 
 destdir:
   description: Absolute path to the installation files.
-  returned: when C(destdir) is specified
+  returned: when destdir is specified
   type: string
   sample: /home/tycobb/projects/myproject/packaging/dest
 

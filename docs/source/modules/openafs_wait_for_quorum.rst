@@ -12,7 +12,7 @@ openafs_wait_for_quorum -- Wait for the dbserver connection and quorum
 Synopsis
 --------
 
-todo
+Wait until the VLDB and PRDB database elections are completed and a sync site is set.
 
 
 
@@ -31,6 +31,13 @@ Examples
 .. code-block:: yaml+jinja
 
     
+    - name: Wait for database quorum
+      become: yes
+      openafs_contrib.openafs.openafs_wait_for_quorum:
+        sleep: 10
+        timeout: 600
+      when:
+        - afs_is_dbserver
 
 
 

@@ -55,11 +55,11 @@ Parameters
     Source files must have been previously checkout or copied to this path.
 
 
-  builddir (optional, path, C(projectdir))
+  builddir (optional, path, <projectdir>)
     The path for out-of-tree builds.
 
 
-  logdir (optional, path, C(projectdir)/.ansible)
+  logdir (optional, path, <projectdir>/.ansible)
     The path to store build log files.
 
     The logdir may be a subdirectory of the ``projectdir``.
@@ -101,7 +101,7 @@ Parameters
     Generate the man-pages from POD files when running ``regen``.
 
 
-  destdir (optional, path, I(projectdir)/packaging/dest)
+  destdir (optional, path, <projectdir>/packaging/dest)
     The destination directory for ``install`` and ``dest`` targets and variants.
 
     The tree staged in this directory may be installed with the :ref:`openafs_install_bdist <openafs_install_bdist_module>` module.
@@ -185,7 +185,7 @@ builddir (always, string, /home/tycobb/projects/myproject)
   Absolute path to the build directory
 
 
-destdir (when C(destdir) is specified, string, /home/tycobb/projects/myproject/packaging/dest)
+destdir (when destdir is specified, string, /home/tycobb/projects/myproject/packaging/dest)
   Absolute path to the installation files.
 
 

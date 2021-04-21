@@ -22,8 +22,10 @@ Gather the paths to installed OpenAFS programs from the installed packages
 Parameters
 ----------
 
-  package_mgr_type (optional, any, None)
-    Package manager type
+  package_mgr_type (optional, any, rpm)
+    The package manager type on this remote node.
+
+    Supported values are ``rpm`` and ``apt``
 
 
 
@@ -39,6 +41,10 @@ Examples
 .. code-block:: yaml+jinja
 
     
+    - name: Get installation paths
+      openafs_contrib.openafs.openafs_get_install_paths:
+        package_manager_type: apt
+      register: install_results
 
 
 

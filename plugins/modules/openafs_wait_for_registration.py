@@ -14,26 +14,35 @@ module: openafs_wait_for_registration
 
 short_description: Wait for the fileserver VLDB registration
 
-description: todo
+description: Wait for the fileserver VLDB registration to be completed.
 
 options:
   timeout:
-    description: todo
+    description: Maximum time to wait in seconds.
     type: int
     default: 600
 
   delay:
-    description: todo
+    description: Number of seconds to delay before waiting.
     type: int
     default: 0
 
   sleep:
-    description: todo
+    description: Number of seconds to wait between retries.
     type: int
     default: 20
 
   signal:
-    description: todo
+    description:
+      - If true, issue a XCPU signal to the fileserver to force it to resend
+        the VLDB registration after C(sleep) seconds has expired.
+
+      - By default, the fileserver will retry the VLDB registration every 5
+        minutes untill the registration succeeds. This option can be used to
+        force the retry to happen sooner. As a side-effect, XCPU signal will
+        trigger a dump of the fileserver hosts and callback tables, so this
+        option must be used with caution.
+
     type: bool
     default: True
 
@@ -42,9 +51,13 @@ author:
 '''
 
 EXAMPLES = r'''
-'''
-
-RETURN = r'''
+- name: Wait for fileserver registration
+  openafs_contrib.openafs.openafs_wait_for_registration:
+    sleep: 10
+    timeout: 600
+    signal: no
+  when:
+    - afs_is_fileserver
 '''
 
 import json                     # noqa: E402

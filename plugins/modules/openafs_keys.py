@@ -84,49 +84,49 @@ asetkey:
   description: asetkey path found
   type: path
   returned: success
-  sample: "/usr/sbin/asetkey"
+#  sample: /usr/sbin/asetkey
 
 have_extended_keys:
   description: Indicates if extended keys are supported.
   type: bool
   returned: success
-  sample: true
+#  sample: true
 
 keys:
   description: keys found in the keytab file
   type: list
   returned: success
-  sample:
-    - enctype: aes256-cts-hmac-sha1-96
-      eno: 18
-      kvno: 3
-      principal: afs/example.com@EXAMPLE.COM
-      realm: EXAMPLE.COM
-      timestamp: 1605734384
-    - enctype: aes128-cts-hmac-sha1-96
-      eno: 17
-      kvno: 3
-      principal: afs/example.com@EXAMPLE.COM
-      realm: EXAMPLE.COM
-      timestamp: 1605734384
+#  sample:
+#    - enctype: aes256-cts-hmac-sha1-96
+#      eno: 18
+#      kvno: 3
+#      principal: afs/example.com@EXAMPLE.COM
+#      realm: EXAMPLE.COM
+#      timestamp: 1605734384
+#    - enctype: aes128-cts-hmac-sha1-96
+#      eno: 17
+#      kvno: 3
+#      principal: afs/example.com@EXAMPLE.COM
+#      realm: EXAMPLE.COM
+#      timestamp: 1605734384
 
 imported:
   description: Imported key versions
   type: list
   returned: success
-  sample:
-    - eno: 17
-      kvno: 3
-      type: rxkad_krb5
-    - eno: 18
-      kvno: 3
-      type: rxkad_krb5
+#  sample:
+#    - eno: 17
+#      kvno: 3
+#      type: rxkad_krb5
+#    - eno: 18
+#      kvno: 3
+#      type: rxkad_krb5
 
 service_principal:
   description: kerberos service principal
   type: str
   returned: success
-  sample: "afs/example.com@EXAMPLE.COM"
+#  sample: "afs/example.com@EXAMPLE.COM"
 '''
 
 import errno                    # noqa: E402

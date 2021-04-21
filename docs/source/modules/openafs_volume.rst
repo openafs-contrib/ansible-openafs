@@ -32,8 +32,8 @@ Keytab based authentication may be used on client nodes to mount volumes and set
 Parameters
 ----------
 
-  state (False, str, c(present))
-    c(present) ensure the volume is present, c(absent) ensure the volume is removed
+  state (False, str, <present>)
+    ``present`` ensure the volume is present, ``absent`` ensure the volume is removed
 
 
   volume (True, str, None)
@@ -45,23 +45,23 @@ Parameters
 
     If provided, should be the hostname or fileserver address.
 
-    If not provided, the first fileserver address from c(vos listaddrs) will be used.
+    If not provided, the first fileserver address from ``vos listaddrs`` will be used.
 
     The volume will not be moved if it already exists on a different server.
 
-    This option is ignored when the state is c(absent).
+    This option is ignored when the state is ``absent``.
 
 
   partition (optional, str, the first partition found on the fileserver)
     The initial volume partition id.
 
-    If provided, should be the partition id; c('a') ..  c('iu').
+    If provided, should be the partition id; ``'a'`` ..  ``'iu'``.
 
-    If not provided, the first partition found from c(vos listpart) will be used.
+    If not provided, the first partition found from ``vos listpart`` will be used.
 
     The volume will not be moved if it already exists on a different partition.
 
-    This option is ignored when the state is c(absent).
+    This option is ignored when the state is ``absent``.
 
 
   mount (False, str, None)
@@ -71,15 +71,15 @@ Parameters
 
     The read/write path variant will be used if it is available.
 
-    A read/write mount point will also be created for the c(root.cell) volume.
+    A read/write mount point will also be created for the ``root.cell`` volume.
 
-    The c(i) and c(a) ACL rights will be temporarily assigned to the mount point parent directory in order to create the mount point if those rights are missing.
+    The ``i`` and ``a`` ACL rights will be temporarily assigned to the mount point parent directory in order to create the mount point if those rights are missing.
 
     The volume containing the parent volume will be released if a mount point was created.
 
-    The volume will be created but not mounted if the c(mount) option is not given.
+    The volume will be created but not mounted if the ``mount`` option is not given.
 
-    This option is ignored when the state is c(absent).
+    This option is ignored when the state is ``absent``.
 
     This option may only be used if a client is installed on the remote node.
 
@@ -87,9 +87,9 @@ Parameters
   acl (False, str, None)
     The access control list to be set in the volumes root directory.
 
-    The c(acl) option my be specified as a list of strings. Each string contains a pair of strings separated by a space. The substring names a user or group, the second indicates the access rights.
+    The ``acl`` option my be specified as a list of strings. Each string contains a pair of strings separated by a space. The substring names a user or group, the second indicates the access rights.
 
-    See c(fs setacl) for details.
+    See ``fs setacl`` for details.
 
     This option may only be used if a client is installed on the remote node.
 
@@ -101,21 +101,21 @@ Parameters
   replicas (False, int, 0)
     The number of read-only volumes to be created, including the read-only clone on the same fileserver and partition as the read/write volume.
 
-    The c(replicas) option indicates the minumum number of read-only volumes desired.
+    The ``replicas`` option indicates the minumum number of read-only volumes desired.
 
 
   localauth (optional, bool, False)
-    Indicates if the c(-localauth) option is to be used for authentication.
+    Indicates if the ``-localauth`` option is to be used for authentication.
 
     This option should only be used when running on a server.
 
-    The c(mount) and c(acl) options may not be used with c(localauth).
+    The ``mount`` and ``acl`` options may not be used with ``localauth``.
 
 
   auth_user (optional, str, admin)
-    The afs user name to be used when c(localauth) is False.
+    The afs user name to be used when ``localauth`` is False.
 
-    The user must be a member of the c(system:administrators) group and must be a server superuser, that is, set in the c(UserList) file on each server in the cell.
+    The user must be a member of the ``system:administrators`` group and must be a server superuser, that is, set in the ``UserList`` file on each server in the cell.
 
     Old kerberos 4 '.' separators are automatically converted to modern '/' separators.
 
@@ -184,15 +184,15 @@ Examples
 Return Values
 -------------
 
-acl (success, list, [{'system:anyuser': ['r', 'l']}])
+acl (success, list, )
   List of acl strings set in the volume root directory
 
 
-mount (success, str, /afs/.example.com/test/foo)
+mount (success, str, )
   Mount point path
 
 
-volume (success, dict, {'name': 'foo', 'rw': 536870927, 'sites': [{'flags': '', 'partition': 'a', 'server': '192.168.122.214', 'type': 'rw'}]})
+volume (success, dict, {'name': 'foo', 'rw': 536870927})
   Volume information
 
 

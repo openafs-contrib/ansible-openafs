@@ -30,11 +30,11 @@ options:
 
   state:
     description:
-      - c(present) ensure the volume is present, c(absent) ensure the volume is
+      - C(present) ensure the volume is present, C(absent) ensure the volume is
         removed
     type: str
     required: no
-    default: c(present)
+    default: <present>
 
   volume:
     description:
@@ -46,11 +46,11 @@ options:
     description:
       - The initial volume fileserver location.
       - If provided, should be the hostname or fileserver address.
-      - If not provided, the first fileserver address from c(vos listaddrs)
+      - If not provided, the first fileserver address from C(vos listaddrs)
         will be used.
       - The volume will not be moved if it already exists on a different
         server.
-      - This option is ignored when the state is c(absent).
+      - This option is ignored when the state is C(absent).
     type: str
     default: first fileserver entry found in VLDB
 
@@ -58,15 +58,15 @@ options:
     description:
       - The initial volume partition id.
 
-      - If provided, should be the partition id; c('a') ..  c('iu').
+      - If provided, should be the partition id; C('a') ..  C('iu').
 
-      - If not provided, the first partition found from c(vos listpart) will be
+      - If not provided, the first partition found from C(vos listpart) will be
         used.
 
       - The volume will not be moved if it already exists on a different
         partition.
 
-      - This option is ignored when the state is c(absent).
+      - This option is ignored when the state is C(absent).
 
     type: str
     default: the first partition found on the fileserver
@@ -79,20 +79,20 @@ options:
 
       - The read/write path variant will be used if it is available.
 
-      - A read/write mount point will also be created for the c(root.cell)
+      - A read/write mount point will also be created for the C(root.cell)
         volume.
 
-      - The c(i) and c(a) ACL rights will be temporarily assigned to the mount
+      - The C(i) and C(a) ACL rights will be temporarily assigned to the mount
         point parent directory in order to create the mount point if those
         rights are missing.
 
       - The volume containing the parent volume will be released if a mount
         point was created.
 
-      - The volume will be created but not mounted if the c(mount) option is
+      - The volume will be created but not mounted if the C(mount) option is
         not given.
 
-      - This option is ignored when the state is c(absent).
+      - This option is ignored when the state is C(absent).
 
       - This option may only be used if a client is installed on the remote
         node.
@@ -103,11 +103,11 @@ options:
     description:
       - The access control list to be set in the volumes root directory.
 
-      - The c(acl) option my be specified as a list of strings. Each string
+      - The C(acl) option my be specified as a list of strings. Each string
         contains a pair of strings separated by a space. The substring names a
         user or group, the second indicates the access rights.
 
-      - See c(fs setacl) for details.
+      - See C(fs setacl) for details.
 
       - This option may only be used if a client is installed on the remote
         node.
@@ -129,7 +129,7 @@ options:
       - The number of read-only volumes to be created, including the read-only
         clone on the same fileserver and partition as the read/write volume.
 
-      - The c(replicas) option indicates the minumum number of read-only
+      - The C(replicas) option indicates the minumum number of read-only
         volumes desired.
 
     type: int
@@ -138,21 +138,21 @@ options:
 
   localauth:
     description:
-      - Indicates if the c(-localauth) option is to be used for authentication.
+      - Indicates if the C(-localauth) option is to be used for authentication.
 
       - This option should only be used when running on a server.
 
-      - The c(mount) and c(acl) options may not be used with c(localauth).
+      - The C(mount) and C(acl) options may not be used with C(localauth).
 
     type: bool
     default: no
 
   auth_user:
     description:
-      - The afs user name to be used when c(localauth) is False.
+      - The afs user name to be used when C(localauth) is False.
 
-      - The user must be a member of the c(system:administrators) group and
-        must be a server superuser, that is, set in the c(UserList) file on
+      - The user must be a member of the C(system:administrators) group and
+        must be a server superuser, that is, set in the C(UserList) file on
         each server in the cell.
 
       - Old kerberos 4 '.' separators are automatically converted to modern '/'
@@ -224,29 +224,29 @@ acl:
   description: List of acl strings set in the volume root directory
   returned: success
   type: list
-  sample:
-    - "system:anyuser":
-        - r
-        - l
+#  sample:
+#    - "system:anyuser":
+#        - r
+#        - l
 
 mount:
   description: Mount point path
   returned: success
   type: str
-  sample: "/afs/.example.com/test/foo"
+#  sample: "/afs/.example.com/test/foo"
 
 volume:
   description: Volume information
   returned: success
   type: dict
-  sample:
-    name: foo
-    rw: 536870927
-    sites:
-      - flags: ""
-        partition: a
-        server: 192.168.122.214
-        type: rw
+#  sample:
+#    name: foo
+#    rw: 536870927
+#    sites:
+#      - flags: ""
+#        partition: a
+#        server: 192.168.122.214
+#        type: rw
 """
 
 import json                     # noqa: E402

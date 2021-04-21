@@ -4,7 +4,8 @@ Installation
 Galaxy
 ------
 
-To install the OpenAFS Ansible Collection from Ansible Galaxy:
+Install the OpenAFS Ansible Collection from Ansible Galaxy with the
+command:
 
 .. code-block:: console
 
@@ -15,7 +16,8 @@ Note: Ansible 2.9 or better is required to install collections.
 Source code
 -----------
 
-To install the OpenAFS Ansible Collection from a source code checkout:
+Install the OpenAFS Ansible Collection from a source code checkout with
+the following commands:
 
 .. code-block:: console
 

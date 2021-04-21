@@ -20,16 +20,20 @@ description:
 
 options:
   package_mgr_type:
-    description: Package manager type
-    choices:
-      - rpm
-      - deb
+    description:
+      - The package manager type on this remote node.
+      - Supported values are C(rpm) and C(apt)
+    default: rpm
 
 author:
   - Michael Meffie
 '''
 
 EXAMPLES = r'''
+- name: Get installation paths
+  openafs_contrib.openafs.openafs_get_install_paths:
+    package_manager_type: apt
+  register: install_results
 '''
 
 import os                   # noqa: E402

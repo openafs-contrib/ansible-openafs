@@ -84,23 +84,23 @@ Examples
 Return Values
 -------------
 
-asetkey (success, path, /usr/sbin/asetkey)
+asetkey (success, path, )
   asetkey path found
 
 
-have_extended_keys (success, bool, True)
+have_extended_keys (success, bool, )
   Indicates if extended keys are supported.
 
 
-keys (success, list, [{'enctype': 'aes256-cts-hmac-sha1-96', 'eno': 18, 'kvno': 3, 'principal': 'afs/example.com@EXAMPLE.COM', 'realm': 'EXAMPLE.COM', 'timestamp': 1605734384}, {'enctype': 'aes128-cts-hmac-sha1-96', 'eno': 17, 'kvno': 3, 'principal': 'afs/example.com@EXAMPLE.COM', 'realm': 'EXAMPLE.COM', 'timestamp': 1605734384}])
+keys (success, list, )
   keys found in the keytab file
 
 
-imported (success, list, [{'eno': 17, 'kvno': 3, 'type': 'rxkad_krb5'}, {'eno': 18, 'kvno': 3, 'type': 'rxkad_krb5'}])
+imported (success, list, )
   Imported key versions
 
 
-service_principal (success, str, afs/example.com@EXAMPLE.COM)
+service_principal (success, str, )
   kerberos service principal
 
 

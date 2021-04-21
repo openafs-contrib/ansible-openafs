@@ -4,20 +4,22 @@ openafs_devel - OpenAFS Development Role
 Description
 -----------
 
-Install development packages and provide modules to build an OpenAFS binary
-distribution from source code.
+Install development packages needed to build OpenAFS clients and server
+binaries.
 
 Variables
 ---------
 
 afs_devel_oracle_key
-  Path to the Oracle Solaris Studio keys on the controller when the
-  remote node is running Solaris.
+  Fully qualified path of your Oracle Developer Studio key on the controller.
+  Used to install Oracle Developer Studio when the remote node operating system
+  is Solaris.
 
   Default: ``~/.certs/pkg.oracle.com.key.pem``
 
 afs_devel_oracle_cert
-  Path to the Oracle Solaris Studio certificate on the controller when the
-  remote node is running Solaris.
+  Fully qualified path of your Oracle Developer Studio certificate on the
+  controller. Used to install Oracle Developer Studio when the remote node
+  operating system is Solaris.
 
   Default: ``~/.certs/pkg.oracle.com.certificate.pem``

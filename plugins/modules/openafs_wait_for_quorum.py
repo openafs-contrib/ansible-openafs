@@ -14,7 +14,9 @@ module: openafs_wait_for_quorum
 
 short_description: Wait for the dbserver connection and quorum
 
-description: todo
+description:
+  - Wait until the VLDB and PRDB database elections are completed
+    and a sync site is set.
 
 options: {}
 
@@ -23,9 +25,13 @@ author:
 '''
 
 EXAMPLES = r'''
-'''
-
-RETURN = r'''
+- name: Wait for database quorum
+  become: yes
+  openafs_contrib.openafs.openafs_wait_for_quorum:
+    sleep: 10
+    timeout: 600
+  when:
+    - afs_is_dbserver
 '''
 
 import json                     # noqa: E402

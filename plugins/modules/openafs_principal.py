@@ -73,7 +73,7 @@ options:
       - See C(kadmin) documenation for possible values.
     type: list
     required: false
-    default: See C(kadmin)
+    default: See <kadmin>
     aliases:
       - enctype
       - encryption_type
@@ -105,7 +105,7 @@ options:
     default: /var/lib/ansible-openafs/keytabs
 
   kadmin:
-    desciption: Path to the C(kadmin.local) command
+    desciption: Path to the <kadmin.local> command
     type: path
     required: false
     default: search PATH
@@ -151,7 +151,7 @@ EXAMPLES = r'''
   openafs_contrib.openafs.openafs_principal:
     state: present
     principal: "{{ item }}"
-    password: "{{ initial_password }}
+    password: "{{ initial_password }}"
   with_items:
     - alice
     - bob
@@ -173,25 +173,25 @@ kadmin:
   description: kadmin executable path
   type: path
   returned: always
-  sample: "/sbin/kadmin.local"
+#  sample: "/sbin/kadmin.local"
 
 keytab:
   description: Path of the generated keytab on the remote node.
   type: path
   returned: success
-  sample: "/var/lib/ansible-openafs/keytabs/afs.example.com.keytab"
+#  sample: "/var/lib/ansible-openafs/keytabs/afs.example.com.keytab"
 
 principal:
   description: principal name
   type: str
   returned: success
-  sample: "afs/example.com"
+#  sample: "afs/example.com"
 
 realm:
   description: realm name
   type: str
   return: when present in the principal parameter
-  sample: EXAMPLE.COM
+#  sample: EXAMPLE.COM
 '''
 
 import json                     # noqa: E402

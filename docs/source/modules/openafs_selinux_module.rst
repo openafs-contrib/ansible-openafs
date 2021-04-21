@@ -67,7 +67,7 @@ Examples
 Return Values
 -------------
 
-module (success, str, /var/lib/ansible-openafs/selinux/openafs.mod)
+module (success, str, )
   Path to the module
 
 

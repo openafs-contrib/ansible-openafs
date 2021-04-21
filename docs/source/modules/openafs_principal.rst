@@ -54,7 +54,7 @@ Parameters
     Old kerberos 4 '.' separators are automatically converted to modern '/' separators.
 
 
-  enctypes (False, list, See C(kadmin))
+  enctypes (False, list, See <kadmin>)
     Kerberos encryption and salt types.
 
     See ``kadmin`` documenation for possible values.
@@ -125,7 +125,7 @@ Examples
       openafs_contrib.openafs.openafs_principal:
         state: present
         principal: "{{ item }}"
-        password: "{{ initial_password }}
+        password: "{{ initial_password }}"
       with_items:
         - alice
         - bob
@@ -144,19 +144,19 @@ debug (always, list, )
   kadmin commands executed and output
 
 
-kadmin (always, path, /sbin/kadmin.local)
+kadmin (always, path, )
   kadmin executable path
 
 
-keytab (success, path, /var/lib/ansible-openafs/keytabs/afs.example.com.keytab)
+keytab (success, path, )
   Path of the generated keytab on the remote node.
 
 
-principal (success, str, afs/example.com)
+principal (success, str, )
   principal name
 
 
-realm (, str, EXAMPLE.COM)
+realm (, str, )
   realm name
 
 

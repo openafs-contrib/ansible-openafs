@@ -26,8 +26,8 @@ options:
 
   state:
     description:
-      - c(present) create user and groups when not present
-      - c(absent) remove user when not present
+      - C(present) create user and groups when not present
+      - C(absent) remove user when not present
     type: str
     default: present
 
@@ -55,16 +55,16 @@ options:
 
   localauth:
     description:
-      - Indicates if the c(-localauth) option is to be used for authentication.
+      - Indicates if the C(-localauth) option is to be used for authentication.
       - This option should only be used when running on a server.
     type: bool
     default: no
 
   auth_user:
     description:
-      - The afs user name to be used when c(localauth) is False.
-      - The user must be a member of the c(system:administrators) group and
-        must be a server superuser, that is, set in the c(UserList) file on
+      - The afs user name to be used when C(localauth) is False.
+      - The user must be a member of the C(system:administrators) group and
+        must be a server superuser, that is, set in the C(UserList) file on
         each server in the cell.
       - Old kerberos 4 '.' separators are automatically converted to modern '/'
         separators.
@@ -102,16 +102,16 @@ RETURN = r'''
 user:
   description: User information.
   type: dictionary
-  sample:
-    user:
-      id: 5
-      name: tycobb
-      creator: admin
-      owner: "system:administrators"
-      flags: S----
-      groups:
-        - "system:administrators"
-        - tester
+#  sample:
+#    user:
+#      id: 5
+#      name: tycobb
+#      creator: admin
+#      owner: "system:administrators"
+#      flags: S----
+#      groups:
+#        - "system:administrators"
+#        - tester
 '''
 
 import json                     # noqa: E402

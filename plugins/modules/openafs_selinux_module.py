@@ -57,7 +57,7 @@ module:
   description: Path to the module
   returned: success
   type: str
-  sample: "/var/lib/ansible-openafs/selinux/openafs.mod"
+#  sample: "/var/lib/ansible-openafs/selinux/openafs.mod"
 
 version:
   description: Module version
