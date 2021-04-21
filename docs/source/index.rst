@@ -7,6 +7,7 @@ Ansible Collection for OpenAFS
 
    intro
    install
+   usage
    playbooks
    roles
    modules

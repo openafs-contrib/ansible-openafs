@@ -12,7 +12,7 @@ Requirements
 Unless DNS SRV records have been configured to supply the OpenAFS database
 server addresses, the names and addresses of the OpenAFS databases to setup the
 server CellServDB files must be provided by the ``afs_csdb`` inventory variable,
-or a separate yaml file, the path of which is specifed by the ``afs_csdb_file``
+or a separate yaml file, the path of which is specified by the ``afs_csdb_file``
 variable.
 
 Variables

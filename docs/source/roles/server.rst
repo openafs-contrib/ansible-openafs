@@ -14,7 +14,7 @@ selinux enforcing mode when installing from RPM packages.
 Requirements
 ------------
 
-A kerberos realm is required before creating the OpenAFS services. This can be
+A Kerberos realm is required before creating the OpenAFS services. This can be
 a pre-existing realm or can be created with the ``openafs_krbserver`` role.  A
 service principal is required and must be exported to a keytab file. See the
 ``realm.yml`` example playbook.
@@ -26,7 +26,7 @@ installed from source code from a git repository.
 
 The names and addresses of the OpenAFS databases to setup the server CellServDB
 files must be provided by the  ``afs_csdb`` inventory variable, or a separate
-yaml file, the path of which is specifed by the ``afs_csdb_file`` variable.
+yaml file, the path of which is specified by the ``afs_csdb_file`` variable.
 
 Variables
 ---------

@@ -57,7 +57,7 @@
         - "{{ afs_user }}.keytab"
 
 #
-# Create the top-level cell volumes and some initial users.
+# Create the top-level cell volumes and an initial user.
 #
 - name: New cell
   hosts: afs_admin_client
@@ -66,6 +66,12 @@
   tasks:
     - import_role:
         name: openafs_common
+
+    - name: Upload admin keytab
+      copy:
+        src: "{{ afs_cell_files }}/{{ afs_admin }}.keytab"
+        dest: "{{ afs_admin }}.keytab"
+        mode: "400"
 
     - name: Create top-level volumes
       openafs_volume:

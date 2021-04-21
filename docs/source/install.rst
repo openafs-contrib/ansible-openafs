@@ -1,23 +1,31 @@
 Installation
 ============
 
-Galaxy
-------
+Requirements
+------------
 
-Install the OpenAFS Ansible Collection from Ansible Galaxy with the
+This collection requires Ansible 2.10 or later to be installed on the Ansible
+controller. Ansible may be installed with your package manager or with Python
+``pip``.
+
+Target clients and server machines must be reachable via ``ssh`` and must
+have python installed. Ansible is not required on target machines.
+
+Galaxy Installation
+-------------------
+
+Install the **OpenAFS Ansible Collection** from Ansible Galaxy with the
 command:
 
 .. code-block:: console
 
    $ ansible-galaxy collection install openafs_contrib.openafs
 
-Note: Ansible 2.9 or better is required to install collections.
+Source Code Installation
+------------------------
 
-Source code
------------
-
-Install the OpenAFS Ansible Collection from a source code checkout with
-the following commands:
+Install the **OpenAFS Ansible Collection** from source code with the
+following commands:
 
 .. code-block:: console
 
@@ -29,3 +37,6 @@ the following commands:
    $ make init
    $ source .venv/bin/activate
    $ make install
+
+The directory structure show above is required for proper operation of the
+molecule unit tests and the document generation.

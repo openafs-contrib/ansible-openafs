@@ -28,4 +28,4 @@ afs_kadmin_server
   not set in the krb5.conf file and it is assumed to be defined as SRV
   records in DNS.
 
-  Defualt: undefined
+  Default: undefined

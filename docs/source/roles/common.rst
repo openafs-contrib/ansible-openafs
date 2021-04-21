@@ -41,19 +41,19 @@ afs_csdb:
           clone: no
 
 afs_csdb_file
-  The path to the enternal yaml file containing CellServDB information for the
+  The path to the external yaml file containing CellServDB information for the
   cell. This file is read when the ``afs_csdb`` is not defined in the inventory.
   The ``afs_csdb_file`` can be created in a playbook with the ``generate_csdb``
   task. This can be useful in to automatically create a usable CellServDB file
   in a test environment.
 
   The CellServDB information for the cell. This must be provided as a inventory
-  variable or an external yaml file, the path specifed by ``afs_csdb_file``.
+  variable or an external yaml file, the path specified by ``afs_csdb_file``.
 
   Default: ``<afs_cell_files>/csdb.yaml``
 
 afs_admin
-  An adminstrative user name. This is the ``pts`` user name, for example: ``jdoe.admin``
+  An administrative user name. This is the ``pts`` user name, for example: ``jdoe.admin``
   Default: ``<ansible_user>.admin``
 
 afs_user

@@ -192,7 +192,7 @@ mount (success, str, )
   Mount point path
 
 
-volume (success, dict, {'name': 'foo', 'rw': 536870927})
+volume (success, dict, )
   Volume information
 
 
