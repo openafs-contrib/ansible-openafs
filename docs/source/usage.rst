@@ -109,6 +109,7 @@ If your inventory is in ``ini`` format, then provide a ``afs_cell.yaml`` file
 in the Ansible ``group_vars`` directory.
 
 .. code-block:: yaml
+
    # Contents of `group_vars/afs_cell.yaml`
    afs_csdb:
      cell: example.com
@@ -150,131 +151,16 @@ as a starting point.
 
 Run the playbooks with ``ansible-playbook [options] <playbooks>``.
 
+Import the ``openafs_client`` role to install and configure client machines,
+and import the ``openafs_server`` role to install and configure fileserver
+and database server machines. A single machine may have both a client and
+server installed on it, but with the limitation the client and server
+versions must match.
+
+Use the ``openafs_volume`` module on a client machine to create and mount
+the OpenAFS ``root.afs`` and ``root.cell`` volumes.  This module may also be
+used to create additional volumes.
+
+Use the ``openafs_user`` module on a client to create initial users.
+
 See the Ansible documentation for more information on running ``ansible-playbook``.
-
-
-Example playbooks
-^^^^^^^^^^^^^^^^^
-
-.. code-block:: yaml
-
-   # realm.yml -- Create the Kerberos realm and initial principals.
-
-   - name: Create a Kerberos realm
-     hosts: afs_kdcs
-     collections:
-       - openafs_contrib.openafs
-     tasks:
-       - import_role:
-           name: openafs_krbserver
-
-       - import_role:
-           name: openafs_common
-
-       - name: Create AFS service key.
-         become: yes
-         openafs_principal:
-           state: present
-           principal: "afs/{{ afs_cell }}"
-           encryption_types:
-             - aes128-cts
-             - aes256-cts
-         register: service_key_results
-
-       - name: Create admin principal.
-         become: yes
-         openafs_principal:
-           state: present
-           principal: "{{ afs_admin }}"
-           acl: "*"
-         register: admin_princ_results
-
-       - name: Create user principal.
-         become: yes
-         openafs_principal:
-           state: present
-           principal: "{{ afs_user }}"
-         register: user_princ_results
-
-       - name: Download keytabs.
-         become: yes
-         fetch:
-           flat: yes
-           src: "{{ item }}"
-           dest: "{{ afs_cell_files }}/"
-         with_items:
-           - "{{ service_key_results.keytab }}"
-           - "{{ admin_princ_results.keytab }}"
-           - "{{ user_princ_results.keytab }}"
-         register: download_results
-
-       - name: Downloaded.
-         debug:
-           msg: "{{ download_results.results | map(attribute='dest') | list }}"
-
-.. code-block:: yaml
-
-   # openafs.yml - Deploy the OpenAFS servers and clients
-
-   - name: Install servers
-     hosts: afs_databases:afs_fileservers
-     collections:
-       - openafs_contrib.openafs
-     tasks:
-       - import_role:
-           name: openafs_server
-
-   - name: Install clients
-     hosts: afs_clients
-     collections:
-       - openafs_contrib.openafs
-     tasks:
-       - import_role:
-           name: openafs_krbclient
-
-       - import_role:
-           name: openafs_client
-
-.. code-block:: yaml
-
-   # newcell.yml - Create the top-level cell volumes and some initial users.
-
-   - name: New cell
-     hosts: afs_admin_client
-     collections:
-       - openafs_contrib.openafs
-     tasks:
-       - import_role:
-           name: openafs_common
-
-       - name: Create top-level volumes
-         openafs_volume:
-           state: present
-           name: "{{ item.name }}"
-           mount: "{{ item.mount }}"
-           acl: "{{ item.acl }}"
-           auth_user: "{{ afs_admin }}"
-           auth_keytab: "{{ afs_admin }}.keytab"
-           replicas: 3
-         with_items:
-           - name: root.afs
-             mount: /afs
-             acl: "system:anyuser read"
-
-           - name: root.cell
-             mount: /afs/{{ afs_cell }}
-             acl: "system:anyuser read"
-
-           - name: projects
-             mount: /afs/{{ afs_cell }}/projects
-             acl:
-               - "system:anyuser read"
-               - "system:authuser write"
-
-       - name: Create test user
-         openafs_user:
-           name: "{{ afs_user }}"
-           id: "{{ afs_user_id }}"
-           group: tester
-           auth_user: "{{ afs_admin }}"
-           auth_keytab: "{{ afs_admin }}.keytab"
