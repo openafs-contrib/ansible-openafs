@@ -3,7 +3,7 @@
 .PHONY: help init lint test docs preview build install clean distclean
 
 PYTHON := /usr/bin/python3
-VERSION := 1.0.0-rc5
+VERSION := $(strip $(subst version:,,$(shell grep version: galaxy.yml)))
 UPDATE := --force
 MODULES := $(wildcard plugins/modules/openafs_*.py)
 EXTRACTED := $(patsubst plugins/modules/%.py,docs/source/modules/%.rst,$(MODULES))
