@@ -16,7 +16,7 @@
 
 - name: "Solaris 11.4: Upload publisher certificate files"
   copy:
-    src: "{{ item }}"
+    src: "{{ item_pem }}"
     dest: "{{ ansible_user_dir }}/.certs/{{ item_pem | basename }}"
   loop:
     - "{{ afs_devel_oracle_key }}"
