@@ -63,6 +63,7 @@
           destdir: "{{ build_results.destdir }}"
           bins: "{{ install_results.bins }}"
           dirs: "{{ install_results.dirs }}"
+      when: not ansible_check_mode
 
 - name: Store installation facts
   become: yes
@@ -71,6 +72,7 @@
     facts:
       client_service_name: openafs-client
       client_options: "{{ afs_afsd_opts }}"
+  when: not ansible_check_mode
 
 - name: Setup systemd service
   become: yes

@@ -37,6 +37,7 @@
     warn: False
   changed_when: False
   register: rpm_query
+  check_mode: no
 
 - name: Install OpenAFS client with kmod
   become: yes
@@ -64,6 +65,7 @@
       client_options: "{{ afs_afsd_opts }}"
       bins: "{{ install_results.bins }}"
       dirs: "{{ install_results.dirs }}"
+  when: not ansible_check_mode
 
 - import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
 

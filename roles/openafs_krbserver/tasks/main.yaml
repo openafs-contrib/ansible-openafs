@@ -37,6 +37,7 @@
         dict:  "{{ afs_krbserver_dict | d('omit') }}"
         kdc_service: "{{ afs_krbserver_kdc_service }}"
         admin_service: "{{ afs_krbserver_admin_service }}"
+  when: not ansible_check_mode
 
 - name: Set default realm
   become: yes
@@ -96,11 +97,13 @@
     flat: yes
     src: "{{ admin_principal_results.keytab }}"
     dest: "{{ afs_realm_files }}/"
+  when: not ansible_check_mode
   register: download_results
 
 - name: Downloaded.
   debug:
     var: download_results.dest
+  when: not ansible_check_mode
 
 - name: Start kerberos key server
   become: yes

@@ -49,3 +49,4 @@
       client_options: "{{ afs_afsd_opts }}"
       bins: "{{ install_results.bins }}"
       dirs: "{{ install_results.dirs }}"
+  when: not ansible_check_mode

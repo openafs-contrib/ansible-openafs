@@ -29,6 +29,7 @@
         kadmin: "{{ afs_kadmin }}"
         kdestroy: "{{ afs_kdestroy }}"
         kinit: "{{ afs_kinit }}"
+  when: not ansible_check_mode
 
 - name: Configure kerberos
   become: yes

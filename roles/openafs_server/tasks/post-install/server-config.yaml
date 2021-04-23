@@ -61,6 +61,18 @@
       path: "{{ afs_afsbosconfigdir }}"
   register: config_files
 
+- name: Create BosConfig.new file
+  become: yes
+  copy:
+    src: "{{ afs_afsbosconfigdir }}/BosConfig.ansible"
+    dest: "{{ afs_afsbosconfigdir }}/BosConfig.new"
+    remote_src: yes
+  when:
+    - not ansible_check_mode
+    - (config_files.results | selectattr('dest', 'search', 'BosConfig') | list)[0].changed
+  notify:
+    - Restart OpenAFS servers
+
 - name: Ensure admin is a superuser
   become: yes
   lineinfile:
@@ -68,16 +80,6 @@
     create: yes
     line: "{{ afs_admin }}"
     path: "{{ afs_afsconfdir }}/UserList"
-
-- name: Create BosConfig.new file
-  become: yes
-  copy:
-    src: "{{ afs_afsbosconfigdir }}/BosConfig.ansible"
-    dest: "{{ afs_afsbosconfigdir }}/BosConfig.new"
-    remote_src: yes
-  when: (config_files.results | selectattr('dest', 'search', 'BosConfig') | list)[0].changed
-  notify:
-    - Restart OpenAFS servers
 
 - name: Create krb.conf
   become: yes

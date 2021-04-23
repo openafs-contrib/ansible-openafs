@@ -26,3 +26,4 @@
     facts:
       install_method: none
       client_installed: yes
+  when: not ansible_check_mode

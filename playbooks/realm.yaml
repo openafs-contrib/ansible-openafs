@@ -45,8 +45,10 @@
         - "{{ service_key_results.keytab }}"
         - "{{ admin_princ_results.keytab }}"
         - "{{ user_princ_results.keytab }}"
+      when: not ansible_check_mode
       register: download_results
 
     - name: Downloaded.
       debug:
         msg: "{{ download_results.results | map(attribute='dest') | list }}"
+      when: not ansible_check_mode

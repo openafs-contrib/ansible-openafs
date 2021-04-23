@@ -42,6 +42,7 @@
       server_service_name: openafs-fileserver
       bins: "{{ install_results.bins }}"
       dirs: "{{ install_results.dirs }}"
+  when: not ansible_check_mode
 
 - name: Set bosserver startup options
   become: yes
