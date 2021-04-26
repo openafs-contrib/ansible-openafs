@@ -86,7 +86,6 @@ reset:
 clean:
 	rm -rf builds
 	rm -rf docs/build
-	rm -rf docs/source/modules/*.rst
 	$(MAKE) -C tests clean
 
 distclean: clean
