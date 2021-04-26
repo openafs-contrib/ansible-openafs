@@ -1,11 +1,11 @@
-# Ansible Role: Kerberos server
+# Ansible Role: OpenAFS common
 
-Install and configure the MIT Kerberos master KDC on single host, create the
-Kerberos database and the first administrator principal.
+Common definitions for OpenAFS clients and servers.
 
 Documentation: [https://openafs-ansible-collection.readthedocs.io][1]
 
-##  License
+License
+-------
 
 BSD
 
