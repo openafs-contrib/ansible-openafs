@@ -58,7 +58,7 @@
       openafs_contrib.openafs.openafs_store_facts:
         state: update
         facts:
-          install_method: scm
+          install_method: source
           client_installed: yes
           destdir: "{{ build_results.destdir }}"
           bins: "{{ install_results.bins }}"

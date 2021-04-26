@@ -80,11 +80,11 @@ afs_install_archive
   when the ``afs_install_method`` is ``packages``, ``bdist``, or ``sdist``.
 
 afs_git_repo
-  The git repository URL when the ``afs_install_method`` is ``scm``.
+  The git repository URL when the ``afs_install_method`` is ``source``.
 
   Default: ``git://git.openafs.org/openafs.git``
 
 afs_git_version
-  The git branch or tag to check out and build when the ``afs_install_method`` is ``scm``.
+  The git branch or tag to check out and build when the ``afs_install_method`` is ``source``.
 
   Default: ``master``

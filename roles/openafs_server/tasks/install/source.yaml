@@ -54,7 +54,7 @@
   openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
-      install_method: scm
+      install_method: source
       server_installed: yes
       client_installed: yes
       server_service_name: openafs-server

@@ -34,25 +34,25 @@ test-centos-7:
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s default
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s bdist
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s packages
-	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s scm
+	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s source
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s sdist
 
 test-centos-8:
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s default
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s bdist
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s packages
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s scm
+	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s source
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s sdist
 
 test-debian-10:
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s default
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s bdist
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s scm
+	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s source
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s sdist
 
 reset:
 	molecule reset -s bdist
 	molecule reset -s default
 	molecule reset -s packages
-	molecule reset -s scm
+	molecule reset -s source
 	molecule reset -s sdist

@@ -11,7 +11,7 @@ on the remote nodes. The following installation methods are supported:
 * **packages** - Install prebuilt packages (e.g. ``rpm``, ``dpkg``).
 * **bdist** - Install binary distribution with modern or Transarc-style paths.
 * **sdist** - Source distribution
-* **scm** - Checkout source code with ``git`` then build and install binaries.
+* **source** - Checkout source code with ``git`` then build and install binaries.
 * **none** - Skip installation tasks; assume manual installation.
 
 Different installation methods may be used on each remote node, however the
