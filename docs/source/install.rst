@@ -21,10 +21,15 @@ the collection with the ``ansible-galaxy`` command:
 
 .. code-block:: console
 
-   $ ansible-galaxy collection install openafs_contrib.openafs
+   $ ansible-galaxy collection install --pre openafs_contrib.openafs
 
-Source Code
------------
+The ``--pre`` option is required to install prerelease versions.
+
+Use the ``--force`` option to overwrite the currently installed versions if
+upgrading from an old version of the collection.
+
+Source
+------
 
 Install the **OpenAFS Ansible Collection** from source code with the
 following commands:
