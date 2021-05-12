@@ -1,20 +1,30 @@
 # If this file changes, increment the module version number
-module openafs 1.1;
+module openafs 1.2;
 require {
-	type afs_fsserver_t;
-	type afs_bosserver_t;
+    type init_t;         
+    type afs_fsserver_t;
+    type afs_bosserver_t;
     type afs_ptserver_t;
     type afs_vlserver_t;
     type afs_files_t;
     type afs_config_t;
+    type afs_cache_t;
     type afs_t;
-	type usr_t;
-	class unix_stream_socket connectto;
-	class lnk_file create;
+    type sssd_var_lib_t;
+    type sssd_t;
+    type usr_t;
+    type etc_t;
+    class unix_stream_socket connectto;
+    class capability dac_override;
+    class lnk_file create;
     class sock_file { unlink write };
-	class file { create getattr lock open read setattr write append};
-	class dir { add_name create read write search };
+    class file { create getattr lock open read setattr write append};
+    class dir { add_name create read write search };
 }
+
+#============= init ==============
+
+allow init_t afs_cache_t:file open;
 
 #============= afs_bosserver_t ==============
 
@@ -26,14 +36,27 @@ allow afs_bosserver_t afs_config_t:lnk_file create;
 #============= afs_fsserver_t ==============
 allow afs_fsserver_t self:unix_stream_socket connectto;
 allow afs_fsserver_t afs_config_t:sock_file { unlink write };
+allow afs_fsserver_t self:capability dac_override;
+allow afs_fsserver_t sssd_t:unix_stream_socket connectto;
+allow afs_fsserver_t sssd_var_lib_t:dir search;
+allow afs_fsserver_t sssd_var_lib_t:sock_file write;
 
 #============= afs_ptserver_t ==============
-allow afs_ptserver_t afs_files_t:dir search;
-allow afs_ptserver_t afs_files_t:dir write;
+allow afs_ptserver_t afs_files_t:dir {add_name search write};
+allow afs_ptserver_t afs_files_t:file {create getattr open write append };
+allow afs_ptserver_t sssd_var_lib_t:dir search;
+allow afs_ptserver_t sssd_var_lib_t:sock_file write;
+allow afs_ptserver_t sssd_t:unix_stream_socket connectto;
 
 #============= afs_t ==============
 allow afs_t afs_files_t:dir search;
+allow afs_t etc_t:dir {write add_name};
+allow afs_t etc_t:file {create};
+allow afs_t self:capability dac_override;
 
 #============= afs_vlserver_t ==============
-allow afs_vlserver_t afs_files_t:dir search;
-allow afs_vlserver_t afs_files_t:dir write;
+allow afs_vlserver_t afs_files_t:dir {search add_name write};
+allow afs_vlserver_t sssd_var_lib_t:dir search;
+allow afs_vlserver_t afs_files_t:file {create getattr open write append };
+allow afs_vlserver_t sssd_var_lib_t:sock_file write;
+allow afs_vlserver_t sssd_t:unix_stream_socket connectto;
