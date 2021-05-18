@@ -30,7 +30,7 @@
         target: install
         clean: "{{ checkout_results.changed }}"
         projectdir: "{{ afs_topdir }}"
-        destdir: "{{ afs_topdir }}/packaging/dest"
+        destdir: "{{ afs_topdir }}/packages/dest"
         configure_options:
           enable:
             - debug

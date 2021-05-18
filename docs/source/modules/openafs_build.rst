@@ -101,7 +101,7 @@ Parameters
     Generate the man-pages from POD files when running ``regen``.
 
 
-  destdir (optional, path, <projectdir>/packaging/dest)
+  destdir (optional, path, <projectdir>/packages/dest)
     The destination directory for ``install`` and ``dest`` targets and variants.
 
     The tree staged in this directory may be installed with the :ref:`openafs_install_bdist <openafs_install_bdist_module>` module.
@@ -134,7 +134,7 @@ Examples
         projectdir: ~/src/openafs
         clean: yes
         target: install_nolibafs
-        destdir: packaging/dest
+        destdir: packages/dest
         configure_options:
           prefix: /usr
           bindir: /usr/bin
@@ -185,7 +185,7 @@ builddir (always, string, /home/tycobb/projects/myproject)
   Absolute path to the build directory
 
 
-destdir (when destdir is specified, string, /home/tycobb/projects/myproject/packaging/dest)
+destdir (when destdir is specified, string, /home/tycobb/projects/myproject/packages/dest)
   Absolute path to the installation files.
 
 

@@ -136,7 +136,7 @@ options:
         variants.
       - The tree staged in this directory may be installed with the
         M(openafs_install_bdist) module.
-    default: <projectdir>/packaging/dest
+    default: <projectdir>/packages/dest
     type: path
 
   configure_options:
@@ -159,7 +159,7 @@ EXAMPLES = r'''
     projectdir: ~/src/openafs
     clean: yes
     target: install_nolibafs
-    destdir: packaging/dest
+    destdir: packages/dest
     configure_options:
       prefix: /usr
       bindir: /usr/bin
@@ -217,7 +217,7 @@ destdir:
   description: Absolute path to the installation files.
   returned: when destdir is specified
   type: string
-  sample: /home/tycobb/projects/myproject/packaging/dest
+  sample: /home/tycobb/projects/myproject/packages/dest
 
 logdir:
   description: Absolute path to the log files. May be used for

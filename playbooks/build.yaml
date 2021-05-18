@@ -23,7 +23,7 @@
         projectdir: ~/src/openafs
         clean: "{{ checkout_results.changed }}"
         target: dest
-        destdir: packaging/dest
+        destdir: packages/dest
         configure_options:
           enable:
             - debug

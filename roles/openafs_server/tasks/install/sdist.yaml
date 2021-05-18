@@ -82,7 +82,7 @@
     target: install
     clean: "{{ unarchive_results.changed }}"
     projectdir: "{{ sourcedir }}"
-    destdir: "{{ sourcedir }}/packaging/dest"
+    destdir: "{{ sourcedir }}/packages/dest"
     configure_options:
       enable:
         - debug

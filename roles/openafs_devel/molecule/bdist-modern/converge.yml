@@ -23,7 +23,7 @@
         target: install
         clean: yes
         projectdir: "~/openafs"
-        destdir: "~/openafs/packaging/dest"
+        destdir: "~/openafs/packages/dest"
         configure_options:
           enable:
             - debug
@@ -44,7 +44,7 @@
 
     - name: Create archive
       archive:
-        path: "~/openafs/packaging/dest/"
+        path: "~/openafs/packages/dest/"
         dest: "{{ tarball }}"
         format: gz
 
