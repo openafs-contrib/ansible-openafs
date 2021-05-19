@@ -15,6 +15,7 @@ provisioner:
       all:
         afs_cell: "example.com"
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
+        afs_csdb_file: ""
         afs_install_method: "bdist"
         afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
 verifier:
