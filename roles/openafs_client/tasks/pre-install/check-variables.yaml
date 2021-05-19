@@ -30,6 +30,7 @@
   when:
     - afs_csdb is undefined
     - afs_csdb_file is defined
+    - afs_csdb_file | count > 0
 
 - name: Default CellServDB values
   set_fact:

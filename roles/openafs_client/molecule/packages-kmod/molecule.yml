@@ -18,6 +18,7 @@ provisioner:
         afs_install_method: "packages"
         afs_module_install_method: "kmod"
         afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
+        afs_csdb_file: ""
 verifier:
   name: ansible
 scenario:
