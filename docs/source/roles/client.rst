@@ -38,3 +38,11 @@ afs_cachesize
 
 afs_afsd_opts
   The ``afsd`` command line arguments. Default: ``-dynroot -fakestat -afsdb``
+
+afs_client_netinfo
+  A single string, or a list of strings, to set the contents of the client ``NetInfo``
+  configuration file.
+
+afs_client_netrestrict
+  A single string, or a list of strings, to set the contents of the client ``NetRestrict``
+  configuration file.

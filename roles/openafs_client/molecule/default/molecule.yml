@@ -16,8 +16,12 @@ provisioner:
         afs_cell: "example.com"
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
         afs_install_method: "managed"
-        afs_module_install_method: "dkms"
+        afs_module_install_method: "kmod"
         afs_csdb_file: ""
+        afs_client_netinfo: 0.0.0.0
+        afs_client_netrestrict:
+          - 1.1.1.1
+          - 2.2.2.2
 verifier:
   name: ansible
 scenario:

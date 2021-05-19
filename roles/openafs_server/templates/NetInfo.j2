@@ -1,0 +1,7 @@
+{% if (afs_server_netinfo | type_debug) != 'list' %}
+{{ afs_server_netinfo }}
+{% else %}
+{% for entry in afs_server_netinfo %}
+{{ entry }}
+{% endfor %}
+{% endif %}

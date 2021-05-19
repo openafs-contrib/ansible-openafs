@@ -50,6 +50,17 @@ afs_server_cold_start
 
   Default is to detect by checking for the presence of the ``BosConfig`` file.
 
+afs_server_netinfo
+  A single string, or a list of strings, to set the contents of the server
+  ``NetInfo`` configuration file. This file specifies which addresses or
+  subnetworks should be used for server communication.  A specific address can
+  be forced by specifying a ``f `` prefix.
+
+afs_server_netrestrict
+  A single string, or a list of strings, to set the contents of the server
+  ``NetRestrict`` configuration file. This file specifies which addresses or
+  subnetworks should be excluded from server communications.
+
 afs_bosserver_opts:
   The ``bosserver`` command line options.
 

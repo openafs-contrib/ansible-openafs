@@ -7,6 +7,8 @@
 #   - CellServDB.local
 #   - CellServDB.dist
 #   - CellServDB   (combination of CellServDB.local and CellServDB.dist)
+#   - NetInfo
+#   - NetRestrict
 #
 # The CellServDB.dist file may have already been provided by the installation. A
 # custom file may be provided by defining afs_cellservdb_dist, which should contain
@@ -75,3 +77,43 @@
         owner: root
         group: root
         mode: 0644
+
+- name: Remove NetInfo
+  become: yes
+  file:
+    state: absent
+    path: "{{ afs_viceetcdir }}/NetInfo"
+  when:
+    - (afs_client_netinfo is undefined) or (afs_client_netinfo | count == 0)
+
+- name: Update NetInfo
+  become: yes
+  template:
+    src: "{{ role_path }}/templates/NetInfo.j2"
+    dest: "{{ afs_viceetcdir }}/NetInfo"
+    owner: root
+    group: root
+    mode: "644"
+  when:
+    - afs_client_netinfo is defined
+    - afs_client_netinfo | count > 0
+
+- name: Remove NetRestrict
+  become: yes
+  file:
+    state: absent
+    path: "{{ afs_viceetcdir }}/NetRestrict"
+  when:
+    - (afs_client_netrestrict is undefined) or (afs_client_netrestrict | count == 0)
+
+- name: Update NetRestrict
+  become: yes
+  template:
+    src: "{{ role_path }}/templates/NetRestrict.j2"
+    dest: "{{ afs_viceetcdir }}/NetRestrict"
+    owner: root
+    group: root
+    mode: "644"
+  when:
+    - afs_client_netrestrict is defined
+    - afs_client_netrestrict | count > 0

@@ -6,6 +6,8 @@
 #   - CellServDB
 #   - BosConfig (via BosConfig.new)
 #   - krb.conf (if the realm name is different than the cell name)
+#   - NetInfo
+#   - NetRestrict
 #
 # We cannot change the BosConfig directly since the bosserver may be
 # running, so create a shadow config file called BosConfig.ansible and
@@ -91,5 +93,50 @@
     group: root
   when: afs_realm != afs_cell.upper()
 
-# todo:
-#   - NetInfo
+- name: Remove NetInfo
+  become: yes
+  file:
+    state: absent
+    path: "{{ afs_afslocaldir }}/NetInfo"
+  when:
+    - (afs_server_netinfo is undefined) or (afs_server_netinfo | count == 0)
+  notify:
+    - Restart OpenAFS servers
+
+- name: Update NetInfo
+  become: yes
+  template:
+    src: "{{ role_path }}/templates/NetInfo.j2"
+    dest: "{{ afs_afslocaldir }}/NetInfo"
+    owner: root
+    group: root
+    mode: "644"
+  when:
+    - afs_server_netinfo is defined
+    - afs_server_netinfo | count > 0
+  notify:
+    - Restart OpenAFS servers
+
+- name: Remove NetRestrict
+  become: yes
+  file:
+    state: absent
+    path: "{{ afs_afslocaldir }}/NetRestrict"
+  when:
+    - (afs_server_netrestrict is undefined) or (afs_server_netrestrict | count == 0)
+  notify:
+    - Restart OpenAFS servers
+
+- name: Update NetRestrict
+  become: yes
+  template:
+    src: "{{ role_path }}/templates/NetRestrict.j2"
+    dest: "{{ afs_afslocaldir }}/NetRestrict"
+    owner: root
+    group: root
+    mode: "644"
+  when:
+    - afs_server_netrestrict is defined
+    - afs_server_netrestrict | count > 0
+  notify:
+    - Restart OpenAFS servers

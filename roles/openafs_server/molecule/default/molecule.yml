@@ -20,6 +20,10 @@ provisioner:
         afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
         afs_pseudo_partitions: ['a', 'b']
         afs_service_keytab: "../__files__/example-aes.keytab"
+        afs_server_netinfo: 0.0.0.0
+        afs_server_netrestrict:
+          - 1.1.1.1
+          - 2.2.2.2
 verifier:
   name: ansible
 scenario:

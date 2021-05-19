@@ -1,0 +1,7 @@
+{% if (afs_client_netrestrict | type_debug) != 'list' %}
+{{ afs_client_netrestrict }}
+{% else %}
+{% for entry in afs_client_netrestrict %}
+{{ entry }}
+{% endfor %}
+{% endif %}
