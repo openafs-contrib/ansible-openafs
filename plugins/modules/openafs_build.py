@@ -141,8 +141,8 @@ options:
 
   configure_options:
     description:
-      - The C(configure) options, as a dictionary.
-    type: dict
+      - The C(configure) options as a string, list of strings, or a dictionary
+    type: raw
 
 author:
   - Michael Meffie
@@ -192,6 +192,13 @@ EXAMPLES = r'''
         - kernel_module
       with:
         - linux_kernel_packaging
+
+- name: Example configure options specified as a string
+  openafs_contrib.openafs.openafs_build:
+    state: built-module
+    projectdir: ~/src/openafs
+    target: dest
+    configure_options: "--enable-debug --enable-transarc-paths"
 '''
 
 RETURN = r'''
@@ -249,10 +256,12 @@ import os         # noqa: E402
 import platform   # noqa: E402
 import pprint     # noqa: E402
 import re         # noqa: E402
+import shlex      # noqa: E402
 import shutil     # noqa: E402
 import json       # noqa: E402
 from multiprocessing import cpu_count  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
+from ansible.module_utils.six import string_types  # noqa: E402
 
 log = logging.getLogger('openafs_build')
 
@@ -481,7 +490,7 @@ def main():
             jobs=dict(type='int', default=cpu_count()),
             manpages=dict(type='bool', default=True),
             destdir=dict(type='path'),
-            configure_options=dict(type='dict'),
+            configure_options=dict(type='raw'),
         ),
         supports_check_mode=False,
     )
@@ -643,11 +652,20 @@ def main():
     #
     # Run configure.
     #
-    configure_command = [os.path.join(projectdir, 'configure')]
-    if configure_options:
-        args = options_to_args(configure_options)
-    else:
+    if not configure_options:
         args = []
+    elif isinstance(configure_options, dict):
+        args = options_to_args(configure_options)
+    elif isinstance(configure_options, list):
+        args = configure_options
+    elif isinstance(configure_options, tuple):
+        args = list(configure_options)
+    elif isinstance(configure_options, string_types):
+        args = shlex.split(configure_options)
+    else:
+        module.fail_json(msg="Invalid configure_options type.")
+
+    configure_command = [os.path.join(projectdir, 'configure')]
     configure_command.extend(args)
     run_command('configure', configure_command, builddir, module, logdir,
                 results)
