@@ -1,7 +1,7 @@
 import sys
 import pytest
-sys.path.append('../roles/openafs_devel/library')
-sys.path.append('../../roles/openafs_devel/library')
+sys.path.append('../plugins/modules')
+sys.path.append('../../plugins/modules')
 import openafs_build
 
 @pytest.mark.parametrize(
