@@ -18,6 +18,7 @@ provisioner:
         afs_install_method: "sdist"
         afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
         afs_csdb_file: ""
+        # afs_configure_options: "--enable-transarc-paths"
 verifier:
   name: ansible
 scenario:

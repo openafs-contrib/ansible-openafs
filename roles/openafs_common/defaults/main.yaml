@@ -55,3 +55,17 @@ afs_install_archive: ""
 # Git repository and branch info for builds and source based installs.
 afs_git_repo: "git://git.openafs.org/openafs.git"
 afs_git_version: "master"
+
+# Note: By default, build the kernel module on server in case we also want
+# to import the client role later. Doing a separate build later leads to issues
+# with common libraries.  Assume linux for now, and build the module with
+# the modern naming and paths.  Disable optimization for debugging.
+afs_configure_options:
+  enable:
+    - debug
+    - debug-kernel
+    - kenel-module
+  disable:
+    - optimize
+  with:
+    - linux-kernel-packaging

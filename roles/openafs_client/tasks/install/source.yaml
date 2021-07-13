@@ -27,17 +27,10 @@
     - name: Build OpenAFS binaries
       openafs_contrib.openafs.openafs_build:
         state: built-module
-        target: install
         clean: "{{ checkout_results.changed }}"
         projectdir: "{{ afs_topdir }}"
         destdir: "{{ afs_topdir }}/packages/dest"
-        configure_options:
-          enable:
-            - debug
-            - debug-kernel
-            - kenel-module
-          with:
-            - linux-kernel-packaging
+        configure_options: "{{ afs_configure_options }}"
       register: build_results
 
     - name: Build results

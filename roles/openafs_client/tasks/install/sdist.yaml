@@ -82,17 +82,10 @@
     #       build later leads to issues with common libraries.
     - name: Build OpenAFS binaries
       openafs_contrib.openafs.openafs_build:
-        target: install
         clean: "{{ unarchive_results.changed }}"
         projectdir: "{{ sourcedir }}"
         destdir: "{{ sourcedir }}/packages/dest"
-        configure_options:
-          enable:
-            - debug
-            - debug-kernel
-            - kenel-module
-          with:
-            - linux-kernel-packaging
+        configure_options: "{{ afs_configure_options }}"
       register: build_results
 
     - name: Build results

@@ -88,3 +88,25 @@ afs_git_version
   The git branch or tag to check out and build when the ``afs_install_method`` is ``source``.
 
   Default: ``master``
+
+afs_configure_options
+  The options given to configure when the ``afs_install_method`` is ``source``
+  or ``sdist``.  This variable can be a simple string, such as ``"--enable-debug
+  --enable-transarc-paths"``, or may be specified as a dictionary, for example:
+
+.. code-block:: yaml
+
+    afs_configure_options:
+      prefix: /usr
+      bindir: /usr/bin
+      libdir: /usr/lib64
+      sbindir: /usr/sbin
+      disable:
+        - strip_binaries
+        - kernel_module
+      enable:
+        - debug
+        - redhat_buildsys
+        - transarc_paths
+      with:
+        - krb5: /path/to/krb5.lib
