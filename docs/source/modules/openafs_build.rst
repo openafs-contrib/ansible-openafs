@@ -16,7 +16,7 @@ Build OpenAFS server and client binaries from source code.
 
 The source code must be already present in the *projectdir* directory on the host.
 
-The :ref:`openafs_build <openafs_build_module>` module will run the OpenAFS ``regen.sh`` command, then run ``configure`` with the given *configure_options*, and then run ``make`` with the given *target*.  The ``regen.sh`` execution is skipped when the ``configure`` file already exists.  The ``configure`` execution is skipped when the ``config.status`` file already exists.
+The :ref:`openafs_build <openafs_build_module>` module will run the OpenAFS ``regen.sh`` command, then run ``configure`` with the given *configure_options*, and then run ``make`` with the given *target*.  If a *target* is not specified, one will be determined based on the given *configure_options*. The ``regen.sh`` execution is skipped when the ``configure`` file already exists.  The ``configure`` execution is skipped when the ``config.status`` file already exists.
 
 A complete set of build log files are written on the *logdir* directory on the host for build troubleshooting.
 
@@ -87,8 +87,12 @@ Parameters
     The ``make`` program to be executed.
 
 
-  target (optional, str, None)
-    The make target to be run.
+  target (optional, str, detect based on I(configure_options))
+    The make target to be run. If not specified, the target will be determined based on the *configure_options*.
+
+    The target is set to ``dest`` if the *configure_options* contain ``--enable-transarc-paths``, or set to ``install`` otherwise.
+
+    The target is set to ``dest_nolibafs`` or ``install_nolibafs`` if the *configure_options* contains ``--disable-kernel-module``.
 
 
   jobs (optional, int, the number of CPUs on the system)
@@ -107,8 +111,8 @@ Parameters
     The tree staged in this directory may be installed with the :ref:`openafs_install_bdist <openafs_install_bdist_module>` module.
 
 
-  configure_options (optional, dict, None)
-    The ``configure`` options, as a dictionary.
+  configure_options (optional, raw, None)
+    The ``configure`` options as a string, list of strings, or a dictionary
 
 
 
@@ -159,7 +163,6 @@ Examples
         state: built-module
         projectdir: ~/src/openafs
         clean: yes
-        target: dest
         configure_options:
           enable:
             - debug
@@ -167,6 +170,12 @@ Examples
             - kernel_module
           with:
             - linux_kernel_packaging
+
+    - name: Example configure options specified as a string
+      openafs_contrib.openafs.openafs_build:
+        state: built-module
+        projectdir: ~/src/openafs
+        configure_options: "--enable-debug --enable-transarc-paths"
 
 
 

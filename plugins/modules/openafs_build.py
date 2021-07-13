@@ -23,9 +23,11 @@ description:
 
   - The M(openafs_build) module will run the OpenAFS C(regen.sh) command, then
     run C(configure) with the given I(configure_options), and then run C(make)
-    with the given I(target).  The C(regen.sh) execution is skipped when the
-    C(configure) file already exists.  The C(configure) execution is skipped
-    when the C(config.status) file already exists.
+    with the given I(target).  If a I(target) is not specified, one will be
+    determined based on the given I(configure_options). The C(regen.sh)
+    execution is skipped when the C(configure) file already exists.  The
+    C(configure) execution is skipped when the C(config.status) file
+    already exists.
 
   - A complete set of build log files are written on the I(logdir) directory on
     the host for build troubleshooting.
@@ -114,8 +116,14 @@ options:
 
   target:
     description:
-      - The make target to be run.
+      - The make target to be run. If not specified, the target will
+        be determined based on the I(configure_options).
+      - The target is set to C(dest) if the I(configure_options) contain
+        C(--enable-transarc-paths), or set to C(install) otherwise.
+      - The target is set to C(dest_nolibafs) or C(install_nolibafs)
+        if the I(configure_options) contains C(--disable-kernel-module).
     type: str
+    default: detect based on I(configure_options)
 
   jobs:
     description:
@@ -184,7 +192,6 @@ EXAMPLES = r'''
     state: built-module
     projectdir: ~/src/openafs
     clean: yes
-    target: dest
     configure_options:
       enable:
         - debug
@@ -197,7 +204,6 @@ EXAMPLES = r'''
   openafs_contrib.openafs.openafs_build:
     state: built-module
     projectdir: ~/src/openafs
-    target: dest
     configure_options: "--enable-debug --enable-transarc-paths"
 '''
 
@@ -486,7 +492,7 @@ def main():
             clean=dict(type='bool', default=False),
             version=dict(type='str'),
             make=dict(type='path'),
-            target=dict(type='str'),
+            target=dict(type='str', default=None),
             jobs=dict(type='int', default=cpu_count()),
             manpages=dict(type='bool', default=True),
             destdir=dict(type='path'),
@@ -534,7 +540,7 @@ def main():
     results['logfiles'].append(build_log)
 
     log.info('Starting build')
-    log.debug('Parameters: %s', pprint.pformat(module.params))
+    log.info('Parameters: %s', pprint.pformat(module.params))
 
     #
     # Setup paths.
@@ -664,6 +670,25 @@ def main():
         args = shlex.split(configure_options)
     else:
         module.fail_json(msg="Invalid configure_options type.")
+
+    #
+    # Historically, the make target depends on the directory path mode
+    # specified by the configure options.  The 'dest' target is used to
+    # build transarc style paths and make install is used to build modern
+    # style paths (although, hybrid styles are possible).  To make it
+    # easier to support both modes, by default, just figure out the make
+    # target based on the configure options given.  The caller my specify
+    # a explicit target (even an empty one) to override this feature.
+    #
+    if target is None:
+        if '--enable-transarc-paths' in args:
+            target = 'dest'
+        else:
+            target = 'install'
+        if '--disable-kernel-module' in args:
+            target += '_nolibafs'
+        log.info('Using target "%s"', target)
+    results['target'] = target
 
     configure_command = [os.path.join(projectdir, 'configure')]
     configure_command.extend(args)
