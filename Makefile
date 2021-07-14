@@ -4,7 +4,7 @@
 
 PYTHON := /usr/bin/python3
 VERSION := $(strip $(subst version:,,$(shell grep version: galaxy.yml)))
-UPDATE := --force
+UPDATE := --force --pre
 MODULES := $(wildcard plugins/modules/openafs_*.py)
 EXTRACTED := $(patsubst plugins/modules/%.py,docs/source/modules/%.rst,$(MODULES))
 ACPATH := $(realpath $(CURDIR)/../../..)
