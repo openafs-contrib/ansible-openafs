@@ -44,9 +44,6 @@
       debug:
         var: build_results
 
-    - set_fact:
-        destdir: "{{ build_results.destdir }}"
-
     - name: Install binaries
       become: yes
       openafs_contrib.openafs.openafs_install_bdist:
