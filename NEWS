@@ -1,0 +1,17 @@
+OpenAFS Ansible Collection
+
+May 4, 2021 - version 1.0.0
+
+* Roles for OpenAFS clients and servers. Install methods include
+  managed, packages, source, sdist (source distribution), bdist
+  (binary distribution).
+
+* Roles for basic Kerberos realm deployment.
+
+* Various modules for playbook and role tasks, including modules
+  create OpenAFS volumes, users and groups.
+
+* Example playbooks to build OpenAFS, deploy a Kerberos realm,
+  and deploy an OpenAFS cell.
+
+* Docs hosted on readthedocs.io.
