@@ -21,12 +21,10 @@ the collection with the ``ansible-galaxy`` command:
 
 .. code-block:: console
 
-   $ ansible-galaxy collection install --pre openafs_contrib.openafs
+   $ ansible-galaxy collection install openafs_contrib.openafs
 
-The ``--pre`` option is required to install prerelease versions.
-
-Use the ``--force`` option to overwrite the currently installed versions if
-upgrading from an old version of the collection.
+Use the ``--force`` option to overwrite the currently installed version to
+upgrade if you already have an older version of the collection installed.
 
 Source
 ------
