@@ -1,6 +1,10 @@
 ---
 # Variable sanity checks and initialization.
 
+- name: Verify node is a server
+  assert:
+    that: afs_is_server == True
+
 - name: Verify install method
   assert:
     that:

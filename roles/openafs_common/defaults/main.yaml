@@ -1,4 +1,15 @@
 ---
+# This node is an OpenAFS server.
+afs_is_server: "{{
+  'afs_servers' in group_names or
+  'afs_databases' in group_names or
+  'afs_fileservers' in group_names }}"
+
+# This node is an OpenAFS client.
+afs_is_client: "{{
+  'afs_clients' in group_names or
+  'afs_admin_client' in group_names }}"
+
 # AFS cell name.
 afs_cell: example.com
 

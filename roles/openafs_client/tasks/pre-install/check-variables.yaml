@@ -1,6 +1,18 @@
 ---
 # Variable sanity checks and initialization.
 
+- name: Verify node is a client
+  assert:
+    that: afs_is_client
+
+- name: Enforce server install before client
+  assert:
+    that:
+      - ansible_local.openafs.server_installed is defined
+      - ansible_local.openafs.server_installed == True
+  when:
+    - afs_is_server
+
 - name: Verify install method
   assert:
     that:
