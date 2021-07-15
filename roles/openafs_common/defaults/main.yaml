@@ -64,7 +64,7 @@ afs_configure_options:
   enable:
     - debug
     - debug-kernel
-    - kenel-module
+    - kernel-module
   disable:
     - optimize
   with:
