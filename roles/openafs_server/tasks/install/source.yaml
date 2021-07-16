@@ -15,7 +15,7 @@
     name: openafs_contrib.openafs.openafs_devel
 
 - name: Checkout info
-  debug: 
+  debug:
     msg: 'Checkout source code: {{ afs_git_repo }} with version {{ afs_git_version }} to {{ afs_topdir }}'
 
 - name: Checkout source code
@@ -26,7 +26,7 @@
   register: checkout_results
 
 - debug:
-  msg: "with configure-options: {{ afs_configure_options }}"
+    msg: "Build OpenAFS configure-options: {{ afs_configure_options }}"
 
 - name: Build OpenAFS binaries
   openafs_contrib.openafs.openafs_build:
