@@ -77,6 +77,9 @@
 # Note: Build the kernel module too in case we also want
 #       to import the client role later. Doing a separate
 #       build later leads to issues with common libraries.
+- debug:
+  msg: "with configure-options: {{ afs_configure_options }}"
+
 - name: Build OpenAFS binaries
   openafs_contrib.openafs.openafs_build:
     clean: "{{ unarchive_results.changed }}"
