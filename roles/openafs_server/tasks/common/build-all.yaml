@@ -1,0 +1,37 @@
+---
+#
+# Build (or rebuild) the userspace binaries and kernel module for
+# a node that is both a server and a client.
+#
+# Unfortunately, it is not feasiable to manage the client and server binaries
+# separately when the node is both a client and a server, since that can lead
+# to mismatched shared libraries.  So, if this node is both a client and a
+# server, build (or rebuild) everything, including the kernel module. The
+# client role is must be imported after the server role, and will skip the
+# build so we only build once on a given node.
+#
+- include_tasks: "{{ role_path }}/tasks/common/configure-{{ ansible_system | lower }}.yaml"
+  when: afs_configure_options is undefined
+
+- name: Build OpenAFS binaries and kernel module
+  openafs_contrib.openafs.openafs_build:
+    state: built-module
+    clean: yes
+    projectdir: "{{ afs_topdir }}"
+    destdir: "{{ afs_topdir }}/packages/dest"
+    configure_options: "{{ afs_configure_options }}"
+  register: build_results
+
+- name: Build results
+  debug:
+    var: build_results
+
+- name: Store build facts
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      destdir: "{{ build_results.destdir }}"
+  when:
+    - build_results.changed
+    - not ansible_check_mode

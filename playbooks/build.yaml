@@ -21,7 +21,7 @@
     - name: Build OpenAFS binary distribution
       openafs_build:
         projectdir: ~/src/openafs
-        clean: "{{ checkout_results.changed }}"
+        clean: yes
         target: dest
         destdir: packages/dest
         configure_options:

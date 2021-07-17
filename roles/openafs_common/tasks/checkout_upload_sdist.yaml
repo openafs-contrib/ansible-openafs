@@ -1,0 +1,53 @@
+---
+- name: Ensure tar is installed
+  become: yes
+  yum:
+    state: present
+    name:
+      - tar
+      - gzip
+  when: ansible_pkg_mgr in ('yum', 'dnf')
+
+- debug:
+    msg: "Installing {{ afs_install_archive }}"
+
+- name: Create directories
+  file:
+    state: directory
+    path: "{{ item_dir }}"
+  loop_control:
+    loop_var: item_dir
+  with_items:
+    - "{{ afs_tmpdir }}/install"
+    - "{{ afs_topdir }}"
+
+- name: Upload source distribution
+  unarchive:
+    src: "{{ afs_install_archive }}"
+    dest: "{{ afs_tmpdir }}/install/"
+  register: upload_results
+
+- debug:
+    var: upload_results.changed
+
+- find:
+    path: "{{ afs_tmpdir }}/install/"
+    patterns: "openafs*.tar.gz"
+  register: find_results
+
+- set_fact:
+    tarballs: "{{ find_results.files | map(attribute='path') | list | sort(reverse=True, case_sensitive=True) }}"
+  when: upload_results.changed
+
+- name: Uncompress source archive
+  unarchive:
+    remote_src: yes
+    src: "{{ item_archive }}"
+    dest: "{{ afs_topdir }}"
+    extra_opts:
+      - "--strip-components=1"
+  loop_control:
+    loop_var: item_archive
+  with_items: "{{ tarballs }}"
+  register: checkout_results
+  when: upload_results.changed
