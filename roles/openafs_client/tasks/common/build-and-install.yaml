@@ -1,0 +1,81 @@
+---
+#
+# Install OpenAFS from source.
+#
+# The checkout method determines how the source code is retrieved for the build.
+#
+# Currently, we a are limited to systemd and do not support selinux enforcing
+# mode when installing from source.
+#
+# The afs_configure_options host variable may be set to override the default
+# configure options used in the build.
+#
+
+- import_role:
+    name: openafs_contrib.openafs.openafs_devel
+
+- name: Verify service manager type is supported
+  assert:
+    that: ansible_service_mgr in ["systemd"]
+
+- name: Verify selinux is disabled
+  assert:
+    that: ansible_selinux.mode != 'enforcing'
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux | type_debug == 'dict'
+    - ansible_selinux.status == 'enabled'
+
+- include_role:
+    name: openafs_contrib.openafs.openafs_common
+    tasks_from: "checkout_{{ checkout_method }}"
+
+- debug:
+    var: checkout_results.changed
+
+- include_tasks: "{{ role_path }}/tasks/common/configure-{{ ansible_system | lower }}.yaml"
+  when: afs_configure_options is undefined
+
+- name: Build OpenAFS binaries
+  openafs_contrib.openafs.openafs_build:
+    state: built-module
+    clean: yes
+    projectdir: "{{ afs_topdir }}"
+    destdir: "{{ afs_topdir }}/packages/dest"
+    configure_options: "{{ afs_configure_options }}"
+  register: build_results
+  when: checkout_results.changed
+
+- name: Build results
+  debug:
+    var: build_results
+
+- name: Install client
+  when: build_results.changed
+  block:
+    - name: Ensure OpenAFS client is stopped
+      become: yes
+      service:
+        name: "{{ ansible_local.openafs.client_service_name }}"
+        state: stopped
+      when:
+        - ansible_local.openafs.client_service_name is defined
+
+    - name: Install binaries
+      become: yes
+      openafs_contrib.openafs.openafs_install_bdist:
+        path: "{{ build_results.destdir }}"
+      register: install_results
+
+    - name: Store installation facts
+      become: yes
+      openafs_contrib.openafs.openafs_store_facts:
+        state: update
+        facts:
+          client_installed: yes
+          destdir: "{{ build_results.destdir }}"
+          bins: "{{ install_results.bins }}"
+          dirs: "{{ install_results.dirs }}"
+      when: not ansible_check_mode
+
+- include_tasks: "{{ role_path }}/tasks/common/setup-service.yaml"

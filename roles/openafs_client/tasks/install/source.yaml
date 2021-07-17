@@ -1,79 +1,16 @@
 ---
-- name: Verify service manager type is supported
-  assert:
-    that: ansible_service_mgr in ["systemd"]
+#
+# Install OpenAFS from a git checkout.
+#
 
-- name: Verify selinux is disabled
-  assert:
-    that: ansible_selinux.mode != 'enforcing'
-  when:
-    - ansible_selinux is defined
-    - ansible_selinux | type_debug == 'dict'
-    - ansible_selinux.status == 'enabled'
-
-- import_role:
-    name: openafs_contrib.openafs.openafs_devel
-
-- name: Build
-  when: ansible_local.openafs.destdir is undefined
-  block:
-    - name: Checkout source code
-      git:
-        repo: "{{ afs_git_repo }}"
-        version: "{{ afs_git_version }}"
-        dest: "{{ afs_topdir }}"
-      register: checkout_results
-
-    - name: Build OpenAFS binaries
-      openafs_contrib.openafs.openafs_build:
-        state: built-module
-        clean: "{{ checkout_results.changed }}"
-        projectdir: "{{ afs_topdir }}"
-        destdir: "{{ afs_topdir }}/packages/dest"
-        configure_options: "{{ afs_configure_options }}"
-      register: build_results
-
-    - name: Build results
-      debug:
-        var: build_results
-
-    - name: Install binaries
-      become: yes
-      openafs_contrib.openafs.openafs_install_bdist:
-        path: "{{ build_results.destdir }}"
-      register: install_results
-
-    - name: Store installation facts
-      become: yes
-      openafs_contrib.openafs.openafs_store_facts:
-        state: update
-        facts:
-          install_method: source
-          client_installed: yes
-          destdir: "{{ build_results.destdir }}"
-          bins: "{{ install_results.bins }}"
-          dirs: "{{ install_results.dirs }}"
-      when: not ansible_check_mode
-
-- name: Store installation facts
+- name: Store install method fact
   become: yes
   openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
-      client_service_name: openafs-client
-      client_options: "{{ afs_afsd_opts }}"
-  when: not ansible_check_mode
+      install_method: source
 
-- name: Setup systemd service
-  become: yes
-  block:
-    - name: Install systemd unit file
-      template:
-        src: openafs-client.service.j2
-        dest: "/etc/systemd/system/{{ afs_client_service_name }}.service"
-      register: unit_file
-
-    - name: Reload systemd
-      systemd:
-        daemon_reload: yes
-      when: unit_file.changed
+- include_tasks: "{{ role_path }}/tasks/common/{{ afs_is_server |
+                 ternary('setup-service', 'build-and-install') }}.yaml"
+  vars:
+    checkout_method: git
