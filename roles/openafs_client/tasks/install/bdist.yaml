@@ -48,6 +48,10 @@
       - client
   register: install_results
 
+- name: Install results
+  debug:
+    var: install_results
+
 - import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
 
 - name: Store installation facts
