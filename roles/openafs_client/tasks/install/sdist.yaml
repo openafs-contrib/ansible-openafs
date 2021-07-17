@@ -30,6 +30,7 @@
         name:
           - tar
           - gzip
+          - bzip2
       when: ansible_pkg_mgr in ('yum', 'dnf')
 
     - debug:
