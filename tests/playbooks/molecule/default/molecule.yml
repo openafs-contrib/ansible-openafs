@@ -25,10 +25,14 @@ provisioner:
         afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
         afs_install_method: "${AFS_INSTALL_METHOD:-managed}"
         afs_module_install_method: "${AFS_MODULE_INSTALL_METHOD:-dkms}"
-
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
         afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
         afs_pseudo_partitions: ['a', 'b']
+        afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"
+        afs_git_version: "${AFS_GIT_VERSION:-master}"
+        #afs_configure_options: "--enable-foo --enable-bar"
+        afs_always_build: "${AFS_ALWAYS_BUILD:-no}"
+        afs_clean_build: "${AFS_CLEAN_BUILD:-yes}"
 verifier:
   name: ansible
 scenario:
