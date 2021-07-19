@@ -19,7 +19,7 @@
 - name: Build OpenAFS binaries
   openafs_contrib.openafs.openafs_build:
     state: built
-    clean: yes
+    clean: "{{ afs_clean_build | bool }}"
     projectdir: "{{ afs_topdir }}"
     destdir: "{{ afs_topdir }}/packages/dest"
     configure_options: "{{ afs_configure_options }}"

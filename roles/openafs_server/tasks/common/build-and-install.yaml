@@ -40,7 +40,7 @@
     var: checkout_results.changed
 
 - include_tasks: "{{ role_path }}/tasks/common/build-{{ afs_is_client | ternary('all', 'bins') }}.yaml"
-  when: checkout_results.changed
+  when: (afs_always_build | bool) or checkout_results.changed
 
 - name: Install
   when:

@@ -39,12 +39,12 @@
 - name: Build OpenAFS binaries
   openafs_contrib.openafs.openafs_build:
     state: built-module
-    clean: yes
+    clean: "{{ afs_clean_build | bool }}"
     projectdir: "{{ afs_topdir }}"
     destdir: "{{ afs_topdir }}/packages/dest"
     configure_options: "{{ afs_configure_options }}"
   register: build_results
-  when: checkout_results.changed
+  when: (afs_always_build | bool) or checkout_results.changed
 
 - name: Build results
   debug:
