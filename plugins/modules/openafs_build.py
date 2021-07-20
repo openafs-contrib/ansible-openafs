@@ -558,64 +558,25 @@ def main():
     log.debug("gitdir='%s'.", gitdir)
 
     #
-    # Don't bother doing a build on a unchanged git repo.
+    # Clean previous build.
     #
-    git_sha1 = None
-    if gitdir:
-        git = [
+    if clean and gitdir:
+        clean_command = [
             module.get_bin_path('git', required=True),
-            'diff-files',
-            '--quiet',
+            'clean', '-f', '-d', '-x', '--exclude=.ansible',
         ]
-        rc, out, err = module.run_command(git, cwd=projectdir)
-        if rc != 0:
-            log.info('git repo is dirty')
-        else:
-            git = [
-                module.get_bin_path('git', required=True),
-                'show-ref',
-                '--hash',
-                'HEAD',
-            ]
-            rc, out, err = module.run_command(git, cwd=projectdir)
-            if rc == 0:
-                git_sha1 = out.splitlines()[0]
-                log.info('Current sha1 %s', git_sha1)
-                results['git_sha1'] = git_sha1
-
-    results_json = os.path.join(logdir, 'results.json')
-    if not clean and git_sha1 and os.path.exists(results_json):
-        saved_results = {}
-        with open(results_json) as f:
-            saved_results = json.load(f)
-            log.debug('saved results=%s', saved_results)
-        if git_sha1 == saved_results.get('git_sha1'):
-            saved_results['changed'] = False
-            saved_results['msg'] = \
-                'Build skipped; no changes since last build.'
-            module.exit_json(**saved_results)
+        log.info('Running git clean.')
+        run_command('clean', clean_command, projectdir, module,
+                    logdir, results)
 
     #
-    # Cleanup previous build.
+    # Clean out of tree build files.
     #
-    if not clean:
-        log.info('Skipping clean.')
-    else:
-        if gitdir:
-            clean_command = [
-                module.get_bin_path('git', required=True),
-                'clean', '-f', '-d', '-x', '--exclude=.ansible',
-            ]
-            run_command('clean', clean_command, projectdir, module,
-                        logdir, results)
-        for pattern in ('*.out', '*.err', '*.json'):
-            for oldlog in glob.glob(os.path.join(logdir, pattern)):
-                os.remove(oldlog)
-        if builddir != projectdir and os.path.exists(builddir):
-            if builddir == '/':
-                module.fail_json(msg='Refusing to remove "/" builddir!')
-            log.info('Removing old build directory %s' % builddir)
-            shutil.rmtree(builddir)
+    if clean and builddir != projectdir and os.path.exists(builddir):
+        if builddir == '/':
+            module.fail_json(msg='Refusing to remove "/" builddir!')
+        log.info('Removing old build directory %s' % builddir)
+        shutil.rmtree(builddir)
 
     #
     # Setup build directory. (This must be done after the clean step.)
