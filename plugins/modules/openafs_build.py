@@ -21,13 +21,12 @@ description:
   - The source code must be already present in the I(projectdir) directory on
     the host.
 
-  - The M(openafs_build) module will run the OpenAFS C(regen.sh) command, then
-    run C(configure) with the given I(configure_options), and then run C(make)
-    with the given I(target).  If a I(target) is not specified, one will be
-    determined based on the given I(configure_options). The C(regen.sh)
-    execution is skipped when the C(configure) file already exists.  The
-    C(configure) execution is skipped when the C(config.status) file
-    already exists.
+  - The M(openafs_build) module will run the OpenAFS C(regen.sh) command to
+    generate the C(configure) script, then run C(configure) with the given
+    I(configure_options), and then run C(make) with the given I(target).  If a
+    I(target) is not specified, one will be determined based on the given
+    I(configure_options). The C(regen.sh) execution is skipped when the
+    C(configure) file already exists.
 
   - A complete set of build log files are written on the I(logdir) directory on
     the host for build troubleshooting.
@@ -35,16 +34,18 @@ description:
   - Out-of-tree builds are supported by specifying a build directory with the
     I(builddir) option.
 
-  - Before the build starts, C(git clean) is run in the I(projectdir) directory
-    to remove all untracked files when I(clean) is true and a C(.git) directory
-    is found in the C(projectdir). All of the files and directories are removed
-    from the I(builddir) when I(clean) is true and an out-of-tree build is
-    being done.
+  - At the start of the build, when I(clean) is true and a C(.git) directory is
+    found in the C(projectdir), C(git clean) is run in the I(projectdir)
+    directory to remove artifacts from a previous build. When I(clean) is true
+    and a C(.git) directory is not found, then C(make clean) is run to remove
+    artifacts from a previous build.  When I(clean) is true and an out-of-tree
+    build is being done, all of the files and directories are removed from the
+    I(builddir).
 
   - A check for a loadable kernel module is done after the build completes when
     the I(state) is C(built-module).  Be sure the I(target) and
     I(configure_options) are set to build a kernel module when using the
-    C(mkodready) state.
+    C(buildt-module) state.
 
   - An installation file tree is created in the I(destdir) directory when the
     I(target) starts with C(install) or C(dest). The files in I(destdir) may be
@@ -92,12 +93,13 @@ options:
   clean:
     description:
       - Run C(git clean) in the I(projectdir) when it contains a C(.git)
-        directory.
-      - Remove the I(builddir), if different than the I(projectdir).
-      - A I(clean) build should be done if the source files in I(projectdir) or
-        the I(configure_options) have been changed since the last time
-        this module has been run.
-      - Use the I(clean) option with caution!
+        directory, otherwise run C(make clean).
+      - Remove the I(builddir) when using an out of tree build, that is
+        the I(builddir) is different than the I(projectdir).
+      - A I(clean) build should be done to force a complete rebuild.
+      - The I(clean) option will remove any new files you added manually
+        on the remote node and did not commit when the I(projectdir) is
+        a git repository.
     type: bool
     default: false
 
