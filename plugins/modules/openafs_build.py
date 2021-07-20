@@ -678,6 +678,13 @@ def main():
             results['install_dirs'][name] = value
 
     #
+    # Run make clean if we did not run git clean.
+    #
+    if clean and not gitdir:
+        make_command = [make, 'clean']
+        run_command('make', make_command, builddir, module, logdir, results)
+
+    #
     # Run make.
     #
     make_command = [make]
