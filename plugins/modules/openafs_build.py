@@ -611,10 +611,14 @@ def main():
     #
     # Run autoconf.
     #
-    regen_command = [os.path.join(projectdir, 'regen.sh')]
-    if not manpages:
-        regen_command.append('-q')
-    run_command('regen', regen_command, projectdir, module, logdir, results)
+    if os.path.exists(os.path.join(projectdir, 'configure')):
+        log.info('Skipping regen.sh: configure found.')
+    else:
+        regen_command = [os.path.join(projectdir, 'regen.sh')]
+        if not manpages:
+            regen_command.append('-q')
+        run_command('regen', regen_command, projectdir, module,
+                    logdir, results)
 
     #
     # Run configure.
