@@ -1,8 +1,15 @@
 ---
+#
+# Install OpenAFS from a git checkout.
+#
 
+- name: Store installation method fact
   become: yes
   openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
       install_method: source
 
+- import_tasks: "{{ role_path }}/tasks/common/build-and-install.yaml"
+  vars:
+    checkout_method: git

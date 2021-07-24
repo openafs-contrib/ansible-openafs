@@ -3,6 +3,7 @@
 # Install OpenAFS from a git checkout.
 #
 
+- name: Store install method fact
   become: yes
   openafs_contrib.openafs.openafs_store_facts:
     state: update
