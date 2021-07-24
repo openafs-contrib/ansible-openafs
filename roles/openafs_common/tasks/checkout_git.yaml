@@ -1,7 +1,7 @@
 ---
 - name: Checkout info
-    debug:
-      msg: 'Checkout source code: {{ afs_git_repo }} with version {{ afs_git_version }} to {{ afs_topdir }}'
+  debug:
+    msg: 'Checkout source code: {{ afs_git_repo }} with version {{ afs_git_version }} to {{ afs_topdir }}'
 
 - name: Checkout source code
   git:
