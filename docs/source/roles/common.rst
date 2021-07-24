@@ -110,3 +110,17 @@ afs_configure_options
         - transarc_paths
       with:
         - krb5: /path/to/krb5.lib
+
+afs_always_build
+  When the ``afs_install_method`` is ``sdist`` or ``source``, force a rebuild
+  and reinstall even if a change in the source code checkout was not detected.
+
+  Default: no
+
+afs_clean_build
+  When the ``afs_install_method`` is ``sdist`` or ``source``, clean any build
+  artifacts that may be left from a previous build. Set to no to let make only
+  rebuild binaries which are out of date with the sources, which should be
+  faster when rebuilding the same branch as the previous build.
+
+  Default: yes

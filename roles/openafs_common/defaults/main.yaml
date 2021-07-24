@@ -1,4 +1,15 @@
 ---
+# This node is an OpenAFS server.
+afs_is_server: "{{
+  'afs_servers' in group_names or
+  'afs_databases' in group_names or
+  'afs_fileservers' in group_names }}"
+
+# This node is an OpenAFS client.
+afs_is_client: "{{
+  'afs_clients' in group_names or
+  'afs_admin_client' in group_names }}"
+
 # AFS cell name.
 afs_cell: example.com
 
@@ -56,16 +67,17 @@ afs_install_archive: ""
 afs_git_repo: "git://git.openafs.org/openafs.git"
 afs_git_version: "master"
 
-# Note: By default, build the kernel module on server in case we also want
-# to import the client role later. Doing a separate build later leads to issues
-# with common libraries.  Assume linux for now, and build the module with
-# the modern naming and paths.  Disable optimization for debugging.
-afs_configure_options:
-  enable:
-    - debug
-    - debug-kernel
-    - kernel-module
-  disable:
-    - optimize
-  with:
-    - linux-kernel-packaging
+# The configure options when installing from source ('sdist' or 'source'). The
+# default value depends on if the node is a client, a server, or a combination
+# of the two, and is platform dependent.
+# afs_configure_options: (detected)
+
+# When the install method is 'sdist' or 'source', force a rebuild and reinstall
+# even if a change in the source code checkout was not detected.
+afs_always_build: no
+
+# When the install method is 'sdist' or 'source', clean any build artifacts that
+# may be left from a previous build. Set to no to let make only rebuild binaries
+# which are out of date with the sources, which should be faster when rebuilding
+# the same branch as the previous build.
+afs_clean_build: yes

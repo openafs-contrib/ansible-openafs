@@ -1,128 +1,15 @@
 ---
-- name: Verify service manager type is supported
-  assert:
-    that: ansible_service_mgr in ["systemd"]
+#
+# Install OpenAFS from a source distribution tarball.
+#
 
-- name: Verify selinux is disabled
-  assert:
-    that: ansible_selinux.mode != 'enforcing'
-  when:
-    - ansible_selinux is defined
-    - ansible_selinux | type_debug == 'dict'
-    - ansible_selinux.status == 'enabled'
-
-- name: Verify the path to the installation tarball is specified
-  assert:
-    that:
-      - afs_install_archive is defined
-      - afs_install_archive != ''
-
-- import_role:
-    name: openafs_contrib.openafs.openafs_devel
-
-- name: Ensure tar is installed
-  become: yes
-  yum:
-    state: present
-    name:
-      - tar
-      - gzip
-      - bzip2
-  when: ansible_pkg_mgr in ('yum', 'dnf')
-
-- debug:
-    msg: "Installing {{ afs_install_archive }}"
-
-- name: Create directories
-  file:
-    state: directory
-    path: "{{ item_dir }}"
-  loop_control:
-    loop_var: item_dir
-  with_items:
-    - "{{ afs_tmpdir }}/install"
-    - "{{ afs_topdir }}"
-
-- name: Upload source distribution
-  unarchive:
-    src: "{{ afs_install_archive }}"
-    dest: "{{ afs_tmpdir }}/install/"
-
-- find:
-    path: "{{ afs_tmpdir }}/install/"
-    patterns: "openafs*.tar.gz"
-  register: find_results
-
-- set_fact:
-    tarballs: "{{ find_results.files | map(attribute='path') | list | sort(reverse=True, case_sensitive=True) }}"
-
-- name: Uncompress source archive
-  unarchive:
-    remote_src: yes
-    src: "{{ item_archive }}"
-    dest: "{{ afs_topdir }}"
-  loop_control:
-    loop_var: item_archive
-  with_items: "{{ tarballs }}"
-  register: unarchive_results
-
-- find:
-    path: "{{ afs_topdir }}/"
-    file_type: directory
-    patterns: "openafs*"
-  register: find_results
-
-- set_fact:
-    sourcedir: "{{ (find_results.files | map(attribute='path') | list)[0] }}"
-
-# Note: Build the kernel module too in case we also want
-#       to import the client role later. Doing a separate
-#       build later leads to issues with common libraries.
-- debug:
-  msg: "with configure-options: {{ afs_configure_options }}"
-
-- name: Build OpenAFS binaries
-  openafs_contrib.openafs.openafs_build:
-    clean: "{{ unarchive_results.changed }}"
-    projectdir: "{{ sourcedir }}"
-    destdir: "{{ sourcedir }}/packages/dest"
-    configure_options: "{{ afs_configure_options }}"
-  register: build_results
-
-- name: Build results
-  debug:
-    var: build_results
-
-- name: Install binary distribution
-  become: yes
-  openafs_contrib.openafs.openafs_install_bdist:
-    path: "{{ build_results.destdir }}"
-  register: install_results
-
-- name: Store installation facts
+- name: Store installation method fact
   become: yes
   openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
       install_method: sdist
-      server_installed: yes
-      client_installed: yes
-      server_service_name: openafs-server
-      destdir: "{{ build_results.destdir }}"
-      bins: "{{ install_results.bins }}"
-      dirs: "{{ install_results.dirs }}"
-  when: not ansible_check_mode
 
-- name: Setup systemd service
-  become: yes
-  block:
-    - name: Install systemd unit file
-      template:
-        src: openafs-server.service.j2
-        dest: "/etc/systemd/system/{{ afs_server_service_name }}.service"
-      register: unit_file
-
-    - name: Reload systemd
-      systemd:
-        daemon_reload: yes
-      when: unit_file.changed
+- import_tasks: "{{ role_path }}/tasks/common/build-and-install.yaml"
+  vars:
+    checkout_method: upload_sdist

@@ -21,13 +21,12 @@ description:
   - The source code must be already present in the I(projectdir) directory on
     the host.
 
-  - The M(openafs_build) module will run the OpenAFS C(regen.sh) command, then
-    run C(configure) with the given I(configure_options), and then run C(make)
-    with the given I(target).  If a I(target) is not specified, one will be
-    determined based on the given I(configure_options). The C(regen.sh)
-    execution is skipped when the C(configure) file already exists.  The
-    C(configure) execution is skipped when the C(config.status) file
-    already exists.
+  - The M(openafs_build) module will run the OpenAFS C(regen.sh) command to
+    generate the C(configure) script, then run C(configure) with the given
+    I(configure_options), and then run C(make) with the given I(target).  If a
+    I(target) is not specified, one will be determined based on the given
+    I(configure_options). The C(regen.sh) execution is skipped when the
+    C(configure) file already exists.
 
   - A complete set of build log files are written on the I(logdir) directory on
     the host for build troubleshooting.
@@ -35,16 +34,18 @@ description:
   - Out-of-tree builds are supported by specifying a build directory with the
     I(builddir) option.
 
-  - Before the build starts, C(git clean) is run in the I(projectdir) directory
-    to remove all untracked files when I(clean) is true and a C(.git) directory
-    is found in the C(projectdir). All of the files and directories are removed
-    from the I(builddir) when I(clean) is true and an out-of-tree build is
-    being done.
+  - At the start of the build, when I(clean) is true and a C(.git) directory is
+    found in the C(projectdir), C(git clean) is run in the I(projectdir)
+    directory to remove artifacts from a previous build. When I(clean) is true
+    and a C(.git) directory is not found, then C(make clean) is run to remove
+    artifacts from a previous build.  When I(clean) is true and an out-of-tree
+    build is being done, all of the files and directories are removed from the
+    I(builddir).
 
   - A check for a loadable kernel module is done after the build completes when
     the I(state) is C(built-module).  Be sure the I(target) and
     I(configure_options) are set to build a kernel module when using the
-    C(mkodready) state.
+    C(buildt-module) state.
 
   - An installation file tree is created in the I(destdir) directory when the
     I(target) starts with C(install) or C(dest). The files in I(destdir) may be
@@ -92,12 +93,13 @@ options:
   clean:
     description:
       - Run C(git clean) in the I(projectdir) when it contains a C(.git)
-        directory.
-      - Remove the I(builddir), if different than the I(projectdir).
-      - A I(clean) build should be done if the source files in I(projectdir) or
-        the I(configure_options) have been changed since the last time
-        this module has been run.
-      - Use the I(clean) option with caution!
+        directory, otherwise run C(make clean).
+      - Remove the I(builddir) when using an out of tree build, that is
+        the I(builddir) is different than the I(projectdir).
+      - A I(clean) build should be done to force a complete rebuild.
+      - The I(clean) option will remove any new files you added manually
+        on the remote node and did not commit when the I(projectdir) is
+        a git repository.
     type: bool
     default: false
 
@@ -558,64 +560,25 @@ def main():
     log.debug("gitdir='%s'.", gitdir)
 
     #
-    # Don't bother doing a build on a unchanged git repo.
+    # Clean previous build.
     #
-    git_sha1 = None
-    if gitdir:
-        git = [
+    if clean and gitdir:
+        clean_command = [
             module.get_bin_path('git', required=True),
-            'diff-files',
-            '--quiet',
+            'clean', '-f', '-d', '-x', '--exclude=.ansible',
         ]
-        rc, out, err = module.run_command(git, cwd=projectdir)
-        if rc != 0:
-            log.info('git repo is dirty')
-        else:
-            git = [
-                module.get_bin_path('git', required=True),
-                'show-ref',
-                '--hash',
-                'HEAD',
-            ]
-            rc, out, err = module.run_command(git, cwd=projectdir)
-            if rc == 0:
-                git_sha1 = out.splitlines()[0]
-                log.info('Current sha1 %s', git_sha1)
-                results['git_sha1'] = git_sha1
-
-    results_json = os.path.join(logdir, 'results.json')
-    if not clean and git_sha1 and os.path.exists(results_json):
-        saved_results = {}
-        with open(results_json) as f:
-            saved_results = json.load(f)
-            log.debug('saved results=%s', saved_results)
-        if git_sha1 == saved_results.get('git_sha1'):
-            saved_results['changed'] = False
-            saved_results['msg'] = \
-                'Build skipped; no changes since last build.'
-            module.exit_json(**saved_results)
+        log.info('Running git clean.')
+        run_command('clean', clean_command, projectdir, module,
+                    logdir, results)
 
     #
-    # Cleanup previous build.
+    # Clean out of tree build files.
     #
-    if not clean:
-        log.info('Skipping clean.')
-    else:
-        if gitdir:
-            clean_command = [
-                module.get_bin_path('git', required=True),
-                'clean', '-f', '-d', '-x', '--exclude=.ansible',
-            ]
-            run_command('clean', clean_command, projectdir, module,
-                        logdir, results)
-        for pattern in ('*.out', '*.err', '*.json'):
-            for oldlog in glob.glob(os.path.join(logdir, pattern)):
-                os.remove(oldlog)
-        if builddir != projectdir and os.path.exists(builddir):
-            if builddir == '/':
-                module.fail_json(msg='Refusing to remove "/" builddir!')
-            log.info('Removing old build directory %s' % builddir)
-            shutil.rmtree(builddir)
+    if clean and builddir != projectdir and os.path.exists(builddir):
+        if builddir == '/':
+            module.fail_json(msg='Refusing to remove "/" builddir!')
+        log.info('Removing old build directory %s' % builddir)
+        shutil.rmtree(builddir)
 
     #
     # Setup build directory. (This must be done after the clean step.)
@@ -650,10 +613,14 @@ def main():
     #
     # Run autoconf.
     #
-    regen_command = [os.path.join(projectdir, 'regen.sh')]
-    if not manpages:
-        regen_command.append('-q')
-    run_command('regen', regen_command, projectdir, module, logdir, results)
+    if os.path.exists(os.path.join(projectdir, 'configure')):
+        log.info('Skipping regen.sh: configure found.')
+    else:
+        regen_command = [os.path.join(projectdir, 'regen.sh')]
+        if not manpages:
+            regen_command.append('-q')
+        run_command('regen', regen_command, projectdir, module,
+                    logdir, results)
 
     #
     # Run configure.
@@ -715,6 +682,13 @@ def main():
                 # Cleanup leading double slashes.
                 value = value.replace('//', '/', 1)
             results['install_dirs'][name] = value
+
+    #
+    # Run make clean if we did not run git clean.
+    #
+    if clean and not gitdir:
+        make_command = [make, 'clean']
+        run_command('make', make_command, builddir, module, logdir, results)
 
     #
     # Run make.

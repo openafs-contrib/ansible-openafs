@@ -1,5 +1,2 @@
 skip_list:
   - unnamed-task
-  # Skip the bogus warning: 'Tasks that run when changed should likely be handlers'
-  - ANSIBLE0016
-  - '503'

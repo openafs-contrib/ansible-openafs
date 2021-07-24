@@ -1,0 +1,7 @@
+---
+- name: Checkout source code
+  git:
+    repo: "{{ afs_git_repo }}"
+    version: "{{ afs_git_version }}"
+    dest: "{{ afs_topdir }}"
+  register: checkout_results
