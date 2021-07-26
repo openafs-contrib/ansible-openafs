@@ -24,6 +24,7 @@
     name:
       - tar
       - gzip
+      - bzip2
   when: ansible_pkg_mgr in ('yum', 'dnf')
 
 - debug:
@@ -44,6 +45,10 @@
   openafs_contrib.openafs.openafs_install_bdist:
     path: "{{ afs_tmpdir }}/install"
   register: install_results
+
+- name: Install results
+  debug:
+    var: install_results
 
 - name: Store installation facts
   become: yes

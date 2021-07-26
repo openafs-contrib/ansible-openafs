@@ -36,6 +36,9 @@
 - include_tasks: "{{ role_path }}/tasks/common/configure-{{ ansible_system | lower }}.yaml"
   when: afs_configure_options is undefined
 
+- debug:
+    msg: "with configure-options: {{ afs_configure_options }}"
+
 - name: Build OpenAFS binaries
   openafs_contrib.openafs.openafs_build:
     state: built-module

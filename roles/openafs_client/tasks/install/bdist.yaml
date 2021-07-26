@@ -24,6 +24,7 @@
     name:
       - tar
       - gzip
+      - bzip2
   when: ansible_pkg_mgr in ('yum', 'dnf')
 
 - debug:
@@ -47,6 +48,10 @@
       - common
       - client
   register: install_results
+
+- name: Install results
+  debug:
+    var: install_results
 
 - import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
 

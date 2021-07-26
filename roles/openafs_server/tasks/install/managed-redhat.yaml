@@ -1,4 +1,7 @@
 ---
+- debug:
+    msg: "Adding OpenAFS repo: {{afs_yum_repo }}"
+
 - name: Add OpenAFS yum repo
   become: yes
   yum_repository:

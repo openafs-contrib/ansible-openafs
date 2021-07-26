@@ -47,14 +47,6 @@
     - build_results is defined
     - build_results.changed
   block:
-    - name: Ensure OpenAFS servers are stopped
-      become: yes
-      service:
-        name: "{{ ansible_local.openafs.server_service_name }}"
-        state: stopped
-      when:
-        - ansible_local.openafs.server_service_name is defined
-
     - name: Ensure OpenAFS client is stopped
       become: yes
       service:
@@ -63,6 +55,14 @@
       when:
         - afs_is_client
         - ansible_local.openafs.client_service_name is defined
+
+    - name: Ensure OpenAFS servers are stopped
+      become: yes
+      service:
+        name: "{{ ansible_local.openafs.server_service_name }}"
+        state: stopped
+      when:
+        - ansible_local.openafs.server_service_name is defined
 
     - name: Install OpenAFS binaries
       become: yes
