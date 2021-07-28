@@ -25,6 +25,7 @@ provisioner:
         #afs_configure_options: "--enable-foo --enable-bar"
         afs_always_build: "${AFS_ALWAYS_BUILD:-no}"
         afs_clean_build: "${AFS_CLEAN_BUILD:-yes}"
+        afs_transarc_build: "${AFS_TRANSARC_BUILD:-no}"
 verifier:
   name: ansible
 scenario:

@@ -81,3 +81,7 @@ afs_always_build: no
 # which are out of date with the sources, which should be faster when rebuilding
 # the same branch as the previous build.
 afs_clean_build: yes
+
+# When the install method is 'sdist' or 'source', add --enable-transarc-paths
+# to the configure options.
+afs_transarc_build: no

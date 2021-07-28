@@ -23,6 +23,7 @@
     projectdir: "{{ afs_topdir }}"
     destdir: "{{ afs_topdir }}/packages/dest"
     configure_options: "{{ afs_configure_options }}"
+    transarc_paths: "{{ afs_transarc_build }}"
   register: build_results
 
 - name: Build results

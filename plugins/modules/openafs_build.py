@@ -154,6 +154,15 @@ options:
       - The C(configure) options as a string, list of strings, or a dictionary
     type: raw
 
+  transarc_paths:
+    description:
+      - Build binaries which use the legacy Transarc-style paths
+      - When True, this option adds the C(--enable-transarc-paths) to the
+        I(configure_options).
+      - This option has no effect when the C(--enable-transarc-paths) argument
+        is already present in the I(configure_options)
+    type: bool
+
 author:
   - Michael Meffie
 '''
@@ -498,7 +507,8 @@ def main():
             jobs=dict(type='int', default=cpu_count()),
             manpages=dict(type='bool', default=True),
             destdir=dict(type='path'),
-            configure_options=dict(type='raw'),
+            configure_options=dict(type='raw', default=''),
+            transarc_paths=dict(type='bool', default=False)
         ),
         supports_check_mode=False,
     )
@@ -515,6 +525,7 @@ def main():
     manpages = module.params['manpages']
     destdir = module.params['destdir']
     configure_options = module.params['configure_options']
+    transarc_paths = module.params['transarc_paths']
 
     if not (os.path.exists(projectdir) and os.path.isdir(projectdir)):
         module.fail_json(msg='projectdir directory not found: %s' % projectdir)
@@ -637,6 +648,12 @@ def main():
         args = shlex.split(configure_options)
     else:
         module.fail_json(msg="Invalid configure_options type.")
+
+    # Optionally add transarc style paths. The configure options
+    # take precedence over the transarc_paths parameter.
+    if '--enable-transarc-paths' not in args:
+        if transarc_paths:
+            args.append('--enable-transarc-paths')
 
     #
     # Historically, the make target depends on the directory path mode
