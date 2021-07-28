@@ -33,8 +33,13 @@
 - debug:
     var: checkout_results.changed
 
-- include_tasks: "{{ role_path }}/tasks/common/configure-{{ ansible_system | lower }}.yaml"
-  when: afs_configure_options is undefined
+- name: Reset build completed fact
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      build_completed: no
+  when: checkout_results.changed
 
 - debug:
     msg: "with configure-options: {{ afs_configure_options }}"
@@ -47,11 +52,24 @@
     destdir: "{{ afs_topdir }}/packages/dest"
     configure_options: "{{ afs_configure_options }}"
   register: build_results
-  when: (afs_always_build | bool) or checkout_results.changed
+  when: >
+    (afs_always_build | bool) or
+    ansible_local.openafs.build_completed is undefined or
+    not (ansible_local.openafs.build_completed | bool)
 
 - name: Build results
   debug:
     var: build_results
+
+- name: Set build completed fact
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      build_completed: yes
+
+- include_tasks: "{{ role_path }}/tasks/common/configure-{{ ansible_system | lower }}.yaml"
+  when: afs_configure_options is undefined
 
 - name: Install client
   when: build_results.changed

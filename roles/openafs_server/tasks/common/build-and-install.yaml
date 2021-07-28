@@ -39,9 +39,28 @@
 - debug:
     var: checkout_results.changed
 
-- include_tasks: "{{ role_path }}/tasks/common/build-{{ afs_is_client | ternary('all', 'bins') }}.yaml"
-  when: (afs_always_build | bool) or checkout_results.changed
+- name: Reset build completed fact
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      build_completed: no
+  when: checkout_results.changed
 
+- include_tasks: "{{ role_path }}/tasks/common/build-{{ afs_is_client | ternary('all', 'bins') }}.yaml"
+  when: >
+    (afs_always_build | bool) or
+    ansible_local.openafs.build_completed is undefined or
+    not (ansible_local.openafs.build_completed | bool)
+
+- name: Set build completed fact
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      build_completed: yes
+
+  when: checkout_results.changed
 - name: Install
   when:
     - build_results is defined
