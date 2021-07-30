@@ -1,58 +1,78 @@
 # Copyright (c) 2019-2021 Sine Nomine Associates
 
 MOLECULE_DRIVER ?= vagrant
+MOLECULE_SCENARIO ?= default
+MOLECULE_IMAGE ?= generic/centos7
+MOLECULE_DESTROY ?= always
 
-.PHONY: help lint init test test-all \
-        test-centos-7 test-centos-8 test-debian-10 \
-	reset
+SCENARIOS = default bdist packages source sdist
+IMAGES = centos7 centos8 debian10
 
 help:
 	@echo "usage: make <target>"
 	@echo ""
 	@echo "targets:"
-	@echo "  lint     run lint checks"
-	@echo "  test     run a single molecule scenario"
-	@echo "  test-all run a series of molecule scenarios"
-	@echo "  reset    reset molecule temporary directories"
+	@echo "  lint            run lint checks"
+	@echo "  test            run all molecule tests [note 1]"
+	@echo "  reset           reset molecule directories"
+	@echo "  scenario        run one molecule test scenario"
+	@echo "  test-<os>       limit tests to os"
+	@echo "  test-<scenario> limit tests to scenario"
+	@echo ""
+	@echo "where:"
+	@echo "  <os> is one of: $(IMAGES)"
+	@echo "  <scenario> is one of: $(SCENARIOS)"
 	@echo ""
 	@echo "environment:"
 	@echo "  MOLECULE_DRIVER=<name> (default: vagrant)"
-
+	@echo "  MOLECULE_SCENARIO=<scenario> (default: default)"
+	@echo "  MOLECULE_IMAGE=<image> (defult: generic/centos7)"
+	@echo "  MOLECULE_DESTROY='always' | 'never'"
+	@echo ""
+	@echo "Note 1: Run openafs_devel 'make test' first to build packages."
 
 lint:
 	yamllint .
 	ansible-lint .
 
-test:
-	molecule test -d $(MOLECULE_DRIVER) -s default
-
-# NOTE: Run openafs_devel tests first to build packages/tarballs.
-test-all: test-centos-7 test-centos-8 test-debian-10
-	@echo "ok"
-
-test-centos-7:
-	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s default
-	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s bdist
-	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s packages
-	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s source
-	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s sdist
-
-test-centos-8:
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s default
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s bdist
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s packages
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s source
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s sdist
-
-test-debian-10:
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s default
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s bdist
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s source
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s sdist
+check test: test-centos7 test-centos8 test-debian10
 
 reset:
-	molecule reset -s bdist
-	molecule reset -s default
-	molecule reset -s packages
-	molecule reset -s source
-	molecule reset -s sdist
+	for s in $(SCENARIOS); do molecule reset -s $$s; done
+
+scenario:
+	AFS_IMAGE=$(MOLECULE_IMAGE) \
+	molecule test \
+	  --driver-name $(MOLECULE_DRIVER) \
+	  --scenario-name $(MOLECULE_SCENARIO) \
+	  --destroy $(MOLECULE_DESTROY)
+
+#
+# Tests by os.
+#
+test-centos7:
+	for s in $(SCENARIOS); do $(MAKE) scenario MOLECULE_IMAGE=generic/centos7 MOLECULE_SCENARIO=$$s; done
+
+test-centos8:
+	for s in $(SCENARIOS); do $(MAKE) scenario MOLECULE_IMAGE=generic/centos8 MOLECULE_SCENARIO=$$s; done
+
+test-debian10:
+	for s in $(SCENARIOS); do $(MAKE) scenario MOLECULE_IMAGE=generic/debian10 MOLECULE_SCENARIO=$$s; done
+
+#
+# Tests by scenario.
+#
+test-default:
+	for i in $(IMAGES); do $(MAKE) scenario MOLECULE_IMAGE=generic/$$i MOLECULE_SCENARIO=default; done
+
+test-bdist:
+	for i in $(IMAGES); do $(MAKE) scenario MOLECULE_IMAGE=generic/$$i MOLECULE_SCENARIO=bdist; done
+
+test-packages:
+	for i in $(IMAGES); do $(MAKE) scenario MOLECULE_IMAGE=generic/$$i MOLECULE_SCENARIO=packages; done
+
+test-source:
+	for i in $(IMAGES); do $(MAKE) scenario MOLECULE_IMAGE=generic/$$i MOLECULE_SCENARIO=source; done
+
+test-sdist:
+	for i in $(IMAGES); do $(MAKE) scenario MOLECULE_IMAGE=generic/$$i MOLECULE_SCENARIO=sdist; done
