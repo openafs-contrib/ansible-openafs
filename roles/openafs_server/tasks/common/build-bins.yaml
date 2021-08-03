@@ -17,7 +17,7 @@
     - afs_configure_options is undefined
 
 - debug:
-    msg: "with configure-options: {{ afs_configure_options }}"
+    var: afs_configure_options
 
 - name: Build OpenAFS binaries
   openafs_contrib.openafs.openafs_build:
