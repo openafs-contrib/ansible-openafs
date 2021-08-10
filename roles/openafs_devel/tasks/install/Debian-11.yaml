@@ -1,0 +1,24 @@
+---
+- name: "Debian-11: Install development packages"
+  become: yes
+  apt:
+    state: present
+    update_cache: yes
+    name:
+      - autoconf
+      - automake
+      - bison
+      - flex
+      - gcc
+      - git
+      - libfuse-dev
+      - libgc-dev
+      - libkrb5-dev
+      - libncurses5-dev
+      - libperl-dev
+      - libtool
+      - linux-headers-{{ ansible_kernel }}
+      - make
+      - swig
+      - wget
+  tags: root
