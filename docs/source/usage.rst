@@ -9,7 +9,7 @@ on the remote nodes. The following installation methods are supported:
 
 * **managed** - Install with the distro's package manager (e.g., ``yum``, ``apt``).
 * **packages** - Install prebuilt packages (e.g. ``rpm``, ``dpkg``).
-* **bdist** - Install binary distribution with modern or Transarc-style paths.
+* **bdist** - Install binary distribution with Transarc-style paths.
 * **sdist** - Source distribution
 * **source** - Checkout source code with ``git`` then build and install binaries.
 * **none** - Skip installation tasks; assume manual installation.

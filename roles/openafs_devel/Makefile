@@ -1,6 +1,9 @@
 # Copyright (c) 2019-2021 Sine Nomine Associates
 
 MOLECULE_DRIVER ?= vagrant
+MOLECULE_SCENARIO ?= default
+MOLECULE_IMAGE ?= generic/centos7
+MOLECULE_DESTROY ?= always
 
 .PHONY: help init lint test test-all \
 	test-centos-7 test-centos-8 test-debian-10 \
@@ -22,35 +25,36 @@ lint:
 	yamllint .
 	ansible-lint .
 
-test:
-	molecule test -d $(MOLECULE_DRIVER) -s default
+scenario:
+	AFS_IMAGE=$(MOLECULE_IMAGE) \
+	molecule test \
+	  --driver-name $(MOLECULE_DRIVER) \
+	  --scenario-name $(MOLECULE_SCENARIO) \
+	  --destroy $(MOLECULE_DESTROY)
 
-test-all: test-centos-7 test-centos-8 test-debian-10
-	@echo "ok"
+
+test: test-centos-7 test-centos-8 test-debian-10
 
 test-centos-7:
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s default
-	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s bdist-modern
-	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s bdist-transarc
+	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s bdist
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s packages-rpms
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s sdist
 
 test-centos-8:
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s default
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s bdist-modern
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s bdist-transarc
+	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s bdist
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s packages-rpms
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s sdist
 
 test-debian-10:
 	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s default
-	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s bdist-modern
-	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s bdist-transarc
+	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s bdist
+	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s packages-debs
 	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s sdist
 
 reset:
-	molecule reset -s bdist-modern
-	molecule reset -s bdist-transarc
+	molecule reset -s bdist
 	molecule reset -s default
 	molecule reset -s packages-debs
 	molecule reset -s packages-rpms

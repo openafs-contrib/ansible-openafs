@@ -1,5 +1,5 @@
 ---
-- name: Build bdist transarc
+- name: Build binary distribution
   hosts: all
   tasks:
     - import_role:
@@ -18,7 +18,7 @@
       changed_when: false
       register: git_version
 
-    - name: Build binary distribution
+    - name: Build
       openafs_contrib.openafs.openafs_build:
         target: dest
         clean: yes
@@ -38,10 +38,9 @@
         osdist: "{{ ansible_distribution | lower + ansible_distribution_major_version }}"
         arch: "{{ ansible_architecture }}"
         version: "{{ git_version.stdout | replace('-', '_') }}"
-        afsdist: bdist_transarc
 
     - set_fact:
-        tarball: "openafs-{{ version }}-{{ osdist }}-{{ arch }}.{{ afsdist }}.tar.gz"
+        tarball: "openafs-{{ version }}-{{ osdist }}-{{ arch }}.bdist.tar.gz"
 
     - name: Create archive
       archive:
