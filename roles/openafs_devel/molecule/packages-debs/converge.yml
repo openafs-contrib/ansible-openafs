@@ -1,3 +1,78 @@
 ---
-- fail:
-    msg: todo
+- name: Build debs
+  hosts: all
+  tasks:
+    - import_role:
+        name: openafs_devel
+
+    - set_fact:
+        dist: "{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"
+        arch: "{{ ansible_architecture }}"
+
+    - name: Create build directory.
+      file:
+        state: directory
+        name: Debian
+
+    - name: Checkout source and packaging.
+      git:
+        repo: https://salsa.debian.org/debian/openafs.git
+        version: "{{ debian_packaging_version | d(debian_codename) }}"
+        dest: Debian/openafs
+        force: yes
+
+    # dpkg-buildpackage will fail when ukernel.so and ukernel.pm are built,
+    # which will happen when swig is installed on the build system.
+    - name: Add not-installed file entries.
+      lineinfile:
+        state: present
+        create: yes
+        path: Debian/openafs/debian/not-installed
+        line: "{{ item }}"
+        mode: "664"
+      with_items:
+        - "usr/lib/perl/ukernel.so"
+        - "usr/lib/perl/AFS/ukernel.pm"
+
+    - name: Build packages.
+      command:
+      args:
+        cmd: dpkg-buildpackage -us -uc -b -rfakeroot
+        chdir: Debian/openafs
+      async: 72000
+      poll: 10
+
+    - name: Query version string.
+      shell:
+      args:
+        cmd: dpkg-deb --show --showformat='${VERSION}\n' Debian/openafs-fileserver_*.deb
+      register: version_results
+
+    - set_fact:
+        version: "{{ version_results.stdout }}"
+
+    - set_fact:
+        archive: "openafs-{{ version }}-{{ dist }}-{{ arch }}.debs"
+
+    - file:
+        state: directory
+        path: "{{ archive }}"
+
+    - shell:
+      args:
+        cmd: cp Debian/*.deb "{{ archive }}/"
+
+    - archive:
+        path: "{{ archive }}"
+        dest: "{{ archive }}.tar.gz"
+        format: gz
+
+    - name: Download
+      fetch:
+        flat: yes
+        src: "{{ archive }}.tar.gz"
+        dest: "~/.cache/ansible-openafs/builds/"
+      register: fetch_results
+
+    - debug:
+        var: fetch_results.dest

@@ -21,4 +21,8 @@
       - make
       - swig
       - wget
+      - build-essential
+      - fakeroot
+      - devscripts
+      - lintian
   tags: root
