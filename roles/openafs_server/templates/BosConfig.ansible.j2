@@ -1,4 +1,4 @@
-restrictmode 0
+restrictmode {{ afs_bosserver_restricted_mode | ternary('1', '0') }}
 restarttime 16 0 0 0 0
 checkbintime 3 0 5 0 0
 {% if afs_is_dbserver %}

@@ -28,6 +28,9 @@ afs_fileserver_type: dafs
 # bosserver options
 afs_bosserver_opts: -pidfiles
 
+# Run bosserver in restricted mode.
+afs_bosserver_restricted_mode: yes
+
 # ptserver options
 afs_ptserver_opts:
 

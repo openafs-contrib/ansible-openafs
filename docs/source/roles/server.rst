@@ -61,6 +61,18 @@ afs_server_netrestrict
   ``NetRestrict`` configuration file. This file specifies which addresses or
   subnetworks should be excluded from server communications.
 
+afs_bosserver_restricted_mode:
+  Run the BosServer in restricted mode.  This mode improves the security of the
+  BosServer by prohibiting bos commands which are not needed for routine
+  operation.
+
+  The following bos commands are not available when the BosServer running in
+  restricted mode: ``bos exec``, ``bos uninstall``, ``bos install``, ``bos
+  create``, ``bos delete``, ``bos prune``, and the ``bos getlog`` is limited to
+  server log files.
+
+  default: yes
+
 afs_bosserver_opts:
   The ``bosserver`` command line options.
 
