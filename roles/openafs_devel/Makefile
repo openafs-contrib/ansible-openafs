@@ -5,21 +5,29 @@ MOLECULE_SCENARIO ?= default
 MOLECULE_IMAGE ?= generic/centos7
 MOLECULE_DESTROY ?= always
 
-.PHONY: help init lint test test-all \
-	test-centos-7 test-centos-8 test-debian-10 \
-	reset
+IMAGES = centos7 centos8 debian10
+SCENARIOS = default bdist packages-rpms packages-debs sdist
 
 help:
 	@echo "usage: make <target>"
 	@echo ""
 	@echo "targets:"
-	@echo "  lint     run lint checks"
-	@echo "  test     run a single molecule scenario"
-	@echo "  test-all run a series of molecule scenarios"
-	@echo "  reset    reset molecule temporary directories"
+	@echo "  lint            run lint checks"
+	@echo "  test            run all molecule tests [note 1]"
+	@echo "  reset           reset molecule directories"
+	@echo "  scenario        run one molecule test scenario"
+	@echo "  test-<os>       limit tests to os"
+	@echo "  test-<scenario> limit tests to scenario"
+	@echo ""
+	@echo "where:"
+	@echo "  <os> is one of: $(IMAGES)"
+	@echo "  <scenario> is one of: $(SCENARIOS)"
 	@echo ""
 	@echo "environment:"
 	@echo "  MOLECULE_DRIVER=<name> (default: vagrant)"
+	@echo "  MOLECULE_SCENARIO=<scenario> (default: default)"
+	@echo "  MOLECULE_IMAGE=<image> (defult: generic/centos7)"
+	@echo "  MOLECULE_DESTROY='always' | 'never'"
 
 lint:
 	yamllint .
@@ -33,25 +41,40 @@ scenario:
 	  --destroy $(MOLECULE_DESTROY)
 
 
-test: test-centos-7 test-centos-8 test-debian-10
+test: test-centos-7 test-centos8 test-debian10
 
-test-centos-7:
+test-centos7:
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s default
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s bdist
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s packages-rpms
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s sdist
 
-test-centos-8:
+test-centos8:
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s default
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s bdist
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s packages-rpms
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s sdist
 
-test-debian-10:
+test-debian10:
 	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s default
 	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s bdist
 	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s packages-debs
 	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s sdist
+
+test-bdist:
+	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s bdist
+	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s bdist
+	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s bdist
+
+test-packages-rpms:
+	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s packages-rpms
+	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s packages-rpms
+
+test-packages-debs:
+	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s packages-debs
+
+test-sdist:
+	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s sdist
 
 reset:
 	molecule reset -s bdist
