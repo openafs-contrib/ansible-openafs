@@ -1,0 +1,14 @@
+---
+- name: Build packages
+  hosts: all
+  tasks:
+    - import_role:
+        name: openafs_devel
+
+    - name: Build RPMs
+      include_tasks: build_rpms.yml
+      when: ansible_os_family == 'RedHat'
+
+    - name: Build debs
+      include_tasks: build_debs.yml
+      when: ansible_os_family == 'Debian'

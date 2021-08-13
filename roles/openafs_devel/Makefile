@@ -6,7 +6,7 @@ MOLECULE_IMAGE ?= generic/centos7
 MOLECULE_DESTROY ?= always
 
 IMAGES = centos7 centos8 debian10
-SCENARIOS = default bdist packages-rpms packages-debs sdist
+SCENARIOS = default bdist packages sdist
 
 help:
 	@echo "usage: make <target>"
@@ -66,12 +66,10 @@ test-bdist:
 	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s bdist
 	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s bdist
 
-test-packages-rpms:
-	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s packages-rpms
-	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s packages-rpms
-
-test-packages-debs:
-	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s packages-debs
+test-packages:
+	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s packages
+	AFS_IMAGE=generic/centos8 molecule test -d $(MOLECULE_DRIVER) -s packages
+	AFS_IMAGE=generic/debian10 molecule test -d $(MOLECULE_DRIVER) -s packages
 
 test-sdist:
 	AFS_IMAGE=generic/centos7 molecule test -d $(MOLECULE_DRIVER) -s sdist
@@ -79,6 +77,5 @@ test-sdist:
 reset:
 	molecule reset -s bdist
 	molecule reset -s default
-	molecule reset -s packages-debs
-	molecule reset -s packages-rpms
+	molecule reset -s packages
 	molecule reset -s sdist
