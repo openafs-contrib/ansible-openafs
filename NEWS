@@ -1,5 +1,35 @@
 OpenAFS Ansible Collection
 
+August 13, 2021 - version 1.1.0
+
+* Run the bosserver in restricted mode by default
+
+* Update SELinux policy file to support Centos 8.
+
+* Add NetInfo/NetRestrict client and server configuration support.
+
+* Limit bdist install method to Transarc-style paths.
+
+* Support string and list configure_options in openafs_build module.
+
+* Support rebuilding and re-installing when installing from source.
+
+* Support of bzip tarballs when install from source distribution.
+
+* Add host variables for finer control when installing from
+  source: afs_configure_options, afs_transarc_build, afs_is_server,
+  afs_is_client.
+
+* Fix temporary directory permission errors.
+
+* Fix default client csdb.yaml files.
+
+* Additional debugging output.
+
+* Molecule test improvements and fixes.
+
+* Add meta/runtime.yaml to appease galaxy importer.
+
 May 4, 2021 - version 1.0.0
 
 * Roles for OpenAFS clients and servers. Install methods include
