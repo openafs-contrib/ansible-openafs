@@ -7,6 +7,8 @@
     mode: 0600
     owner: root
     group: root
+  when:
+    - not afs_service_keytab_externally_managed | bool
 
 - name: Add service keys
   become: yes
