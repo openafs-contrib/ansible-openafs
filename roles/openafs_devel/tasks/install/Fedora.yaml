@@ -1,5 +1,5 @@
 ---
-- name: "Fedora-31: Install development packages"
+- name: "Fedora: Install development packages"
   become: yes
   yum:
     state: present
