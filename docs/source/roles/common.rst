@@ -54,6 +54,7 @@ afs_csdb_file
 
 afs_admin
   An administrative user name. This is the ``pts`` user name, for example: ``jdoe.admin``
+  Can also be a list.
   Default: ``<ansible_user>.admin``
 
 afs_user
