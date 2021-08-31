@@ -16,15 +16,15 @@ Build OpenAFS server and client binaries from source code.
 
 The source code must be already present in the *projectdir* directory on the host.
 
-The :ref:`openafs_build <openafs_build_module>` module will run the OpenAFS ``regen.sh`` command, then run ``configure`` with the given *configure_options*, and then run ``make`` with the given *target*.  If a *target* is not specified, one will be determined based on the given *configure_options*. The ``regen.sh`` execution is skipped when the ``configure`` file already exists.  The ``configure`` execution is skipped when the ``config.status`` file already exists.
+The :ref:`openafs_build <openafs_build_module>` module will run the OpenAFS ``regen.sh`` command to generate the ``configure`` script, then run ``configure`` with the given *configure_options*, and then run ``make`` with the given *target*.  If a *target* is not specified, one will be determined based on the given *configure_options*. The ``regen.sh`` execution is skipped when the ``configure`` file already exists.
 
 A complete set of build log files are written on the *logdir* directory on the host for build troubleshooting.
 
 Out-of-tree builds are supported by specifying a build directory with the *builddir* option.
 
-Before the build starts, ``git clean`` is run in the *projectdir* directory to remove all untracked files when *clean* is true and a ``.git`` directory is found in the ``projectdir``. All of the files and directories are removed from the *builddir* when *clean* is true and an out-of-tree build is being done.
+At the start of the build, when *clean* is true and a ``.git`` directory is found in the ``projectdir``, ``git clean`` is run in the *projectdir* directory to remove artifacts from a previous build. When *clean* is true and a ``.git`` directory is not found, then ``make clean`` is run to remove artifacts from a previous build.  When *clean* is true and an out-of-tree build is being done, all of the files and directories are removed from the *builddir*.
 
-A check for a loadable kernel module is done after the build completes when the *state* is ``built-module``.  Be sure the *target* and *configure_options* are set to build a kernel module when using the ``mkodready`` state.
+A check for a loadable kernel module is done after the build completes when the *state* is ``built-module``.  Be sure the *target* and *configure_options* are set to build a kernel module when using the ``buildt-module`` state.
 
 An installation file tree is created in the *destdir* directory when the *target* starts with ``install`` or ``dest``. The files in *destdir* may be installed with the :ref:`openafs_install_bdist <openafs_install_bdist_module>` module.
 
@@ -68,13 +68,13 @@ Parameters
 
 
   clean (optional, bool, False)
-    Run ``git clean`` in the *projectdir* when it contains a ``.git`` directory.
+    Run ``git clean`` in the *projectdir* when it contains a ``.git`` directory, otherwise run ``make clean``.
 
-    Remove the *builddir*, if different than the *projectdir*.
+    Remove the *builddir* when using an out of tree build, that is the *builddir* is different than the *projectdir*.
 
-    A *clean* build should be done if the source files in *projectdir* or the *configure_options* have been changed since the last time this module has been run.
+    A *clean* build should be done to force a complete rebuild.
 
-    Use the *clean* option with caution!
+    The *clean* option will remove any new files you added manually on the remote node and did not commit when the *projectdir* is a git repository.
 
 
   version (optional, str, None)
@@ -113,6 +113,14 @@ Parameters
 
   configure_options (optional, raw, None)
     The ``configure`` options as a string, list of strings, or a dictionary
+
+
+  transarc_paths (optional, bool, None)
+    Build binaries which use the legacy Transarc-style paths
+
+    When True, this option adds the ``--enable-transarc-paths`` to the *configure_options*.
+
+    This option has no effect when the ``--enable-transarc-paths`` argument is already present in the *configure_options*
 
 
 
