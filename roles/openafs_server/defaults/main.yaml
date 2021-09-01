@@ -32,6 +32,9 @@ afs_bosserver_opts: -pidfiles
 # Run bosserver in restricted mode.
 afs_bosserver_restricted_mode: yes
 
+# Extra bnodes to put in BosConfig
+afs_bosserver_bnodes: []
+
 # ptserver options
 afs_ptserver_opts:
 

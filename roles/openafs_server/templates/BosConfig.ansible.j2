@@ -25,3 +25,10 @@ parm {{ afs_salvager }}{{ ' ' if afs_salvager_opts else '' }}{{ afs_salvager_opt
 end
 {% endif %}
 {% endif %}
+{% for bnode in afs_bosserver_bnodes %}
+bnode {{ bnode.type }} {{ bnode.name }} {{ bnode.goal }}
+{% for parm in bnode.parm %}
+parm {{ parm }}
+{% endfor %}
+end
+{% endfor %}

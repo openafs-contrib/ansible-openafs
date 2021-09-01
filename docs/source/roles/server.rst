@@ -117,6 +117,23 @@ afs_bosserver_restricted_mode:
 
   default: yes
 
+afs_bosserver_bnodes:
+  Extra ``bnode`` entries to add to ``BosConfig``.
+
+  default: []
+
+  example:
+
+.. code-block:: yaml
+
+    afs_bosserver_bnodes:
+      - name: backup
+        type: cron
+        goal: 1
+        parm:
+          - /usr/afs/backup/clones/lib/backup.csh daily
+          - 05:00
+
 afs_bosserver_opts:
   The ``bosserver`` command line options.
 
