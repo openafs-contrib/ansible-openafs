@@ -5,10 +5,20 @@
 
 [realms]
     {{ afs_realm }} = {
-{% for host in groups['afs_kdcs'] %}
+{% if afs_kdc_servers is defined %}
+{%   for hostname in afs_kdc_servers.split(',') %}
+        kdc = {{ hostname }}
+{%   endfor %}
+{% elif 'afs_kdcs' in groups %}
+{%   for host in groups['afs_kdcs'] %}
         kdc = {{ hostvars[host].inventory_hostname }}
-{% endfor %}
+{%   endfor %}
+{% endif %}
+{% if afs_kadmin_server is defined %}
+        admin_server = {{ afs_kadmin_server }}
+{% elif 'afs_kdcs' in groups %}
         admin_server = {{ hostvars[groups['afs_kdcs'][0]].inventory_hostname }}
+{% endif %}
     }
 
 [domain_realm]
