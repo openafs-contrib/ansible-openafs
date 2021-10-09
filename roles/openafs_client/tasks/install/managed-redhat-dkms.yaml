@@ -53,7 +53,7 @@
 - name: Verify openafs dkms status is installed
   assert:
     that:
-      dkms_status.stdout is regex('openafs, .* installed')
+      dkms_status.stdout is regex('^openafs/.*: installed')
 
 - name: Get installation paths
   openafs_contrib.openafs.openafs_get_install_paths:
