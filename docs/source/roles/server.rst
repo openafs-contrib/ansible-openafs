@@ -105,7 +105,7 @@ afs_service_keytab_externally_managed
 
   default: false
 
-afs_bosserver_restricted_mode:
+afs_bosserver_restricted_mode
   Run the BosServer in restricted mode.  This mode improves the security of the
   BosServer by prohibiting bos commands which are not needed for routine
   operation.
@@ -117,7 +117,7 @@ afs_bosserver_restricted_mode:
 
   default: yes
 
-afs_bosserver_bnodes:
+afs_bosserver_bnodes
   Extra ``bnode`` entries to add to ``BosConfig``.
 
   default: []
@@ -134,7 +134,7 @@ afs_bosserver_bnodes:
           - /usr/afs/backup/clones/lib/backup.csh daily
           - 05:00
 
-afs_bosserver_opts:
+afs_bosserver_opts
   The ``bosserver`` command line options.
 
 afs_ptserver_opts

@@ -18,7 +18,7 @@ afs_realm
 afs_cell_files
   Location of cell specific files on the controller. Default: ``~/.ansible_openafs/cell/<cell>``
 
-afs_csdb:
+afs_csdb
   The CellServDB information for this cell. Undefined by default.
   The ``afs_csdb`` should be provided in your inventory. If not defined, the
   ``afs_csdb`` is read from the external yaml file located at the
@@ -60,7 +60,7 @@ afs_admin
 afs_user
   A regular user name and pts id. Default: ``<ansible_user>``
 
-afs_user_id: <id>
+afs_user_id
   The ``pts`` user id of the ``afs_user``. The default id is
   ``<ansible_user_uid>``. Set ``afs_user_id`` to 0 to let the OpenAFS Protection
   Server select the next available id when creating the user account.
@@ -126,7 +126,7 @@ afs_clean_build
 
   Default: yes
 
-afs_transarc_build:
+afs_transarc_build
   When the ``afs_install_method`` is ``sdist`` or ``source``, build and install
   the OpenAFS binaries with the legacy Transarc style installation paths, e.g,
   ``/usr/afs/bin``, ``/usr/afs/etc``. This option will add ``--enable-transarc-paths``
