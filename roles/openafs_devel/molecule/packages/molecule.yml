@@ -4,7 +4,7 @@ dependency:
 driver:
   name: vagrant
 platforms:
-  - name: m-role-devel-01
+  - name: m-role-devel-03
     box: "${AFS_IMAGE:-generic/centos7}"
 provisioner:
   name: ansible

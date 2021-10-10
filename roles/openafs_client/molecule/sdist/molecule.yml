@@ -4,7 +4,7 @@ dependency:
 driver:
   name: vagrant
 platforms:
-  - name: m-role-client-01
+  - name: m-role-client-07
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_clients

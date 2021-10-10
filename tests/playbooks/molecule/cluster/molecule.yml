@@ -4,29 +4,29 @@ dependency:
 driver:
   name: vagrant
 platforms:
-  - name: m-playbook-server-01
+  - name: m-playbook-cluster-01
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_databases
       - afs_kdcs
-  - name: m-playbook-server-02
+  - name: m-playbook-cluster-02
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_fileservers
-  - name: m-playbook-server-03
+  - name: m-playbook-cluster-03
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_fileservers
-  - name: m-playbook-server-04
+  - name: m-playbook-cluster-04
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_admin_client
       - afs_clients
-  - name: m-playbook-server-05
+  - name: m-playbook-cluster-05
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_clients
-  - name: m-playbook-server-06
+  - name: m-playbook-cluster-06
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_clients

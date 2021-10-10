@@ -4,7 +4,7 @@ dependency:
 driver:
   name: vagrant
 platforms:
-  - name: m-playbook-server-01
+  - name: m-playbook-realm-01
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_kdcs
