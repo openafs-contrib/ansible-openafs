@@ -16,7 +16,7 @@ lint:
 list:
 	../.venv/bin/pytest --co
 
-test:
+test: lint
 	../.venv/bin/pytest --cache-clear $(PYTEST_FLAGS)
 
 retest: install
