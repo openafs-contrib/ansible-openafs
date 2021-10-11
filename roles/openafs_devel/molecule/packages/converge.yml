@@ -1,6 +1,8 @@
 ---
 - name: Build packages
   hosts: all
+  vars:
+    build_directory: ~/openafs
   tasks:
     - import_role:
         name: openafs_devel

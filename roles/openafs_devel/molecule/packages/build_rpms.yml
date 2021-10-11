@@ -12,20 +12,22 @@
   changed_when: false
   register: git_version
 
-- name: Autoconf
+- name: Build source distribution
   command:
-    cmd: ./regen.sh
+    cmd: perl build-tools/make-release --dir=packages HEAD
     chdir: "~/openafs"
 
-- name: Generate makefile
-  command:
-    cmd: ./configure --disable-kernel-module
-    chdir: "~/openafs"
-
-- name: Create source RPM
-  command:
-    cmd: make dist srpm
-    chdir: "~/openafs"
+- name: "Make source RPM file."
+  shell:
+    cmd: |
+      tar xf openafs-*-src.tar.bz2 --strip-components=4 '*/makesrpm.pl'
+      tar xf openafs-*-src.tar.bz2 --strip-components=4 '*/openafs.spec.in'
+      tar xf openafs-*-src.tar.bz2 --strip-components=3 '*/src/afsd/CellServDB'
+      tar xf openafs-*-src.tar.bz2 --strip-components=1 --exclude='*/src' '*/NEWS'
+      mv NEWS RELNOTES
+      mv CellServDB `grep '^Source.*CellServDB' openafs.spec.in | sed 's@.*/@@'`
+      perl makesrpm.pl openafs-*-{src,doc}.tar.bz2 RELNOTES ChangeLog CellServDB.*
+    chdir: "{{ build_directory }}/packages"
 
 - name: Create rpmbuild workspace
   file:
