@@ -1,0 +1,50 @@
+---
+#
+# Ensure the kernel-devel package is installed which matches the currently
+# running kernel version.
+#
+
+- name: Query kernel-devel packages.
+  command: rpm -q --qf='%{VERSION}-%{RELEASE}.%{ARCH}\n' kernel-devel
+  changed_when: False
+  failed_when: False
+  register: rpm_query
+
+- debug:
+    var: rpm_query
+    verbosity: 1
+
+- name: Install kernel headers
+  when: ansible_kernel not in rpm_query.stdout_lines
+  become: yes
+  block:
+    - name: "Install kernel-devel package for {{ ansible_kernel }}."
+      yum:
+        state: present
+        name: "kernel-devel-uname-r == {{ ansible_kernel }}"
+  rescue:
+    # If we are unable to install the kernel-devel package the current
+    # kernel version may be too old. When allowed, automatically update
+    # the kernel. This entails a reboot.
+    - fail:
+        msg: Kernel update and reboot required.
+      when: not (afs_devel_allow_kernel_update | d('no') | bool)
+
+    - name: Update kernel
+      yum:
+        state: latest
+        name:
+          - kernel
+          - kernel-devel
+      register: yum_update_results
+
+    - name: Reboot
+      when: yum_update_results.changed
+      block:
+        - name: Rebooting
+          reboot:
+            reboot_timeout: 600
+        - name: Waiting for reboot to complete
+          wait_for_connection:
+        - name: Gathering facts
+          setup:

@@ -3,6 +3,19 @@
   setup:
   when: ansible_distribution is undefined
 
+- name: Install kernel headers
+  include_tasks: "{{ afs_devel_kheaders_tasks }}"
+  with_first_found:
+    - "kheaders/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
+    - "kheaders/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
+    - "kheaders/{{ ansible_distribution | replace(' ', '_') }}.yaml"
+    - "kheaders/{{ ansible_os_family | replace(' ', '_') }}.yaml"
+    - "kheaders/{{ ansible_system | replace(' ', '_') }}.yaml"
+    - "kheaders/unknown.yaml"
+  loop_control:
+    loop_var: afs_devel_kheaders_tasks
+  when: afs_devel_kernel_headers | d('yes') | bool
+
 - name: Install development tools and libraries
   include_tasks: "{{ afs_devel_install_tasks }}"
   with_first_found:

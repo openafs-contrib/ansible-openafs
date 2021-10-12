@@ -13,7 +13,6 @@
       - gcc
       - git
       - glibc-devel
-      - kernel-devel
       - krb5-devel
       - libtool
       - make

@@ -20,7 +20,6 @@
       - libncurses5-dev
       - libperl-dev
       - libtool
-      - linux-headers-{{ ansible_kernel }}
       - make
       - swig
       - wget

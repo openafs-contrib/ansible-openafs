@@ -20,7 +20,6 @@
       - gcc
       - git
       - glibc-devel
-      - "kernel-devel-uname-r == {{ ansible_kernel }}"
       - krb5-devel
       - libevent-devel
       - libtool
