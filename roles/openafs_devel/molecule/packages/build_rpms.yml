@@ -5,65 +5,40 @@
     version: "{{ afs_git_version }}"
     dest: "~/openafs"
 
-- name: Get version string
-  command:
-    cmd: build-tools/git-version .
-    chdir: "~/openafs"
-  changed_when: false
-  register: git_version
-
 - name: Build source distribution
   command:
     cmd: perl build-tools/make-release --dir=packages HEAD
     chdir: "~/openafs"
 
-- name: "Make source RPM file."
-  shell:
-    cmd: |
-      tar xf openafs-*-src.tar.bz2 --strip-components=4 '*/makesrpm.pl'
-      tar xf openafs-*-src.tar.bz2 --strip-components=4 '*/openafs.spec.in'
-      tar xf openafs-*-src.tar.bz2 --strip-components=3 '*/src/afsd/CellServDB'
-      tar xf openafs-*-src.tar.bz2 --strip-components=1 --exclude='*/src' '*/NEWS'
-      mv NEWS RELNOTES
-      mv CellServDB `grep '^Source.*CellServDB' openafs.spec.in | sed 's@.*/@@'`
-      perl makesrpm.pl openafs-*-{src,doc}.tar.bz2 RELNOTES ChangeLog CellServDB.*
-    chdir: "{{ build_directory }}/packages"
-
-- name: Create rpmbuild workspace
-  file:
-    state: directory
-    path: "~/openafs/packages/rpmbuild"
-  register: mkdir_results
-
-- name: Set build facts
-  set_fact:
-    workspace: "{{ mkdir_results.path }}"
-    dist: "{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"
-    arch: "{{ ansible_architecture }}"
-    version: "{{ git_version.stdout | replace('-', '_') }}"
-
-- name: Build RPMs
-  shell:
-    cmd: rpmbuild --rebuild --define "_topdir {{ workspace }}" packages/openafs-*.src.rpm
-    chdir: "~/openafs"
-  register: rpmbuild_results
+- name: Build rpms
+  openafs_build_redhat_rpms:
+    build: all
+    sdist: ~/openafs/packages
+  register: build_results
 
 - debug:
-    msg: "{{ rpmbuild_results.stdout_lines[-20:] }}"
+    var: build_results
 
 - name: Create archive
-  archive:
-    path: "{{ workspace }}/RPMS/{{ ansible_architecture }}/*.rpm"
-    dest: "openafs-{{ version }}-{{ dist }}-{{ arch }}.rpms.tar.gz"
-    format: gz
+  vars:
+    version: "{{ build_results.version.openafs_version }}"
+    dist: "{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"
+    arch: "{{ ansible_architecture }}"
+  block:
+    - name: Create archive
+      archive:
+        path: "{{ build_results.rpms }}"
+        dest: "openafs-{{ version }}-{{ dist }}-{{ arch }}.rpms.tar.gz"
+        format: gz
+        force_archive: yes
 
-- name: Download
-  fetch:
-    flat: yes
-    src: "openafs-{{ version }}-{{ dist }}-{{ arch }}.rpms.tar.gz"
-    dest: "{{ afs_builds }}/"
-  register: fetch_results
+    - name: Download
+      fetch:
+        flat: yes
+        src: "openafs-{{ version }}-{{ dist }}-{{ arch }}.rpms.tar.gz"
+        dest: "{{ afs_builds }}/"
+      register: fetch_results
 
-- name: Downloaded
-  debug:
-    msg: "{{ fetch_results.dest }}"
+    - name: Downloaded
+      debug:
+        msg: "{{ fetch_results.dest }}"
