@@ -267,6 +267,7 @@ kmods:
     - /home/tycobb/projects/myproject/src/libafs/MODLOAD-5.1.0-SP/openafs.ko
 '''
 
+import contextlib  # noqa: E402
 import glob       # noqa: E402
 import logging    # noqa: E402
 import os         # noqa: E402
@@ -275,6 +276,7 @@ import pprint     # noqa: E402
 import re         # noqa: E402
 import shlex      # noqa: E402
 import shutil     # noqa: E402
+import subprocess  # noqa: E402
 import json       # noqa: E402
 from multiprocessing import cpu_count  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
@@ -376,8 +378,18 @@ def tail(s, n=256):
         return s[-n:]
 
 
-def run_command(name, command, cwd, module, logdir, results):
-    """Run a command and log the stdout and stderr.
+@contextlib.contextmanager
+def chdir(path):
+    prev = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(prev)
+
+
+def run_command(name, command, cwd, logdir, results):
+    """Run a command and log the stdout and stderr to a file.
 
     :arg command: command argument list
     :arg cwd: current directory to run the command
@@ -385,26 +397,17 @@ def run_command(name, command, cwd, module, logdir, results):
     :arg logdir: where to place stdout and stderr logs
     :arg results: the module results dictionary
     """
-    log.info('[%s] %s' % (cwd, ' '.join(command)))
-    rc, out, err = module.run_command(command, cwd=cwd)
-    logfile_out = os.path.join(logdir, '%s.out' % name)
-    with open(logfile_out, 'w') as f:
-        f.write(out)
-        results['changed'] = True
-        results['logfiles'].append(logfile_out)
-    logfile_err = os.path.join(logdir, '%s.err' % name)
-    with open(logfile_err, 'w') as f:
-        f.write(err)
-        results['changed'] = True
-        results['logfiles'].append(logfile_err)
+    logfile = os.path.join(logdir, '%s.log' % name)
+    results['logfiles'].append(logfile)
+    with open(logfile, 'w') as f:
+        with chdir(cwd):
+            log.info('[%s] %s' % (cwd, ' '.join(command)))
+            proc = subprocess.Popen(command, stdout=f.fileno(), stderr=f.fileno())
+            rc = proc.wait()
     if rc != 0:
         log.error('%s failed; rc=%d' % (name, rc))
         module.fail_json(
-            msg='%s command failed. See log files %s and %s' %
-                (name, logfile_out, logfile_err),
-            rc=rc,
-            stdout=tail(out),
-            stderr=tail(err),
+            msg='%s command failed. See log file "%s".' % (name, logfile),
         )
 
 
@@ -579,8 +582,7 @@ def main():
             'clean', '-f', '-d', '-x', '--exclude=.ansible',
         ]
         log.info('Running git clean.')
-        run_command('clean', clean_command, projectdir, module,
-                    logdir, results)
+        run_command('clean', clean_command, projectdir, logdir, results)
 
     #
     # Clean out of tree build files.
@@ -630,8 +632,7 @@ def main():
         regen_command = [os.path.join(projectdir, 'regen.sh')]
         if not manpages:
             regen_command.append('-q')
-        run_command('regen', regen_command, projectdir, module,
-                    logdir, results)
+        run_command('regen', regen_command, projectdir, logdir, results)
 
     #
     # Run configure.
@@ -676,8 +677,7 @@ def main():
 
     configure_command = [os.path.join(projectdir, 'configure')]
     configure_command.extend(args)
-    run_command('configure', configure_command, builddir, module, logdir,
-                results)
+    run_command('configure', configure_command, builddir, logdir, results)
     results['sysname'] = configured_sysname(builddir)
     log.info("configured sysname is '%s'.", results['sysname'])
 
@@ -705,7 +705,7 @@ def main():
     #
     if clean and not gitdir:
         make_command = [make, 'clean']
-        run_command('make', make_command, builddir, module, logdir, results)
+        run_command('make', make_command, builddir, logdir, results)
 
     #
     # Run make.
@@ -717,7 +717,7 @@ def main():
         make_command.append(target)
     if destdir and not target.startswith('dest'):
         make_command.append('DESTDIR=%s' % destdir)
-    run_command('make', make_command, builddir, module, logdir, results)
+    run_command('make', make_command, builddir, logdir, results)
 
     #
     # `make` may silently fail to build a kernel module for the running kernel
