@@ -76,6 +76,9 @@
 # kmod-openafs-debuginfo file will also be installed if present.
 - name: Find kmod rpm filenames
   find:
+    file_type: file
+    recurse: yes
+    use_regex: no
     path: "{{ afs_tmpdir }}/install/"
     patterns: "kmod-openafs-*.rpm"
   register: find_kmods
