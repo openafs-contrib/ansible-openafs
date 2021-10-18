@@ -10,10 +10,14 @@ Documentation: [https://openafs-ansible-collection.readthedocs.io][2]
 * Ansible 2.10+
 * OpenAFS 1.6.5+, 1.8.x, 1.9.x source or packages
 
-## Platforms
+## Platforms supported
 
-* Red Hat Entrerprise Linux/CentOS 7, 8
-* Debian 9, 10
+* Red Hat Entrerprise Linux 8
+* Red Hat Entrerprise Linux 7
+* CentOS 8
+* CentOS 7
+* Fedora 34
+* Debian 10
 
 ## Playbooks
 

@@ -1,5 +1,30 @@
 OpenAFS Ansible Collection
 
+October 18, 2021 - version 1.2.0
+
+* Add support for Fedora
+
+* Fix DKMS status check on clients when installing with DKMS packages.
+
+* Add support for extra bnode entries on servers.
+
+* Add support for multiple admin users.
+
+* Add support for externally managed keytabs.
+
+* Add then openafs_build_redhat_rpms module to build OpenAFS RPMs for
+  RedHat-family distributions.
+
+* Support kerberos server name variables when setting up the krb5.conf on the kdc server,
+  and not just the clients.
+
+* Improve speed and reliability of kernel-devel package installation on clients.
+
+* Improve build logs in openafs_build module.
+
+* Use pytest to run molecule role and playbook unit tests.
+
+
 August 13, 2021 - version 1.1.0
 
 * Run the bosserver in restricted mode by default
