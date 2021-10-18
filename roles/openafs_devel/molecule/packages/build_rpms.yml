@@ -21,7 +21,7 @@
 
 - name: Create archive
   vars:
-    version: "{{ build_results.version.openafs_version }}"
+    version: "{{ build_results.version.openafs_version | replace('-', '_') }}"
     dist: "{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"
     arch: "{{ ansible_architecture }}"
   block:

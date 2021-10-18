@@ -12,7 +12,7 @@
 - import_tasks: "pre-install/server-etc-hosts.yaml"
 - import_tasks: "pre-install/server-partitions.yaml"
 - include_tasks: "pre-install/firewall-{{ afs_firewall | default('none') }}.yaml"
-- include_tasks: "pre-install/security-policies-{{ afs_security_model | default('none') }}.yaml"
+- include_tasks: "pre-install/security-policies-{{ afs_security_model }}.yaml"
 
 - name: Install server
   include_tasks: "{{ item }}"
@@ -23,7 +23,7 @@
 
 - import_tasks: "post-install/server-config.yaml"
 - import_tasks: "post-install/server-key.yaml"
-- include_tasks: "post-install/security-contexts-{{ afs_security_model | default('none') }}.yaml"
+- include_tasks: "post-install/security-contexts-{{ afs_security_model }}.yaml"
 
 - name: Start services
   become: yes

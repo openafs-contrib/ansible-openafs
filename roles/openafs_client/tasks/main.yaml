@@ -14,6 +14,8 @@
 - name: Install client
   include_tasks: "{{ item }}"
   with_first_found:
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_distribution | lower }}-{{ afs_module_install_method }}.yaml"
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_distribution | lower }}.yaml"
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_os_family | lower }}-{{ afs_module_install_method }}.yaml"
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_os_family | lower }}.yaml"
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}.yaml"

@@ -31,6 +31,13 @@ yaml file, the path of which is specified by the ``afs_csdb_file`` variable.
 Variables
 ---------
 
+afs_security_model
+  The system security model. Should be ``none`` or ``selinux``.
+  When set to ``selinux``, the selinux contexts for OpenAFS will be updated
+  to allow the server to run with selinux enabled.
+
+  default: none
+
 afs_is_fileserver
   Indicates the node is a fileserver. By default, ``afs_is_fileserver`` is
   true when the node is a member of the ``afs_fileservers`` group.

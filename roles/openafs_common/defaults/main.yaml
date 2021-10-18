@@ -57,8 +57,9 @@ afs_topdir: ~/openafs
 # Installation method; one of; managed, package, bdist, sdist, source, none
 afs_install_method: managed
 
-# Yum repository url or path for 'managed' installs on yum based systems.
-afs_yum_repo: "https://download.sinenomine.net/openafs/rpms/el$releasever/$basearch"
+# Yum repository url or path for 'managed' installs on yum based systems. The
+# default depends on the platform (see vars).
+afs_yum_repo: "{{ _afs_yum_repo }}"
 
 # Path to installation tarball on controller for non-managed installs.
 afs_install_archive: ""

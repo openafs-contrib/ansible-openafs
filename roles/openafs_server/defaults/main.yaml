@@ -1,4 +1,7 @@
 ---
+# Security model: none or selinux
+afs_security_model: "{{ _afs_security_model | d('none') }}"
+
 # The Kerberos keytab for AFS service on the controller to be uploaded to
 # the servers.
 afs_service_keytab: "{{ afs_cell_files }}/afs.{{ afs_cell }}.keytab"

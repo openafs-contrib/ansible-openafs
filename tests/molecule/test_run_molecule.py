@@ -22,18 +22,20 @@
 #
 
 import os
+import subprocess
 from pathlib import Path
 import pytest
 
-PLATFORMS = ['centos7', 'centos8', 'debian10']
+PLATFORMS = ['centos7', 'centos8', 'fedora34', 'debian10']
+ROLE = Path(os.getcwd()).name
+LOGDIR = Path('/tmp') / 'ansible-openafs' / 'molecule' / ROLE
+
 ANSIBLE_VARS = {
     'ANSIBLE_VERBOSITY': '1',
     'ANSIBLE_STDOUT_CALLBACK': 'debug',
     'ANSIBLE_NOCOLOR': '1',
     'ANSIBLE_FORCE_COLOR': '0',
 }
-ROLE = Path(os.getcwd()).name
-LOGDIR = Path('/tmp') / 'ansible-openafs' / 'molecule' / ROLE
 
 def parameters():
     params = []
@@ -43,28 +45,14 @@ def parameters():
             params.append((p, s))
     return params
 
-def info(logfile, msg):
-    print(msg)
-    with open(logfile, 'a') as f:
-        f.write('PYTEST: %s\n' % msg)
-
-def run(cmd, logfile):
-    info(logfile, '\nrunning: %s' % cmd)
-    rc = os.system(cmd)
-    info(logfile, 'exit code %d' % rc)
-    assert rc == 0, 'See %s for details.' % logfile
+def set_env_vars(platform):
+    for n, v in ANSIBLE_VARS.items():
+        os.environ[n] = v
+    os.environ['AFS_IMAGE'] = 'generic/%s' % platform
 
 @pytest.mark.parametrize('platform,scenario', parameters())
 def test_scenario(tmpdir, platform, scenario):
-    for n, v in ANSIBLE_VARS.items():
-        if n not in os.environ:
-            os.environ[n] = v
-    if not LOGDIR.exists():
-        os.makedirs(LOGDIR)
-    logfile = '%s/%s-%s.log' % (LOGDIR, platform, scenario)
-    image = 'generic/%s' % platform
     args = [
-        'AFS_IMAGE=%s' % image,
         'molecule',
         'test',
         '--scenario-name=%s' % scenario,
@@ -72,6 +60,13 @@ def test_scenario(tmpdir, platform, scenario):
     driver = os.getenv('MOLECULE_DRIVER')
     if driver:
         args.append('--driver-name=%s' % driver)
-    args.append('>%s 2>&1' % logfile)
-    cmd = ' '.join(args)
-    run(cmd, logfile)
+    logfile = '%s/%s-%s.log' % (LOGDIR, platform, scenario)
+    if not LOGDIR.exists():
+        os.makedirs(LOGDIR)
+    print('Writing output to %s' % logfile)
+    with open(logfile, 'w') as f:
+        set_env_vars(platform)
+        f.write('\nRunning: %s\n' % ' '.join(args))
+        proc = subprocess.Popen(args, stdout=f.fileno(), stderr=subprocess.STDOUT)
+        rc = proc.wait()
+        assert rc == 0, 'See "%s".' % logfile

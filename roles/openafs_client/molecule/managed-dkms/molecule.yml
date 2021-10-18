@@ -18,6 +18,7 @@ provisioner:
         afs_install_method: "managed"
         afs_module_install_method: "dkms"
         afs_csdb_file: ""
+        # afs_yum_repo: "${AFS_YUM_REPO}"
 verifier:
   name: ansible
 scenario:

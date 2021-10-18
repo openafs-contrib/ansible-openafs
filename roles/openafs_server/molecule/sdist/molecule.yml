@@ -17,6 +17,7 @@ provisioner:
         afs_cell: "example.com"
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
         afs_install_method: "sdist"
+        # afs_security_model: "${AFS_SECURITY_MODEL:-none}"
         afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
         afs_pseudo_partitions: ['a', 'b']
         afs_service_keytab: "../__files__/example-aes.keytab"

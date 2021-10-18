@@ -28,14 +28,6 @@
     ansible_local.openafs.install_method is defined
     and ansible_local.openafs.install_method != afs_install_method
 
-- name: Set security model to selinux
-  set_fact:
-    afs_security_model: selinux
-  when:
-    - afs_security_model is undefined
-    - ansible_selinux.status is defined
-    - ansible_selinux.status == 'enabled'
-
 - name: Load CellServDB values
   set_fact:
     afs_csdb: "{{ lookup('file', afs_csdb_file) | from_yaml }}"
