@@ -26,7 +26,14 @@ import subprocess
 from pathlib import Path
 import pytest
 
-PLATFORMS = ['centos7', 'centos8', 'fedora34', 'debian10']
+PLATFORMS = [
+    'centos7',
+    'centos8',
+    'fedora34',
+    'fedora33',
+    'debian11',
+    'debian10',
+]
 ROLE = Path(os.getcwd()).name
 LOGDIR = Path('/tmp') / 'ansible-openafs' / 'molecule' / ROLE
 
