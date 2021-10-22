@@ -283,6 +283,7 @@ from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible.module_utils.six import string_types  # noqa: E402
 
 log = logging.getLogger('openafs_build')
+module = None
 
 MAKEFILE_PATHS = r"""
 include ./src/config/Makefile.config
@@ -393,7 +394,6 @@ def run_command(name, command, cwd, logdir, results):
 
     :arg command: command argument list
     :arg cwd: current directory to run the command
-    :arg module: the ansible module object
     :arg logdir: where to place stdout and stderr logs
     :arg results: the module results dictionary
     """
@@ -497,6 +497,7 @@ def main():
         kmods=[],
         install_dirs={},
     )
+    global module
     module = AnsibleModule(
         argument_spec=dict(
             state=dict(choices=['built', 'built-module'], default='built'),
