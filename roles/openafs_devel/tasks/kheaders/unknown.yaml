@@ -6,5 +6,5 @@
       {{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }},
       {{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }},
       {{ ansible_distribution | replace(' ', '_') }},
-      {{ ansible_os_family | replace(' ', '_') }}
+      {{ ansible_os_family | replace(' ', '_') }},
       {{ ansible_system | replace(' ', '_') }}
