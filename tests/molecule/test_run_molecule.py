@@ -39,14 +39,6 @@ ROLE = Path(os.getcwd()).name
 LOGDIR = Path('/tmp/ansible-openafs/molecule') / ROLE
 BASECONFIGDIR = Path('~/.config/molecule').expanduser()
 
-ANSIBLE_VARS = {
-    'ANSIBLE_VERBOSITY': '1',
-    'ANSIBLE_STDOUT_CALLBACK': 'debug',
-    'ANSIBLE_NOCOLOR': '1',
-    'ANSIBLE_FORCE_COLOR': '0',
-}
-
-
 def parameters():
     params = []
     scenarios = [p.parent.name for p in Path().glob('molecule/*/molecule.yml')]
@@ -56,34 +48,35 @@ def parameters():
     return params
 
 
-def set_env_vars(platform):
-    for n, v in ANSIBLE_VARS.items():
-        os.environ[n] = v
-    os.environ['AFS_IMAGE'] = 'generic/%s' % platform
-
-
-def run(proc, logfile):
+def run_molecule(cmd, scenario, log, options):
+     args = ['molecule']
+     for k, v in options.items():
+        args.append('--%s=%s' % (k, v))
+     args.append(cmd)
+     args.append('--scenario-name=%s' % scenario)
+     msg = 'Running: %s' % ' '.join(args)
+     print(msg)
+     log.write('%s\n' % msg)
+     proc = subprocess.Popen(args, stdout=log.fileno(), stderr=subprocess.STDOUT)
      rc = proc.wait()
-     assert rc == 0, 'See "%s".' % logfile
+     assert rc == 0, 'See "%s".' % log.name
 
 
 @pytest.mark.parametrize('platform,scenario', parameters())
 def test_scenario(tmpdir, platform, scenario):
-    args = []
-    args.append('molecule')
-    platform_config = BASECONFIGDIR / 'platforms' / '%s.yml' % platform
-    if platform_config.exists():
-        args.append('--base-config=%s' % platform_config)
-    args.append('test')
-    args.append('--scenario-name=%s' % scenario)
-
     logfile = '%s/%s-%s.log' % (LOGDIR, platform, scenario)
-    if not LOGDIR.exists():
-        os.makedirs(LOGDIR)
-
-    print('\nWriting output to %s' % logfile)
-    with open(logfile, 'w') as f:
-        set_env_vars(platform)
-        print('Running: %s\n' % ' '.join(args))
-        proc = subprocess.Popen(args, stdout=f.fileno(), stderr=subprocess.STDOUT)
-        #run(proc, logfile)
+    if not os.path.exists(os.path.dirname(logfile)):
+        os.makedirs(os.path.dirname(logfile))
+    with open(logfile, 'w') as log:
+        print('\nWriting output to %s' % log.name)
+        options = {}
+        base_config = BASECONFIGDIR / 'platforms' / ('%s.yml' % platform)
+        if base_config.exists():
+            options['base-config'] = base_config
+        os.environ['ANSIBLE_VERBOSITY'] = '1'
+        os.environ['ANSIBLE_STDOUT_CALLBACK'] = 'debug'
+        os.environ['ANSIBLE_NOCOLOR'] = '1'
+        os.environ['ANSIBLE_FORCE_COLOR'] = '0'
+        os.environ['AFS_IMAGE'] = 'generic/%s' % platform
+        run_molecule('test', scenario, log, options)
+        run_molecule('reset', scenario, log, options)
