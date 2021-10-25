@@ -1,8 +1,6 @@
 ---
 dependency:
   name: galaxy
-driver:
-  name: vagrant
 platforms:
   - name: m-role-common-01
     box: "${AFS_IMAGE:-generic/centos7}"
