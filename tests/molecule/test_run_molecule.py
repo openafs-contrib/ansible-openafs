@@ -32,19 +32,34 @@ PLATFORMS = [
     'centos8',
     'fedora34',
     'fedora33',
-    'debian11',
     'debian10',
+    'solaris114',
 ]
 ROLE = Path(os.getcwd()).name
 LOGDIR = Path('/tmp/ansible-openafs/molecule') / ROLE
 BASECONFIGDIR = Path('~/.config/molecule').expanduser()
 
+
+def skiplist():
+    skip = []
+    if os.path.exists('pytest.skip'):
+        with open('pytest.skip') as f:
+            for line in f.readlines():
+                line = line.rstrip()
+                if not line.startswith('#'):
+                    skip.append(line)
+    return set(skip)
+
+
 def parameters():
+    skip = skiplist()
     params = []
     scenarios = [p.parent.name for p in Path().glob('molecule/*/molecule.yml')]
     for p in PLATFORMS:
         for s in scenarios:
-            params.append((p, s))
+            pattern = '%s-%s' % (p, s)
+            if pattern not in skip:
+                params.append((p, s))
     return params
 
 
@@ -63,7 +78,7 @@ def run_molecule(cmd, scenario, log, options):
 
 
 @pytest.mark.parametrize('platform,scenario', parameters())
-def test_scenario(tmpdir, platform, scenario):
+def test_scenario(platform, scenario):
     logfile = '%s/%s-%s.log' % (LOGDIR, platform, scenario)
     if not os.path.exists(os.path.dirname(logfile)):
         os.makedirs(os.path.dirname(logfile))
@@ -78,5 +93,6 @@ def test_scenario(tmpdir, platform, scenario):
         os.environ['ANSIBLE_NOCOLOR'] = '1'
         os.environ['ANSIBLE_FORCE_COLOR'] = '0'
         os.environ['AFS_IMAGE'] = 'generic/%s' % platform
-        run_molecule('test', scenario, log, options)
+        print('AFS_IMAGE=%s' % os.environ['AFS_IMAGE'])
         run_molecule('reset', scenario, log, options)
+        run_molecule('test', scenario, log, options)
