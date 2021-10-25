@@ -4,6 +4,7 @@
 
 - `openafs_build` : Build OpenAFS binaries from source.
 - `openafs_build_redhat_rpms` : Build OpenAFS RPM packages for RedHat family distributions.
+- `openafs_build_sdist` : Create OpenAFS source distribution archive files.
 - `openafs_get_install_paths` : Detect installation paths.
 - `openafs_install_bdist` : Install OpenAFS binaries built from source.
 - `openafs_keys` : Import kerberos service keys with `asetkey`.

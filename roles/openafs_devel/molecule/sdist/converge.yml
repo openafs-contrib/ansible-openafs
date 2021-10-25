@@ -1,54 +1,45 @@
 ---
 - name: Make source distribution
   hosts: all
+  collections:
+    - openafs_contrib.openafs
   tasks:
     - import_role:
         name: openafs_devel
 
-    - name: Checkout source
+    - name: Checkout source.
       git:
         repo: "{{ afs_git_repo }}"
         version: "{{ afs_git_version }}"
         dest: "~/openafs"
 
-    - name: Get version string
-      command:
-        cmd: build-tools/git-version .
-        chdir: "~/openafs"
-      changed_when: false
-      register: git_version
+    - name: Make source distribution files.
+      openafs_build_sdist:
+        topdir: "~/openafs"
+        sdist: "~/openafs/packages"
+      register: build_results
 
-    - set_fact:
-        version: "{{ git_version.stdout | replace('-', '_') }}"
+    - debug:
+        var: build_results
 
-    - name: Autoconf
-      command:
-        cmd: ./regen.sh
-        chdir: "~/openafs"
+    - name: Create archive.
+      vars:
+        version: "{{ build_results.version | replace('-', '_') }}"
+      block:
+        - name: Create archive.
+          archive:
+            path: "{{ build_results.files }}"
+            dest: "openafs-{{ version }}.sdist.tar.gz"
+            format: gz
+            force_archive: yes
 
-    - name: Generate makefile
-      command:
-        cmd: ./configure --disable-kernel-module
-        chdir: "~/openafs"
+        - name: Download.
+          fetch:
+            flat: yes
+            src: "openafs-{{ version }}.sdist.tar.gz"
+            dest: "{{ afs_builds }}/"
+          register: fetch_results
 
-    - name: Create source distribution files
-      command:
-        cmd: make dist
-        chdir: "~/openafs"
-
-    - name: Create archive
-      archive:
-        path: "~/openafs/packages/"
-        dest: "openafs-{{ version }}-sdist.tar.gz"
-        format: gz
-
-    - name: Download
-      fetch:
-        flat: yes
-        src: "openafs-{{ version }}-sdist.tar.gz"
-        dest: "{{ afs_builds }}/"
-      register: fetch_results
-
-    - name: Downloaded
-      debug:
-        var: fetch_results.dest
+        - name: Downloaded.
+          debug:
+            msg: "{{ fetch_results.dest }}"
