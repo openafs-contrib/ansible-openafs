@@ -1,26 +1,27 @@
 #
-# Molecule test driver for roles.
+# Molecule test driver for roles and playbooks.
 #
-# Usage:
+# USAGE
 #
-#   cd roles/<role>
-#   pytest -v
+#   pytest --co                #  list test cases
+#   pytest -v                  #  run tests
+#   pytest -v -k '<pattern>'   # to run specific tests
 #
-# Molecule stdout and stderr is written to log files:
+# DESCRIPTION
 #
-#   /tmp/ansible-openafs/molecule/<role>/<platform>-<scenario>.log
+#   Run molecule scenarios for the supported platforms.
 #
-# Use the --co option to list test cases:
+#   Molecule stdout and stderr is written to log files:
 #
-#   cd roles/<role>
-#   pytest --co
+#       /tmp/ansible-openafs/molecule/<role-or-playbook>/<platform>-<scenario>.log
 #
-# Use the '-k' option to run test cases matching a pattern.
+#   Setup the driver name and options in the site-local base config files.
 #
-#   cd roles/<role>
-#   pytest -k 'debian and bdist' -s -v
+# FILES
 #
-
+#   ~/.config/molecule/config.yml            default base config
+#   ~/.config/molecule/platforms/<name>.yml  platform specific base config
+#
 import os
 import subprocess
 from pathlib import Path
@@ -35,7 +36,8 @@ PLATFORMS = [
     'debian10',
 ]
 ROLE = Path(os.getcwd()).name
-LOGDIR = Path('/tmp') / 'ansible-openafs' / 'molecule' / ROLE
+LOGDIR = Path('/tmp/ansible-openafs/molecule') / ROLE
+BASECONFIGDIR = Path('~/.config/molecule').expanduser()
 
 ANSIBLE_VARS = {
     'ANSIBLE_VERBOSITY': '1',
@@ -43,6 +45,7 @@ ANSIBLE_VARS = {
     'ANSIBLE_NOCOLOR': '1',
     'ANSIBLE_FORCE_COLOR': '0',
 }
+
 
 def parameters():
     params = []
@@ -52,28 +55,35 @@ def parameters():
             params.append((p, s))
     return params
 
+
 def set_env_vars(platform):
     for n, v in ANSIBLE_VARS.items():
         os.environ[n] = v
     os.environ['AFS_IMAGE'] = 'generic/%s' % platform
 
+
+def run(proc, logfile):
+     rc = proc.wait()
+     assert rc == 0, 'See "%s".' % logfile
+
+
 @pytest.mark.parametrize('platform,scenario', parameters())
 def test_scenario(tmpdir, platform, scenario):
-    args = [
-        'molecule',
-        'test',
-        '--scenario-name=%s' % scenario,
-    ]
-    driver = os.getenv('MOLECULE_DRIVER')
-    if driver:
-        args.append('--driver-name=%s' % driver)
+    args = []
+    args.append('molecule')
+    platform_config = BASECONFIGDIR / 'platforms' / '%s.yml' % platform
+    if platform_config.exists():
+        args.append('--base-config=%s' % platform_config)
+    args.append('test')
+    args.append('--scenario-name=%s' % scenario)
+
     logfile = '%s/%s-%s.log' % (LOGDIR, platform, scenario)
     if not LOGDIR.exists():
         os.makedirs(LOGDIR)
-    print('Writing output to %s' % logfile)
+
+    print('\nWriting output to %s' % logfile)
     with open(logfile, 'w') as f:
         set_env_vars(platform)
-        f.write('\nRunning: %s\n' % ' '.join(args))
+        print('Running: %s\n' % ' '.join(args))
         proc = subprocess.Popen(args, stdout=f.fileno(), stderr=subprocess.STDOUT)
-        rc = proc.wait()
-        assert rc == 0, 'See "%s".' % logfile
+        #run(proc, logfile)
