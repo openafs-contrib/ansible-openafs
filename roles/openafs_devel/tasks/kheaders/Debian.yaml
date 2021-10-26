@@ -41,7 +41,7 @@
       register: apt_update_results
 
     - name: Reboot
-      when: yum_update_results.changed
+      when: apt_update_results.changed
       block:
         - name: Rebooting
           reboot:
