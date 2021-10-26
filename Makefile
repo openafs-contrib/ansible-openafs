@@ -8,7 +8,7 @@ UPDATE := --force --pre
 MODULES := $(wildcard plugins/modules/openafs_*.py)
 EXTRACTED := $(patsubst plugins/modules/%.py,docs/source/modules/%.rst,$(MODULES))
 ACPATH := $(realpath $(CURDIR)/../../..)
-PYFILES := plugins/modules/*.py tests/molecule/*.py
+PYFILES := plugins/module_utils/*.py plugins/modules/*.py tests/molecule/*.py
 
 help:
 	@echo "usage: make <target>"

@@ -269,7 +269,6 @@ kmods:
 
 import contextlib  # noqa: E402
 import glob       # noqa: E402
-import logging    # noqa: E402
 import os         # noqa: E402
 import platform   # noqa: E402
 import pprint     # noqa: E402
@@ -281,9 +280,10 @@ import json       # noqa: E402
 from multiprocessing import cpu_count  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible.module_utils.six import string_types  # noqa: E402
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
 
 module_name = os.path.basename(__file__).replace('.py', '')
-log = logging.getLogger(module_name)
+log = None
 module = None
 
 MAKEFILE_PATHS = r"""
@@ -491,6 +491,7 @@ def configured_sysname(builddir):
 
 
 def main():
+    global log
     results = dict(
         changed=False,
         msg='',
@@ -519,6 +520,9 @@ def main():
         ),
         supports_check_mode=False,
     )
+    log = Logger(module_name)
+    log.info('Starting %s', module_name)
+    log.info('Parameters: %s', pprint.pformat(module.params))
 
     state = module.params['state']
     projectdir = module.params['projectdir']
@@ -543,7 +547,7 @@ def main():
         make = module.get_bin_path('make', required=True)
 
     #
-    # Setup logging
+    # Setup build logging.
     #
     if not logdir:
         logdir = os.path.join(projectdir, '.ansible')
@@ -551,16 +555,6 @@ def main():
         os.makedirs(logdir)
         results['changed'] = True
     results['logdir'] = logdir
-    build_log = os.path.join(logdir, 'build.log')
-    logging.basicConfig(
-        level=logging.INFO,
-        filename=build_log,
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
-    results['logfiles'].append(build_log)
-
-    log.info('Starting %s', module_name)
-    log.info('Parameters: %s', pprint.pformat(module.params))
 
     #
     # Setup paths.

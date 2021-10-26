@@ -100,11 +100,6 @@ version:
   returned: always
   type: dict
 
-logfile:
-  description: The log file written on the remote node.
-  returned: always
-  type: str
-
 files:
   description: The list of sdist files created on the remote node.
   returned: always
@@ -114,7 +109,6 @@ files:
 
 import contextlib              # noqa: E402
 import glob                    # noqa: E402
-import logging                 # noqa: E402
 import os                      # noqa: E402
 import pprint                  # noqa: E402
 import re                      # noqa: E402
@@ -123,11 +117,11 @@ import subprocess              # noqa: E402
 import tempfile                # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
-
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
 
 # Globals
 module_name = os.path.basename(__file__).replace('.py', '')
-log = logging.getLogger(module_name)
+log = None
 logdir = None
 module = None
 results = None
@@ -308,12 +302,12 @@ def make_sdist(topdir, sdist):
 
 
 def main():
+    global log
     global logdir
     global results
     global module
     results = dict(
         changed=False,
-        logfile='',
         version='',
         files=[],
     )
@@ -331,29 +325,13 @@ def main():
         ),
         supports_check_mode=False,
     )
+    log = Logger(module_name)
+    log.info('Starting %s', module_name)
+    log.info('Parameters: %s', pprint.pformat(module.params))
 
     sdist = expand_path(module.params['sdist'])
     topdir = expand_path(module.params['topdir'])
     logdir = expand_path(module.params['logdir'])
-
-    # Set up logging.
-    if logdir:
-        logdir = os.path.abspath(logdir)
-    else:
-        logdir = os.path.join(topdir, '.ansible')
-    if not os.path.isdir(logdir):
-        os.makedirs(logdir)
-        results['changed'] = True
-    logfile = os.path.join(logdir, module_name + '.log')
-    logging.basicConfig(
-        level=logging.INFO,
-        filename=logfile,
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
-    results['logfile'] = logfile
-
-    log.info('Starting %s' % module_name)
-    log.info('Parameters: %s', pprint.pformat(module.params))
 
     make_sdist(topdir, sdist)
     results['changed'] = True

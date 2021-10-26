@@ -38,29 +38,13 @@ RETURN = r"""
 
 import glob                     # noqa: E402
 import json                     # noqa: E402
-import logging                  # noqa: E402
-import logging.handlers         # noqa: E402
 import os                       # noqa: E402
 import pprint                   # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
 
 module_name = os.path.basename(__file__).replace('.py', '')
-log = logging.getLogger(module_name)
-
-
-def setup_logging():
-    level = logging.INFO
-    fmt = '%(levelname)s %(name)s %(message)s'
-    address = '/dev/log'
-    if not os.path.exists(address):
-        address = ('localhost', 514)
-    facility = logging.handlers.SysLogHandler.LOG_USER
-    formatter = logging.Formatter(fmt)
-    handler = logging.handlers.SysLogHandler(address, facility)
-    handler.setFormatter(formatter)
-    log.addHandler(handler)
-    log.setLevel(level)
 
 
 # Note: The bosserver creates the /usr/vice/etc directory if it does not
@@ -70,7 +54,6 @@ top_dirs = ['/usr/afs', '/usr/vice']
 
 
 def main():
-    setup_logging()
     results = dict(
         changed=False,
     )
@@ -79,6 +62,8 @@ def main():
             ),
             supports_check_mode=False,
     )
+    log = Logger(module_name)
+    log.info('Starting %s', module_name)
     log.info('Parameters: %s', pprint.pformat(module.params))
 
     def restorecon(*args):

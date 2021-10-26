@@ -185,7 +185,6 @@ rpms:
 
 import contextlib       # noqa: E402
 import glob             # noqa: E402
-import logging          # noqa: E402
 import os               # noqa: E402
 import pprint           # noqa: E402
 import re               # noqa: E402
@@ -195,10 +194,11 @@ import subprocess       # noqa: E402
 import tempfile         # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
 
 # Globals
 module_name = os.path.basename(__file__).replace('.py', '')
-log = logging.getLogger(module_name)
+log = None
 logdir = None
 module = None
 results = None
@@ -492,6 +492,7 @@ def expand_path(p):
 
 
 def main():
+    global log
     global logdir
     global results
     global module
@@ -518,6 +519,9 @@ def main():
         ),
         supports_check_mode=False,
     )
+    log = Logger(module_name)
+    log.info('Starting %s', module_name)
+    log.info('Parameters: %s', pprint.pformat(module.params))
 
     build = module.params['build']
     sdist = expand_path(module.params['sdist'])
@@ -538,15 +542,7 @@ def main():
     if not os.path.isdir(logdir):
         os.makedirs(logdir)
         results['changed'] = True
-    results['logfiles'].append(os.path.join(logdir, module_name + '.log'))
-    logging.basicConfig(
-        level=logging.INFO,
-        filename=results['logfiles'][0],
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
 
-    log.info('Starting %s' % module_name)
-    log.info('Parameters: %s', pprint.pformat(module.params))
     create_workspace(topdir, sdist, spec, relnotes, changelog, csdb, patchdir)
     rpmbuild(topdir, build, kernvers)
     results['changed'] = True
