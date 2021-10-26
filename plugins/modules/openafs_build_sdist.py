@@ -112,17 +112,17 @@ files:
 '''
 
 
-import contextlib
-import glob
-import logging
-import os
-import pprint
-import re
-import shutil
-import subprocess
-import tempfile
+import contextlib              # noqa: E402
+import glob                    # noqa: E402
+import logging                 # noqa: E402
+import os                      # noqa: E402
+import pprint                  # noqa: E402
+import re                      # noqa: E402
+import shutil                  # noqa: E402
+import subprocess              # noqa: E402
+import tempfile                # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 
 # Globals
@@ -205,7 +205,8 @@ def execute(cmd):
     Execute a command and return stdout as captured string.
     """
     log.info('%s' % cmd)
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
     o, e = proc.communicate()
     rc = proc.returncode
     output = tostring(o)
@@ -231,7 +232,7 @@ def extract_version_string():
         elif output.startswith('BP-'):
             version = re.sub('BP-openafs-[^-]*-', '', output).replace('_', '.')
         else:
-            version = output # Use the given version string.
+            version = output  # Use the given version string.
     else:
         output = execute('git describe --abbrev=4 HEAD').rstrip()
         version = re.sub(r'^openafs-[^-]*-', '', output).replace('_', '.')
@@ -279,8 +280,11 @@ def make_sdist(topdir, sdist):
     # Make source archives.
     with Tmpdir():
         # Extract source tree into temp dir.
-        execute('(cd %(topdir)s && %(git)s archive --format=tar --prefix=openafs-%(version)s/ HEAD) | '\
-                '%(tar)s xf -' % locals())
+        execute('(cd %(topdir)s &&'
+                ' %(git)s archive'
+                '  --format=tar'
+                '  --prefix=openafs-%(version)s/  HEAD) |'
+                ' %(tar)s xf -' % locals())
 
         # Generate configure, makefiles, and documents in temp dir.
         with chdir('openafs-%(version)s' % locals()):
@@ -289,9 +293,13 @@ def make_sdist(topdir, sdist):
             execute('./regen.sh')
 
         # Create documentation and source archives.
-        execute('%(tar)s cf openafs-%(version)s-doc.tar openafs-%(version)s/doc' % locals())
+        execute('%(tar)s cf'
+                ' openafs-%(version)s-doc.tar'
+                ' openafs-%(version)s/doc' % locals())
         shutil.rmtree('openafs-%(version)s/doc' % locals())
-        execute('%(tar)s cf openafs-%(version)s-src.tar openafs-%(version)s' % locals())
+        execute('%(tar)s cf '
+                ' openafs-%(version)s-src.tar'
+                ' openafs-%(version)s' % locals())
 
         # Create compressed archives in destination directory.
         for archive in glob.glob('*.tar'):

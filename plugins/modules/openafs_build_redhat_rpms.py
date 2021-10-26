@@ -16,22 +16,24 @@ module: openafs_build_redhat_rpms
 short_description: Build OpenAFS RPM packages for RedHat family distributions.
 
 description:
-  - Build OpenAFS source and binary RPM packages for RedHat family distributions
-    from an OpenAFS source distibution.
+- Build OpenAFS source and binary RPM packages for RedHat family distributions
+  from an OpenAFS source distibution.
 
-  - The source distribution files must be already present in the I(sdist) directory
-    on the remote node. The source distribution files can transferred to the
-    remote node or may be created by running C(make-release) in a git
-    checkout on remote node.
+- The source distribution files must be already present in the I(sdist)
+  directory on the remote node. The source distribution files can transferred
+  to the remote node or may be created by running C(make-release) in a git
+  checkout on remote node.
 
-  - The M(openafs_build_redhat_rpms) module will create the rpm workspace directories
-    and populate the SPECS and SOURCES directories from the source distribution files
-    and the file options, then will build the source and binary rpm files with C(rpmbuild).
+- The M(openafs_build_redhat_rpms) module will create the rpm workspace
+  directories and populate the SPECS and SOURCES directories from the source
+  distribution files and the file options, then will build the source and
+  binary rpm files with C(rpmbuild).
 
-  - The RPM package version and release strings are generated from the OpenAFS version
-    string extracted from the C(.version) file in the source archive.
+- The RPM package version and release strings are generated from the OpenAFS
+  version string extracted from the C(.version) file in the source archive.
 
-  - See the C(openafs_devel) role for tasks to install the required build tools and libraries.
+- See the C(openafs_devel) role for tasks to install the required build tools
+  and libraries.
 
 requirements:
   - Tools and libraries required to build OpenAFS.
@@ -51,61 +53,69 @@ options:
 
   sdist:
     description:
-      - The path on the remote node to the source distribution files directory on the remote node.
-      - The I(sdist) directory must contain the C(openafs-<version>-src.tar.bz2)
-        source archive and the C(openafs-<version>-doc.tar.bz2) documentation archive.
-      - The I(sdist) directory may also contain the C(ChangeLog) file and the C(RELNOTES-<version>)
-        file.
+    - The path on the remote node to the source distribution files directory
+      on the remote node.
+    - The I(sdist) directory must contain the C(openafs-<version>-src.tar.bz2)
+      source archive and the C(openafs-<version>-doc.tar.bz2) documentation
+      archive.
+    - The I(sdist) directory may also contain the C(ChangeLog) file and the
+      C(RELNOTES-<version>) file.
     type: path
     required: true
 
   spec:
     description:
-      - The path on the remote node to a custom C(openafs.spec) file to be used to build the
-        rpm files. The C(openafs.spec) file will be extracted from the source
-        archive file when the I(spec) option is not provided.
+    - The path on the remote node to a custom C(openafs.spec) file to be used
+      to build the rpm files. The C(openafs.spec) file will be extracted from
+      the source archive file when the I(spec) option is not provided.
     type: str
     default: None
 
   relnotes:
     description:
-      - The path on the remote node to a custom C(RELNOTES) file to be included in the build.
-      - The C(RELNOTES-<version>) in the I(sdist) directory will be used when
-        the I(relnotes) option is not specified. The C(NEWS) file will be
-        extracted from the source archive if the C(RELNOTES-<version>) file is not
-        found in the I(sdist) directory.
+    - The path on the remote node to a custom C(RELNOTES) file to be included
+      in the build.
+    - The C(RELNOTES-<version>) in the I(sdist) directory will be used when
+      the I(relnotes) option is not specified. The C(NEWS) file will be
+      extracted from the source archive if the C(RELNOTES-<version>) file is
+      not found in the I(sdist) directory.
     type: str
     default: None
 
   changelog:
     description:
-      - The path on the remote node to a custom C(ChangeLog) file to be included in the build.
-      - The C(ChangeLog) in the I(sdist) directory will be used when the
-        C(changelog) option is not specified.  An empty C(ChangeLog) file will be
-        created if the  C(ChangeLog) is not found in the I(sdist) directory,
+    - The path on the remote node to a custom C(ChangeLog) file to be included
+      in the build.
+    - The C(ChangeLog) in the I(sdist) directory will be used when the
+      C(changelog) option is not specified.  An empty C(ChangeLog) file will be
+      created if the  C(ChangeLog) is not found in the I(sdist) directory,
     type: str
     default: None
 
   csdb:
     description:
-      - The path on the remote node to a custom C(CellServDB) file to be incuded in the build.
-      - The C(CellServDB) file in the I(sdist) directory will be used when the I(csdb) option
-        is not specified. The C(CellServDB) file will be extracted from the source
-        archive if the C(CellServDB) file is not found in the I(sdist) directory.
+    - The path on the remote node to a custom C(CellServDB) file to be incuded
+      in the build.
+    - The C(CellServDB) file in the I(sdist) directory will be used when the
+      I(csdb) option is not specified. The C(CellServDB) file will be extracted
+      from the source archive if the C(CellServDB) file is not found in the
+      I(sdist) directory.
     type: path
     default: None
 
   patchdir:
     description:
-      - The path on the remote node of the directory containing patch files to be applied.
-      - Patch names are identified by the C(PatchXX) directives in the spec file.
+    - The path on the remote node of the directory containing patch files to
+      be applied.
+    - Patch names are identified by the C(PatchXX) directives in the spec
+      file.
     type: path
     default: I(sdist)
 
   kernvers:
     description:
-      - The kernel version to be used when building the kernel module. By default, the
-        kernel version of the running kernel will be used.
+    - The kernel version to be used when building the kernel module. By
+      default, the kernel version of the running kernel will be used.
     type: str
     default: current kernel version
 
@@ -173,21 +183,22 @@ rpms:
   type: list
 '''
 
-import contextlib
-import glob
-import logging
-import os
-import pprint
-import re
-import shlex
-import shutil
-import subprocess
-import tempfile
+import contextlib       # noqa: E402
+import glob             # noqa: E402
+import logging          # noqa: E402
+import os               # noqa: E402
+import pprint           # noqa: E402
+import re               # noqa: E402
+import shlex            # noqa: E402
+import shutil           # noqa: E402
+import subprocess       # noqa: E402
+import tempfile         # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 # Globals
-log = logging.getLogger('openafs_build_redhat_rpms')
+module_name = os.path.basename(__file__).replace('.py', '')
+log = logging.getLogger(module_name)
 logdir = None
 module = None
 results = None
@@ -253,7 +264,8 @@ def unpack_source(sdist):
     if len(g) == 0:
         raise ValueError('Source archive not found in path "%s".' % sdist)
     if len(g) > 1:
-        raise ValueError('More than one source archive found in path "%s".' % sdist)
+        raise ValueError(
+                  'More than one source archive found in path "%s".' % sdist)
     archive = g[0]
     untar(archive)
     roots = glob.glob('openafs*')
@@ -320,7 +332,7 @@ def extract_version_info():
     return dict(openafs_version=version, package_version=v, package_release=r)
 
 
-def prepare_spec(topdir, template, version):
+def prepare_spec(topdir, template, v):
     """
     Render the openafs.spec file from the openafs.spec.in template.
 
@@ -331,11 +343,12 @@ def prepare_spec(topdir, template, version):
     with open(template, 'r') as fin:
         with open(os.path.join(topdir, 'SPECS/openafs.spec'), 'w') as fout:
             for line in fin.readlines():
-                line = line.replace('@VERSION@', version['openafs_version'])
-                line = line.replace('@PACKAGE_VERSION@', version['openafs_version'])
-                line = line.replace('@LINUX_PKGVER@', version['package_version'])
-                line = line.replace('@LINUX_PKGREL@', version['package_release'])
-                line = re.sub(r'^Source([\d]+): .*CellServDB.*', r'Source\1: CellServDB', line)
+                line = line.replace('@VERSION@', v['openafs_version'])
+                line = line.replace('@PACKAGE_VERSION@', v['openafs_version'])
+                line = line.replace('@LINUX_PKGVER@', v['package_version'])
+                line = line.replace('@LINUX_PKGREL@', v['package_release'])
+                line = re.sub(r'^Source([\d]+): .*CellServDB.*',
+                              r'Source\1: CellServDB', line)
                 fout.write(line)
 
 
@@ -349,7 +362,8 @@ def list_sources(topdir, version):
             line = line.rstrip()
             m = re.match(r'Source[\d]+: (.*)', line)
             if m:
-                source = m.group(1).replace(r'%{afsvers}', version['openafs_version'])
+                source = m.group(1).replace(r'%{afsvers}',
+                                            version['openafs_version'])
                 sources.append(os.path.basename(source))
     return sources
 
@@ -364,7 +378,8 @@ def list_patches(topdir, version):
             line = line.rstrip()
             m = re.match(r'Patch[\d]+: (.*)', line)
             if m:
-                patch = m.group(1).replace(r'%{afsvers}', version['openafs_version'])
+                patch = m.group(1).replace(r'%{afsvers}',
+                                           version['openafs_version'])
                 patches.append(os.path.basename(patch))
     return patches
 
@@ -373,8 +388,8 @@ def create_workspace(topdir, sdist, spec, relnotes, changelog, csdb, patchdir):
     """
     Setup the rpmbuild workspace directory tree.
 
-    Create the rpmbuild SOURCES and SPECS directories and populate them with the
-    source and spec files from the source distribution in preparation for
+    Create the rpmbuild SOURCES and SPECS directories and populate them with
+    the source and spec files from the source distribution in preparation for
     building the source and binary RPM files.
     """
     for name in ('SOURCES', 'SPECS'):
@@ -390,7 +405,9 @@ def create_workspace(topdir, sdist, spec, relnotes, changelog, csdb, patchdir):
             else:
                 copy(spec, os.path.join(topdir, 'SPECS', 'openafs.spec'))
         else:
-            prepare_spec(topdir, 'src/packaging/RedHat/openafs.spec.in', version)
+            prepare_spec(topdir,
+                         'src/packaging/RedHat/openafs.spec.in',
+                         version)
         for source in list_sources(topdir, version):
             dest = os.path.join(topdir, 'SOURCES', source)
             if '-src.tar.' in source:
@@ -467,6 +484,7 @@ def rpmbuild(topdir, build='all', kernvers=None):
             if m:
                 results['rpms'].append(m.group(1).rstrip())
 
+
 def expand_path(p):
     if p:
         p = os.path.abspath(os.path.expanduser(p))
@@ -484,7 +502,8 @@ def main():
     )
     module = AnsibleModule(
         argument_spec=dict(
-            build=dict(choices=['all', 'source', 'userspace', 'modules'], default='all'),
+            build=dict(choices=['all', 'source', 'userspace', 'modules'],
+                       default='all'),
             sdist=dict(type='path', required=True),
             spec=dict(type='str', default=None),
             relnotes=dict(type='str', default=None),
@@ -519,14 +538,14 @@ def main():
     if not os.path.isdir(logdir):
         os.makedirs(logdir)
         results['changed'] = True
-    results['logfiles'].append(os.path.join(logdir, 'openafs_build_redhat_rpms.log'))
+    results['logfiles'].append(os.path.join(logdir, module_name + '.log'))
     logging.basicConfig(
         level=logging.INFO,
         filename=results['logfiles'][0],
         format='%(asctime)s %(levelname)s %(message)s',
     )
 
-    log.info('Starting openafs_build_redhat_rpms')
+    log.info('Starting %s' % module_name)
     log.info('Parameters: %s', pprint.pformat(module.params))
     create_workspace(topdir, sdist, spec, relnotes, changelog, csdb, patchdir)
     rpmbuild(topdir, build, kernvers)

@@ -65,17 +65,19 @@ def parameters():
 
 
 def run_molecule(cmd, scenario, log, options):
-     args = ['molecule']
-     for k, v in options.items():
+    args = ['molecule']
+    for k, v in options.items():
         args.append('--%s=%s' % (k, v))
-     args.append(cmd)
-     args.append('--scenario-name=%s' % scenario)
-     msg = 'Running: %s' % ' '.join(args)
-     print(msg)
-     log.write('%s\n' % msg)
-     proc = subprocess.Popen(args, stdout=log.fileno(), stderr=subprocess.STDOUT)
-     rc = proc.wait()
-     assert rc == 0, 'See "%s".' % log.name
+    args.append(cmd)
+    args.append('--scenario-name=%s' % scenario)
+    msg = 'Running: %s' % ' '.join(args)
+    print(msg)
+    log.write('%s\n' % msg)
+    proc = subprocess.Popen(args,
+                            stdout=log.fileno(),
+                            stderr=subprocess.STDOUT)
+    rc = proc.wait()
+    assert rc == 0, 'See "%s".' % log.name
 
 
 @pytest.mark.parametrize('platform,scenario', parameters())

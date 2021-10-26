@@ -8,6 +8,7 @@ UPDATE := --force --pre
 MODULES := $(wildcard plugins/modules/openafs_*.py)
 EXTRACTED := $(patsubst plugins/modules/%.py,docs/source/modules/%.rst,$(MODULES))
 ACPATH := $(realpath $(CURDIR)/../../..)
+PYFILES := plugins/modules/*.py tests/molecule/*.py
 
 help:
 	@echo "usage: make <target>"
@@ -53,9 +54,11 @@ build: builds/openafs_contrib-openafs-$(VERSION).tar.gz
 install: build
 	ansible-galaxy collection install $(UPDATE) builds/openafs_contrib-openafs-$(VERSION).tar.gz
 
-lint:
-	flake8 --ignore E501 plugins/modules/*.py
-	pyflakes plugins/modules/*.py
+pylint:
+	pyflakes $(PYFILES)
+	flake8 $(PYFILES)
+
+lint: pylint
 	$(MAKE) -C roles/openafs_krbserver lint
 	$(MAKE) -C roles/openafs_krbclient lint
 	$(MAKE) -C roles/openafs_common lint

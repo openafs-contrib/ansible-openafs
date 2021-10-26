@@ -44,7 +44,8 @@ import time                     # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
-log = logging.getLogger('openafs_wait_for_quorum')
+module_name = os.path.basename(__file__).replace('.py', '')
+log = logging.getLogger(module_name)
 
 
 def setup_logging():

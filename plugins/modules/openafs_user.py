@@ -124,7 +124,8 @@ import time                     # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
-log = logging.getLogger('openafs_user')
+module_name = os.path.basename(__file__).replace('.py', '')
+log = logging.getLogger(module_name)
 
 
 def setup_logging():
@@ -378,7 +379,7 @@ def main():
         module.fail_json(msg="Internal error: invalid state %s" % state)
 
     log.debug('Results: %s' % pprint.pformat(results))
-    log.info('Exiting openafs_user')
+    log.info('Exiting %s' % module_name)
     module.exit_json(**results)
 
 

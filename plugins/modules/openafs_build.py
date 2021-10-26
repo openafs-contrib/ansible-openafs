@@ -282,7 +282,8 @@ from multiprocessing import cpu_count  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible.module_utils.six import string_types  # noqa: E402
 
-log = logging.getLogger('openafs_build')
+module_name = os.path.basename(__file__).replace('.py', '')
+log = logging.getLogger(module_name)
 module = None
 
 MAKEFILE_PATHS = r"""
@@ -402,7 +403,9 @@ def run_command(name, command, cwd, logdir, results):
     with open(logfile, 'w') as f:
         with chdir(cwd):
             log.info('[%s] %s' % (cwd, ' '.join(command)))
-            proc = subprocess.Popen(command, stdout=f.fileno(), stderr=f.fileno())
+            proc = subprocess.Popen(command,
+                                    stdout=f.fileno(),
+                                    stderr=f.fileno())
             rc = proc.wait()
     if rc != 0:
         log.error('%s failed; rc=%d' % (name, rc))
@@ -556,7 +559,7 @@ def main():
     )
     results['logfiles'].append(build_log)
 
-    log.info('Starting build')
+    log.info('Starting %s', module_name)
     log.info('Parameters: %s', pprint.pformat(module.params))
 
     #

@@ -203,7 +203,8 @@ import re                       # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule   # noqa: E402
 
-log = logging.getLogger('openafs_principal')
+module_name = os.path.basename(__file__).replace('.py', '')
+log = logging.getLogger(module_name)
 
 
 def setup_logging():
