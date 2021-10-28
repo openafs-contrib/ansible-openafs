@@ -50,7 +50,7 @@
       - autoconf
       - automake
       - bison
-      - developerstudio-126
+      - developerstudio-126/cc
       - flex
       - git
       - gnu-binutils
