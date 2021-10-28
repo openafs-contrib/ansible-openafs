@@ -315,7 +315,7 @@ def main():
     partition = module.params['partition']
     mount = module.params['mount']
     acl = module.params['acl']
-    quota = str(module.params['quota'])
+    quota = module.params['quota']
     replicas = module.params['replicas']
     localauth = module.params['localauth']
     auth_user = module.params['auth_user']
@@ -605,7 +605,7 @@ def main():
             return False
 
         vos(['create', '-server', server, '-partition', partition,
-            '-name', name, '-maxquota', quota], done, retry)
+            '-name', name, '-maxquota', str(quota)], done, retry)
 
     def lookup_index(fileservers, addr):
         for i in fileservers:
