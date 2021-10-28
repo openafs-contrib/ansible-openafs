@@ -4,6 +4,7 @@
   tasks:
     - name: Configure /etc/hosts
       become: yes
+      when: ansible_system == 'Linux'
       copy:
         backup: yes
         dest: /etc/hosts

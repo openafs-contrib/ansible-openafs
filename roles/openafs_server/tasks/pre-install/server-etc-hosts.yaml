@@ -4,6 +4,7 @@
 # file by replacing the loopback address with the actual ipv4 address.
 - name: Avoid resolving the hostname to a loopback address
   become: yes
+  when: ansible_system == 'Linux'
   replace:
     path: /etc/hosts
     backup: yes
