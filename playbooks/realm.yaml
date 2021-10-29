@@ -32,7 +32,7 @@
       become: yes
       openafs_principal:
         state: present
-        principal: "{{ afs_user }}"
+        principal: "test"
       register: user_princ_results
 
     - name: Download keytabs.

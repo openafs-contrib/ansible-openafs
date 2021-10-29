@@ -57,14 +57,6 @@ afs_admin
   Can also be a list.
   Default: ``<ansible_user>.admin``
 
-afs_user
-  A regular user name and pts id. Default: ``<ansible_user>``
-
-afs_user_id
-  The ``pts`` user id of the ``afs_user``. The default id is
-  ``<ansible_user_uid>``. Set ``afs_user_id`` to 0 to let the OpenAFS Protection
-  Server select the next available id when creating the user account.
-
 afs_install_method
   The method used to install the OpenAFS client and/or server software on this
   remote node. See Install Methods for supported values.

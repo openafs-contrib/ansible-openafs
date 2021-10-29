@@ -54,7 +54,7 @@
         mode: "400"
       with_items:
         - "{{ afs_admin }}.keytab"
-        - "{{ afs_user }}.keytab"
+        - "{{ afs_user | d('test') }}.keytab"
 
 #
 # Create the top-level cell volumes and an initial user.
@@ -97,8 +97,8 @@
 
     - name: Create test user
       openafs_user:
-        name: "{{ afs_user }}"
-        id: "{{ afs_user_id }}"
+        name: "{{ afs_user | d('test') }}"
+        id: "{{ afs_user_id | d(0) }}"
         group: tester
         auth_user: "{{ afs_admin }}"
         auth_keytab: "{{ afs_admin }}.keytab"
