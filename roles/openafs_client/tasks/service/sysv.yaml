@@ -1,0 +1,31 @@
+---
+- name: Create lock directory.
+  become: yes
+  file:
+    state: directory
+    path: /var/lock/subsys
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install init script.
+  become: yes
+  template:
+    #src: openafs-client-solaris11.init.j2
+    src: "{{ _afs_client_init_script }}"
+    dest: /etc/init.d/openafs-client
+    owner: root
+    group: root
+    mode: "0744"
+
+- name: Install run levels.
+  become: yes
+  file:
+    state: link
+    src: /etc/init.d/openafs-client
+    path: "{{ rc }}"
+  loop:
+    - /etc/rc0.d/K66openafs-client
+    - /etc/rc2.d/S70openafs-client
+  loop_control:
+    loop_var: rc

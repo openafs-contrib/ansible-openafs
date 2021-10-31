@@ -1,0 +1,14 @@
+---
+- name: Setup systemd client service
+  become: yes
+  block:
+    - name: Install systemd client service unit file.
+      template:
+        src: openafs-client.service.j2
+        dest: "/etc/systemd/system/{{ afs_client_service_name }}.service"
+      register: unit_file
+
+    - name: Reload systemd.
+      systemd:
+        daemon_reload: yes
+      when: unit_file.changed

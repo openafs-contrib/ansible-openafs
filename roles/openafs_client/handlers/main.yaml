@@ -4,4 +4,6 @@
   service:
     name: "{{ afs_client_service_name }}"
     state: restarted
-  when: not afs_client_service_result.changed
+  when:
+    - _afs_use_client_service_mgr | d('yes') | bool
+    - not afs_client_service_result.changed

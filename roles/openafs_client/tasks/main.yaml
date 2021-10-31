@@ -6,6 +6,7 @@
     - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_distribution }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_system }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
 - import_tasks: "pre-install/check-variables.yaml"
@@ -24,28 +25,40 @@
 - import_tasks: "post-install/directories.yaml"
 - import_tasks: "post-install/configure.yaml"
 
-- name: Start OpenAFS client
+- name: Start client.
   become: yes
-  service:
-    state: started
-    enabled: yes
-    name: "{{ afs_client_service_name }}"
-  register: afs_client_service_result
+  block:
+    - name: Start client service.
+      when: afs_client_service_mgr != "sysv"
+      service:
+        state: started
+        enabled: yes
+        name: "{{ afs_client_service_name }}"
+      register: afs_client_service_result
 
-- name: "Get mount information"
-  command:
-    cmd: mount
-    warn: false
-  check_mode: no
-  changed_when: false
-  register: mount_results
+    - name: Run init script.
+      when: afs_client_service_mgr == "sysv"
+      command:
+        cmd: /etc/init.d/openafs-client start
 
-- name: "Print mount information"
-  debug:
-    var: mount_results
-    verbosity: 1
+- name: Verify afs filesystem is mounted
+  when: _afs_use_client_service_mgr | d('yes') | bool
+  block:
+    - name: Get mounts.
+      command:
+        cmd: mount
+        warn: false
+      check_mode: no
+      changed_when: false
+      register: mount_results
 
-- name: "Verify afs filesystem is mounted"
-  assert:
-    that:
-      mount_results.stdout is regex('AFS on /\w+ type afs')
+    - name: Print mounts.
+      debug:
+        var: mount_results
+        verbosity: 1
+
+    - name: Verify afs filesystem is mounted.
+      assert:
+        that: mount_results.stdout is regex('AFS on /\w+ type afs')
+        fail_msg: AFS is not mounted.
+        success_msg: AFS is mounted.

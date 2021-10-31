@@ -1,0 +1,3 @@
+---
+_afs_client_service_mgr: sysv
+_afs_client_init_script: openafs-client-solaris11.init.j2

@@ -1,8 +1,4 @@
 ---
-- name: Verify service manager type is supported
-  assert:
-    that: ansible_service_mgr in ["systemd"]
-
 - name: Verify selinux is disabled
   assert:
     that: ansible_selinux.mode != 'enforcing'
@@ -54,6 +50,7 @@
     var: install_results
 
 - import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
+  when: ansible_system == "Linux"
 
 - name: Store installation facts
   become: yes
@@ -68,16 +65,4 @@
       dirs: "{{ install_results.dirs }}"
   when: not ansible_check_mode
 
-- name: Setup systemd service
-  become: yes
-  block:
-    - name: Install systemd unit file
-      template:
-        src: openafs-client.service.j2
-        dest: "/etc/systemd/system/{{ afs_client_service_name }}.service"
-      register: unit_file
-
-    - name: Reload systemd
-      systemd:
-        daemon_reload: yes
-      when: unit_file.changed
+- include_tasks: "{{ role_path }}/tasks/service/{{ afs_client_service_mgr }}.yaml"

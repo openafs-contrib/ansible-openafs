@@ -18,6 +18,7 @@ afs_cachesize: 50000
 afs_afsd_opts: -dynroot -fakestat -afsdb
 
 # Service name
+afs_client_service_mgr: "{{ _afs_client_service_mgr | d(ansible_service_mgr) }}"
 afs_client_service_name: "{{ ansible_local.openafs.client_service_name }}"
 
 # Paths

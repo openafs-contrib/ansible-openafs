@@ -14,10 +14,6 @@
 - import_role:
     name: openafs_contrib.openafs.openafs_devel
 
-- name: Verify service manager type is supported
-  assert:
-    that: ansible_service_mgr in ["systemd"]
-
 - name: Verify selinux is disabled
   assert:
     that: ansible_selinux.mode != 'enforcing'
@@ -81,6 +77,7 @@
         name: "{{ ansible_local.openafs.client_service_name }}"
         state: stopped
       when:
+        - afs_client_service_mgr is not match('sysv*')
         - ansible_local.openafs.client_service_name is defined
 
     - name: Install binaries
@@ -100,4 +97,10 @@
           dirs: "{{ install_results.dirs }}"
       when: not ansible_check_mode
 
-- include_tasks: "{{ role_path }}/tasks/common/setup-service.yaml"
+- name: Store client facts
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      client_options: "{{ afs_afsd_opts }}"
+      client_service_name: openafs-client
