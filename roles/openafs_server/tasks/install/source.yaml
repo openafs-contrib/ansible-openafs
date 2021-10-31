@@ -13,3 +13,5 @@
 - import_tasks: "{{ role_path }}/tasks/common/build-and-install.yaml"
   vars:
     checkout_method: git
+
+- include_tasks: "{{ role_path }}/tasks/service/{{ afs_server_service_mgr }}.yaml"

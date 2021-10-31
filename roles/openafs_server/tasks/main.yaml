@@ -6,6 +6,7 @@
     - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_distribution }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_system }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
 - import_tasks: "pre-install/check-variables.yaml"
@@ -25,12 +26,20 @@
 - import_tasks: "post-install/server-key.yaml"
 - include_tasks: "post-install/security-contexts-{{ afs_security_model }}.yaml"
 
-- name: Start services
+- name: Start server.
   become: yes
-  service:
-    name: "{{ afs_server_service_name }}"
-    state: started
-    enabled: yes
-  register: afs_server_service_result
+  block:
+    - name: Start server service.
+      when: afs_server_service_mgr != 'sysv'
+      service:
+        name: "{{ afs_server_service_name }}"
+        state: started
+        enabled: yes
+      register: afs_server_service_result
+
+    - name: Run init script.
+      when: afs_server_service_mgr == 'sysv'
+      command:
+        cmd: /etc/init.d/openafs-server start
 
 - import_tasks: "post-install/bootstrap-cell.yaml"

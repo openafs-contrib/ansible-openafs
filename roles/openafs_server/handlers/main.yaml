@@ -4,4 +4,6 @@
   service:
     name: "{{ afs_server_service_name }}"
     state: restarted
-  when: not afs_server_service_result.changed
+  when:
+    - afs_server_service_results is defined
+    - not afs_server_service_result.changed
