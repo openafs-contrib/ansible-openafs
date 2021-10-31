@@ -97,9 +97,12 @@ import os                 # noqa: E402
 import platform           # noqa: E402
 import pprint             # noqa: E402
 import shutil             # noqa: E402
+import stat               # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import chdir  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import execute  # noqa: E402, E501
 
 module_name = os.path.basename(__file__).replace('.py', '')
 log = None
@@ -117,6 +120,56 @@ TRANSARC_INSTALL_DIRS = {
 
 class FileError(Exception):
     pass
+
+def solaris_relocate_64_bit_libs(destdir):
+    """
+    The OpenAFS 'make dest' command puts the solaris 64-bit shared libraries in
+    /lib, which is incorrect.  Move the 64-bit libraries to the /lib/64
+    directory, including the shared library symlinks.
+    """
+    with chdir(os.path.join(destdir, 'lib')):
+        # Create the 'lib/64' directory in the install tree.
+        if not os.path.exists('64'):
+            os.mkdir('64')
+        # First pass: Find the shared library symlinks.
+        links = {}
+        for path in glob.glob('*'):
+            if os.path.islink(path):
+                target = os.readlink(path)
+                if target not in links:
+                    links[target] = []
+                links[target].append(path)
+        log.debug('DEBUG: links=%s' % pprint.pformat(links))
+        # Second pass: Find and move 64 bit libraries and symlinks.
+        for path in glob.glob('*'):
+            if not os.path.islink(path):
+                output = execute('file %s' % path)
+                if '64-bit' in output:
+                    log.debug('DEBUG: moving %s', path)
+                    # Remove the old symlinks.
+                    for link in links.get(path, []):
+                        if os.path.exists(link) and os.path.islink(link):
+                            os.unlink(link)
+                    # Move the file, then recreate the symlinks in the 64 dir.
+                    os.rename(path, os.path.join('64', path))
+                    with chdir('64'):
+                        for link in links.get(path, []):
+                            if not os.path.exists(link):
+                                os.symlink(path, link)
+
+
+def solaris_driver_path():
+    """
+    Determine the solaris afs driver path.
+    """
+    output = execute('isainfo -k')
+    if 'amd64' in output:
+        driver = '/kernel/drv/amd64/afs'
+    elif 'sparcv9' in output:
+        driver =  'kernel/drv/sparcv9/afs'
+    else:
+        driver = '/kernel/drv/afs'
+    return driver
 
 
 def copy_tree(src, dst, exclude=None):
@@ -144,12 +197,6 @@ def copy_tree(src, dst, exclude=None):
             return filecmp.cmp(src, dst, shallow=True)
         return False
 
-    def is_executable(fn):
-        return \
-          os.path.exists(fn) \
-          and os.path.isfile(fn) \
-          and os.access(fn, os.X_OK)
-
     if not os.path.isdir(src):
         raise FileError("Cannot copy tree '%s': not a directory." % src)
     try:
@@ -167,18 +214,18 @@ def copy_tree(src, dst, exclude=None):
             files.extend(copy_tree(src_name, dst_name, exclude))
         elif is_same(src_name, dst_name):
             log.info("Skipping '%s'; unchanged.", dst_name)
-            files.append((dst_name, False, is_executable(src_name)))
+            files.append((dst_name, False))
         elif os.path.islink(src_name):
             link_dest = os.readlink(src_name)
             if os.path.exists(dst_name):
                 os.remove(dst_name)
             log.debug("Creating symlink '%s'.", dst_name)
             os.symlink(link_dest, dst_name)
-            files.append((dst_name, True, False))
+            files.append((dst_name, True))
         else:
             log.debug("Copying '%s' to '%s'.", src_name, dst_name)
             shutil.copy2(src_name, dst_name)
-            files.append((dst_name, True, is_executable(src_name)))
+            files.append((dst_name, True))
     return files
 
 
@@ -186,7 +233,7 @@ def find_destdir(path, sysname=None):
     """
     Search for a legacy dest directory in the binary distribution. The legacy
     dest directory is the old style format created for AFS binary
-    distibutions. The dest directory contains a 'root.server' directory for
+    distributions. The dest directory contains a 'root.server' directory for
     the server binaries, a 'root.client' directory for the client binaries,
     and a set of common directories.
     """
@@ -213,6 +260,8 @@ def install_dest(destdir, components, exclude=None):
     log.debug('install_dest: %s', destdir)
     files = []
     if 'common' in components:
+        if platform.system() == 'SunOS':
+            solaris_relocate_64_bit_libs(destdir)
         for d in ('bin', 'etc', 'include', 'lib', 'man'):
             src = '%s/%s' % (destdir, d)
             if d == 'etc':
@@ -291,15 +340,15 @@ def main():
         results['dirs'] = dirs
 
     for f in files:
-        if f[1]:
+        fn, changed = f
+        if changed:
             results['changed'] = True
-
-    bins = {}
-    for f in files:
-        if f[2]:
-            name = os.path.basename(f[0])
-            bins[name] = f[0]
-    results['bins'] = bins
+        try:
+            mode = os.stat(fn).st_mode
+            if stat.S_ISREG(mode) and (mode & stat.S_IXUSR):
+                results['bins'][os.path.basename(fn)] = fn
+        except FileNotFoundError:
+            log.error('Failed to stat installed file "%s".' % fn)
 
     if platform.system() == 'Linux':
         for f in files:
@@ -322,6 +371,28 @@ def main():
             if results['kmods']:
                 log.info('Updating module dependencies.')
                 module.run_command([depmod, '-a'], check_rc=True)
+    elif platform.system() == 'SunOS':
+        kmod = None
+        for f in files:
+            if f[0].endswith('libafs64.o'):
+                kmod = f[0]
+                results['kmods'].append(kmod)
+        if kmod:
+            driver = solaris_driver_path()
+            if not os.path.exists(driver):
+                update = True
+                log.debug('Driver to be installed.')
+            elif filecmp.cmp(kmod, driver, shallow=True):
+                update = False
+                log.debug('Driver is already up to date.')
+            else:
+                update = True
+                log.debug('Driver to be updated.')
+            if update:
+                log.info('Copying "%s" to "%s"', kmod, driver)
+                shutil.copy2(kmod, driver)
+                results['kmods'].append(driver)
+                results['changed'] = True
 
     msg = 'Install completed'
     log.info(msg)
