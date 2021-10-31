@@ -3,7 +3,12 @@
 # BSD 2-Clause License
 
 
+import contextlib               # noqa: E402
+import os                       # noqa: E402
+import shutil                   # noqa: E402
+import subprocess               # noqa: E402
 import syslog                   # noqa: E402
+import tempfile                 # noqa: E402
 
 
 class Logger:
@@ -26,3 +31,55 @@ class Logger:
     # aliases
     warn = warning
     err = error
+
+
+@contextlib.contextmanager
+def chdir(path):
+    """
+    Change directory context manager.
+    """
+    previous = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(previous)
+
+
+@contextlib.contextmanager
+def tmpdir():
+    """
+    Temporary directory context manager.
+    """
+    previous = os.getcwd()
+    tmp = tempfile.mkdtemp()
+    os.chdir(tmp)
+    try:
+        yield tmp
+    finally:
+        os.chdir(previous)
+        shutil.rmtree(tmp)
+
+
+def execute(cmd):
+    """
+    Execute a command and return stdout as captured string.
+    """
+    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    o, e = proc.communicate()
+    rc = proc.returncode
+    try:
+        output = o.decode()
+    except (UnicodeDecodeError, AttributeError):
+        pass
+    try:
+        error = e.decode()
+    except (UnicodeDecodeError, AttributeError):
+        pass
+    if rc:
+        message = 'Failed: %s, code %d' % (cmd, rc)
+        if error:
+            message += '\nError:\n' + error
+        raise Exception(message)
+    return output

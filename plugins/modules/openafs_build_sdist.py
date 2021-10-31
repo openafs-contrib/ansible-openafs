@@ -107,17 +107,17 @@ files:
 '''
 
 
-import contextlib              # noqa: E402
 import glob                    # noqa: E402
 import os                      # noqa: E402
 import pprint                  # noqa: E402
 import re                      # noqa: E402
 import shutil                  # noqa: E402
-import subprocess              # noqa: E402
-import tempfile                # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import chdir  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import tmpdir  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import execute  # noqa: E402, E501
 
 # Globals
 module_name = os.path.basename(__file__).replace('.py', '')
@@ -125,38 +125,6 @@ log = None
 logdir = None
 module = None
 results = None
-
-
-@contextlib.contextmanager
-def Tmpdir():
-    """
-    Temporary directory context manager.
-    """
-    olddir = os.getcwd()
-    tmpdir = tempfile.mkdtemp()
-    log.info('Created tmpdir "%s."' % tmpdir)
-    os.chdir(tmpdir)
-    try:
-        yield tmpdir
-    finally:
-        os.chdir(olddir)
-        log.info('Removing tmpdir "%s."' % tmpdir)
-        shutil.rmtree(tmpdir)
-
-
-@contextlib.contextmanager
-def chdir(path):
-    """
-    Change directory context manager.
-    """
-    previous = os.getcwd()
-    log.info('cd %s' % path)
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        log.info('cd %s' % previous)
-        os.chdir(previous)
 
 
 def expand_path(p):
@@ -192,25 +160,6 @@ def tostring(s):
     except (UnicodeDecodeError, AttributeError):
         pass
     return s
-
-
-def execute(cmd):
-    """
-    Execute a command and return stdout as captured string.
-    """
-    log.info('%s' % cmd)
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    o, e = proc.communicate()
-    rc = proc.returncode
-    output = tostring(o)
-    error = tostring(e)
-    if rc:
-        message = 'Failed: %s, code %d' % (cmd, rc)
-        if error:
-            message += '\nError:\n' + error
-        raise Exception(message)
-    return output
 
 
 def extract_version_string():
@@ -272,7 +221,7 @@ def make_sdist(topdir, sdist):
         results['files'].append(changelog)
 
     # Make source archives.
-    with Tmpdir():
+    with tmpdir():
         # Extract source tree into temp dir.
         execute('(cd %(topdir)s &&'
                 ' %(git)s archive'

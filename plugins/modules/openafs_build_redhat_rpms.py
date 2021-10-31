@@ -183,7 +183,6 @@ rpms:
   type: list
 '''
 
-import contextlib       # noqa: E402
 import glob             # noqa: E402
 import os               # noqa: E402
 import pprint           # noqa: E402
@@ -191,10 +190,10 @@ import re               # noqa: E402
 import shlex            # noqa: E402
 import shutil           # noqa: E402
 import subprocess       # noqa: E402
-import tempfile         # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import tmpdir  # noqa: E402, E501
 
 # Globals
 module_name = os.path.basename(__file__).replace('.py', '')
@@ -202,23 +201,6 @@ log = None
 logdir = None
 module = None
 results = None
-
-
-@contextlib.contextmanager
-def Tmpdir():
-    """
-    Create a temporary directory and change directory to it.
-    """
-    olddir = os.getcwd()
-    tmpdir = tempfile.mkdtemp()
-    log.info('Created tmpdir "%s."' % tmpdir)
-    os.chdir(tmpdir)
-    try:
-        yield tmpdir
-    finally:
-        os.chdir(olddir)
-        log.info('Removing tmpdir "%s."' % tmpdir)
-        shutil.rmtree(tmpdir)
 
 
 def copy(src, dst):
@@ -397,7 +379,7 @@ def create_workspace(topdir, sdist, spec, relnotes, changelog, csdb, patchdir):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-    with Tmpdir():
+    with tmpdir():
         version = unpack_source(sdist)
         if spec:
             if spec.endswith('.in'):

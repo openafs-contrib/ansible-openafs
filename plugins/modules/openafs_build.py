@@ -267,7 +267,6 @@ kmods:
     - /home/tycobb/projects/myproject/src/libafs/MODLOAD-5.1.0-SP/openafs.ko
 '''
 
-import contextlib  # noqa: E402
 import glob       # noqa: E402
 import os         # noqa: E402
 import platform   # noqa: E402
@@ -281,6 +280,7 @@ from multiprocessing import cpu_count  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible.module_utils.six import string_types  # noqa: E402
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import chdir  # noqa: E402, E501
 
 module_name = os.path.basename(__file__).replace('.py', '')
 log = None
@@ -378,16 +378,6 @@ def tail(s, n=256):
         return s
     else:
         return s[-n:]
-
-
-@contextlib.contextmanager
-def chdir(path):
-    prev = os.getcwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(prev)
 
 
 def run_command(name, command, cwd, logdir, results):
