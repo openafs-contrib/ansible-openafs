@@ -1,6 +1,6 @@
 OpenAFS Ansible Collection
 
-Unreleased
+November 1, 2011 - version 1.3.0-rc1
 
 * Add Solaris 11.4 support to OpenAFS server and client roles, limited to
   Transarc-style binary distributions and install from source.
