@@ -1,8 +1,31 @@
 OpenAFS Ansible Collection
 
+Unreleased
+
+* Add Solaris 11.4 support to OpenAFS server and client roles, limited to
+  Transarc-style binary distributions and install from source.
+
+* Add openafs_build_sdist module to make source distribution tar archives
+  from a git checkout.
+
+* Remove ansible_user references in role defaults.
+
+* Add module_utils for common module code.
+
+* Fix kernel header installation on Debian.
+
+* Fix missing kheader task on Solaris.
+
+* Fix undefined name 'module' error in openafs_build.py regression.
+
+* Do not install the solaris studio GUI on Solaris.
+
+* Various unit test improvements.
+
+
 October 18, 2021 - version 1.2.0
 
-* Add support for Fedora
+* Add Fedora support
 
 * Fix DKMS status check on clients when installing with DKMS packages.
 
