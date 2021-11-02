@@ -6,6 +6,7 @@
     - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_distribution }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_system }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
 - include_tasks: "system-{{ afs_firewall }}.yaml"
