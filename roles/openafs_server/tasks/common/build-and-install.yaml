@@ -68,8 +68,8 @@
         state: stopped
       when:
         - afs_is_client
-        - afs_client_service_mgr != 'sysv'
         - ansible_local.openafs.client_service_name is defined
+        - afs_client_service_mgr | d(ansible_service_mgr) != 'sysv'
 
     - name: Ensure OpenAFS servers are stopped
       become: yes
