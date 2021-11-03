@@ -96,11 +96,3 @@
           bins: "{{ install_results.bins }}"
           dirs: "{{ install_results.dirs }}"
       when: not ansible_check_mode
-
-- name: Store client facts
-  become: yes
-  openafs_contrib.openafs.openafs_store_facts:
-    state: update
-    facts:
-      client_options: "{{ afs_afsd_opts }}"
-      client_service_name: openafs-client

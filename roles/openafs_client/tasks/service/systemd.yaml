@@ -5,10 +5,20 @@
     - name: Install systemd client service unit file.
       template:
         src: openafs-client.service.j2
-        dest: "/etc/systemd/system/{{ afs_client_service_name }}.service"
+        dest: "/etc/systemd/system/openafs-client.service"
       register: unit_file
 
     - name: Reload systemd.
       systemd:
         daemon_reload: yes
       when: unit_file.changed
+
+- name: Store installation facts
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      client_service_name: openafs-client
+      client_options: "{{ afs_afsd_opts }}"
+      client_dynroot: "{{ '-dynroot' in afs_afsd_opts }}"
+  when: not ansible_check_mode

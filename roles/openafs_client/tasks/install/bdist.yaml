@@ -49,9 +49,6 @@
   debug:
     var: install_results
 
-- import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
-  when: ansible_system == "Linux"
-
 - name: Store installation facts
   become: yes
   openafs_contrib.openafs.openafs_store_facts:
@@ -59,10 +56,11 @@
     facts:
       install_method: "{{ afs_install_method }}"
       client_installed: yes
-      client_service_name: openafs-client
-      client_options: "{{ afs_afsd_opts }}"
       bins: "{{ install_results.bins }}"
       dirs: "{{ install_results.dirs }}"
   when: not ansible_check_mode
+
+- import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
+  when: ansible_system == "Linux"
 
 - include_tasks: "{{ role_path }}/tasks/service/{{ afs_client_service_mgr }}.yaml"

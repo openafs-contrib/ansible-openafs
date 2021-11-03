@@ -5,10 +5,18 @@
     - name: Install systemd unit file
       template:
         src: openafs-server.service.j2
-        dest: "/etc/systemd/system/{{ afs_server_service_name }}.service"
+        dest: "/etc/systemd/system/openafs-server.service"
       register: unit_file
 
     - name: Reload systemd
       systemd:
         daemon_reload: yes
       when: unit_file.changed
+
+- name: Store installation facts
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      server_service_name: openafs-server
+  when: not ansible_check_mode
