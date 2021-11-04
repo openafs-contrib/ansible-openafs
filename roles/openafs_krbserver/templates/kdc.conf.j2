@@ -6,7 +6,6 @@
 [realms]
     {{ afs_realm }} = {
         database_name = {{ afs_krbserver_principal }}
-        admin_keytab = FILE:{{ afs_krbserver_kadm5_keytab }}
         acl_file = {{ afs_krbserver_kadm5_acl }}
         key_stash_file = {{ afs_krbserver_stash }}
 {% if afs_krbserver_dict is defined %}
