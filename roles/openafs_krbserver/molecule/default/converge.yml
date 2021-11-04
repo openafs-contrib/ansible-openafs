@@ -2,5 +2,18 @@
 - name: Converge
   hosts: all
   tasks:
+    - debug:
+        msg: |
+          platform;
+          {{ ansible_distribution }}-{{ ansible_distribution_version }}
+          {{ ansible_distribution }}-{{ ansible_distribution_major_version }}
+          {{ ansible_distribution }}
+          {{ ansible_os_family }}
+          {{ ansible_system }}
+
+    - debug:
+        msg: |
+          hostname; {{ ansible_hostname }}
+
     - import_role:
         name: openafs_krbserver

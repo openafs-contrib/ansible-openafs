@@ -62,11 +62,10 @@
 
 - name: Ensure acl file exists
   become: yes
-  copy:
+  template:
     force: no
+    src: kadm5.acl.j2
     dest: "{{ afs_krbserver_kadm5_acl }}"
-    content: |
-      # kadmin acls
     owner: root
     group: root
     mode: 0600

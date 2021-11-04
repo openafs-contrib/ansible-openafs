@@ -1,0 +1,8 @@
+---
+- name: Install kdc
+  become: yes
+  pkg5:
+    state: present
+    name:
+      - text/spelling-utilities
+      - security/kerberos-5/kdc

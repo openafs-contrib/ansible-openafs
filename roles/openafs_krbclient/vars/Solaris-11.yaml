@@ -1,0 +1,5 @@
+---
+afs_kadmin: /usr/sbin/kadmin
+afs_kdestroy: /usr/bin/kdestroy
+afs_kinit: /usr/bin/kinit
+afs_krbclient_krb5_conf: "/etc/krb5/krb5.conf"
