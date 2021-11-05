@@ -121,6 +121,7 @@ TRANSARC_INSTALL_DIRS = {
 class FileError(Exception):
     pass
 
+
 def solaris_relocate_64_bit_libs(destdir):
     """
     The OpenAFS 'make dest' command puts the solaris 64-bit shared libraries in
@@ -166,7 +167,7 @@ def solaris_driver_path():
     if 'amd64' in output:
         driver = '/kernel/drv/amd64/afs'
     elif 'sparcv9' in output:
-        driver =  'kernel/drv/sparcv9/afs'
+        driver = 'kernel/drv/sparcv9/afs'
     else:
         driver = '/kernel/drv/afs'
     return driver
