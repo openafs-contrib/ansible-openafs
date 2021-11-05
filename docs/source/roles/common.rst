@@ -104,6 +104,12 @@ afs_configure_options
       with:
         - krb5: /path/to/krb5.lib
 
+afs_nolibafs_configure_options
+  The options given to configure when the ``afs_install_method`` is ``source``
+  or ``sdist`` and building the userspace binaries only (no kernel module).  This
+  variable can be a simple string, such as ``"--enable-debug
+  --enable-transarc-paths"``, or may be specified as a dictionary.
+
 afs_always_build
   When the ``afs_install_method`` is ``sdist`` or ``source``, force a rebuild
   and reinstall even if a change in the source code checkout was not detected.

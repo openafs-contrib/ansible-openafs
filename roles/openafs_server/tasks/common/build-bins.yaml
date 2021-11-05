@@ -4,20 +4,9 @@
 # is only a server.
 #
 
-- name: Set default configure options (userspace only)
-  set_fact:
-    afs_configure_options:
-      enable:
-        - debug
-        - debug-kernel
-      disable:
-        - optimize
-        - kernel-module
-  when:
-    - afs_configure_options is undefined
-
 - debug:
-    var: afs_configure_options
+    var: afs_nolibafs_configure_options
+    verbosity: 1
 
 - name: Build OpenAFS binaries
   openafs_contrib.openafs.openafs_build:
@@ -25,7 +14,7 @@
     clean: "{{ afs_clean_build | bool }}"
     projectdir: "{{ afs_topdir }}"
     destdir: "{{ afs_topdir }}/packages/dest"
-    configure_options: "{{ afs_configure_options }}"
+    configure_options: "{{ afs_nolibafs_configure_options }}"
     transarc_paths: "{{ afs_transarc_build }}"
   register: build_results
 

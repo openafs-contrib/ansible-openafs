@@ -1,8 +1,5 @@
 ---
-# Default repository url redhat family systems.
-_afs_yum_repo: "https://download.sinenomine.net/openafs/rpms/fedora$releasever/$basearch"
-
-# Default configure options for Fedora.
+# Default configure options for Debian.
 _afs_configure_options:
   enable:
     - debug
@@ -13,7 +10,7 @@ _afs_configure_options:
   with:
     - linux-kernel-packaging
 
-# Default nolibafs configure options for Fedora.
+# Default nolibafs configure options for Debian.
 _afs_nolibafs_configure_options:
   enable:
     - debug

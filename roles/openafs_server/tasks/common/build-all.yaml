@@ -10,11 +10,10 @@
 # client role is must be imported after the server role, and will skip the
 # build so we only build once on a given node.
 #
-- include_tasks: "{{ role_path }}/tasks/common/configure-{{ ansible_system | lower }}.yaml"
-  when: afs_configure_options is undefined
 
 - debug:
-    msg: "with configure-options: {{ afs_configure_options }}"
+    var: afs_configure_options
+    verbosity: 1
 
 - name: Build OpenAFS binaries and kernel module
   openafs_contrib.openafs.openafs_build:
