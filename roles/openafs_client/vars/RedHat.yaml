@@ -1,3 +1,4 @@
 ---
 _afs_cachedir: /usr/vice/cache
+_afs_mount_pattern: "AFS on .* type afs"
 afs_firewall: firewalld

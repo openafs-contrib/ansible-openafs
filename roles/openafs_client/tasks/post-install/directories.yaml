@@ -32,7 +32,7 @@
 
 - name: Create afs mount directory
   become: yes
-  when: not (mount_results.stdout is regex('AFS on .* type afs'))
+  when: not (mount_results.stdout is regex(_afs_mount_pattern))
   block:
     - name: Create afs mount directory
       file:

@@ -59,6 +59,6 @@
 
     - name: Verify afs filesystem is mounted.
       assert:
-        that: mount_results.stdout is regex('AFS on /\w+ type afs')
+        that: mount_results.stdout is regex(_afs_mount_pattern)
         fail_msg: AFS is not mounted.
         success_msg: AFS is mounted.
