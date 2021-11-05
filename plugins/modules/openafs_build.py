@@ -480,6 +480,57 @@ def configured_sysname(builddir):
     return ''
 
 
+def find_kmods_linux(builddir):
+    """
+    Search for built kernel modules on Linux.
+    """
+    pattern = os.path.join(builddir, 'src/libafs/MODLOAD-*/*afs.ko')
+    kmods = glob.glob(pattern)
+    return kmods
+
+
+def kmod_check_linux(module, results):
+    """
+    Verify we built a kernel module that matches the running kernel version.
+    """
+    log.info('Checking for linux kernel module for %s.' % platform.release())
+    modloads = []
+    for kmod in results['kmods']:
+        pattern = r'/MODLOAD-%s-[A-Z]*/(lib|open)afs\.ko$' % platform.release()
+        m = re.search(pattern, kmod)
+        if m:
+            modloads.append(kmod)
+    log.info('Modules found: %s' % ' '.join(modloads))
+    if not modloads:
+        results['msg'] = 'Loadable linux kernel module not found for %s' \
+                         % platform.release()
+        log.error(results['msg'])
+        module.fail_json(**results)
+
+
+def find_kmods_solaris(builddir):
+    """
+    Search for built kernel modules on Solaris.
+    """
+    kmods = []
+    for name in ('libafs.o', 'libafs.nonfs.o'):
+        kmod = os.path.join(builddir, 'src/libafs/MODLOAD64', name)
+        if os.path.exists(kmod):
+            kmods.append(kmod)
+    return kmods
+
+
+def kmod_check_solaris(module, results):
+    """
+    Verify we built a kernel module.
+    """
+    log.info('Checking for solaris kernel modules.')
+    if not results['kmods']:
+        results['msg'] = 'Kernel module not found.'
+        log.error(results['msg'])
+        module.fail_json(**results)
+
+
 def main():
     global log
     results = dict(
@@ -712,22 +763,21 @@ def main():
     # version (or any version). Let's fail early instead of finding out later
     # when we try to start the cache manager.
     #
-    kmod_pattern = \
-        os.path.join(builddir, 'src', 'libafs', 'MODLOAD-*', '*afs.ko')
-    results['kmods'] = glob.glob(kmod_pattern)
+    if platform.system() == 'Linux':
+        results['kmods'] = find_kmods_linux(builddir)
+    elif platform.system() == 'SunOS':
+        results['kmods'] = find_kmods_solaris(builddir)
+    else:
+        log.warning('Unable to find kernel modules; unknown platform %s'
+                    % platform.system())
     if state == 'built-module':
-        log.info('Checking for kernel module for %s.' % platform.release())
-        modloads = []
-        for kmod in results['kmods']:
-            pattern = \
-                r'/MODLOAD-%s-[A-Z]*/(lib|open)afs\.ko$' % platform.release()
-            m = re.search(pattern, kmod)
-            if m:
-                modloads.append(kmod)
-        log.info('Modules found: %s' % ' '.join(modloads))
-        if not modloads:
-            results['msg'] = \
-                'Loadable kernel module not found for %s' % platform.release()
+        if platform.system() == 'Linux':
+            kmod_check_linux(module, results)
+        elif platform.system() == 'SunOS':
+            kmod_check_solaris(module, results)
+        else:
+            results['msg'] = 'Unable to verify kernel module; '\
+                             'unknown platform %s' % platform.system()
             log.error(results['msg'])
             module.fail_json(**results)
 
