@@ -2,16 +2,11 @@
 #
 # Install OpenAFS from a source distribution tarball.
 #
-
-- name: Store installation method fact
-  become: yes
-  openafs_contrib.openafs.openafs_store_facts:
-    state: update
-    facts:
-      install_method: sdist
-
-- import_tasks: "{{ role_path }}/tasks/common/build-and-install.yaml"
+# This method is a convenience alias for:
+#
+#   afs_install_method: source
+#   afs_checkout_method: sdist_upload
+#
+- include_tasks: "{{ role_path }}/tasks/install/source.yaml"
   vars:
-    checkout_method: upload_sdist
-
-- include_tasks: "{{ role_path }}/tasks/service/{{ afs_server_service_mgr }}.yaml"
+    afs_checkout_method: sdist_upload

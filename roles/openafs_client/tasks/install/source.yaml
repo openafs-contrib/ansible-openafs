@@ -1,18 +1,128 @@
 ---
 #
-# Install OpenAFS from a git checkout.
+# Install OpenAFS clients from source.
 #
+# The checkout method determines how the source code is retrieved for the build.
+#
+# The afs_configure_options host variable may be set to override the default
+# configure options used in the build.
+#
+#----------------------------------------------------------------------------
+# Preliminary tasks.
+#
+- name: Clients should already be installed on server nodes.
+  when: afs_is_server
+  assert:
+    that:
+      - ansible_local.openafs.build_completed is defined
+      - ansible_local.openafs.build_completed
+      - ansible_local.openafs.client_installed
+    fail_msg: Server role must be imported before client role.
 
-- name: Store install method fact
+- name: Check SELinux mode.
+  assert:
+    that: ansible_selinux.mode != 'enforcing'
+    fail_msg: SELinux enforcing is not supported when installing from source.
+    success_msg: SELinux enforcing mode is not set.
+  when:
+    # Is selinux present on this node?
+    - ansible_selinux is defined
+    - (ansible_selinux | type_debug) == 'dict'
+    - ansible_selinux.status == 'enabled'
+
+- name: Ensure development tools are installed.
+  import_role:
+    name: openafs_contrib.openafs.openafs_devel
+  when: not afs_is_server
+
+#----------------------------------------------------------------------------
+# Checkout source code.
+#
+- name: Checkout
+  when: not afs_is_server
+  block:
+    - include_role:
+        name: openafs_contrib.openafs.openafs_common
+        tasks_from: "checkout_{{ afs_checkout_method }}"
+
+    - debug:
+        var: checkout_results.changed
+
+    - name: Reset build completed fact.
+      become: yes
+      openafs_contrib.openafs.openafs_store_facts:
+        state: update
+        facts:
+          build_completed: false
+      when: >
+        afs_always_build  or
+        checkout_results.changed or
+        ansible_local.openafs.build_completed is undefined
+
+#----------------------------------------------------------------------------
+# Build binaries.
+#
+- debug:
+    var: afs_configure_options
+    verbosity: 1
+  when: not ansible_local.openafs.build_completed
+
+- name: Build OpenAFS binaries
+  openafs_contrib.openafs.openafs_build:
+    state: built-module
+    clean: "{{ afs_clean_build | bool }}"
+    projectdir: "{{ afs_topdir }}"
+    destdir: "{{ afs_topdir }}/packages/dest"
+    configure_options: "{{ afs_configure_options }}"
+    transarc_paths: "{{ afs_transarc_build }}"
+  register: build_results
+  when: not ansible_local.openafs.build_completed
+
+- name: Build results
+  debug:
+    var: build_results
+
+- name: Set build completed fact
   become: yes
   openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
-      install_method: source
+      build_completed: yes
+      destdir: "{{ build_results.destdir }}"
 
-- include_tasks: "{{ role_path }}/tasks/common/{{ afs_is_server |
-                 ternary('setup-service', 'build-and-install') }}.yaml"
-  vars:
-    checkout_method: git
+#----------------------------------------------------------------------------
+# Install binaries.
+#
+- name: Install client
+  when: build_results.changed
+  block:
+    - name: Ensure OpenAFS client is stopped
+      become: yes
+      service:
+        name: "{{ ansible_local.openafs.client_service_name }}"
+        state: stopped
+      when:
+        - afs_client_service_mgr is not match('sysv*')
+        - ansible_local.openafs.client_service_name is defined
 
+    - name: Install binaries
+      become: yes
+      openafs_contrib.openafs.openafs_install_bdist:
+        path: "{{ build_results.destdir }}"
+      register: install_results
+
+    - name: Store installation facts
+      become: yes
+      openafs_contrib.openafs.openafs_store_facts:
+        state: update
+        facts:
+          install_method: "{{ afs_install_method }}"
+          client_installed: yes
+          bins: "{{ install_results.bins }}"
+          dirs: "{{ install_results.dirs }}"
+      when: not ansible_check_mode
+
+#----------------------------------------------------------------------------
+# Setup service.
+#
 - include_tasks: "{{ role_path }}/tasks/service/{{ afs_client_service_mgr }}.yaml"

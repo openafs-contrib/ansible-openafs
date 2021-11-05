@@ -4,23 +4,23 @@ Usage
 Installation Methods
 --------------------
 
-**OpenAFS** may be installed with prebuilt packages or built from source
-on the remote nodes. The following installation methods are supported:
+**OpenAFS** may be installed and updated with prebuilt packages or built from
+source on the remote nodes. The following installation methods are supported:
 
 * **managed** - Install with the distro's package manager (e.g., ``yum``, ``apt``).
 * **packages** - Install prebuilt packages (e.g. ``rpm``, ``dpkg``).
-* **bdist** - Install binary distribution with Transarc-style paths.
-* **sdist** - Source distribution
-* **source** - Checkout source code with ``git`` then build and install binaries.
-* **none** - Skip installation tasks; assume manual installation.
+* **bdist** - Install a binary distribution with Transarc-style paths.
+* **source** - Install from source code.
+* **none** - Skip installation tasks.
 
-Different installation methods may be used on each remote node, however the
-if installing a client and server on node, the installation method must be
-the same for the client and server roles.
+Different installation methods may be used on each remote node, however the if
+installing a client and server on the same node, the same installation method
+must be specific for both the client and server roles.
 
-The last installation method is stored on the remote node in a local fact
-file. Manual intervention is required if you want to change the installation
-method after an initial Ansible play to deploy **OpenAFS**.
+The installation method is stored id the ``/etc/ansible/facts.d/openafs.fact``
+json file on the remote node.  This file must be changed if you want to change
+the installation method after OpenAFS has already been installed.
+
 
 Inventory
 ---------

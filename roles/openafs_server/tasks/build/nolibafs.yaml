@@ -27,6 +27,7 @@
   openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
+      build_completed: yes
       destdir: "{{ build_results.destdir }}"
   when:
     - build_results.changed

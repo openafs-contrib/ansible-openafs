@@ -59,9 +59,15 @@ afs_admin
 
 afs_install_method
   The method used to install the OpenAFS client and/or server software on this
-  remote node. See Install Methods for supported values.
+  remote node. Must be one of: ``managed``, ``packages``, ``bdist``, ``source``.
 
   Default: ``managed``
+
+afs_checkout_method
+  The method used to checkout source code when the ``afs_install_method`` is
+  ``source``.  Must be one of: ``git``, ``sdist_upload``.
+
+  Default: ``git``
 
 afs_yum_repo
   The yum repo url when ``afs_install_method`` is ``managed``.

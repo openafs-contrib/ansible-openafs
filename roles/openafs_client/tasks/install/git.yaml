@@ -1,12 +1,12 @@
 ---
 #
-# Install OpenAFS client from a source distribution tarball.
+# Install OpenAFS client from a git checkout.
 #
 # This method is a convenience alias for:
 #
 #   afs_install_method: source
-#   afs_checkout_method: sdist_upload
+#   afs_checkout_method: git
 #
 - include_tasks: "{{ role_path }}/tasks/install/source.yaml"
   vars:
-    afs_checkout_method: sdist_upload
+    afs_checkout_method: git

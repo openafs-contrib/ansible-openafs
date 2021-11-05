@@ -54,8 +54,11 @@ afs_tmpdir: /tmp/ansible-openafs
 # Project build directory on remote nodes.
 afs_topdir: ~/openafs
 
-# Installation method; one of; managed, package, bdist, sdist, source, none
+# Installation method; managed, package, bdist, sdist, source, none
 afs_install_method: managed
+
+# Source checkout method: git, sdist_upload
+afs_checkout_method: git
 
 # Yum repository url or path for 'managed' installs on yum based systems. The
 # default depends on the platform (see vars).
