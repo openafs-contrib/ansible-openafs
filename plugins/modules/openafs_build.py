@@ -281,6 +281,7 @@ from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible.module_utils.six import string_types  # noqa: E402
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import chdir  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import lookup_fact  # noqa: E402, E501
 
 module_name = os.path.basename(__file__).replace('.py', '')
 log = None
@@ -611,6 +612,13 @@ def main():
     if not (os.path.exists(gitdir) and os.path.isdir(gitdir)):
         gitdir = None
     log.debug("gitdir='%s'.", gitdir)
+
+    #
+    # Setup environment.
+    #
+    solariscc = lookup_fact('solariscc')
+    if solariscc:
+        os.environ['SOLARISCC'] = solariscc
 
     #
     # Clean previous build.

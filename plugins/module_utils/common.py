@@ -4,6 +4,7 @@
 
 
 import contextlib               # noqa: E402
+import json                     # noqa: E402
 import os                       # noqa: E402
 import shutil                   # noqa: E402
 import subprocess               # noqa: E402
@@ -83,3 +84,27 @@ def execute(cmd):
             message += '\nError:\n' + error
         raise Exception(message)
     return output
+
+
+def lookup_facts():
+    """
+    Return the local facts as a dict.
+    """
+    try:
+        with open('/etc/ansible/facts.d/openafs.fact') as f:
+            facts = json.load(f)
+    except FileNotFoundError:
+        facts = {}
+    return facts
+
+
+def lookup_fact(name, section=None, default=None):
+    """
+    Lookup a local fact.
+    """
+    facts = lookup_facts()
+    if section:
+        value = facts.get(section, {}).get(name, default)
+    else:
+        value = facts.get(name, default)
+    return value

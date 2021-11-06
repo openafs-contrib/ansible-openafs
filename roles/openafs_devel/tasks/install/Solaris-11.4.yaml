@@ -63,16 +63,19 @@
       - text/locale
   tags: root
 
-# Save cc path as a fact for tasks which run after this role.
+# Save the SOLARISCC path as a local fact the openafs_build module.
 - name: "Solaris 11.4: Set Developer Studio variables"
-  set_fact:
-    solaris_cc: /opt/developerstudio12.6/bin/cc
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      solariscc: /opt/developerstudio12.6/bin/cc
 
 - name: "Solaris 11.4: Create cc symlink"
   become: yes
   file:
     state: link
-    src: "{{ solaris_cc }}"
+    src: "{{ ansible_local.openafs.solariscc }}"
     path: /usr/bin/cc
   tags: root
 
@@ -80,7 +83,7 @@
   become: yes
   lineinfile:
     path: /etc/profile
-    line: SOLARISCC={{ solaris_cc }}; export SOLARISCC
+    line: SOLARISCC={{ ansible_local.openafs.solariscc }}; export SOLARISCC
     state: present
   tags: root
 
