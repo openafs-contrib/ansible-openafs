@@ -123,8 +123,6 @@
   loop_control:
     loop_var: rpm
 
-- import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
-
 - name: Set client startup options
   become: yes
   lineinfile:

@@ -60,7 +60,4 @@
       dirs: "{{ install_results.dirs }}"
   when: not ansible_check_mode
 
-- import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
-  when: ansible_system == "Linux"
-
 - include_tasks: "{{ role_path }}/tasks/service/{{ afs_client_service_mgr }}.yaml"

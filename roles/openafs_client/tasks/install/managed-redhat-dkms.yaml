@@ -73,8 +73,6 @@
       dirs: "{{ install_results.dirs }}"
   when: not ansible_check_mode
 
-- import_tasks: "{{ role_path }}/tasks/common/Linux-load-module.yaml"
-
 - name: Set client startup options
   become: yes
   lineinfile:

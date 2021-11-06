@@ -25,7 +25,15 @@ afs_module
 
 afs_module_install_method
   Specifies the kernel module installation method on RPM-based systems, ``dkms`` or
-  ``kmod``. Default: ``dkms``
+  ``kmod``.
+
+  Default: ``dkms``
+
+afs_module_enable_preload
+  Specifies if the role should attempt to preload the OpenAFS module before the
+  client service is started.
+
+  Default: no
 
 afs_mountpoint
   The AFS filesystem mount point. Default: ``/afs``

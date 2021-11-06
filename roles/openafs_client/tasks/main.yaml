@@ -24,6 +24,7 @@
 
 - import_tasks: "post-install/directories.yaml"
 - import_tasks: "post-install/configure.yaml"
+- include_tasks: "post-install/preload/{{ afs_module_enable_preload | ternary(_afs_module_preload, 'none') }}.yaml"
 
 - name: Start client.
   become: yes

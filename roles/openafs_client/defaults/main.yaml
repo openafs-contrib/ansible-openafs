@@ -5,6 +5,9 @@ afs_module: openafs
 # Specifies DKMS or kmod installation on RPM-based systems.
 afs_module_install_method: "{{ _afs_module_install_method | default('dkms') }}"
 
+# Optionally, preload the kernel module before starting the client service.
+afs_module_enable_preload: no
+
 # afs mountpoint
 afs_mountpoint: /afs
 

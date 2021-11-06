@@ -1,4 +1,9 @@
 ---
+# OpenAFS kernel module preload on Linux.
+#
+# Optionally preload the module before the openafs-server starts to make sure
+# the module is present and loads before attempting to start the service.
+#
 - name: Get kernel modules
   slurp:
     src: /proc/modules
