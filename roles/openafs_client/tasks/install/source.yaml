@@ -10,9 +10,9 @@
     facts:
       install_method: source
 
-- include_tasks: "{{ role_path }}/tasks/common/{{ afs_is_server |
-                 ternary('setup-service', 'build-and-install') }}.yaml"
+- include_tasks: "{{ role_path }}/tasks/common/build-and-install.yaml"
   vars:
     checkout_method: git
+when: not afs_is_server
 
 - include_tasks: "{{ role_path }}/tasks/service/{{ afs_client_service_mgr }}.yaml"
