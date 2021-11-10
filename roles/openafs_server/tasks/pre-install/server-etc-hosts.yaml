@@ -1,12 +1,37 @@
 ---
-# Some platforms, such as Debian based systems, add a loopback address for the
-# hostname as a fallback when dns is unavailable. For now, fixup the /etc/hosts
-# file by replacing the loopback address with the actual ipv4 address.
-- name: Avoid resolving the hostname to a loopback address
+#
+# Debian-based systems add a loopback address for the hostname in the /etc/hosts
+# as a workaround when DNS is unavailable.  This can cause the OpenAFS servers
+# to fail on startup.  Workaround by updating the /etc/hosts files on Debian.
+#
+# For all platforms, verify we are able to resolve the hostname to a
+# non-loopback address before trying to start the servers.
+#
+# See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=316099
+#
+
+- name: Avoid mapping the hostname to a loopback address on Debian.
   become: yes
-  when: ansible_system == 'Linux'
+  when: ansible_os_family == 'Debian'
   replace:
     path: /etc/hosts
-    backup: yes
-    regexp: '^127.0.1.1\b(.*)\b{{ ansible_host | replace(".", "\.") }}\b'
-    replace: '{{ ansible_default_ipv4.address }} \1 {{ ansible_host }}'
+    regexp: '^(127.0.1.1\s+.*)$'
+    replace: '# \1'
+
+- name: Check hostname resolution.
+  command:
+    cmd: >
+      {{ ansible_python.executable }}
+      -c 'import socket; print(socket.gethostbyname(socket.gethostname()))'
+  changed_when: false
+  register: gethostbyname_results
+  when: ansible_python.executable is defined
+
+- name: Verify hostname does not resolve to a loopback address.
+  vars:
+    address: gethostbyname_results.stdout_lines[0]
+  assert:
+    that: not address.startswith('127.')
+    success_msg: Hostname resolution is ok.
+    fail_msg: Hostname resolves to loopback address.
+  when: gethostbyname_results is defined
