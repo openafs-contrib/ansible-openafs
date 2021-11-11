@@ -122,43 +122,71 @@ class FileError(Exception):
     pass
 
 
-def solaris_relocate_64_bit_libs():
+def solaris_relocate_64_bit_libs(files):
     """
     The OpenAFS 'make dest' command puts the solaris 64-bit shared libraries in
     /lib, which is incorrect.  Move the 64-bit libraries to the /lib/64
     directory, including the shared library symlinks.
     """
     moved = []
+    afslibs = set()
+    for f in files:
+        dirname = os.path.dirname(f[0])
+        basename = os.path.basename(f[0])
+        if dirname == '/lib':
+            afslibs.add(basename)
+    # Expected system directories should be present.
     for libdir in ('/lib', '/lib/64'):
         if not os.path.exists(libdir):
             raise FileNotFoundError(libdir)
     with chdir('/lib'):
-        # First pass: Find the shared library symlinks.
+        # Find the shared library symlinks.
         links = {}
-        for path in glob.glob('*afs*'):
+        for path in glob.glob('*'):
             if os.path.islink(path):
                 target = os.readlink(path)
                 if target not in links:
                     links[target] = []
                 links[target].append(path)
-
-        # Second pass: Find and move 64 bit libraries and symlinks.
-        for path in glob.glob('*afs*'):
-            if not os.path.islink(path):
-                output = execute('file %s' % path)
-                if '64-bit' in output:
-                    # Remove the old symlinks.
-                    for link in links.get(path, []):
-                        if os.path.exists(link) and os.path.islink(link):
-                            os.unlink(link)
-                    # Move the file, then recreate the symlinks in the 64 dir.
-                    os.rename(path, os.path.join('64', path))
-                    moved.append(path)
-                    with chdir('64'):
-                        for link in links.get(path, []):
-                            if not os.path.exists(link):
-                                os.symlink(path, link)
-                                moved.append(link)
+        # Find 64-bit libraries to be moved.
+        tomove = []
+        todel = []
+        for path in afslibs:
+            if not os.path.exists(path):
+                continue
+            if os.path.isdir(path):
+                continue
+            if os.path.islink(path):
+                continue
+            output = execute('file %s' % path)
+            if '64-bit' in output:
+                target = os.path.join('64', path)
+                if not os.path.exists(target):
+                    tomove.append(path)   # Relocate file.
+                elif filecmp.cmp(path, target):
+                    todel.append(path)    # Already relocated.
+                else:
+                    tomove.append(path)   # Relocate updated file.
+        # Move 64-bit libraries and associated symlinks.
+        for path in tomove:
+            for link in links.get(path, []):
+                if os.path.exists(link) and os.path.islink(link):
+                    os.unlink(link)
+            target = os.path.join('64', path)
+            if os.path.exists(target):
+                os.unlink(target)
+            os.rename(path, target)
+            with chdir('64'):
+                for link in links.get(path, []):
+                    if not os.path.exists(link):
+                        os.symlink(path, link)
+                        moved.append(link)
+        # Cleanup duplicate files.
+        for path in todel:
+            for link in links.get(path, []):
+                if os.path.exists(link) and os.path.islink(link):
+                    os.unlink(link)
+            os.unlink(path)
     return moved
 
 
@@ -374,7 +402,11 @@ def main():
                 log.info('Updating module dependencies.')
                 module.run_command([depmod, '-a'], check_rc=True)
     elif platform.system() == 'SunOS':
-        results['relocated'] = solaris_relocate_64_bit_libs()
+        relocated = solaris_relocate_64_bit_libs(files)
+        if relocated:
+            results['changed'] = True
+        results['relocated'] = relocated
+
         kmod = None
         for f in files:
             if f[0].endswith('libafs64.o'):
