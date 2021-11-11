@@ -51,3 +51,23 @@ afs_kadmin_server
   records in DNS.
 
   Default: undefined
+
+afs_krb_max_life
+  KDC max ticket life.
+
+  Default: 10h 0m 0s
+
+afs_krb_max_renewable_life
+  KDC max renewable life.
+
+  Default: 7d 0h 0m 0s
+
+afs_krb_supported_enctypes
+  KDC supported enctypes. Specify as a list of enctype:salt values.
+
+  Default: ['aes256-cts-hmac-sha1-96:normal', 'aes128-cts-hmac-sha1-96:normal']
+
+afs_krb_default_principal_flags
+  KDC default principal flags.
+
+  Default: +preauth

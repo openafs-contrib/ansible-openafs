@@ -12,8 +12,8 @@
         dict_file = {{ afs_krbserver_dict }}
 {% endif %}
         kdc_ports = 750,88
-        max_life = 10h 0m 0s
-        max_renewable_life = 7d 0h 0m 0s
-        supported_enctypes = aes128-cts:normal
-        default_principal_flags = +preauth
+        max_life = {{ afs_krb_max_life }}
+        max_renewable_life = {{ afs_krb_max_renewable_life }}
+        supported_enctypes = {{ afs_krb_supported_enctypes | join(' ') }}
+        default_principal_flags = {{ afs_krb_default_principal_flags }}
     }
