@@ -122,41 +122,44 @@ class FileError(Exception):
     pass
 
 
-def solaris_relocate_64_bit_libs(destdir):
+def solaris_relocate_64_bit_libs():
     """
     The OpenAFS 'make dest' command puts the solaris 64-bit shared libraries in
     /lib, which is incorrect.  Move the 64-bit libraries to the /lib/64
     directory, including the shared library symlinks.
     """
-    with chdir(os.path.join(destdir, 'lib')):
-        # Create the 'lib/64' directory in the install tree.
-        if not os.path.exists('64'):
-            os.mkdir('64')
+    moved = []
+    for libdir in ('/lib', '/lib/64'):
+        if not os.path.exists(libdir):
+            raise FileNotFoundError(libdir)
+    with chdir('/lib'):
         # First pass: Find the shared library symlinks.
         links = {}
-        for path in glob.glob('*'):
+        for path in glob.glob('*afs*'):
             if os.path.islink(path):
                 target = os.readlink(path)
                 if target not in links:
                     links[target] = []
                 links[target].append(path)
-        log.debug('DEBUG: links=%s' % pprint.pformat(links))
+
         # Second pass: Find and move 64 bit libraries and symlinks.
-        for path in glob.glob('*'):
+        for path in glob.glob('*afs*'):
             if not os.path.islink(path):
                 output = execute('file %s' % path)
                 if '64-bit' in output:
-                    log.debug('DEBUG: moving %s', path)
                     # Remove the old symlinks.
                     for link in links.get(path, []):
                         if os.path.exists(link) and os.path.islink(link):
                             os.unlink(link)
                     # Move the file, then recreate the symlinks in the 64 dir.
                     os.rename(path, os.path.join('64', path))
+                    moved.append(path)
                     with chdir('64'):
                         for link in links.get(path, []):
                             if not os.path.exists(link):
                                 os.symlink(path, link)
+                                moved.append(link)
+    return moved
 
 
 def solaris_driver_path():
@@ -261,8 +264,6 @@ def install_dest(destdir, components, exclude=None):
     log.debug('install_dest: %s', destdir)
     files = []
     if 'common' in components:
-        if platform.system() == 'SunOS':
-            solaris_relocate_64_bit_libs(destdir)
         for d in ('bin', 'etc', 'include', 'lib', 'man'):
             src = '%s/%s' % (destdir, d)
             if d == 'etc':
@@ -373,6 +374,7 @@ def main():
                 log.info('Updating module dependencies.')
                 module.run_command([depmod, '-a'], check_rc=True)
     elif platform.system() == 'SunOS':
+        results['relocated'] = solaris_relocate_64_bit_libs()
         kmod = None
         for f in files:
             if f[0].endswith('libafs64.o'):
