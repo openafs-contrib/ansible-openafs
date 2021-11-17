@@ -8,7 +8,7 @@ UPDATE := --force --pre
 MODULES := $(wildcard plugins/modules/openafs_*.py)
 EXTRACTED := $(patsubst plugins/modules/%.py,docs/source/modules/%.rst,$(MODULES))
 ACPATH := $(realpath $(CURDIR)/../../..)
-PYFILES := plugins/module_utils/*.py plugins/modules/*.py tests/molecule/*.py
+PYFILES := plugins/*/*.py tests/*/*.py tests/*/*/*.py
 
 help:
 	@echo "usage: make <target>"
@@ -66,9 +66,9 @@ lint: pylint
 	$(MAKE) -C roles/openafs_server lint
 	$(MAKE) -C roles/openafs_client lint
 
-test: test-modules test-roles test-playbooks
+test: test-plugins test-roles test-playbooks
 
-test-modules:
+test-plugins:
 	$(MAKE) -C tests test
 
 test-roles:

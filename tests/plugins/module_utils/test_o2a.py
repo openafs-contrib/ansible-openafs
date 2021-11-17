@@ -1,11 +1,11 @@
 import sys
-import pytest
-sys.path.append('../plugins/modules')
-sys.path.append('../../plugins/modules')
-import openafs_build
+sys.path.append('../plugins/module_utils')
+sys.path.append('../../plugins/module_utils')
+import o2a      # noqa: E402
+import pytest   # noqa: E402
 
-@pytest.mark.parametrize(
-    'options,expected_args', [
+
+testcases = [
     # ('', []), ?
 
     ({}, []),
@@ -45,33 +45,37 @@ import openafs_build
       'bindir': '/usr/bin',
       'libdir': '/usr/lib64',
       'sbindir': '/usr/sbin',
-      'enable': ['debug', 'redhat-buildsys', 'transarc-paths', 'kernel-module'],
+      'enable':
+          ['debug', 'redhat-buildsys', 'transarc-paths', 'kernel-module'],
       'disable': 'strip-binaries',
       'with': [{'krb5': '/path/to/krb5'}, 'linux-kernel-packaging'],
       'without': 'swig'},
-      ['--quiet',
-       '--prefix=/usr',
-       '--enable-debug',
-       '--enable-redhat-buildsys',
-       '--enable-transarc-paths',
-       '--enable-kernel-module',
-       '--sbindir=/usr/sbin',
-       '--disable-strip-binaries',
-       '--with-krb5=/path/to/krb5',
-       '--with-linux-kernel-packaging',
-       '--libdir=/usr/lib64',
-       '--bindir=/usr/bin',
-       '--without-swig']),
-])
+     ['--quiet',
+      '--prefix=/usr',
+      '--enable-debug',
+      '--enable-redhat-buildsys',
+      '--enable-transarc-paths',
+      '--enable-kernel-module',
+      '--sbindir=/usr/sbin',
+      '--disable-strip-binaries',
+      '--with-krb5=/path/to/krb5',
+      '--with-linux-kernel-packaging',
+      '--libdir=/usr/lib64',
+      '--bindir=/usr/bin',
+      '--without-swig']),
+]
+
+
+@pytest.mark.parametrize('options,expected_args', testcases)
 def test_valid_options(options, expected_args):
-    args = openafs_build.options_to_args(options)
+    args = o2a.options_to_args(options)
     assert sorted(args) == sorted(expected_args)
+
 
 @pytest.mark.parametrize(
     'options', [
-    {'bogus': {'x': 'a'}},
-    {'enable': {'enable': {'bar': 'baz'}}},
-])
+        {'bogus': {'x': 'a'}},
+        {'enable': {'enable': {'bar': 'baz'}}}])
 def test_invalid_options(options):
     with pytest.raises(ValueError):
-        openafs_build.options_to_args(options)
+        o2a.options_to_args(options)
