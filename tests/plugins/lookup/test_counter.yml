@@ -1,0 +1,56 @@
+---
+- name: counter lookup plugin tests
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Reset test counter
+      assert:
+        that: item == 0
+      with_openafs_contrib.openafs.counter:
+        - _test_lookup,reset
+        - _test_a,reset
+        - _test_b,reset
+        - _test_c,reset
+
+    - name: Test first lookup
+      vars:
+        count: "{{ lookup('openafs_contrib.openafs.counter', '_test_lookup') }}"
+      assert:
+        that: count == '1'
+
+    - name: Test second lookup
+      vars:
+        count: "{{ lookup('openafs_contrib.openafs.counter', '_test_lookup,next') }}"
+      assert:
+        that: count == '2'
+
+    - name: Test current lookup
+      vars:
+        count: "{{ lookup('openafs_contrib.openafs.counter', '_test_lookup,current') }}"
+      assert:
+        that: count == '2'
+
+    - name: Test first with_counter
+      assert:
+        that: item == 1
+      with_openafs_contrib.openafs.counter:
+        - _test_a
+        - _test_b
+        - _test_c
+
+    - name: Test second with_counter
+      assert:
+        that: item == 2
+      with_openafs_contrib.openafs.counter:
+        - _test_a,next
+        - _test_b,next
+        - _test_c,next
+
+    - name: Test second with_counter
+      assert:
+        that: item == 2
+      with_openafs_contrib.openafs.counter:
+        - _test_a,current
+        - _test_b,current
+        - _test_c,current

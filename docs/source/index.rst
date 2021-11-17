@@ -17,4 +17,5 @@ configure OpenAFS clients and servers.
    playbooks
    roles
    modules
+   plugins
    license
