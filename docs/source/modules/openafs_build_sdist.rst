@@ -12,7 +12,7 @@ openafs_build_sdist -- Create OpenAFS source distribution archives from a git re
 Synopsis
 --------
 
-Create OpenAFS source and document source distribution archives from a local or remote git repository.
+Create OpenAFS source and document source distribution archives from a git checkout.
 
 
 
@@ -103,10 +103,6 @@ Return Values
 
 version (always, dict, )
   OpenAFS version
-
-
-logfile (always, str, )
-  The log file written on the remote node.
 
 
 files (always, list, )
