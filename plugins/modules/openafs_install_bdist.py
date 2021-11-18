@@ -138,7 +138,7 @@ def solaris_relocate_64_bit_libs(files):
     # Expected system directories should be present.
     for libdir in ('/lib', '/lib/64'):
         if not os.path.exists(libdir):
-            raise FileNotFoundError(libdir)
+            raise AssertionError('System lib dir not found: %s' % libdir)
     with chdir('/lib'):
         # Find the shared library symlinks.
         links = {}
@@ -377,8 +377,8 @@ def main():
             mode = os.stat(fn).st_mode
             if stat.S_ISREG(mode) and (mode & stat.S_IXUSR):
                 results['bins'][os.path.basename(fn)] = fn
-        except FileNotFoundError:
-            log.error('Failed to stat installed file "%s".' % fn)
+        except IOError as e:
+            log.error('Failed to stat installed file "%s: %s".' % (fn, e))
 
     if platform.system() == 'Linux':
         for f in files:

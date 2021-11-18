@@ -129,7 +129,6 @@ service_principal:
 #  sample: "afs/example.com@EXAMPLE.COM"
 '''
 
-import errno                    # noqa: E402
 import json                     # noqa: E402
 import os                       # noqa: E402
 import pprint                   # noqa: E402
@@ -263,13 +262,7 @@ class Keytab:
         Read a keytab file.
         """
         self.filename = path
-        try:
-            stat = os.stat(path)
-        except OSError as e:
-            if e.errno == errno.ENOENT:
-                raise FileNotFoundError("File {0} not found.".format(path))
-            else:
-                raise e
+        stat = os.stat(path)
         file_size = stat.st_size
         with open(path, 'rb') as f:
             offset = struct.calcsize("!h")

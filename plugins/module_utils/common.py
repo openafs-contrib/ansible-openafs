@@ -4,6 +4,7 @@
 
 
 import contextlib               # noqa: E402
+import errno                    # noqa: E402
 import json                     # noqa: E402
 import os                       # noqa: E402
 import shutil                   # noqa: E402
@@ -93,8 +94,11 @@ def lookup_facts():
     try:
         with open('/etc/ansible/facts.d/openafs.fact') as f:
             facts = json.load(f)
-    except FileNotFoundError:
-        facts = {}
+    except IOError as e:
+        if e.errno == errno.ENOENT:
+            facts = {}
+        else:
+            raise
     return facts
 
 
