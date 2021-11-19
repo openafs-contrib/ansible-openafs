@@ -12,14 +12,11 @@ Documentation: [https://openafs-ansible-collection.readthedocs.io][2]
 
 ## Platforms supported
 
-* Red Hat Entrerprise Linux 8
-* Red Hat Entrerprise Linux 7
-* CentOS 8
-* CentOS 7
-* Fedora 34
-* Fedora 33
-* Debian 11
-* Debian 10
+* Red Hat Entrerprise Linux 7, 8
+* CentOS 7, 8
+* Fedora 33, 34
+* Debian 10, 11
+* Solaris 11.4
 
 ## Playbooks
 
@@ -35,7 +32,9 @@ Documentation: [https://openafs-ansible-collection.readthedocs.io][2]
 * `openafs_server` Deploy OpenAFS servers
 * `openafs_devel` Install OpenAFS development packages
 
-## Modules
+## Plugins
+
+### Modules
 
 * `openafs_build` Build OpenAFS binaries from source
 * `openafs_get_install_paths` Detect installation paths
@@ -49,6 +48,10 @@ Documentation: [https://openafs-ansible-collection.readthedocs.io][2]
 * `openafs_volume` Create an OpenAFS volume
 * `openafs_wait_for_quorum` Wait for the dbserver connection and quorum
 * `openafs_wait_for_registration` Wait for the fileserver VLDB registration
+
+### Lookup
+
+* `openafs_contrib.openafs.counter` Increment named integer counters
 
 ## License
 

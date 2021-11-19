@@ -1,8 +1,8 @@
 .. _counter_module:
 
 
-counter -- Persistent counters.
-===============================
+counter -- Increment named integer counters.
+============================================
 
 .. contents::
    :local:
@@ -11,8 +11,6 @@ counter -- Persistent counters.
 
 Synopsis
 --------
-
-Increment named integer counters.
 
 Counter values are saved in a json file on the controller. The default location of the counter file is ``~/.ansible/counter.json`` Set the ``ANSIBLE_OPENAFS_COUNTER_DIR`` environment variable to specify an alternate location.
 

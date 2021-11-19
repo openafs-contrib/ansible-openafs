@@ -3,10 +3,8 @@ __metaclass__ = type
 
 DOCUMENTATION = """
   name: counter
-  short_description: Persistent counters.
+  short_description: Increment named integer counters.
   description:
-    - Increment named integer counters.
-
     - Counter values are saved in a json file on the controller. The default
       location of the counter file is C(~/.ansible/counter.json) Set the
       C(ANSIBLE_OPENAFS_COUNTER_DIR) environment variable to specify an

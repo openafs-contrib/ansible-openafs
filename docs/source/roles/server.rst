@@ -85,10 +85,10 @@ afs_create_root
   default: yes
 
 afs_server_netinfo
-  A single string, or a list of strings, to set the contents of the server
+  A single string (or list of strings) to set the contents of the server
   ``NetInfo`` configuration file. This file specifies which addresses or
   subnetworks should be used for server communication.  A specific address can
-  be forced by specifying a ``f `` prefix.
+  be forced by specifying a ``f`` prefix.
 
 afs_server_netrestrict
   A single string, or a list of strings, to set the contents of the server
