@@ -4,7 +4,7 @@
   vars:
     afs_prep_rewrite_hosts: "{{ lookup('env', 'AFS_PREP_REWRITE_HOSTS') | d('no', true) | bool }}"
     afs_prep_selinux_mode: "{{ lookup('env', 'AFS_PREP_SELINUX_MODE') | d('permissive', true) }}"
-    afs_hosts_file: "{{ ansible_system == 'SunOS' | ternary('/etc/inet/hosts', '/etc/hosts') }}"
+    afs_hosts_file: "{{ (ansible_system == 'SunOS') | ternary('/etc/inet/hosts', '/etc/hosts') }}"
   tasks:
     # This is a workaround for test systems without a proper nameserver.
     - name: Rewrite hosts file
