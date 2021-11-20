@@ -27,7 +27,7 @@ Solaris
 Historically, Transarc-style binary distributions are used to install OpenAFS
 on Solaris.  Please set ``afs_install_method`` on Solaris nodes to ``bdist`` or
 ``source`` to install from a binary distribution or from source code.  The
-``openafs_build`` module will build a Transarc-style binary distrubution by
+``openafs_build`` module will build a Transarc-style binary distribution by
 default on Solaris nodes.
 
 OpenAFS client and servers are started with legacy style ``sysv`` init scripts
