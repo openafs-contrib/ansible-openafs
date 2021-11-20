@@ -1,16 +1,24 @@
 OpenAFS Ansible Collection
 
-November 1, 2011 - version 1.3.0-rc1
+November 20, 2011 - version 1.3.0-rc3
 
-* Add Solaris 11.4 support to OpenAFS server and client roles, limited to
+* Add Solaris 11.4 support to OpenAFS server and client roles. Limited to
   Transarc-style binary distributions and install from source.
 
 * Add openafs_build_sdist module to make source distribution tar archives
   from a git checkout.
 
-* Remove ansible_user references in role defaults.
+* Add openafs_contrib.openafs.counter lookup plugin.
 
-* Add module_utils for common module code.
+* Add afs_checkout_method host variable to specify how to retreive the
+  source code when the afs_install_method is 'source'.
+
+* Add variables to set the Kerberos KDC supported enctypes and various
+  ticket and principal options.
+
+* Remove ansible_user references from role host variable defaults.
+
+* Add module_utils for common plugin code.
 
 * Fix kernel header installation on Debian.
 
@@ -21,6 +29,8 @@ November 1, 2011 - version 1.3.0-rc1
 * Do not install the solaris studio GUI on Solaris.
 
 * Various unit test improvements.
+
+* Remove test and doc files from the galaxy build archive.
 
 
 October 18, 2021 - version 1.2.0
