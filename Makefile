@@ -86,8 +86,8 @@ reset:
 	$(MAKE) -C tests/playbooks reset
 
 clean:
-	rm -rf builds
-	rm -rf docs/build
+	rm -rf builds docs/build
+	rm -rf */*/__pycache__ */*/.pytest_cache */*/.cache
 	$(MAKE) -C tests clean
 
 distclean: clean
