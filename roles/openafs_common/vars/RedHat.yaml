@@ -17,7 +17,6 @@ _afs_configure_options:
 _afs_nolibafs_configure_options:
   enable:
     - debug
-    - debug-kernel
   disable:
     - kernel-module
     - optimize
