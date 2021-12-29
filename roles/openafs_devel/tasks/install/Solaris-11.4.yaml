@@ -79,12 +79,14 @@
     path: /usr/bin/cc
   tags: root
 
-- name: "Solaris 11.4: Set the SOLARISCC environment variable"
+- name: "Solaris 11.4: Set the SOLARISCC environment variable & disable Developer Studio check_update"
   become: yes
-  lineinfile:
+  blockinfile:
     path: /etc/profile
-    line: SOLARISCC={{ ansible_local.openafs.solariscc }}; export SOLARISCC
-    state: present
+    block: |
+      SOLARISCC={{ ansible_local.openafs.solariscc }}; export SOLARISCC
+      UT_NO_USAGE_TRACKING=1; export UT_NO_USAGE_TRACKING
+      SUNW_NO_UPDATE_NOTIFY=1; export SUNW_NO_UPDATE_NOTIFY
   tags: root
 
 # This task is a work around. The perl-526 package installation sometimes fails
