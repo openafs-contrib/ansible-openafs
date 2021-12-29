@@ -562,6 +562,8 @@ def main():
     solariscc = lookup_fact('solariscc')
     if solariscc:
         os.environ['SOLARISCC'] = solariscc
+        os.environ['UT_NO_USAGE_TRACKING'] = '1'
+        os.environ['SUNW_NO_UPDATE_NOTIFY'] = '1'
 
     #
     # Clean previous build.
