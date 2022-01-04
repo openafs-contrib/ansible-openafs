@@ -52,6 +52,13 @@ afs_kadmin_server
 
   Default: undefined
 
+afs_krb_dns_lookup_kdc
+  Define if dns_lookup_kdc mode is enabled/disabled via true/false. If this
+  variable is not defined, no entry will be set which is the same like
+  dns_lookup_kdc = true.
+
+  Default: undefined
+
 afs_krb_max_life
   KDC max ticket life.
 
