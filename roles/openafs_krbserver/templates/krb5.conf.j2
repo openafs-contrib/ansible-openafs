@@ -2,6 +2,9 @@
 
 [libdefaults]
     default_realm = {{ afs_realm }}
+{% if afs_krb_dns_lookup_kdc is defined %}
+    dns_lookup_kdc = {{ afs_krb_dns_lookup_kdc  | lower }}
+{% endif %}
 
 [realms]
     {{ afs_realm }} = {
