@@ -28,6 +28,7 @@ from pathlib import Path
 import pytest
 
 PLATFORMS = [
+    'alma8',
     'centos7',
     'centos8',
     'fedora34',
