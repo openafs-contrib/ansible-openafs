@@ -29,6 +29,7 @@ import pytest
 
 PLATFORMS = [
     'alma8',
+    'rocky8',
     'centos7',
     'centos8',
     'fedora34',
