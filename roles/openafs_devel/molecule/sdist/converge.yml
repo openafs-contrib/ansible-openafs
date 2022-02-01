@@ -1,8 +1,6 @@
 ---
 - name: Make source distribution
   hosts: all
-  collections:
-    - openafs_contrib.openafs
   tasks:
     - import_role:
         name: openafs_devel
@@ -14,7 +12,7 @@
         dest: "~/openafs"
 
     - name: Make source distribution files.
-      openafs_build_sdist:
+      openafs_contrib.openafs.openafs_build_sdist:
         topdir: "~/openafs"
         sdist: "~/openafs/packages"
       register: build_results
