@@ -3,8 +3,11 @@ name: openafs
 version: 1.3.0
 readme: README.md
 authors:
-  - Michael Meffie <mmeffie@sinenomine.net>
   - Cheyenne Wills <cwills@sinenomine.net>
+  - Marc 'risson' Schmitt <marc.schmitt@risson.space>
+  - Mark Vitale <mvitale@sinenomine.net>
+  - Michael Meffie <mmeffie@sinenomine.net>
+  - Ralf Brunckhorst <rbrunckhorst@sinenomine.net>
 description: Playbooks, roles, and modules to deploy the OpenAFS distributed filesystem.
 license: BSD-2-Clause
 tags:
