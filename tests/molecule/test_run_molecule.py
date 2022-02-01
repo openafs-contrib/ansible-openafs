@@ -35,6 +35,7 @@ PLATFORMS = [
     'fedora33',
     'debian11',
     'debian10',
+    'ubuntu20',
     'solaris114',
 ]
 ROLE = Path(os.getcwd()).name

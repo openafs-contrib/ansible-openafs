@@ -17,6 +17,7 @@ Documentation: [https://openafs-ansible-collection.readthedocs.io][2]
 * CentOS 7, 8
 * Fedora 33, 34
 * Debian 10, 11
+* Ubuntu 20.04
 * Solaris 11.4
 
 ## Playbooks
