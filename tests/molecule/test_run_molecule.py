@@ -31,6 +31,7 @@ PLATFORMS = [
     'alma8',
     'centos7',
     'centos8',
+    'fedora35',
     'fedora34',
     'fedora33',
     'debian11',
