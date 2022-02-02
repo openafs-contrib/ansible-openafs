@@ -1,4 +1,5 @@
 import sys
+sys.path.append('plugins/module_utils')
 sys.path.append('../plugins/module_utils')
 sys.path.append('../../plugins/module_utils')
 import o2a      # noqa: E402

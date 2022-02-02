@@ -11,7 +11,7 @@
     chdir: "~/openafs"
 
 - name: Build rpms
-  openafs_build_redhat_rpms:
+  openafs_contrib.openafs.openafs_build_redhat_rpms:
     build: all
     sdist: ~/openafs/packages
   register: build_results

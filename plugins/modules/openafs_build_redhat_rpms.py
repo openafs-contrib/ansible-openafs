@@ -20,9 +20,8 @@ description:
   from an OpenAFS source distibution.
 
 - The source distribution files must be already present in the I(sdist)
-  directory on the remote node. The source distribution files can transferred
-  to the remote node or may be created by running C(make-release) in a git
-  checkout on remote node.
+  directory on the remote node. The source distribution files may be created
+  with the C(openafs_build_sdist) module.
 
 - The M(openafs_build_redhat_rpms) module will create the rpm workspace
   directories and populate the SPECS and SOURCES directories from the source
@@ -148,21 +147,21 @@ author:
 '''
 
 EXAMPLES = r'''
-- name: Checkout source
+- name: "Checkout OpenAFS source code."
   git:
     repo: "git@openafs.org/openafs.git"
     version: openafs-devel-1_9_1
-    dest: "~/openafs"
+    dest: openafs
 
-- name: Build source distribution
-  command:
-    cmd: perl build-tools/make-release --dir=packages HEAD
-    chdir: "~/openafs"
+- name: "Build source distribution."
+  openafs_build_sdist:
+    topdir: openafs
+    sdist: openafs/packages
 
-- name: Build rpms
+- name: "Build RPM files."
   openafs_build_redhat_rpms:
     build: all
-    sdist: ~/openafs/packages
+    sdist: openafs/packages
   register: build_results
 '''
 
