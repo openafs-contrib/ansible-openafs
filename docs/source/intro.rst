@@ -18,6 +18,7 @@ Platforms supported
 * Red Hat Entrerprise Linux 7, 8
 * AlmaLinux 8
 * CentOS 7, 8
+* RockyLinux 8
 * Fedora 34, 35
 * Debian 10, 11
 * Ubuntu 20
