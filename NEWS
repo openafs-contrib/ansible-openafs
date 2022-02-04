@@ -1,6 +1,18 @@
 OpenAFS Ansible Collection
 
-November 20, 2011 - version 1.3.0-rc3
+February 4, 2022 - version 1.4.0
+
+* Add support for AlmaLinux 8 and RockLinux 8.
+
+* Add the `afs_krb_dns_lookup_kdc` variable to the Kerberos client and
+  server roles to customize the Kerberos `dns_lookup_kdc` option.
+
+* Solaris: Disable Solaris Studio update check process to
+  to improve build times.
+
+* Test and documenation updates.
+
+November 20, 2021 - version 1.3.0
 
 * Add Solaris 11.4 support to OpenAFS server and client roles. Limited to
   Transarc-style binary distributions and install from source.
