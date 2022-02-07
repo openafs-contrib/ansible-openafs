@@ -29,15 +29,15 @@ import pytest
 
 PLATFORMS = [
     'alma8',
-    'rocky8',
     'centos7',
     'centos8',
+    'debian10',
+    'debian11',
     'fedora34',
     'fedora35',
-    'debian11',
-    'debian10',
-    'ubuntu20',
+    'rocky8',
     'solaris114',
+    'ubuntu20',
 ]
 ROLE = Path(os.getcwd()).name
 LOGDIR = Path('/tmp/ansible-openafs/molecule') / ROLE
