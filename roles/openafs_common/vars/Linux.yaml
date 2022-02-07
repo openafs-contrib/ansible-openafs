@@ -1,0 +1,19 @@
+---
+# Default configure options for Linux.
+_afs_configure_options:
+  enable:
+    - debug
+    - debug-kernel
+    - kernel-module
+  disable:
+    - optimize
+  with:
+    - linux-kernel-packaging
+
+# Default nolibafs configure options for Linux.
+_afs_nolibafs_configure_options:
+  enable:
+    - debug
+  disable:
+    - kernel-module
+    - optimize
