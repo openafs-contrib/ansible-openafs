@@ -33,7 +33,7 @@ PLATFORMS = [
     'centos7',
     'centos8',
     'fedora34',
-    'fedora33',
+    'fedora35',
     'debian11',
     'debian10',
     'ubuntu20',
