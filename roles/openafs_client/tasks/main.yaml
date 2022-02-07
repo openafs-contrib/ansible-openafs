@@ -2,9 +2,9 @@
 - name: Gather variables for each operating system
   include_vars: "{{ item }}"
   with_first_found:
-    - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_system }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
@@ -15,8 +15,8 @@
 - name: Install client
   include_tasks: "{{ item }}"
   with_first_found:
-    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_distribution | lower }}-{{ afs_module_install_method }}.yaml"
-    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_distribution | lower }}.yaml"
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_distribution | replace(' ', '_') | lower }}-{{ afs_module_install_method }}.yaml"
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_distribution | replace(' ', '_') | lower }}.yaml"
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_os_family | lower }}-{{ afs_module_install_method }}.yaml"
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_os_family | lower }}.yaml"
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}.yaml"

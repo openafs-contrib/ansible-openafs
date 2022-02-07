@@ -25,7 +25,7 @@
         var: build_results
 
     - set_fact:
-        osdist: "{{ ansible_distribution | lower + ansible_distribution_major_version }}"
+        osdist: "{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"
         arch: "{{ ansible_architecture }}"
         version: "{{ build_results.version | replace('-', '_') }}"
 

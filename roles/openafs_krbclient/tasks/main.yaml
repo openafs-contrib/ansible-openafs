@@ -2,9 +2,9 @@
 - name: Gather variables for each operating system
   include_vars: "{{ item }}"
   with_first_found:
-    - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_system }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
@@ -15,9 +15,9 @@
 - name: Install packages
   include_tasks: "{{ item }}"
   with_first_found:
-    - "install-packages/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yaml"
-    - "install-packages/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yaml"
-    - "install-packages/{{ ansible_distribution }}.yaml"
+    - "install-packages/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
+    - "install-packages/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
+    - "install-packages/{{ ansible_distribution | replace(' ', '_') }}.yaml"
     - "install-packages/{{ ansible_os_family }}.yaml"
     - "install-packages/{{ ansible_system }}.yaml"
     - "install-packages/unknown.yaml"
