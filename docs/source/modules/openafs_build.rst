@@ -12,19 +12,19 @@ openafs_build -- Build OpenAFS binaries from source
 Synopsis
 --------
 
-Build OpenAFS server and client binaries from source code.
+Build OpenAFS server and client binaries from source code by running ``regen.sh``, ``configure``, and ``make``. The source code must be already present in the *projectdir* directory.
 
-The source code must be already present in the *projectdir* directory on the host.
+The :ref:`openafs_build <openafs_build_module>` module will run the OpenAFS ``regen.sh`` command to generate the ``configure`` script when the ``configure`` script is not already present in the *projectdir*.
 
-The :ref:`openafs_build <openafs_build_module>` module will run the OpenAFS ``regen.sh`` command to generate the ``configure`` script, then run ``configure`` with the given *configure_options*, and then run ``make`` with the given *target*.  If a *target* is not specified, one will be determined based on the given *configure_options*. The ``regen.sh`` execution is skipped when the ``configure`` file already exists.
+Unless the *configure_options* option is specified, the configure command line arguments are determined automatically, based on the platform and :ref:`openafs_build <openafs_build_module>` options.
+
+The ``make`` program is run to build the binaries. Unless the *target* options is specified, the make target is determined automatically.
 
 A complete set of build log files are written on the *logdir* directory on the host for build troubleshooting.
 
 Out-of-tree builds are supported by specifying a build directory with the *builddir* option.
 
-At the start of the build, when *clean* is true and a ``.git`` directory is found in the ``projectdir``, ``git clean`` is run in the *projectdir* directory to remove artifacts from a previous build. When *clean* is true and a ``.git`` directory is not found, then ``make clean`` is run to remove artifacts from a previous build.  When *clean* is true and an out-of-tree build is being done, all of the files and directories are removed from the *builddir*.
-
-A check for a loadable kernel module is done after the build completes when the *state* is ``built-module``.  Be sure the *target* and *configure_options* are set to build a kernel module when using the ``buildt-module`` state.
+``git clean`` is run in the *projectdir* when *clean* is true and a ``.git`` directory is found in the ``projectdir``.  When *clean* is true but a ``.git`` directory is not found, then ``make clean`` is run to remove artifacts from a previous build.  When *clean* is true and an out-of-tree build is being done, all of the files and directories are removed from the *builddir*.
 
 An installation file tree is created in the *destdir* directory when the *target* starts with ``install`` or ``dest``. The files in *destdir* may be installed with the :ref:`openafs_install_bdist <openafs_install_bdist_module>` module.
 
@@ -67,6 +67,12 @@ Parameters
     The logdir may not be a subdirectory of the ``builddir`` when doing an out-of-tree build.
 
 
+  destdir (optional, path, <projectdir>/packages/dest)
+    The destination directory for ``install`` and ``dest`` targets and variants.
+
+    The tree staged in this directory may be installed with the :ref:`openafs_install_bdist <openafs_install_bdist_module>` module.
+
+
   clean (optional, bool, False)
     Run ``git clean`` in the *projectdir* when it contains a ``.git`` directory, otherwise run ``make clean``.
 
@@ -87,14 +93,6 @@ Parameters
     The ``make`` program to be executed.
 
 
-  target (optional, str, detect based on I(configure_options))
-    The make target to be run. If not specified, the target will be determined based on the *configure_options*.
-
-    The target is set to ``dest`` if the *configure_options* contain ``--enable-transarc-paths``, or set to ``install`` otherwise.
-
-    The target is set to ``dest_nolibafs`` or ``install_nolibafs`` if the *configure_options* contains ``--disable-kernel-module``.
-
-
   jobs (optional, int, the number of CPUs on the system)
     Number of parallel make processes.
 
@@ -105,22 +103,24 @@ Parameters
     Generate the man-pages from POD files when running ``regen``.
 
 
-  destdir (optional, path, <projectdir>/packages/dest)
-    The destination directory for ``install`` and ``dest`` targets and variants.
+  transarc_paths (optional, bool, None)
+    Build binaries which use the legacy Transarc-style paths.
 
-    The tree staged in this directory may be installed with the :ref:`openafs_install_bdist <openafs_install_bdist_module>` module.
+    This option is ignored when the *configure_options* option is specified.
 
 
   configure_options (optional, raw, None)
-    The ``configure`` options as a string, list of strings, or a dictionary
+    The ``configure`` command arguments.
+
+    May be specified as a string, list of strings, or a dictionary.
+
+    When specified as a dictionary, the values of the keys ``enabled``, ``disabled``, ``with``, and ``without`` may be lists.
 
 
-  transarc_paths (optional, bool, None)
-    Build binaries which use the legacy Transarc-style paths
+  target (optional, str, detect)
+    The make target to be run.
 
-    When True, this option adds the ``--enable-transarc-paths`` to the *configure_options*.
-
-    This option has no effect when the ``--enable-transarc-paths`` argument is already present in the *configure_options*
+    The make target will be determined automatically when this option is omitted.
 
 
 

@@ -16,43 +16,40 @@ module: openafs_build
 short_description: Build OpenAFS binaries from source
 
 description:
-  - Build OpenAFS server and client binaries from source code.
-
-  - The source code must be already present in the I(projectdir) directory on
-    the host.
+  - Build OpenAFS server and client binaries from source code by running
+    C(regen.sh), C(configure), and C(make). The source code must be already
+    present in the I(projectdir) directory.
 
   - The M(openafs_build) module will run the OpenAFS C(regen.sh) command to
-    generate the C(configure) script, then run C(configure) with the given
-    I(configure_options), and then run C(make) with the given I(target).  If a
-    I(target) is not specified, one will be determined based on the given
-    I(configure_options). The C(regen.sh) execution is skipped when the
-    C(configure) file already exists.
+    generate the C(configure) script when the C(configure) script is not
+    already present in the I(projectdir).
 
-  - A complete set of build log files are written on the I(logdir) directory on
-    the host for build troubleshooting.
+  - Unless the I(configure_options) option is specified, the configure command
+    line arguments are determined automatically, based on the platform and
+    M(openafs_build) options.
+
+  - The C(make) program is run to build the binaries. Unless the I(target)
+    options is specified, the make target is determined automatically.
+
+  - A complete set of build log files are written on the I(logdir) directory
+    on the host for build troubleshooting.
 
   - Out-of-tree builds are supported by specifying a build directory with the
     I(builddir) option.
 
-  - At the start of the build, when I(clean) is true and a C(.git) directory is
-    found in the C(projectdir), C(git clean) is run in the I(projectdir)
-    directory to remove artifacts from a previous build. When I(clean) is true
-    and a C(.git) directory is not found, then C(make clean) is run to remove
+  - C(git clean) is run in the I(projectdir) when I(clean) is true and a
+    C(.git) directory is found in the C(projectdir).  When I(clean) is true
+    but a C(.git) directory is not found, then C(make clean) is run to remove
     artifacts from a previous build.  When I(clean) is true and an out-of-tree
     build is being done, all of the files and directories are removed from the
     I(builddir).
 
-  - A check for a loadable kernel module is done after the build completes when
-    the I(state) is C(built-module).  Be sure the I(target) and
-    I(configure_options) are set to build a kernel module when using the
-    C(buildt-module) state.
-
   - An installation file tree is created in the I(destdir) directory when the
-    I(target) starts with C(install) or C(dest). The files in I(destdir) may be
-    installed with the M(openafs_install_bdist) module.
+    I(target) starts with C(install) or C(dest). The files in I(destdir) may
+    be installed with the M(openafs_install_bdist) module.
 
-  - See the C(openafs_devel) role for tasks to install required build tools and
-    libraries on various platforms.
+  - See the C(openafs_devel) role for tasks to install required build tools
+    and libraries on various platforms.
 
 requirements:
   - tools and libraries required to build OpenAFS
@@ -71,7 +68,8 @@ options:
   projectdir:
     description:
       - The project directory.
-      - Source files must have been previously checkout or copied to this path.
+      - Source files must have been previously checkout or copied to this
+        path.
     required: true
     type: path
 
@@ -89,6 +87,15 @@ options:
         an out-of-tree build.
     type: path
     default: <projectdir>/.ansible
+
+  destdir:
+    description:
+      - The destination directory for C(install) and C(dest) targets and
+        variants.
+      - The tree staged in this directory may be installed with the
+        M(openafs_install_bdist) module.
+    default: <projectdir>/packages/dest
+    type: path
 
   clean:
     description:
@@ -116,17 +123,6 @@ options:
     type: path
     default: detect
 
-  target:
-    description:
-      - The make target to be run. If not specified, the target will
-        be determined based on the I(configure_options).
-      - The target is set to C(dest) if the I(configure_options) contain
-        C(--enable-transarc-paths), or set to C(install) otherwise.
-      - The target is set to C(dest_nolibafs) or C(install_nolibafs)
-        if the I(configure_options) contains C(--disable-kernel-module).
-    type: str
-    default: detect based on I(configure_options)
-
   jobs:
     description:
       - Number of parallel make processes.
@@ -140,28 +136,28 @@ options:
     default: true
     type: bool
 
-  destdir:
+  transarc_paths:
     description:
-      - The destination directory for C(install) and C(dest) targets and
-        variants.
-      - The tree staged in this directory may be installed with the
-        M(openafs_install_bdist) module.
-    default: <projectdir>/packages/dest
-    type: path
+      - Build binaries which use the legacy Transarc-style paths.
+      - This option is ignored when the I(configure_options) option is
+        specified.
+    type: bool
 
   configure_options:
     description:
-      - The C(configure) options as a string, list of strings, or a dictionary
+      - The C(configure) command arguments.
+      - May be specified as a string, list of strings, or a dictionary.
+      - When specified as a dictionary, the values of the keys
+        C(enabled), C(disabled), C(with), and C(without) may be lists.
     type: raw
 
-  transarc_paths:
+  target:
     description:
-      - Build binaries which use the legacy Transarc-style paths
-      - When True, this option adds the C(--enable-transarc-paths) to the
-        I(configure_options).
-      - This option has no effect when the C(--enable-transarc-paths) argument
-        is already present in the I(configure_options)
-    type: bool
+      - The make target to be run.
+      - The make target will be determined automatically when this option is
+        omitted.
+    type: str
+    default: detect
 
 author:
   - Michael Meffie
@@ -475,6 +471,112 @@ def kmod_check_solaris(module, results):
         module.fail_json(**results)
 
 
+def determine_configure_options(module):
+    """
+    Determine configure arguments for this system.
+
+    Automatically determine configure options for this system and build
+    options when the explicit configure options are not specified.
+    """
+    configure_options = module.params['configure_options']
+    transarc_paths = module.params['transarc_paths']
+
+    if configure_options is None:
+        configure_options = {}
+        if transarc_paths:
+            configure_options['enable'] = 'transarc_paths'
+
+    return configure_options
+
+
+def configure_command(module, results):
+    """
+    Determine configure command line.
+
+    Use the explicitly specified configure_options when specified, otherwise,
+    determine the options depeneding on the current system and build
+    parameters.
+    """
+    # Convert structured data to a list of command line arguments.
+    configure_options = determine_configure_options(module)
+    if not configure_options:
+        args = []
+    elif isinstance(configure_options, dict):
+        args = options_to_args(configure_options)
+    elif isinstance(configure_options, list):
+        args = configure_options
+    elif isinstance(configure_options, tuple):
+        args = list(configure_options)
+    elif isinstance(configure_options, string_types):
+        args = shlex.split(configure_options)
+    else:
+        module.fail_json(msg="Invalid configure_options type.")
+
+    projectdir = module.params['projectdir']
+    command = [os.path.join(projectdir, 'configure'), *args]
+    results['configure'] = command
+    return command
+
+
+def determine_target(module, results):
+    """
+    Determine the make target name.
+
+    If a target name is not explicitly specified, determine a suitable top
+    level target based on the configure command line used to configure
+    the tree.
+    """
+    # This function must be called after configure, assert otherwise.
+    if 'configure' not in results:
+        module.fail_json(msg='Internal error: configure not found in results.')
+
+    target = module.params['target']
+    configure = results['configure']
+    if target is None:
+        if '--enable-transarc-paths' in configure:
+            target = 'dest'      # legacy mode
+        else:
+            target = 'install'   # implies "all"
+        if '--disable-kernel-module' in configure:
+            target += '_nolibafs'
+    results['target'] = target
+    return target
+
+
+def make_command(module, results):
+    """
+    Determine make command line.
+
+    Historically, the make target depends on the directory path mode
+    specified by the configure options.  The 'dest' target is used to build
+    transarc style paths and make install is used to build modern style paths
+    (although, hybrid styles are possible).  To make it easier to support
+    both modes, by default, just figure out the make target based on the
+    configure options given.  The caller my specify a explicit target (even
+    an empty one) to override this feature.
+    """
+    make = module.params['make']
+    if not make:
+        make = module.get_bin_path('make', required=True)
+    jobs = module.params['jobs']
+    destdir = module.params['destdir']
+    if destdir:
+        destdir = abspath(results['builddir'], destdir)
+        results['destdir'] = destdir
+
+    command = [make]
+    if jobs > 0:
+        command.extend(['-j', '%d' % jobs])
+    target = determine_target(module, results)
+    if target:
+        command.append(target)
+    if destdir and not target.startswith('dest'):
+        command.append('DESTDIR=%s' % destdir)
+
+    results['make'] = command
+    return command
+
+
 def main():
     global log
     results = dict(
@@ -500,7 +602,7 @@ def main():
             jobs=dict(type='int', default=cpu_count()),
             manpages=dict(type='bool', default=True),
             destdir=dict(type='path'),
-            configure_options=dict(type='raw', default=''),
+            configure_options=dict(type='raw', default=None),
             transarc_paths=dict(type='bool', default=False)
         ),
         supports_check_mode=False,
@@ -516,12 +618,7 @@ def main():
     clean = module.params['clean']
     version = module.params['version']
     make = module.params['make']
-    target = module.params['target']
-    jobs = module.params['jobs']
     manpages = module.params['manpages']
-    destdir = module.params['destdir']
-    configure_options = module.params['configure_options']
-    transarc_paths = module.params['transarc_paths']
 
     if not (os.path.exists(projectdir) and os.path.isdir(projectdir)):
         module.fail_json(msg='projectdir directory not found: %s' % projectdir)
@@ -591,9 +688,6 @@ def main():
     if not os.path.isdir(builddir):
         log.info('Creating build directory %s' % builddir)
         os.makedirs(builddir)
-    if destdir:
-        destdir = abspath(builddir, destdir)  # makefiles need the full path
-        results['destdir'] = destdir
 
     #
     # Set the version string, if supplied.
@@ -629,47 +723,8 @@ def main():
     #
     # Run configure.
     #
-    if not configure_options:
-        args = []
-    elif isinstance(configure_options, dict):
-        args = options_to_args(configure_options)
-    elif isinstance(configure_options, list):
-        args = configure_options
-    elif isinstance(configure_options, tuple):
-        args = list(configure_options)
-    elif isinstance(configure_options, string_types):
-        args = shlex.split(configure_options)
-    else:
-        module.fail_json(msg="Invalid configure_options type.")
-
-    # Optionally add transarc style paths. The configure options
-    # take precedence over the transarc_paths parameter.
-    if '--enable-transarc-paths' not in args:
-        if transarc_paths:
-            args.append('--enable-transarc-paths')
-
-    #
-    # Historically, the make target depends on the directory path mode
-    # specified by the configure options.  The 'dest' target is used to
-    # build transarc style paths and make install is used to build modern
-    # style paths (although, hybrid styles are possible).  To make it
-    # easier to support both modes, by default, just figure out the make
-    # target based on the configure options given.  The caller my specify
-    # a explicit target (even an empty one) to override this feature.
-    #
-    if target is None:
-        if '--enable-transarc-paths' in args:
-            target = 'dest'
-        else:
-            target = 'install'
-        if '--disable-kernel-module' in args:
-            target += '_nolibafs'
-        log.info('Using target "%s"', target)
-    results['target'] = target
-
-    configure_command = [os.path.join(projectdir, 'configure')]
-    configure_command.extend(args)
-    run_command('configure', configure_command, builddir, logdir, results)
+    run_command('configure', configure_command(module, results), builddir,
+                logdir, results)
     results['sysname'] = configured_sysname(builddir)
     log.info("configured sysname is '%s'.", results['sysname'])
 
@@ -696,20 +751,13 @@ def main():
     # Run make clean if we did not run git clean.
     #
     if clean and not gitdir:
-        make_command = [make, 'clean']
-        run_command('make', make_command, builddir, logdir, results)
+        run_command('make', [make, 'clean'], builddir, logdir, results)
 
     #
     # Run make.
     #
-    make_command = [make]
-    if jobs > 0:
-        make_command.extend(['-j', '%d' % jobs])
-    if target:
-        make_command.append(target)
-    if destdir and not target.startswith('dest'):
-        make_command.append('DESTDIR=%s' % destdir)
-    run_command('make', make_command, builddir, logdir, results)
+    run_command('make', make_command(module, results), builddir, logdir,
+                results)
 
     #
     # `make` may silently fail to build a kernel module for the running kernel
@@ -738,27 +786,29 @@ def main():
     # Copy the transarc-style distribution tree into a DESTDIR file tree
     # for installation.
     #
-    if destdir and target in ('dest', 'dest_nolibafs', 'dest_only_libafs'):
-        log.info('Copying transarc-style distribution files to %s' % destdir)
+    if 'destdir' in results and 'target' in results and \
+            results['target'] in ('dest', 'dest_nolibafs', 'dest_only_libafs'):
+        log.info('Copying transarc-style distribution files to %s' %
+                 results['destdir'])
         sysname = configured_sysname(builddir)
         if not sysname:
             module.fail_json(msg='Unable to get destdir; sysname not found.')
         dest = os.path.join(builddir, sysname, 'dest')
         if not os.path.isdir(dest):
             module.fail_json(msg='Missing dest directory: %s' % dest)
-        copy_tree(dest, destdir)
+        copy_tree(dest, results['destdir'])
         results['changed'] = True
 
     #
     # Copy security key utilities to a standard location.
     #
-    install_targets = \
-        ['install', 'install_nolibafs', 'dest', 'dest_nolibafs']
-    if destdir and target in install_targets:
-        log.info('Copying security key utilities to %s' % destdir)
+    if 'destdir' in results and 'target' in results and \
+            results['target'] in ('install', 'install_nolibafs',
+                                  'dest', 'dest_nolibafs'):
+        log.info('Copying security key utilities to %s' % results['destdir'])
         for p in ('asetkey', 'akeyconvert'):
             src = os.path.join(builddir, 'src', 'aklog', p)
-            dst = os.path.join(destdir, 'usr', 'sbin')
+            dst = os.path.join(results['destdir'], 'usr', 'sbin')
             if os.path.isfile(src):
                 if not os.path.isdir(dst):
                     os.makedirs(dst)
@@ -769,8 +819,9 @@ def main():
     #
     # Save configured build paths in a meta-data file for installation.
     #
-    if destdir and target in ('install', 'install_nolibafs'):
-        filename = os.path.join(destdir, '.build-info.json')
+    if 'destdir' in results and 'target' in results and \
+            results['target'] in ('install', 'install_nolibafs'):
+        filename = os.path.join(results['destdir'], '.build-info.json')
         build_info = {
           'dirs': results['install_dirs']
         }
