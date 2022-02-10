@@ -15,8 +15,7 @@
 #
 # The afs_configure_options and afs_nolibafs_configure_options host variables
 # may be set in your inventory or playbook to override the configure options
-# used to build the binaries.  The afs_transarc_paths variables will add
-# the --enable-transarc-paths configure option to build transarc-style binaries,
+# used to build the binaries.
 #
 #----------------------------------------------------------------------------
 # Preliminary tasks.

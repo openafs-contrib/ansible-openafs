@@ -64,6 +64,8 @@ testcases = [
       '--libdir=/usr/lib64',
       '--bindir=/usr/bin',
       '--without-swig']),
+
+    ({'with': [], 'without': [], 'enable': [], 'disable': []}, []),
 ]
 
 

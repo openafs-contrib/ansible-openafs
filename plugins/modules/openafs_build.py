@@ -55,16 +55,6 @@ requirements:
   - tools and libraries required to build OpenAFS
 
 options:
-  state:
-    description:
-      - C(built) Run regen.sh, configure, make
-      - C(built-module) After build is complete, also verify a kernel module
-        was built for the current running kernel version. Be sure the target
-        and configure options are set to build a client when this state is in
-        use.
-    type: str
-    default: complete
-
   projectdir:
     description:
       - The project directory.
@@ -110,13 +100,6 @@ options:
     type: bool
     default: false
 
-  version:
-    description:
-      - Version string to embed in built files.
-      - The I(version) will be written to the C(.version) file, overwritting
-        the current contents, if any.
-    type: str
-
   make:
     description:
       - The C(make) program to be executed.
@@ -130,22 +113,62 @@ options:
     default: the number of CPUs on the system
     type: int
 
-  manpages:
-    description:
-      - Generate the man-pages from POD files when running C(regen).
+  build_manpages:
+    description: Generate the man pages.
     default: true
     type: bool
 
-  transarc_paths:
+  build_userspace:
+    description: Build userspace programs and libraries.
+    default: true
+    type: bool
+
+  build_module:
+    description: Build the OpenAFS kernel module.
+    default: true
+    type: bool
+
+  build_terminal_programs:
+    description: Build curses-based terminal programs.
+    default: true
+    type: bool
+
+  build_bindings:
+    description: Build program language bindings with swig.
+    default: true
+    type: bool
+
+  build_fuse_client:
+    description: Build fuse client.
+    default: true
+    type: bool
+
+  with_version:
     description:
-      - Build binaries which use the legacy Transarc-style paths.
-      - This option is ignored when the I(configure_options) option is
-        specified.
+      - Version string to embed in program files.
+      - The I(version) will be written to the C(.version) file, overwritting
+        the current contents, if any.
+    type: str
+
+  with_transarc_paths:
+    description: Build binaries which use the legacy Transarc-style paths.
+    default: false
+    type: bool
+
+  with_debug_symbols:
+    description: Include debug symbols and disable optimizations.
+    default: true
+    type: bool
+
+  with_rxgk:
+    description: Include rxgk support.
+    default: false
     type: bool
 
   configure_options:
     description:
-      - The C(configure) command arguments.
+      - The explicit C(configure) command arguments. When present, this option
+        overrides the C(build_*) and C(with_*) options.
       - May be specified as a string, list of strings, or a dictionary.
       - When specified as a dictionary, the values of the keys
         C(enabled), C(disabled), C(with), and C(without) may be lists.
@@ -168,9 +191,19 @@ EXAMPLES = r'''
   openafs_contrib.openafs.openafs_build:
     projectdir: ~/src/openafs
 
-- name: Build OpenAFS server binaries for RHEL
+- name: Build OpenAFS binaries for the current system.
   openafs_contrib.openafs.openafs_build:
-    state: built
+    projectdir: ~/src/openafs
+    clean: yes
+
+- name: Build OpenAFS legacy distribution
+  openafs_contrib.openafs.openafs_build:
+    projectdir: ~/src/openafs
+    clean: yes
+    with_transarc_paths: yes
+
+- name: Build OpenAFS server binaries with custom install paths.
+  openafs_contrib.openafs.openafs_build:
     projectdir: ~/src/openafs
     clean: yes
     target: install_nolibafs
@@ -191,27 +224,6 @@ EXAMPLES = r'''
         - krb5: /path/to/krb5.lib
       with_linux_kernel_packaging: true
       with_swig: true
-  register: build_results
-  when: ansible_os_family == 'RedHat'
-
-- name: Build OpenAFS legacy distribution
-  openafs_contrib.openafs.openafs_build:
-    state: built-module
-    projectdir: ~/src/openafs
-    clean: yes
-    configure_options:
-      enable:
-        - debug
-        - transarc_paths
-        - kernel_module
-      with:
-        - linux_kernel_packaging
-
-- name: Example configure options specified as a string
-  openafs_contrib.openafs.openafs_build:
-    state: built-module
-    projectdir: ~/src/openafs
-    configure_options: "--enable-debug --enable-transarc-paths"
 '''
 
 RETURN = r'''
@@ -324,6 +336,14 @@ long:
 
 class FileError(Exception):
     pass
+
+
+def is_linux():
+    return platform.system() == 'Linux'
+
+
+def is_solaris():
+    return platform.system() == 'SunOS'
 
 
 def copy_tree(src, dst):
@@ -478,15 +498,52 @@ def determine_configure_options(module):
     Automatically determine configure options for this system and build
     options when the explicit configure options are not specified.
     """
-    configure_options = module.params['configure_options']
-    transarc_paths = module.params['transarc_paths']
+    options = module.params['configure_options']
+    build_userspace = module.params['build_userspace']
+    build_module = module.params['build_module']
+    build_terminal_programs = module.params['build_terminal_programs']
+    build_bindings = module.params['build_bindings']
+    build_fuse_client = module.params['build_fuse_client']
+    with_transarc_paths = module.params['with_transarc_paths']
+    with_debug_symbols = module.params['with_debug_symbols']
+    with_rxgk = module.params['with_rxgk']
 
-    if configure_options is None:
-        configure_options = {}
-        if transarc_paths:
-            configure_options['enable'] = 'transarc_paths'
+    if options is None:
+        options = {'enable': [], 'disable': [], 'with': [], 'without': []}
 
-    return configure_options
+        if not build_userspace or not build_module:
+            module.fail_json(msg="build_userspace and build_module are false.")
+
+        if build_module:
+            options['enable'].append('kernel-module')
+            if is_linux():
+                options['with'].append('linux-kernel-packaging')
+        else:
+            options['disable'].append('kernel-module')
+
+        if not build_terminal_programs:
+            options['disable'].append('gtx')
+
+        if not build_bindings:
+            options['without'].append('swig')
+
+        if not build_fuse_client:
+            options['disable'].append('fuse-client')
+
+        if with_debug_symbols:
+            options['enable'].append('debug')
+            options['disable'].extend(['optimize', 'strip-binaries'])
+            if build_module:
+                options['enable'].append('debug-kernel')
+                options['disable'].append('optimize-kernel')
+
+        if with_transarc_paths:
+            options['enable'].append('transarc-paths')
+
+        if with_rxgk:
+            options['enable'].append('rxgk')
+
+    return options
 
 
 def configure_command(module, results):
@@ -522,23 +579,51 @@ def determine_target(module, results):
     """
     Determine the make target name.
 
-    If a target name is not explicitly specified, determine a suitable top
-    level target based on the configure command line used to configure
-    the tree.
-    """
-    # This function must be called after configure, assert otherwise.
-    if 'configure' not in results:
-        module.fail_json(msg='Internal error: configure not found in results.')
 
+    Determine the top level make target for the build. First, use the
+    explicit target if given. Next interpret the explicit configure options
+    if given. Finally, interpret the build options.
+
+    This function may only be used after the configure step, since we
+    may check the configure command line arguments to determine the target.
+
+    Historically, the make target depends on the directory path mode
+    specified by the configure options.  `make dest` target is used to build
+    transarc style paths and `make install` is used to build modern style paths
+    (although, hybrid styles are possible).  To make it easier to support
+    both modes, by default, just figure out the make target based on the
+    configure options.  The caller my specify a explicit target (even
+    an empty one) to override.
+    """
+    build_userspace = module.params['build_userspace']
+    build_module = module.params['build_module']
+    with_transarc_paths = module.params['with_transarc_paths']
+    configure_options = module.params['configure_options']
     target = module.params['target']
-    configure = results['configure']
-    if target is None:
+
+    if target is not None:
+        pass
+    elif configure_options is not None:
+        # Use the flattened version, already created during the configure.
+        if 'configure' not in results:
+            module.fail_json(msg='Internal error: configure result not found.')
+        configure = results['configure']
         if '--enable-transarc-paths' in configure:
             target = 'dest'      # legacy mode
         else:
             target = 'install'   # implies "all"
         if '--disable-kernel-module' in configure:
             target += '_nolibafs'
+    else:
+        if with_transarc_paths:
+            target = 'dest'
+        else:
+            target = 'install'
+        if not build_module:
+            target += '_nolibafs'
+        elif not build_userspace:
+            target += '_only_libafs'
+
     results['target'] = target
     return target
 
@@ -547,13 +632,6 @@ def make_command(module, results):
     """
     Determine make command line.
 
-    Historically, the make target depends on the directory path mode
-    specified by the configure options.  The 'dest' target is used to build
-    transarc style paths and make install is used to build modern style paths
-    (although, hybrid styles are possible).  To make it easier to support
-    both modes, by default, just figure out the make target based on the
-    configure options given.  The caller my specify a explicit target (even
-    an empty one) to override this feature.
     """
     make = module.params['make']
     if not make:
@@ -577,6 +655,17 @@ def make_command(module, results):
     return command
 
 
+def is_kmod_expected(results):
+    target = results['target']
+    configure = results['configure']
+    targets = ('', 'all', 'install', 'dest',
+               'install_onlylibafs', 'dest_onlylibafs')
+
+    if target in targets and '--with-linux-kernel-headers' not in configure:
+        return True
+    return False
+
+
 def main():
     global log
     results = dict(
@@ -591,19 +680,36 @@ def main():
     global module
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(choices=['built', 'built-module'], default='built'),
+            state=dict(type='str'),  # Not used.
             projectdir=dict(type='path', required=True),
             builddir=dict(type='path'),
             logdir=dict(type='path'),
-            clean=dict(type='bool', default=False),
-            version=dict(type='str'),
-            make=dict(type='path'),
-            target=dict(type='str', default=None),
-            jobs=dict(type='int', default=cpu_count()),
-            manpages=dict(type='bool', default=True),
             destdir=dict(type='path'),
+
+            # Procesing options
+            make=dict(type='path'),
+            clean=dict(type='bool', default=False),
+            jobs=dict(type='int', fallback=(cpu_count, [])),
+
+            # Build options.
+            with_version=dict(type='str', default=None, aliases=['version']),
+            with_transarc_paths=dict(type='bool', default=False,
+                                     aliases=['transarc_paths']),
+            with_debug_symbols=dict(type='bool', default=True),
+            with_rxgk=dict(type='bool', defaults=False),
+
+            # What to build.
+            build_manpages=dict(type='bool', default=True,
+                                aliases=['manpages']),
+            build_userspace=dict(type='bool', default=True),
+            build_module=dict(type='bool', default=True),
+            build_terminal_programs=dict(type='bool', default=True),
+            build_fuse_client=dict(type='bool', default=True),
+            build_bindings=dict(type='bool', default=True),
+
+            # Explicit configure and target options.
             configure_options=dict(type='raw', default=None),
-            transarc_paths=dict(type='bool', default=False)
+            target=dict(type='str', default=None),
         ),
         supports_check_mode=False,
     )
@@ -611,14 +717,13 @@ def main():
     log.info('Starting %s', module_name)
     log.info('Parameters: %s', pprint.pformat(module.params))
 
-    state = module.params['state']
     projectdir = module.params['projectdir']
     builddir = module.params['builddir']
     logdir = module.params['logdir']
     clean = module.params['clean']
-    version = module.params['version']
     make = module.params['make']
-    manpages = module.params['manpages']
+    build_manpages = module.params['build_manpages']
+    with_version = module.params['with_version']
 
     if not (os.path.exists(projectdir) and os.path.isdir(projectdir)):
         module.fail_json(msg='projectdir directory not found: %s' % projectdir)
@@ -692,11 +797,12 @@ def main():
     #
     # Set the version string, if supplied.
     #
-    if version:
+    if with_version:
         version_file = os.path.join(projectdir, '.version')
-        log.info('Writing version %s to file %s' % (version, version_file))
+        log.info('Writing version %s to file %s' %
+                 (with_version, version_file))
         with open(version_file, 'w') as f:
-            f.write(version)
+            f.write(with_version)
 
     #
     # Report the version string. This is read from the .version file if
@@ -716,7 +822,7 @@ def main():
         log.info('Skipping regen.sh: configure found.')
     else:
         regen_command = [os.path.join(projectdir, 'regen.sh')]
-        if not manpages:
+        if not build_manpages:
             regen_command.append('-q')
         run_command('regen', regen_command, projectdir, logdir, results)
 
@@ -764,23 +870,18 @@ def main():
     # version (or any version). Let's fail early instead of finding out later
     # when we try to start the cache manager.
     #
-    if platform.system() == 'Linux':
+    if is_linux():
         results['kmods'] = find_kmods_linux(builddir)
-    elif platform.system() == 'SunOS':
+    elif is_solaris():
         results['kmods'] = find_kmods_solaris(builddir)
     else:
         log.warning('Unable to find kernel modules; unknown platform %s'
                     % platform.system())
-    if state == 'built-module':
-        if platform.system() == 'Linux':
+    if is_kmod_expected(results):
+        if is_linux():
             kmod_check_linux(module, results)
-        elif platform.system() == 'SunOS':
+        elif is_solaris():
             kmod_check_solaris(module, results)
-        else:
-            results['msg'] = 'Unable to verify kernel module; '\
-                             'unknown platform %s' % platform.system()
-            log.error(results['msg'])
-            module.fail_json(**results)
 
     #
     # Copy the transarc-style distribution tree into a DESTDIR file tree

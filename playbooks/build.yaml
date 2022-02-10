@@ -22,17 +22,9 @@
       openafs_build:
         projectdir: ~/src/openafs
         clean: yes
-        target: dest
         destdir: packages/dest
-        configure_options:
-          enable:
-            - debug
-            - transarc-paths
-            - kernel-module
-          with:
-            - linux-kernel-packaging
-          without:
-            - swig
+        with_bindings: no
+        with_transarc_paths: yes
       register: build_results
 
     - name: Build results

@@ -11,33 +11,23 @@
         version: "{{ afs_git_version }}"
         dest: "~/openafs"
 
-    - name: Get version string
-      command:
-        cmd: build-tools/git-version .
-        chdir: "~/openafs"
-      changed_when: false
-      register: git_version
-
     - name: Build
       openafs_contrib.openafs.openafs_build:
-        target: dest
         clean: yes
         projectdir: "~/openafs"
         destdir: "~/openafs/packages/dest"
-        configure_options:
-          enable:
-            - debug
-            - debug-kernel
-            - kernel-module
-            - transarc-paths
-          with:
-            - linux-kernel-packaging
+        build_userspace: yes
+        build_module: yes
+        with_transarc_paths: yes
       register: build_results
+
+    - debug:
+        var: build_results
 
     - set_fact:
         osdist: "{{ ansible_distribution | lower + ansible_distribution_major_version }}"
         arch: "{{ ansible_architecture }}"
-        version: "{{ git_version.stdout | replace('-', '_') }}"
+        version: "{{ build_results.version | replace('-', '_') }}"
 
     - set_fact:
         tarball: "openafs-{{ version }}-{{ osdist }}-{{ arch }}.bdist.tar.gz"

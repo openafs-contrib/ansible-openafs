@@ -1,22 +1,3 @@
 ---
 # Default repository url redhat family systems.
 _afs_yum_repo: "https://download.sinenomine.net/openafs/rpms/el$releasever/$basearch"
-
-# Default configure options for RedHat.
-_afs_configure_options:
-  enable:
-    - debug
-    - debug-kernel
-    - kernel-module
-  disable:
-    - optimize
-  with:
-    - linux-kernel-packaging
-
-# Default nolibafs configure options for RedHat.
-_afs_nolibafs_configure_options:
-  enable:
-    - debug
-  disable:
-    - kernel-module
-    - optimize

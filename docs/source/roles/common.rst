@@ -89,8 +89,8 @@ afs_git_version
   Default: ``master``
 
 afs_configure_options
-  The options given to configure when the ``afs_install_method`` is ``source``
-  or ``sdist``.  This variable can be a simple string, such as ``"--enable-debug
+  Overrides the options given to configure when building from source.
+  This variable can be a simple string, such as ``"--enable-debug
   --enable-transarc-paths"``, or may be specified as a dictionary, for example:
 
 .. code-block:: yaml
@@ -110,11 +110,15 @@ afs_configure_options
       with:
         - krb5: /path/to/krb5.lib
 
+  Default: detected, platform dependent
+
 afs_nolibafs_configure_options
-  The options given to configure when the ``afs_install_method`` is ``source``
-  or ``sdist`` and building the userspace binaries only (no kernel module).  This
-  variable can be a simple string, such as ``"--enable-debug
-  --enable-transarc-paths"``, or may be specified as a dictionary.
+  Overrides the `configure` arguments whe building the userspace binaries
+  from source (no kernel module).  This variable can be a simple string,
+  such as ``"--enable-debug --enable-transarc-paths"``, or may be specified
+  as a dictionary.
+
+  Default: detected, platform dependent
 
 afs_always_build
   When the ``afs_install_method`` is ``sdist`` or ``source``, force a rebuild

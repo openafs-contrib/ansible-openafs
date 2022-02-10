@@ -4,18 +4,14 @@
 # is only a server.
 #
 
-- debug:
-    var: afs_nolibafs_configure_options
-    verbosity: 1
-
 - name: Build OpenAFS binaries
   openafs_contrib.openafs.openafs_build:
     state: built
     clean: "{{ afs_clean_build | bool }}"
     projectdir: "{{ afs_topdir }}"
     destdir: "{{ afs_topdir }}/packages/dest"
-    configure_options: "{{ afs_nolibafs_configure_options }}"
     transarc_paths: "{{ afs_transarc_build }}"
+    configure_options: "{{ afs_nolibafs_configure_options | default(omit) }}"
   register: build_results
 
 - name: Build results

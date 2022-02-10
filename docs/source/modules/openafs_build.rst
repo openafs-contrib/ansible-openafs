@@ -43,12 +43,6 @@ The below requirements are needed on the host that executes this module.
 Parameters
 ----------
 
-  state (optional, str, complete)
-    ``built`` Run regen.sh, configure, make
-
-    ``built-module`` After build is complete, also verify a kernel module was built for the current running kernel version. Be sure the target and configure options are set to build a client when this state is in use.
-
-
   projectdir (True, path, None)
     The project directory.
 
@@ -83,12 +77,6 @@ Parameters
     The *clean* option will remove any new files you added manually on the remote node and did not commit when the *projectdir* is a git repository.
 
 
-  version (optional, str, None)
-    Version string to embed in built files.
-
-    The *version* will be written to the ``.version`` file, overwritting the current contents, if any.
-
-
   make (optional, path, detect)
     The ``make`` program to be executed.
 
@@ -99,18 +87,50 @@ Parameters
     Set this to 0 to disable parallel make.
 
 
-  manpages (optional, bool, True)
-    Generate the man-pages from POD files when running ``regen``.
+  build_manpages (optional, bool, True)
+    Generate the man pages.
 
 
-  transarc_paths (optional, bool, None)
+  build_userspace (optional, bool, True)
+    Build userspace programs and libraries.
+
+
+  build_module (optional, bool, True)
+    Build the OpenAFS kernel module.
+
+
+  build_terminal_programs (optional, bool, True)
+    Build curses-based terminal programs.
+
+
+  build_bindings (optional, bool, True)
+    Build program language bindings with swig.
+
+
+  build_fuse_client (optional, bool, True)
+    Build fuse client.
+
+
+  with_version (optional, str, None)
+    Version string to embed in program files.
+
+    The *version* will be written to the ``.version`` file, overwritting the current contents, if any.
+
+
+  with_transarc_paths (optional, bool, False)
     Build binaries which use the legacy Transarc-style paths.
 
-    This option is ignored when the *configure_options* option is specified.
+
+  with_debug_symbols (optional, bool, True)
+    Include debug symbols and disable optimizations.
+
+
+  with_rxgk (optional, bool, False)
+    Include rxgk support.
 
 
   configure_options (optional, raw, None)
-    The ``configure`` command arguments.
+    The explicit ``configure`` command arguments. When present, this option overrides the ``build_*`` and ``with_*`` options.
 
     May be specified as a string, list of strings, or a dictionary.
 
@@ -140,9 +160,19 @@ Examples
       openafs_contrib.openafs.openafs_build:
         projectdir: ~/src/openafs
 
-    - name: Build OpenAFS server binaries for RHEL
+    - name: Build OpenAFS binaries for the current system.
       openafs_contrib.openafs.openafs_build:
-        state: built
+        projectdir: ~/src/openafs
+        clean: yes
+
+    - name: Build OpenAFS legacy distribution
+      openafs_contrib.openafs.openafs_build:
+        projectdir: ~/src/openafs
+        clean: yes
+        with_transarc_paths: yes
+
+    - name: Build OpenAFS server binaries with custom install paths.
+      openafs_contrib.openafs.openafs_build:
         projectdir: ~/src/openafs
         clean: yes
         target: install_nolibafs
@@ -163,27 +193,6 @@ Examples
             - krb5: /path/to/krb5.lib
           with_linux_kernel_packaging: true
           with_swig: true
-      register: build_results
-      when: ansible_os_family == 'RedHat'
-
-    - name: Build OpenAFS legacy distribution
-      openafs_contrib.openafs.openafs_build:
-        state: built-module
-        projectdir: ~/src/openafs
-        clean: yes
-        configure_options:
-          enable:
-            - debug
-            - transarc_paths
-            - kernel_module
-          with:
-            - linux_kernel_packaging
-
-    - name: Example configure options specified as a string
-      openafs_contrib.openafs.openafs_build:
-        state: built-module
-        projectdir: ~/src/openafs
-        configure_options: "--enable-debug --enable-transarc-paths"
 
 
 

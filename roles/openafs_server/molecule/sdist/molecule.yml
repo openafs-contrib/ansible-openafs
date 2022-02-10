@@ -20,7 +20,6 @@ provisioner:
         afs_pseudo_partitions: ['a', 'b']
         afs_service_keytab: "../__files__/example-aes.keytab"
         afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
-        # afs_configure_options: "--enable-transarc-paths"
         afs_always_build: "${AFS_ALWAYS_BUILD:-no}"
         afs_clean_build: "${AFS_CLEAN_BUILD:-yes}"
 verifier:
