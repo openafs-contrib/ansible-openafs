@@ -25,7 +25,7 @@
   rescue:
     # If we are unable to install the linux-headers package, the current
     # kernel version may be too old. When allowed, automatically update
-    # the kernel. This entails a reboot.
+    # the kernel then retry the linux-headers install. This entails a reboot.
     - fail:
         msg: Kernel update and reboot required.
       when: not (afs_devel_allow_kernel_update | d('no') | bool)
@@ -35,7 +35,6 @@
         state: latest
         name:
           - 'linux-image*'
-          - 'linux-headers*'
         only_upgrade: yes
         update_cache: yes
       register: apt_update_results
@@ -46,7 +45,14 @@
         - name: Rebooting
           reboot:
             reboot_timeout: 600
+
         - name: Waiting for reboot to complete
           wait_for_connection:
+
         - name: Gathering facts
           setup:
+
+        - name: "Install linux-headers"
+          apt:
+            state: present
+            name: "linux-headers-{{ ansible_kernel }}"

@@ -25,7 +25,8 @@
   rescue:
     # If we are unable to install the kernel-devel package the current
     # kernel version may be too old. When allowed, automatically update
-    # the kernel. This entails a reboot.
+    # the kernel and then retry the kernel-devel install.
+    # This entails a reboot.
     - fail:
         msg: Kernel update and reboot required.
       when: not (afs_devel_allow_kernel_update | d('no') | bool)
@@ -35,7 +36,6 @@
         state: latest
         name:
           - kernel
-          - kernel-devel
       register: yum_update_results
 
     - name: Reboot
@@ -44,7 +44,14 @@
         - name: Rebooting
           reboot:
             reboot_timeout: 600
+
         - name: Waiting for reboot to complete
           wait_for_connection:
+
         - name: Gathering facts
           setup:
+
+        - name: "Install kernel-devel package for {{ ansible_kernel }}."
+          yum:
+            state: present
+            name: "kernel-devel-uname-r == {{ ansible_kernel }}"
