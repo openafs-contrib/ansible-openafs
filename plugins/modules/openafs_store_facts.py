@@ -52,6 +52,27 @@ from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common imp
 module_name = os.path.basename(__file__).replace('.py', '')
 
 
+def flatten(prefix, value):
+    """
+    Flatten the data tree in sorted order.
+    """
+    if isinstance(value, dict):
+        for k in sorted(value.keys()):
+            for element in flatten(prefix + str(k), value[k]):
+                yield element
+    elif isinstance(value, (list, tuple)):
+        for v in sorted(value):
+            for element in flatten(prefix, v):
+                yield element
+    else:
+        yield prefix + str(value)
+
+
+def signature(facts):
+    text = '\n'.join(flatten('', facts))
+    return text
+
+
 def main():
     results = dict(
         changed=False,
@@ -78,11 +99,7 @@ def main():
             facts = json.load(fp)
     except Exception:
         facts = {}
-
-    # TODO: Making this idempotent has proved challenging. Even using
-    #       OrderedDicts() and writing a temp file has shown keys can
-    #       be shuffled around. For now, keep it simple and just write
-    #       the facts dict to the file each time.
+    signature_before = signature(facts)
 
     for key, value in module.params['facts'].items():
         if state == 'set':
@@ -103,8 +120,13 @@ def main():
         os.makedirs(factsdir)
     with open(factsfile, 'w') as fp:
         json.dump(facts, fp, indent=2)
-    log.info("Facts file '%s' changed.", factsfile)
-    results['changed'] = True
+
+    with open(factsfile) as fp:
+        facts = json.load(fp)
+    signature_after = signature(facts)
+    if signature_before != signature_after:
+        log.info("Facts file '%s' changed.", factsfile)
+        results['changed'] = True
 
     # Update local facts in the current play.
     results['ansible_facts']['ansible_local']['openafs'] = facts
