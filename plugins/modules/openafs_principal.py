@@ -281,6 +281,7 @@ def main():
         results['realm'] = realm
 
     def die(msg):
+        log.error("%s: %s", msg, results)
         results['msg'] = msg
         module.fail_json(**results)
 
