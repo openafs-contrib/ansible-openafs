@@ -1,0 +1,6 @@
+---
+- name: Install kerberos client
+  become: yes
+  zypper:
+    name: krb5-client
+    state: present
