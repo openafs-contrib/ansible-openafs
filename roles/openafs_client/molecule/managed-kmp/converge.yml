@@ -1,0 +1,8 @@
+---
+- import_playbook: ../__playbooks__/preamble.yml
+
+- name: Converge
+  hosts: all
+  tasks:
+    - import_role:
+        name: openafs_client

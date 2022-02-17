@@ -1,0 +1,2 @@
+---
+_afs_zypper_repo: "https://download.sinenomine.net/openafs/rpms/openSUSEleap_$releasever/$basearch"

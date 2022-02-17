@@ -24,8 +24,8 @@ afs_module
   OpenAFS kernel module name, ``openafs`` or ``libafs``. Default: ``openafs``
 
 afs_module_install_method
-  Specifies the kernel module installation method on RPM-based systems, ``dkms`` or
-  ``kmod``.
+  Specifies the kernel module installation method on RPM-based systems.
+  Must be one of: ``dkms``, ``kmod``, or ``kmp``.
 
   Default: ``dkms``
 

@@ -1,0 +1,120 @@
+---
+#
+# Install prebuilt rpm packages and the kernel module with kmp. These
+# packages must be available on the control node and will be uploaded
+# to the remote node and installed.
+#
+# The directory on the control node must contain packages for only one
+# OpenAFS version.
+#
+- name: Ensure tar is installed
+  become: yes
+  zypper:
+    state: present
+    name:
+      - tar
+      - gzip
+      - bzip2
+
+- name: Verify the path to the installation tarball is specified
+  assert:
+    that:
+      - afs_install_archive is defined
+      - afs_install_archive != ''
+
+- debug:
+    msg: "Installing {{ afs_install_archive }}"
+
+- name: Create directory
+  file:
+    state: directory
+    path: "{{ afs_tmpdir }}/install"
+
+- name: Upload rpm package files
+  unarchive:
+    src: "{{ afs_install_archive }}"
+    dest: "{{ afs_tmpdir }}/install/"
+
+- name: Find client userspace rpm filenames
+  find:
+    path: "{{ afs_tmpdir }}/install/"
+    file_type: file
+    recurse: yes
+    use_regex: yes
+    patterns:
+      - "openafs-v?[0-9].*[.]rpm$"
+      - "openafs-client-.*[.]rpm$"
+      - "openafs-debuginfo-.*[.]rpm$"
+      - "openafs-docs-.*[.]rpm$"
+      - "openafs-krb5-.*[.]rpm$"
+      - "openafs-kmp-default-.*[.]rpm$"
+    exclude: ".*[.]src[.]rpm$"
+  register: find_rpms
+
+- set_fact:
+    userspace_rpms: "{{ find_rpms.files | map(attribute='path') | list }}"
+
+- name: Verify the rpm package files are present
+  assert:
+    that:
+      - userspace_rpms | select('search', '.*/openafs-v?[0-9][^/]*[.]rpm$') | list | count == 1
+      - userspace_rpms | select('search', '.*/openafs-client-v?[0-9][^/]*[.]rpm$') | list | count == 1
+      - userspace_rpms | select('search', '.*/openafs-kmp-default-v?[0-9][^/]*[.]rpm$') | list | count == 1
+
+- name: Install OpenAFS client rpm files with kmp
+  become: yes
+  zypper:
+    state: present
+    disable_gpg_check: yes
+    name: "{{ userspace_rpms }}"
+
+- name: Get installation paths
+  openafs_contrib.openafs.openafs_get_install_paths:
+    package_manager_type: rpm
+  register: install_results
+
+- name: Store installation facts
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      install_method: "{{ afs_install_method }}"
+      client_installed: yes
+      client_service_name: openafs-client
+      client_options: "{{ install_results.afsd_args | d(omit) }}"
+      bins: "{{ install_results.bins }}"
+      dirs: "{{ install_results.dirs }}"
+      cacheinfo: "{{ install_results.cacheinfo }}"
+  when: not ansible_check_mode
+
+- name: Cleanup uploaded rpm files
+  file:
+    state: absent
+    path: "{{ afs_tmpdir }}/install/{{ rpm }}"
+  changed_when: false
+  with_items: "{{ uploaded_rpms }}"
+  when: uploaded_rpms is defined
+  loop_control:
+    loop_var: rpm
+
+- name: Set client startup options
+  become: yes
+  lineinfile:
+    path: /etc/sysconfig/openafs-client
+    regexp: "^AFSD_ARGS="
+    line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
+    state: present
+  notify:
+    - Restart OpenAFS client
+
+- name: Set client crypt option.
+  become: yes
+  vars:
+    crypt: "{{ afs_crypt | d('off') }}"
+  lineinfile:
+    path: /etc/sysconfig/openafs-client
+    regexp: "^CRYPT="
+    line: 'CRYPT="{{ crypt }}"'
+    state: present
+  notify:
+    - Restart OpenAFS client

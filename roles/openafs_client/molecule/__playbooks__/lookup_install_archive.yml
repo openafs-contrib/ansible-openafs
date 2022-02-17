@@ -21,13 +21,16 @@
             pattern: "openafs-{{ afs_version | d('*') }}-{{ osdist }}-{{ arch }}.rpms.tar.gz"
           when:
             - afs_install_method == 'packages'
-            - ansible_pkg_mgr in ('yum', 'dnf')
+            - ansible_pkg_mgr in ('yum', 'dnf', 'zypper')
 
         - set_fact:
             pattern: "openafs-{{ afs_version | d('*') }}-{{ osdist }}-{{ arch }}.debs.tar.gz"
           when:
             - afs_install_method == 'packages'
             - ansible_pkg_mgr in ('apt')
+
+        - debug:
+            var: pattern
 
         - name: Lookup install tarballs
           local_action:

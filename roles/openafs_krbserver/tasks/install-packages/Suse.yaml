@@ -15,3 +15,6 @@
   file:
     state: directory
     path: /run/user/0/krb5cc
+    owner: root
+    group: root
+    mode: "0600"
