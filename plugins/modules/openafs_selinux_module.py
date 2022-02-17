@@ -89,7 +89,6 @@ def main():
     )
     log = Logger(module_name)
     log.info('Starting %s', module_name)
-    log.info('Parameters: %s', pprint.pformat(module.params))
 
     name = module.params['name']
     path = module.params['path']

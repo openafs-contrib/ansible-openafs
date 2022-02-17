@@ -146,7 +146,6 @@ def main():
     )
     log = Logger(module_name)
     log.info('Starting %s', module_name)
-    log.info('Parameters: %s', pprint.pformat(module.params))
 
     state = module.params['state']
     user = module.params['user']

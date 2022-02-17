@@ -114,7 +114,6 @@ def main():
     )
     log = Logger(module_name)
     log.info('Starting %s', module_name)
-    log.info('Parameters: %s', pprint.pformat(module.params))
 
     pm = package_managers[module.params['package_manager_type']]
 

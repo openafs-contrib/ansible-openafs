@@ -109,7 +109,6 @@ files:
 
 import glob                    # noqa: E402
 import os                      # noqa: E402
-import pprint                  # noqa: E402
 import re                      # noqa: E402
 import shutil                  # noqa: E402
 
@@ -276,7 +275,6 @@ def main():
     )
     log = Logger(module_name)
     log.info('Starting %s', module_name)
-    log.info('Parameters: %s', pprint.pformat(module.params))
 
     sdist = expand_path(module.params['sdist'])
     topdir = expand_path(module.params['topdir'])
