@@ -82,12 +82,12 @@
 
 - name: Create admin principal
   become: yes
-  no_log: yes
   openafs_contrib.openafs.openafs_principal:
     state: present
     principal: "{{ afs_krb_admin_principal }}"
     password: "{{ afs_krb_admin_password }}"
     acl: "*"
+    kadmin: "{{ afs_kadmin_local | default(omit) }}"
   register: admin_principal_results
 
 - name: Download admin keytab

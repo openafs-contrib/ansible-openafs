@@ -1,0 +1,17 @@
+---
+- name: Install kerberos server
+  become: yes
+  zypper:
+    state: present
+    name:
+      - krb5
+      - krb5-server
+
+# Workaround missing credentials cache directory.  It seems the krb5cc directory
+# is normally created by kinit, but we are bootstrapping and invoking
+# kadmin.local first, which fails due to the missing krb5cc directory.
+- name: Create credential cache directory for root.
+  become: yes
+  file:
+    state: directory
+    path: /run/user/0/krb5cc
