@@ -24,6 +24,7 @@
 #
 import os
 import subprocess
+import sys
 from pathlib import Path
 import pytest
 
@@ -78,8 +79,12 @@ def run_molecule(cmd, scenario, log, options):
     print(msg)
     log.write('%s\n' % msg)
     proc = subprocess.Popen(args,
-                            stdout=log.fileno(),
+                            stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
+    for line in proc.stdout:
+        line = line.decode('utf-8')
+        sys.stdout.write(line)
+        log.write(line)
     rc = proc.wait()
     assert rc == 0, 'See "%s".' % log.name
 
