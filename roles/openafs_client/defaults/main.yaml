@@ -9,16 +9,12 @@ afs_module_install_method: "{{ _afs_module_install_method | default('dkms') }}"
 afs_module_enable_preload: no
 
 # afs mountpoint
-afs_mountpoint: /afs
+afs_mountpoint: "{{ ansible_local.openafs.cacheinfo.mountpoint | d('/afs') }}"
+afs_cachedir: "{{ ansible_local.openafs.cacheinfo.cachedir | d('/usr/vice/cache') }}"
+afs_cachesize: "{{ ansible_local.openafs.cacheinfo.cachesize | d(50000) }}"
 
-# afs cache mount point
-afs_cachedir: "{{ _afs_cachedir | default('/usr/vice/cache') }}"
-
-# afs cache size
-afs_cachesize: 50000
-
-# afsd options
-afs_afsd_opts: -dynroot -fakestat -afsdb
+# afsd options (AFSD_ARGS)
+afs_afsd_opts: "{{ ansible_local.openafs.client_options | d('-dynroot -fakestat -afsdb') }}"
 
 # Service name
 afs_client_service_mgr: "{{ _afs_client_service_mgr | d(ansible_service_mgr) }}"

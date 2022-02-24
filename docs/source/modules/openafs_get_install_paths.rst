@@ -1,8 +1,8 @@
 .. _openafs_get_install_paths_module:
 
 
-openafs_get_install_paths -- Detect installation paths
-======================================================
+openafs_get_install_paths -- Detect installation paths from package installation.
+=================================================================================
 
 .. contents::
    :local:
@@ -12,7 +12,9 @@ openafs_get_install_paths -- Detect installation paths
 Synopsis
 --------
 
-Gather the paths to installed OpenAFS programs from the installed packages
+Detect the paths of installed OpenAFS programs and detect configuration directories from installed man pages.
+
+Supports rpm and deb packaging.
 
 
 
@@ -22,10 +24,10 @@ Gather the paths to installed OpenAFS programs from the installed packages
 Parameters
 ----------
 
-  package_mgr_type (optional, any, rpm)
-    The package manager type on this remote node.
+  package_mgr_type (optional, any, autodetect)
+    The package manager type on the node.
 
-    Supported values are ``rpm`` and ``apt``
+    Supported values are ``rpm`` and ``deb``.
 
 
 
@@ -43,8 +45,12 @@ Examples
     
     - name: Get installation paths
       openafs_contrib.openafs.openafs_get_install_paths:
-        package_manager_type: apt
-      register: install_results
+      register: results
+
+    - debug:
+        msg: >
+          Bins are {{ results.bins }}
+          Dirs are {{ results.dirs }}
 
 
 

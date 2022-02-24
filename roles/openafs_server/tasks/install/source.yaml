@@ -111,6 +111,7 @@
           client_installed: "{{ afs_is_client }}"
           bins: "{{ install_results.bins }}"
           dirs: "{{ install_results.dirs }}"
+          cacheinfo: "{{ install_results.cacheinfo | d(omit) }}"
       when:
         - install_results.changed
         - not ansible_check_mode

@@ -36,21 +36,42 @@ afs_module_enable_preload
   Default: no
 
 afs_mountpoint
-  The AFS filesystem mount point. Default: ``/afs``
+  The AFS filesystem mount point. This value is written to the ``cacheinfo``
+  file.
+
+  Default value is autodetected from the ``cacheinfo`` file installed by
+  packages.
+
+  Default: autodetected, fallback to ``/afs``
 
 afs_cachedir
-  The path to the AFS cache. Default: ``/usr/vice/cache``
+  The path to the AFS cache.  This value is written to the ``cacheinfo`` file.
+
+  Default value is autodetected from the ``cacheinfo`` file installed by
+  packages.
+
+  Default: autodetected, fallback to ``/usr/vice/cache``
 
 afs_cachesize
-  The size of the AFS cache. Default: 50000
+  The size of the AFS cache. This valus is written to the ``cacheinfo`` file.
+
+  Default value is autodetected from the ``cacheinfo`` file installed by
+  packages.
+
+  Default: autodetected, fallback to 50000
 
 afs_afsd_opts
-  The ``afsd`` command line arguments. Default: ``-dynroot -fakestat -afsdb``
+  The ``afsd`` command line arguments.
+
+  Default value is autodetected from the service initialization files
+  installed by packages.
+
+  Default: autodetected, fallback to ``-dynroot -fakestat -afsdb``
 
 afs_client_netinfo
-  A single string, or a list of strings, to set the contents of the client ``NetInfo``
-  configuration file.
+  A single string, or a list of strings, to set the contents of the client
+  ``NetInfo`` configuration file.
 
 afs_client_netrestrict
-  A single string, or a list of strings, to set the contents of the client ``NetRestrict``
-  configuration file.
+  A single string, or a list of strings, to set the contents of the client
+  ``NetRestrict`` configuration file.
