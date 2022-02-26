@@ -25,6 +25,7 @@
 import os
 import subprocess
 import sys
+import fnmatch
 from pathlib import Path
 import pytest
 
@@ -46,30 +47,60 @@ LOGDIR = Path('/tmp/ansible-openafs/molecule') / ROLE
 BASECONFIGDIR = Path('~/.config/molecule').expanduser()
 
 
-def skiplist():
-    skip = []
+def read_skip_list():
+    """
+    Read the pytest.skip file.
+
+    The pytest.skip file can be used to skip platform/scenario test
+    combinations. Each line of the file contains a file glob pattern of tests
+    to exclude. Lines starting with ! indicate tests to include (to override
+    the exclusions). Blank lines and lines starting with '#' are ignored.
+    """
+    exclude = []
+    include = []
     if os.path.exists('pytest.skip'):
         with open('pytest.skip') as f:
             for line in f.readlines():
-                line = line.rstrip()
-                if not line.startswith('#'):
-                    skip.append(line)
-    return set(skip)
+                line = line.strip()
+                if line == '' or line.startswith('#'):
+                    continue  # Skip blank lines and comments.
+                if line.startswith('!'):
+                    include.append(line.replace('!', '', 1))
+                else:
+                    exclude.append(line)
+    return set(exclude), set(include)
+
+
+def in_list(patterns, name):
+    """
+    Return true if name matches at least one pattern in the list.
+    """
+    for pattern in patterns:
+        if fnmatch.fnmatch(name, pattern):
+            return True
+    return False
 
 
 def parameters():
-    skip = skiplist()
+    """
+    Generate the platform-scenario test cases.
+    """
+    exclude, include = read_skip_list()
     params = []
     scenarios = [p.parent.name for p in Path().glob('molecule/*/molecule.yml')]
     for p in PLATFORMS:
         for s in scenarios:
-            pattern = '%s-%s' % (p, s)
-            if pattern not in skip:
-                params.append((p, s))
+            name = '%s-%s' % (p, s)
+            if in_list(exclude, name) and not in_list(include, name):
+                continue
+            params.append((p, s))
     return params
 
 
 def run_molecule(cmd, scenario, log, options):
+    """
+    Run molecule test
+    """
     args = ['molecule']
     for k, v in options.items():
         args.append('--%s=%s' % (k, v))
