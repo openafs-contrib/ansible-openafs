@@ -25,6 +25,4 @@ build_ignore:
   - '*/molecule'
   - '*/.pytest*'
   - '*/pytest.*'
-dependencies:
-  ansible.posix: '>=1.2.0'
 repository: 'https://github.com/openafs-contrib/ansible-openafs'
