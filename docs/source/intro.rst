@@ -22,4 +22,5 @@ Platforms supported
 * Fedora 34, 35
 * Debian 10, 11
 * Ubuntu 20
+* openSUSE 15
 * Solaris 11.4
