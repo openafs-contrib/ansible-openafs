@@ -570,7 +570,8 @@ def configure_command(module, results):
         module.fail_json(msg="Invalid configure_options type.")
 
     projectdir = module.params['projectdir']
-    command = [os.path.join(projectdir, 'configure'), *args]
+    command = [os.path.join(projectdir, 'configure')]
+    command.extend(args)
     results['configure'] = command
     return command
 
