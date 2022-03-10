@@ -2,7 +2,7 @@
 dependency:
   name: galaxy
 platforms:
-  - name: m-role-devel-04
+  - name: m-role-devel${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
 provisioner:
   name: ansible

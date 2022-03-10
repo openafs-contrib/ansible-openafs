@@ -3,15 +3,16 @@
 #
 # USAGE
 #
-#   pytest --co                #  list test cases
-#   pytest -v                  #  run tests
+#   cd roles/<name>            # must run in the role directory
+#   pytest --co                # to list test cases
+#   pytest -v                  # to  run tests
 #   pytest -v -k '<pattern>'   # to run specific tests
 #
 # DESCRIPTION
 #
 #   Run molecule scenarios for the supported platforms.
 #
-#   Molecule stdout and stderr is written to log files:
+#   Molecule stdout and stderr are written to log files:
 #
 #       /tmp/ansible-openafs/molecule/<role-or-playbook>/<platform>-<scenario>.log
 #
@@ -86,6 +87,7 @@ def parameters():
     Generate the platform-scenario test cases.
     """
     exclude, include = read_skip_list()
+    number = 0
     params = []
     scenarios = [p.parent.name for p in Path().glob('molecule/*/molecule.yml')]
     for p in PLATFORMS:
@@ -93,7 +95,8 @@ def parameters():
             name = '%s-%s' % (p, s)
             if in_list(exclude, name) and not in_list(include, name):
                 continue
-            params.append((p, s))
+            params.append((number, p, s))
+            number += 1
     return params
 
 
@@ -120,8 +123,8 @@ def run_molecule(cmd, scenario, log, options):
     assert rc == 0, 'See "%s".' % log.name
 
 
-@pytest.mark.parametrize('platform,scenario', parameters())
-def test_scenario(platform, scenario):
+@pytest.mark.parametrize('number,platform,scenario', parameters())
+def test_scenario(number, platform, scenario):
     logfile = '%s/%s-%s.log' % (LOGDIR, platform, scenario)
     if not os.path.exists(os.path.dirname(logfile)):
         os.makedirs(os.path.dirname(logfile))
@@ -136,6 +139,8 @@ def test_scenario(platform, scenario):
         os.environ['ANSIBLE_NOCOLOR'] = '1'
         os.environ['ANSIBLE_FORCE_COLOR'] = '0'
         os.environ['AFS_IMAGE'] = 'generic/%s' % platform
+        os.environ['AFS_TESTID'] = '-%d-%d' % (os.getpid(), number)
         print('AFS_IMAGE=%s' % os.environ['AFS_IMAGE'])
+        print('AFS_TESTID=%s' % os.environ['AFS_TESTID'])
         run_molecule('reset', scenario, log, options)
         run_molecule('test', scenario, log, options)

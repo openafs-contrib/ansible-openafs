@@ -2,7 +2,7 @@
 dependency:
   name: galaxy
 platforms:
-  - name: m-role-krbserver-01
+  - name: m-role-krbserver${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_kdcs

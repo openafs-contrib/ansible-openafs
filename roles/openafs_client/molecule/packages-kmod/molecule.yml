@@ -2,7 +2,7 @@
 dependency:
   name: galaxy
 platforms:
-  - name: m-role-client-06
+  - name: m-role-client${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_clients

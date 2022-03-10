@@ -2,7 +2,7 @@
 dependency:
   name: galaxy
 platforms:
-  - name: m-role-server-02
+  - name: m-role-server${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_databases

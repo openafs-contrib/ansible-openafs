@@ -2,29 +2,29 @@
 dependency:
   name: galaxy
 platforms:
-  - name: m-playbook-cluster-01
+  - name: m-playbook-cluster-01${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_databases
       - afs_kdcs
-  - name: m-playbook-cluster-02
+  - name: m-playbook-cluster-02${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_fileservers
-  - name: m-playbook-cluster-03
+  - name: m-playbook-cluster-03${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_fileservers
-  - name: m-playbook-cluster-04
+  - name: m-playbook-cluster-04${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_admin_client
       - afs_clients
-  - name: m-playbook-cluster-05
+  - name: m-playbook-cluster-05${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_clients
-  - name: m-playbook-cluster-06
+  - name: m-playbook-cluster-06${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_clients

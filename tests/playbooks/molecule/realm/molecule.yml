@@ -2,7 +2,7 @@
 dependency:
   name: galaxy
 platforms:
-  - name: m-playbook-realm-01
+  - name: m-playbook-realm${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
     groups:
       - afs_kdcs
