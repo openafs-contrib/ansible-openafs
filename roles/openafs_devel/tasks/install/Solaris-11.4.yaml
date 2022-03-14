@@ -1,11 +1,11 @@
 ---
-- name: "Solaris 11.4: Update"
-  become: yes
-  pkg5:
-    state: present
-    name: "entire@latest"
-  register: update
-  tags: root
+# - name: "Solaris 11.4: Update"
+#   become: yes
+#   pkg5:
+#     state: present
+#     name: "entire@latest"
+#   register: update
+#   tags: root
 
 - name: "Solaris 11.4: Make publisher certs directory"
   file:
@@ -41,6 +41,13 @@
   when: not 'solarisstudio' in publisher_results.get('stdout', '')
   tags: root
 
+- name: "Solaris 11.4: Get perl mediator"
+  command: pkg mediator -H perl
+  register: perl_results
+
+- set_fact:
+    perl_version: "{{ perl_results.stdout.split()[2] }}"
+
 - name: "Solaris 11.4: Install development packages"
   become: yes
   pkg5:
@@ -59,7 +66,7 @@
       - libtool
       - make
       - onbld
-      - runtime/perl-526
+      - runtime/perl-{{ perl_version | replace('.','') }}
       - text/locale
   tags: root
 
@@ -91,10 +98,16 @@
 
 # This task is a work around. The perl-526 package installation sometimes fails
 # to to create this symlink for me.
+- name: "Check if pod2man symlink already exists"
+  stat:
+    path: /usr/bin/pod2man
+  register: pod2man_link
+
 - name: "Solaris 11.4: Create pod2man symlink"
   become: yes
   file:
     state: link
-    src: /usr/perl5/5.26/bin/pod2man
+    src: /usr/perl5/{{ perl_version }}/bin/pod2man
     path: /usr/bin/pod2man
+  when: pod2man_link.stat.exists == False
   tags: root
