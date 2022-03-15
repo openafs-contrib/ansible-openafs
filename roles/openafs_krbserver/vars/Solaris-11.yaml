@@ -1,6 +1,7 @@
 ---
 # Kerberos commands
 afs_kdb5_util: "/usr/sbin/kdb5_util"
+afs_kadmin_local: "/usr/sbin/kadmin.local"
 
 # Kerberos files
 afs_krbserver_krb5_conf: "/etc/krb5/krb5.conf"
