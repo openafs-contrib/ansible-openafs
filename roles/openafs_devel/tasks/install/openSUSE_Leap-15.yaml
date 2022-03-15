@@ -20,7 +20,6 @@
       - krb5-devel
       - libtirpc-devel
       - libtool
-      - libtool
       - make
       - ncurses-devel
       - pkg-config
