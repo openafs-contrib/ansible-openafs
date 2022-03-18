@@ -44,6 +44,7 @@
 - name: "Solaris 11.4: Get perl mediator"
   command: pkg mediator -H perl
   register: perl_results
+  changed_when: no
 
 - set_fact:
     perl_version: "{{ perl_results.stdout.split()[2] }}"
@@ -109,5 +110,5 @@
     state: link
     src: /usr/perl5/{{ perl_version }}/bin/pod2man
     path: /usr/bin/pod2man
-  when: pod2man_link.stat.exists == False
+  when: not pod2man_link.stat.exists
   tags: root
