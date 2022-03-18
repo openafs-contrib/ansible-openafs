@@ -1,5 +1,28 @@
 OpenAFS Ansible Collection
 
+March 18, 2022 - version 1.5.0-rc2
+
+* Add support for openSUSE Leap 15
+
+* Add support for the new Solaris 11.4 rolling updates
+
+* Add default yum repo URL for AlmaLinux
+
+* Fix `openafs_store_facts` module idempotency
+
+* Detect afsd command line arguments installed by packages and use
+  those by default
+
+* Detect installation directories used by packages instead of assuming
+  installation paths based on package type
+
+* Add more build options to the `openafs_build` module
+
+* Improve `openafs_principle` module error logging
+
+* Remove redundant logging of parameters to syslog and always honor
+  the `no_log` option for parameter logging
+
 February 4, 2022 - version 1.4.0
 
 * Add support for AlmaLinux 8 and RockLinux 8.
