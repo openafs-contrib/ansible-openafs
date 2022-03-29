@@ -1,6 +1,6 @@
 ---
-afs_kadmin: "/usr/bin/kadmin"
-afs_kdestroy: "/usr/bin/kdestroy"
-afs_kinit: "/usr/bin/kinit"
+afs_kadmin: "/usr/lib/mit/bin/kadmin"
+afs_kdestroy: "/usr/lib/mit/bin/kdestroy"
+afs_kinit: "/usr/lib/mit/bin/kinit"
 afs_krbclient_krb5_conf: "/etc/krb5.conf"
 afs_firewall: firewalld
