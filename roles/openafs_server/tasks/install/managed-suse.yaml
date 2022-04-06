@@ -1,0 +1,47 @@
+---
+- debug:
+    msg: "Adding OpenAFS repo: {{ afs_zypper_repo }}"
+
+- name: Add OpenAFS zypper repo
+  become: yes
+  zypper_repository:
+    name: openafs
+    description: OpenAFS zypper repo
+    repo: "{{ afs_zypper_repo }}"
+    disable_gpg_check: yes
+
+- name: Install OpenAFS server packages
+  become: yes
+  zypper:
+    state: present
+    name:
+      - openafs-server
+
+- name: Get installation paths
+  openafs_contrib.openafs.openafs_get_install_paths:
+    package_manager_type: rpm
+  register: install_results
+
+- name: Store installation facts
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      install_method: "{{ afs_install_method }}"
+      server_installed: yes
+      server_service_name: openafs-server
+      bins: "{{ install_results.bins }}"
+      dirs: "{{ install_results.dirs }}"
+  when: not ansible_check_mode
+
+- name: Set bosserver startup options
+  become: yes
+  copy:
+    content: |
+        BOSSERVER_ARGS="{{ afs_bosserver_opts }}"
+    dest: "/etc/sysconfig/{{ afs_server_service_name }}"
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    - Restart OpenAFS servers
