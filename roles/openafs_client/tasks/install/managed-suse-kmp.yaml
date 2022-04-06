@@ -1,8 +1,23 @@
 ---
 #
-# Install the OpenAFS kernel module with DKMS. This install method
-# requires a private yum repo populated with OpenAFS rpm packages.
+# Install a prebuilt OpenAFS kernel module for the currently running kernel
+# version. This install method requires a private zypper repo populated with
+# OpenAFS packages and prebuilt kernel module rpm package files (openafs-kmp).
 #
+# Just installing the 'openafs-kmp' package will install a kernel module for
+# the most recent kernel version in the zypper repository, not neccessarily the
+# version currently running on the remote node. In order to obviate the need to
+# update the kernel and endure a reboot when importing this role, we attempt to
+# install the openafs-kmp with the full version name. This is a bit tricky
+# since the full name also contains on the OpenAFS version name. First, we
+# ensure the base openafs package is installed, and then query the version
+# string from the installed base package. Then we use that version string plus
+# the running kernel version to specify the full openafs-kmp package name.
+#
+
+- set_fact:
+    kernel_version: "{{ ansible_kernel | regex_replace('-default|-preempt|-vanilla', '') }}"
+    kernel_flavor: "{{ ansible_kernel | split('-') | last }}"
 
 - name: Add OpenAFS zypper repo
   become: yes
@@ -12,18 +27,33 @@
     repo: "{{ afs_zypper_repo }}"
     disable_gpg_check: yes
 
-- name: Install OpenAFS client
+- name: Install OpenAFS base package
+  become: yes
+  zypper:
+    state: present
+    name:
+      - openafs
+
+- name: Query OpenAFS version
+  become: yes
+  command: rpm -q --queryformat "%{VERSION}" openafs
+  args:
+    warn: False
+  changed_when: False
+  register: rpm_query
+  check_mode: no
+
+- name: Install OpenAFS client with kmp
   become: yes
   zypper:
     state: present
     name:
       - openafs
       - openafs-client
-      - openafs-devel
-      - openafs-kernel-source
-      - openafs-kmp
+      - "openafs-kmp-{{ kernel_flavor }}-{{ rpm_query.stdout }}_k{{ kernel_version | regex_replace('-', '_') }}"
 
 - name: Get installation paths
+  become: yes
   openafs_contrib.openafs.openafs_get_install_paths:
     package_manager_type: rpm
   register: install_results
@@ -45,7 +75,7 @@
 - name: Set client startup options.
   become: yes
   lineinfile:
-    path: /etc/sysconfig/openafs-client
+    path: "/etc/sysconfig//{{ afs_client_service_name }}"
     regexp: "^AFSD_ARGS="
     line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
     state: present
@@ -57,7 +87,7 @@
   vars:
     crypt: "{{ afs_crypt | d('off') }}"
   lineinfile:
-    path: /etc/sysconfig/openafs-client
+    path: "/etc/sysconfig//{{ afs_client_service_name }}"
     regexp: "^CRYPT="
     line: 'CRYPT="{{ crypt }}"'
     state: present
