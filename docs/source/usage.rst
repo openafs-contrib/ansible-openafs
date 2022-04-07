@@ -13,9 +13,10 @@ source on the remote nodes. The following installation methods are supported:
 * **source** - Install from source code.
 * **none** - Skip installation tasks.
 
-Different installation methods may be used on each remote node, however the if
+Different installation methods may be used on each remote node. However, when
 installing a client and server on the same node, the same installation method
-must be specific for both the client and server roles.
+must be specified for the client and server roles, that is, you cannot mix
+installation methods on a given node.
 
 The installation method is stored id the ``/etc/ansible/facts.d/openafs.fact``
 json file on the remote node.  This file must be changed if you want to change
