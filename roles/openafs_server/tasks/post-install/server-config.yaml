@@ -30,21 +30,35 @@
 - debug:
     var: afs_server_cold_start
 
-- name: Create configuration directories
+- name: Ensure server configuration directory exists
   become: yes
   file:
     state: directory
-    path: "{{ item.path }}"
-    mode: "{{ item.mode }}"
+    path: "{{ afs_afsconfdir }}"
+    mode: "755"
     owner: root
     group: root
-  loop:
-    - path: "{{ afs_afsconfdir }}"
-      mode: "755"
-    - path: "{{ afs_afslocaldir }}"
-      mode: "750"
-    - path: "{{ afs_afsbosconfigdir }}"
-      mode: "750"
+
+- name: Ensure server local directory exists
+  become: yes
+  file:
+    state: directory
+    path: "{{ afs_afslocaldir }}"
+    mode: "700"
+    owner: root
+    group: root
+
+- name: Ensure BosConfig directory exists
+  become: yes
+  file:
+    state: directory
+    path: "{{ afs_afsbosconfigdir }}"
+    mode: "755"
+    owner: root
+    group: root
+  # The BosConfig dir has the same name and mode as afslocaldir when using
+  # Transarc-style paths, otherwise it should have mode 755.
+  when: afs_afsbosconfigdir != afs_afslocaldir
 
 - name: Create configuration files
   become: yes
