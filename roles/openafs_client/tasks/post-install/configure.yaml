@@ -61,6 +61,17 @@
 - name: Create CellServDB
   become: yes
   block:
+    - name: Check CellServDB file
+      stat:
+        path: "{{ afs_viceetcdir }}/CellServDB"
+      register: csdb_stat
+
+    - name: Ensure CellServDB is not a symlink
+      file:
+        state: absent
+        path: "{{ afs_viceetcdir }}/CellServDB"
+      when: csdb_stat.stat.islnk | d(False)
+
     - name: Copy CellServDB parts for assembly
       copy:
         remote_src: yes
