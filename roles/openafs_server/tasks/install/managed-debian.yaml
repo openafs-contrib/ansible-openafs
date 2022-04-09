@@ -29,7 +29,6 @@
       changed_when: false
 
 - name: Get installation paths
-  become: yes
   openafs_contrib.openafs.openafs_get_install_paths:
     package_manager_type: apt
   register: install_results
