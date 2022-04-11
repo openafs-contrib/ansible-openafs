@@ -44,7 +44,6 @@ EXAMPLES = r'''
 
 import json                     # noqa: E402
 import os                       # noqa: E402
-import pprint                   # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
@@ -129,7 +128,7 @@ def main():
 
     # Update local facts in the current play.
     results['ansible_facts']['ansible_local']['openafs'] = facts
-    log.info('results=%s', pprint.pformat(results))
+    log.debug('results={0}'.format(results))
     module.exit_json(**results)
 
 
