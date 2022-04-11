@@ -1,6 +1,25 @@
 OpenAFS Ansible Collection
 
-March 18, 2022 - version 1.5.0-rc2
+April 11, 2022 - version 1.6.0
+
+* openSUSE: Add "managed" and install method support (install with zypper)
+
+* openSUSE: Add "dkms" module install method
+
+* openSUSE: Support kmp kernel favors
+
+* openSUSE: Fix rpm package names
+
+* openSUSE: Fix kdestroy installation path local fact
+
+* Fix BosConfig directory permissions when using modern installation paths
+
+* Remove client CellServDB symlink created by bosserver
+
+* Dump local facts to syslog as debug messages instead of info messages
+  to avoid cluttering the syslog
+
+March 18, 2022 - version 1.5.0
 
 * Add support for openSUSE Leap 15
 
