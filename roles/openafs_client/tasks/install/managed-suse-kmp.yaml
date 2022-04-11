@@ -53,7 +53,6 @@
       - "openafs-kmp-{{ kernel_flavor }}-{{ rpm_query.stdout }}_k{{ kernel_version | regex_replace('-', '_') }}"
 
 - name: Get installation paths
-  become: yes
   openafs_contrib.openafs.openafs_get_install_paths:
     package_manager_type: rpm
   register: install_results
