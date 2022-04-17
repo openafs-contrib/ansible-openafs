@@ -21,3 +21,12 @@
       - swig
       - wget
   tags: root
+
+- name: "Ubuntu-20: Install extra packages"
+  become: yes
+  apt:
+    state: present
+    update_cache: yes
+    name: "{{ afs_extra_packages }}"
+  tags: root
+  when: afs_extra_packages is defined

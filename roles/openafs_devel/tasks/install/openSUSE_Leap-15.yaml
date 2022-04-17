@@ -27,3 +27,11 @@
       - swig
       - wget
   tags: root
+
+- name: "openSUSE-15: Install extra packages"
+  become: yes
+  zypper:
+    state: present
+    name: "{{ afs_extra_packages }}"
+  tags: root
+  when: afs_extra_packages is defined

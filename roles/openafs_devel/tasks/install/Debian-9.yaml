@@ -1,5 +1,5 @@
 ---
-- name: "Debian-10: Install development packages"
+- name: "Debian-9: Install development packages"
   become: yes
   apt:
     state: present
@@ -25,3 +25,13 @@
       - devscripts
       - lintian
   tags: root
+  tags: root
+
+- name: "Debian-9: Install extra packages"
+  become: yes
+  apt:
+    state: present
+    update_cache: yes
+    name: "{{ afs_extra_packages }}"
+  tags: root
+  when: afs_extra_packages is defined

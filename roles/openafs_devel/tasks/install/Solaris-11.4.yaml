@@ -71,6 +71,15 @@
       - text/locale
   tags: root
 
+- name: "Solaris 11.4: Install extra packages"
+  become: yes
+  pkg5:
+    state: present
+    accept_licenses: yes
+    name: "{{ afs_extra_packages }}"
+  tags: root
+  when: afs_extra_packages is defined
+
 # Save the SOLARISCC path as a local fact the openafs_build module.
 - name: "Solaris 11.4: Set Developer Studio variables"
   become: yes

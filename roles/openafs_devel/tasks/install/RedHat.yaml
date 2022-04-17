@@ -35,3 +35,11 @@
       - swig
       - wget
   tags: root
+
+- name: "RedHat: Install extra packages"
+  become: yes
+  yum:
+    state: present
+    name: "{{ afs_extra_packages }}"
+  tags: root
+  when: afs_extra_packages is defined

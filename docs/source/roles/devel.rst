@@ -36,3 +36,10 @@ afs_devel_oracle_cert
   operating system is Solaris.
 
   Default: ``~/.certs/pkg.oracle.com.certificate.pem``
+
+afs_extra_packages
+  Install extra OS packages (for example specific libraries). 
+  This is required to enable optional features in OpenAFS. The correct
+  package name(s) is/are required for the specific distribution.
+
+  Default: empty

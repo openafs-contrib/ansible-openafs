@@ -34,3 +34,11 @@
       - swig
       - wget
   tags: root
+
+- name: "CentOS-7: Install extra packages"
+  become: yes
+  yum:
+    state: present
+    name: "{{ afs_extra_packages }}"
+  tags: root
+  when: afs_extra_packages is defined

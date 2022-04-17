@@ -25,3 +25,12 @@
       - devscripts
       - lintian
   tags: root
+
+- name: "Debian-11: Install extra packages"
+  become: yes
+  apt:
+    state: present
+    update_cache: yes
+    name: "{{ afs_extra_packages }}"
+  tags: root
+  when: afs_extra_packages is defined
