@@ -28,7 +28,6 @@
       - devscripts
       - lintian
   tags: root
-  tags: root
 
 - name: "Debian-10: Install extra packages"
   become: yes
