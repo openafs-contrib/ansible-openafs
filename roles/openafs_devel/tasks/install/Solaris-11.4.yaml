@@ -64,9 +64,13 @@
       - gnu-binutils
       - gnu-coreutils
       - gnu-sed
+      - library/jansson
+      - library/libevent
+      - library/security/openssl
       - libtool
       - make
       - onbld
+      - pkg-config
       - runtime/perl-{{ perl_version | replace('.','') }}
       - text/locale
   tags: root

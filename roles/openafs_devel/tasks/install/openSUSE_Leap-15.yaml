@@ -18,6 +18,9 @@
       - kernel-devel
       - kernel-syms
       - krb5-devel
+      - libevent-devel
+      - libjansson-devel
+      - libopenssl-devel
       - libtirpc-devel
       - libtool
       - make
