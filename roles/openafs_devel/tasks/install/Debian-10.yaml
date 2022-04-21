@@ -14,11 +14,14 @@
       - flex
       - gcc
       - git
+      - libevent-dev
       - libfuse-dev
       - libgc-dev
+      - libjansson-dev
       - libkrb5-dev
       - libncurses5-dev
       - libperl-dev
+      - libssl-dev
       - libtool
       - make
       - swig

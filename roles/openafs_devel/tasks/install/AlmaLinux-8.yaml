@@ -21,6 +21,7 @@
       - gcc
       - git
       - glibc-devel
+      - jansson-devel
       - krb5-devel
       - libevent-devel
       - libtool
