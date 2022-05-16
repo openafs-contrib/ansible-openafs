@@ -21,6 +21,7 @@
   loop:
     - "{{ afs_devel_oracle_key }}"
     - "{{ afs_devel_oracle_cert }}"
+  register: upload_certs
   loop_control:
     loop_var: item_pem
 
@@ -38,7 +39,9 @@
       -c {{ ansible_user_dir }}/.certs/{{ afs_devel_oracle_cert | basename }}
       -G "*"
       -g https://pkg.oracle.com/solarisstudio/release solarisstudio
-  when: not 'solarisstudio' in publisher_results.get('stdout', '')
+  when: >
+    not 'solarisstudio' in publisher_results.get('stdout', '') or
+    upload_certs.changed
   tags: root
 
 - name: "Solaris 11.4: Get perl mediator"
