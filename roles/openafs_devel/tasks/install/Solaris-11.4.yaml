@@ -45,12 +45,12 @@
   tags: root
 
 - name: "Solaris 11.4: Get perl mediator"
-  command: pkg mediator -H perl
+  command: pkg mediator -H -F json perl
   register: perl_results
   changed_when: no
 
 - set_fact:
-    perl_version: "{{ perl_results.stdout.split()[2] }}"
+    perl_version: "{{ (perl_results.stdout | from_json)[0].version }}"
 
 - name: "Solaris 11.4: Install development packages"
   become: yes
