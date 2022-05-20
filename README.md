@@ -16,9 +16,9 @@ Documentation: [https://openafs-ansible-collection.readthedocs.io][2]
 * AlmaLinux 8
 * RockyLinux 8
 * CentOS 7, 8
-* Fedora 34, 35
+* Fedora 35, 36
 * Debian 10, 11
-* Ubuntu 20.04
+* Ubuntu 20, 22
 * openSUSE 15
 * Solaris 11.4
 
