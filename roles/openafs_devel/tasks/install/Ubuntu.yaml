@@ -1,5 +1,5 @@
 ---
-- name: "Ubuntu-20: Install development packages"
+- name: "Ubuntu: Install development packages"
   become: yes
   apt:
     state: present
