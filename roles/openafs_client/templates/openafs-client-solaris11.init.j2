@@ -4,7 +4,7 @@
 #
 # openafs-client: rc script for AFS on Solaris 11 or OpenSolaris-based platforms
 #
-CONFIG=/usr/vice/etc/config
+CONFIG={{ afs_viceetcdir }}/config
 AFSDOPT=$CONFIG/afsd.options
 PACKAGE=$CONFIG/package.options
 
@@ -32,18 +32,23 @@ killproc() {            # kill the named process(es)
 }
 
 generate_csdb() {
-    if [ -f /usr/vice/etc/CellServDB.local -a -f /usr/vice/etc/CellServDB.dist ]; then
-        if [ -h /usr/vice/etc/CellServDB ]; then
-            rm -f /usr/vice/etc/CellServDB
+    if [ -f {{ afs_viceetcdir }}/CellServDB.local -a -f {{ afs_viceetcdir }}/CellServDB.dist ]; then
+        if [ -h {{ afs_viceetcdir }}/CellServDB ]; then
+            rm -f {{ afs_viceetcdir }}/CellServDB
         fi
-        cat /usr/vice/etc/CellServDB.local /usr/vice/etc/CellServDB.dist >/usr/vice/etc/CellServDB
-        chmod 644 /usr/vice/etc/CellServDB
+        cat {{ afs_viceetcdir }}/CellServDB.local {{ afs_viceetcdir }}/CellServDB.dist >{{ afs_viceetcdir }}/CellServDB
+        chmod 644 {{ afs_viceetcdir }}/CellServDB
     fi
 }
 
 
 case $1 in
 'start')
+
+if [ -f /var/lock/subsys/openafs-client ]; then
+    echo "AFS already running"
+    exit 1
+fi
 
 ## Determine if we are running the 64 bit OS
 ## If sparcv9 then the location of the afs and nfs extensions differ
@@ -114,8 +119,8 @@ fi
 # Check that all of the client configuration files exist
 #
 generate_csdb
-for file in /usr/vice/etc/afsd /usr/vice/etc/cacheinfo \
-          /usr/vice/etc/ThisCell /usr/vice/etc/CellServDB
+for file in {{ afs_afsd }} {{ afs_viceetcdir }}/cacheinfo \
+          {{ afs_viceetcdir }}/ThisCell {{ afs_viceetcdir }}/CellServDB
 do
       if [ ! -f ${file} ]; then
               echo "${file} does not exist. Not starting AFS client."
@@ -128,7 +133,7 @@ done
 # and the cache directory (/usr/vice/cache) both exist
 #
 
-for dir in `awk -F: '{print $1, $2}' /usr/vice/etc/cacheinfo`
+for dir in `awk -F: '{print $1, $2}' {{ afs_viceetcdir }}/cacheinfo`
 do
       if [ ! -d ${dir} ]; then
               echo "${dir} does not exist. Not starting AFS client."
@@ -137,23 +142,26 @@ do
 done
 
 echo "Starting afsd"
-/usr/vice/etc/afsd $OPTIONS
+{{ afs_afsd }} $OPTIONS
+touch /var/lock/subsys/openafs-client
 
 echo ;;
 
 'stop')
 
-afsroot=`awk -F: '{print $1}' /usr/vice/etc/cacheinfo` || exit 1
+afsroot=`awk -F: '{print $1}' {{ afs_viceetcdir }}/cacheinfo` || exit 1
 if /usr/sbin/mount | grep -q "$afsroot"; then
     echo "Unmounting $afsroot"
     /usr/sbin/umount $afsroot || exit 1
 
     echo "Stopping afsd"
-    /usr/vice/etc/afsd -shutdown || exit 1
+    {{ afs_afsd }} -shutdown || exit 1
 
     afsid=`modinfo | awk '/afs filesystem/ {print $1}'` || exit 1
     echo "Unloading module id $afsid"
     modunload -i "$afsid"  || exit 1
+
+    rm -f /var/lock/subsys/openafs-client
 fi
 echo ;;
 
