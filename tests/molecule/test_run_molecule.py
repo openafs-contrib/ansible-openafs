@@ -28,6 +28,7 @@ import subprocess
 import sys
 import fnmatch
 from pathlib import Path
+import yaml
 import pytest
 
 PLATFORMS = [
@@ -47,6 +48,18 @@ ROLE = Path(os.getcwd()).name
 LOGDIR = Path('/tmp/ansible-openafs/molecule') / ROLE
 BASECONFIGDIR = Path('~/.config/molecule').expanduser()
 
+def image_name(platform):
+    """
+    Site dependent platform to image name lookup.
+    """
+    platforms_yml = BASECONFIGDIR / 'platforms.yml'
+    try:
+        with open(platforms_yml) as f:
+            p2i = yaml.safe_load(f)['platforms']
+        image_name = p2i[platform]
+    except:
+        image_name = platform
+    return image_name
 
 def read_skip_list():
     """
@@ -138,7 +151,7 @@ def test_scenario(number, platform, scenario):
         os.environ['ANSIBLE_STDOUT_CALLBACK'] = 'debug'
         os.environ['ANSIBLE_NOCOLOR'] = '1'
         os.environ['ANSIBLE_FORCE_COLOR'] = '0'
-        os.environ['AFS_IMAGE'] = 'generic/%s' % platform
+        os.environ['AFS_IMAGE'] = image_name(platform)
         os.environ['AFS_TESTID'] = '-%d-%d' % (os.getpid(), number)
         print('AFS_IMAGE=%s' % os.environ['AFS_IMAGE'])
         print('AFS_TESTID=%s' % os.environ['AFS_TESTID'])
