@@ -101,7 +101,6 @@ import stat               # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import chdir  # noqa: E402, E501
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import execute  # noqa: E402, E501
 
 module_name = os.path.basename(__file__).replace('.py', '')
@@ -120,74 +119,6 @@ TRANSARC_INSTALL_DIRS = {
 
 class FileError(Exception):
     pass
-
-
-def solaris_relocate_64_bit_libs(files):
-    """
-    The OpenAFS 'make dest' command puts the solaris 64-bit shared libraries in
-    /lib, which is incorrect.  Move the 64-bit libraries to the /lib/64
-    directory, including the shared library symlinks.
-    """
-    moved = []
-    afslibs = set()
-    for f in files:
-        dirname = os.path.dirname(f[0])
-        basename = os.path.basename(f[0])
-        if dirname == '/lib':
-            afslibs.add(basename)
-    # Expected system directories should be present.
-    for libdir in ('/lib', '/lib/64'):
-        if not os.path.exists(libdir):
-            raise AssertionError('System lib dir not found: %s' % libdir)
-    with chdir('/lib'):
-        # Find the shared library symlinks.
-        links = {}
-        for path in glob.glob('*'):
-            if os.path.islink(path):
-                target = os.readlink(path)
-                if target not in links:
-                    links[target] = []
-                links[target].append(path)
-        # Find 64-bit libraries to be moved.
-        tomove = []
-        todel = []
-        for path in afslibs:
-            if not os.path.exists(path):
-                continue
-            if os.path.isdir(path):
-                continue
-            if os.path.islink(path):
-                continue
-            output = execute('file %s' % path)
-            if '64-bit' in output:
-                target = os.path.join('64', path)
-                if not os.path.exists(target):
-                    tomove.append(path)   # Relocate file.
-                elif filecmp.cmp(path, target):
-                    todel.append(path)    # Already relocated.
-                else:
-                    tomove.append(path)   # Relocate updated file.
-        # Move 64-bit libraries and associated symlinks.
-        for path in tomove:
-            for link in links.get(path, []):
-                if os.path.exists(link) and os.path.islink(link):
-                    os.unlink(link)
-            target = os.path.join('64', path)
-            if os.path.exists(target):
-                os.unlink(target)
-            os.rename(path, target)
-            with chdir('64'):
-                for link in links.get(path, []):
-                    if not os.path.exists(link):
-                        os.symlink(path, link)
-                        moved.append(link)
-        # Cleanup duplicate files.
-        for path in todel:
-            for link in links.get(path, []):
-                if os.path.exists(link) and os.path.islink(link):
-                    os.unlink(link)
-            os.unlink(path)
-    return moved
 
 
 def solaris_driver_path():
@@ -414,17 +345,18 @@ def main():
                 log.info('Updating module dependencies.')
                 module.run_command([depmod, '-a'], check_rc=True)
     elif platform.system() == 'SunOS':
-        relocated = solaris_relocate_64_bit_libs(files)
-        if relocated:
-            results['changed'] = True
-        results['relocated'] = relocated
+        if results['changed']:
+            libdirs = directories(find_by_suffix(files, '.so'))
+            for libdir in libdirs:
+                log.info('Configuring runtime link path: %s', libdir)
+                module.run_command(['crle', '-64', '-u', '-l', libdir],
+                                   check_rc=True)
 
         results['kmods'] = find_by_suffix(files, 'libafs64.o')
         if results['kmods']:
             kmod = results['kmods'][0]
         else:
             kmod = None
-
         if kmod:
             driver = solaris_driver_path()
             if not os.path.exists(driver):
