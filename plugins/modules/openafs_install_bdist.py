@@ -310,6 +310,24 @@ def install_dest(destdir, components, exclude=None):
     return files
 
 
+def find_by_suffix(files, suffix):
+    """Find a list of files by filename suffix."""
+    found = []
+    for f in files:
+        filename, _ = f
+        if filename.endswith(suffix):
+            found.append(filename)
+    return found
+
+
+def directories(filenames):
+    """Find the set of directory names for the given filename paths."""
+    dirs = set()
+    for filename in filenames:
+        dirs.add(os.path.dirname(filename))
+    return dirs
+
+
 def main():
     global log
     results = dict(
@@ -380,20 +398,15 @@ def main():
             log.error('Failed to stat installed file "%s: %s".' % (fn, e))
 
     if platform.system() == 'Linux':
-        for f in files:
-            if f[0].endswith('.ko'):
-                results['kmods'].append(f[0])
+        results['kmods'] = find_by_suffix(files, '.ko')
 
         if results['changed']:
             log.info('Updating shared object cache.')
-            bins = set()
-            for f in files:
-                if f[0].endswith('.so'):
-                    bins.add(os.path.dirname(f[0]))
-            if bins and os.path.exists('/etc/ld.so.conf.d'):
+            libdirs = directories(find_by_suffix(files, '.so'))
+            if libdirs and os.path.exists('/etc/ld.so.conf.d'):
                 with open('/etc/ld.so.conf.d/openafs.conf', 'w') as f:
-                    for p in bins:
-                        f.write('%s\n' % p)
+                    for libdir in libdirs:
+                        f.write('%s\n' % libdir)
             module.run_command([ldconfig], check_rc=True)
 
         if results['changed']:
@@ -406,11 +419,12 @@ def main():
             results['changed'] = True
         results['relocated'] = relocated
 
-        kmod = None
-        for f in files:
-            if f[0].endswith('libafs64.o'):
-                kmod = f[0]
-                results['kmods'].append(kmod)
+        results['kmods'] = find_by_suffix(files, 'libafs64.o')
+        if results['kmods']:
+            kmod = results['kmods'][0]
+        else:
+            kmod = None
+
         if kmod:
             driver = solaris_driver_path()
             if not os.path.exists(driver):
