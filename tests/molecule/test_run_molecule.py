@@ -49,6 +49,7 @@ ROLE = Path(os.getcwd()).name
 LOGDIR = Path('/tmp/ansible-openafs/molecule') / ROLE
 BASECONFIGDIR = Path('~/.config/molecule').expanduser()
 
+
 def image_name(platform):
     """
     Site dependent platform to image name lookup.
@@ -58,9 +59,10 @@ def image_name(platform):
         with open(platforms_yml) as f:
             p2i = yaml.safe_load(f)['platforms']
         image_name = p2i[platform]
-    except:
+    except Exception:
         image_name = platform
     return image_name
+
 
 def read_skip_list():
     """
