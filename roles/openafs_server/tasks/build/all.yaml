@@ -20,6 +20,7 @@
     transarc_paths: "{{ afs_transarc_build }}"
     configure_options: "{{ afs_configure_options | default(omit) }}"
   register: build_results
+  environment: "{{ configure_env | default({}) }}"
 
 - name: Build results
   debug:
