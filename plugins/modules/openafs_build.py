@@ -174,6 +174,11 @@ options:
         C(enabled), C(disabled), C(with), and C(without) may be lists.
     type: raw
 
+  configure_environment:
+    description:
+      - Extra environment variables to be set when running C(configure).
+    type: dict
+
   target:
     description:
       - The make target to be run.
@@ -398,7 +403,7 @@ def tail(s, n=256):
         return s[-n:]
 
 
-def run_command(name, command, cwd, logdir, results):
+def run_command(name, command, cwd, logdir, results, extra_env=None):
     """Run a command and log the stdout and stderr to a file.
 
     :arg command: command argument list
@@ -406,6 +411,10 @@ def run_command(name, command, cwd, logdir, results):
     :arg logdir: where to place stdout and stderr logs
     :arg results: the module results dictionary
     """
+    env = os.environ.copy()
+    if extra_env:
+        env.update(extra_env)
+
     logfile = os.path.join(logdir, '%s.log' % name)
     results['logfiles'].append(logfile)
     with open(logfile, 'w') as f:
@@ -413,7 +422,8 @@ def run_command(name, command, cwd, logdir, results):
             log.info('[%s] %s' % (cwd, ' '.join(command)))
             proc = subprocess.Popen(command,
                                     stdout=f.fileno(),
-                                    stderr=f.fileno())
+                                    stderr=f.fileno(),
+                                    env=env)
             rc = proc.wait()
     if rc != 0:
         log.error('%s failed; rc=%d' % (name, rc))
@@ -710,6 +720,7 @@ def main():
 
             # Explicit configure and target options.
             configure_options=dict(type='raw', default=None),
+            configure_environment=dict(type='dict', default=None),
             target=dict(type='str', default=None),
         ),
         supports_check_mode=False,
@@ -724,6 +735,7 @@ def main():
     make = module.params['make']
     build_manpages = module.params['build_manpages']
     with_version = module.params['with_version']
+    configure_environment = module.params['configure_environment']
 
     if not (os.path.exists(projectdir) and os.path.isdir(projectdir)):
         module.fail_json(msg='projectdir directory not found: %s' % projectdir)
@@ -830,7 +842,7 @@ def main():
     # Run configure.
     #
     run_command('configure', configure_command(module, results), builddir,
-                logdir, results)
+                logdir, results, extra_env=configure_environment)
     results['sysname'] = configured_sysname(builddir)
     log.info("configured sysname is '%s'.", results['sysname'])
 

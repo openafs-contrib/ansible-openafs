@@ -75,10 +75,12 @@ afs_git_version: "master"
 # The configure options when installing from source. The default value is
 # platform dependent.
 #afs_configure_options:
+#afs_configure_environment: {}
 
 # The configure options when installing userspace only binaries from source.
 # Default value is platform dependent.
 #afs_nolibafs_configure_options:
+#afs_nolibafs_configure_environment: {}
 
 # When the install method is 'sdist' or 'source', force a rebuild and reinstall
 # even if a change in the source code checkout was not detected.
