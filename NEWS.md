@@ -1,5 +1,25 @@
 OpenAFS Ansible Collection
 
+June 8, 2022 - verision 1.7.0
+
+* Add support for RHEL 9, CentOS 9 and, AlmaLinux 9
+
+* Add support for Fedora 36
+
+* Add support for Ubuntu 22
+
+* Support moderns paths when installing from source on Solaris.
+
+* Add support for extra environment variables during configure
+  when installing from source to support customized paths, such
+  as customized path to log files.
+
+* Fix status checks in Solaris init scripts to avoid double
+  bosserver starts.
+
+* Install packages needed to build recent and development
+  versions of OpenAFS when installing from source.
+
 April 11, 2022 - version 1.6.0
 
 * openSUSE: Add "managed" and install method support (install with zypper)
