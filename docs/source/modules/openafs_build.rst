@@ -137,6 +137,10 @@ Parameters
     When specified as a dictionary, the values of the keys ``enabled``, ``disabled``, ``with``, and ``without`` may be lists.
 
 
+  configure_environment (optional, dict, None)
+    Extra environment variables to be set when running ``configure``.
+
+
   target (optional, str, detect)
     The make target to be run.
 
