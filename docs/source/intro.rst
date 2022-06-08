@@ -15,8 +15,8 @@ can be used for authentication.
 Platforms supported
 -------------------
 
-* Red Hat Entrerprise Linux 7, 8
-* AlmaLinux 8
+* Red Hat Entrerprise Linux 7, 8, 9
+* AlmaLinux 8, 9
 * CentOS 7, 8
 * RockyLinux 8
 * Fedora 35, 36

@@ -12,8 +12,8 @@ Documentation: [https://openafs-ansible-collection.readthedocs.io][2]
 
 ## Platforms supported
 
-* Red Hat Entrerprise Linux 7, 8
-* AlmaLinux 8
+* Red Hat Entrerprise Linux 7, 8, 9
+* AlmaLinux 8, 9
 * RockyLinux 8
 * CentOS 7, 8
 * Fedora 35, 36
