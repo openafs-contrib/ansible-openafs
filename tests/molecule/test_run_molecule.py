@@ -33,6 +33,7 @@ import pytest
 
 PLATFORMS = [
     'alma8',
+    'alma9',
     'centos7',
     'centos8',
     'debian10',
