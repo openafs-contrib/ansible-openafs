@@ -57,7 +57,7 @@ afs_topdir: ~/openafs
 # Installation method; managed, package, bdist, sdist, source, none
 afs_install_method: managed
 
-# Source checkout method: git, sdist_upload
+# Source checkout method; one of 'git', 'sdist_upload', 'gerrit'
 afs_checkout_method: git
 
 # Yum repository url or path for 'managed' installs on yum based systems. The
@@ -71,6 +71,12 @@ afs_install_archive: ""
 # Git repository and branch info for builds and source based installs.
 afs_git_repo: "git://git.openafs.org/openafs.git"
 afs_git_version: "master"
+
+# Gerrit host name  when afs_checkout_method is 'gerrit'.
+afs_gerrit_host: "gerrit.openafs.org"
+
+# Gerrit number to fetch when afs_checkout_method is 'gerrit'. (no default)
+#afs_gerrit_number:
 
 # The configure options when installing from source. The default value is
 # platform dependent.

@@ -65,7 +65,7 @@ afs_install_method
 
 afs_checkout_method
   The method used to checkout source code when the ``afs_install_method`` is
-  ``source``.  Must be one of: ``git``, ``sdist_upload``.
+  ``source``.  Must be one of: ``git``, ``sdist_upload``, ``gerrit``.
 
   Default: ``git``
 
@@ -87,6 +87,16 @@ afs_git_version
   The git branch or tag to check out and build when the ``afs_install_method`` is ``source``.
 
   Default: ``master``
+
+afs_gerrit_host
+  The gerrit hostname when ``afs_checkout_method`` is ``gerrit``.
+
+  Default: ``gerrit.openafs.org``
+
+afs_gerrit_number
+  The gerrit number to be fetched when ``afs_checkout_method`` is ``gerrit``.  The most
+  recent patchset is fetched.  This variable is manditory when ``afs_checkout_method`` is
+  ``gerrit``.
 
 afs_configure_options
   Overrides the options given to configure when building from source.

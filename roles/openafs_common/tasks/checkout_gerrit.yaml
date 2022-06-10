@@ -1,0 +1,42 @@
+---
+- name: "Verify checkout variables are set."
+  assert:
+    that:
+      - afs_gerrit_number is defined
+      - afs_gerrit_number | count > 0
+      - afs_topdir is defined
+      - afs_topdir | count > 0
+
+- name: "Query gerrit for change reference."
+  vars:
+    query: "change:{{ afs_gerrit_number }}&o=CURRENT_REVISION"
+  uri:
+    url: "https://{{ afs_gerrit_host }}/changes/?q={{ query }}"
+    method: GET
+    return_content: yes
+  changed_when: false
+  register: gerrit_query_results
+
+- name: "Parse gerrit query results."
+  vars:
+    # To prevent against Cross Site Script Inclusion (XSSI) attacks, the JSON
+    # response body starts with a magic prefix line that must be stripped
+    # before feeding the rest of the response body to a JSON parser.
+    magic: ")]}'"
+    changes: "{{ gerrit_query_results.content | replace(magic, '', 1) | from_json }}"
+    sha1: "{{ changes[0].current_revision }}"
+    revision: "{{ changes[0].revisions[sha1] }}"
+  set_fact:
+    gerrit_fetch: "{{ revision.fetch['anonymous http'] }}"
+
+- name: "Checkout info."
+  debug:
+    msg: "Checking out '{{ gerrit_fetch.ref }}' from repo '{{ gerrit_fetch.url }}' into '{{ afs_topdir }}'."
+
+- name: "Checkout source code."
+  git:
+    dest: "{{ afs_topdir }}"
+    repo: "{{ gerrit_fetch.url }}"
+    refspec: "{{ gerrit_fetch.ref }}"
+    version: "FETCH_HEAD"
+  register: checkout_results
