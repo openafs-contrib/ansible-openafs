@@ -13,8 +13,7 @@ license: BSD-2-Clause
 tags:
   - openafs
 build_ignore:
-  - '.gitignore'
-  - '.venv'
+  - '.*'
   - 'builds'
   - 'docs'
   - 'tests'

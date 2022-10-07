@@ -8,4 +8,5 @@ ansible.cfg
 *.pyc
 __pycache__/
 .cache/
+.config/
 docs/build/
