@@ -9,9 +9,6 @@ UPDATE := --force --pre
 PYFILES := plugins/*/*.py tests/*/*.py tests/*/*/*.py
 ACPATH := $(realpath $(CURDIR)/../../..)
 EXTRACT := ANSIBLE_COLLECTIONS_PATHS=$(ACPATH) ansible-doc-extractor
-PYREQS := molecule[ansible] molecule-vagrant molecule-virtup \
-          python-vagrant ansible-lint flake8 pyflakes pytest \
-          sphinx sphinx-rtd-theme ansible-doc-extractor
 
 help:
 	@echo "usage: make <target>"
@@ -28,9 +25,8 @@ help:
 
 .venv/bin/activate:
 	test -d .venv || $(PYTHON) -m venv .venv
-	.venv/bin/pip install -U pip
-	.venv/bin/pip install wheel
-	.venv/bin/pip install $(PYREQS)
+	.venv/bin/pip install -U pip wheel
+	.venv/bin/pip install -U -r requirements.txt
 	touch .venv/bin/activate
 
 init: .venv/bin/activate

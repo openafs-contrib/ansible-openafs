@@ -1,5 +1,13 @@
-python-vagrant
-molecule[ansible,vagrant]
-ansible-lint
+flake8
 pyflakes
 pytest
+ansible
+ansible-lint
+ansible-doc-extractor
+python-vagrant
+molecule
+molecule-vagrant
+molecule-virtup
+molecule-proxmox
+sphinx
+sphinx-rtd-theme
