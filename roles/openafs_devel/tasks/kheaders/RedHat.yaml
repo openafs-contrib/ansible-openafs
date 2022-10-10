@@ -18,7 +18,7 @@
   when: ansible_kernel not in rpm_query.stdout_lines
   become: yes
   block:
-    - name: "Install kernel-devel package for {{ ansible_kernel }}."
+    - name: "Install kernel-devel package."
       yum:
         state: present
         name: "kernel-devel-uname-r == {{ ansible_kernel }}"
@@ -51,7 +51,7 @@
         - name: Gathering facts
           setup:
 
-        - name: "Install kernel-devel package for {{ ansible_kernel }}."
+        - name: "Install kernel-devel package."
           yum:
             state: present
             name: "kernel-devel-uname-r == {{ ansible_kernel }}"
