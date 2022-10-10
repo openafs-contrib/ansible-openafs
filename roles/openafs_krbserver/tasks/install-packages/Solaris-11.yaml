@@ -1,7 +1,7 @@
 ---
 - name: Install kdc
   become: yes
-  pkg5:
+  community.general.pkg5:
     state: present
     name:
       - text/spelling-utilities

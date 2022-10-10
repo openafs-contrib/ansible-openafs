@@ -1,12 +1,4 @@
 ---
-# - name: "Solaris 11.4: Update"
-#   become: yes
-#   pkg5:
-#     state: present
-#     name: "entire@latest"
-#   register: update
-#   tags: root
-
 - name: "Solaris 11.4: Make publisher certs directory"
   file:
     state: directory
@@ -54,7 +46,7 @@
 
 - name: "Solaris 11.4: Install development packages"
   become: yes
-  pkg5:
+  community.general.pkg5:
     state: present
     accept_licenses: yes
     name:
