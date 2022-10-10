@@ -96,7 +96,7 @@
     create: yes
     line: "{{ item }}"
     path: "{{ afs_afsconfdir }}/UserList"
-  with_items: "{% if (afs_admin | type_debug) == 'list' %}{{ afs_admin }}{% else %}['{{ afs_admin }}']{% endif %}"
+  with_items: "{{ ((afs_admin | type_debug) == 'list') | ternary(afs_admin, [afs_admin]) }}"
 
 - name: Create krb.conf
   become: yes
