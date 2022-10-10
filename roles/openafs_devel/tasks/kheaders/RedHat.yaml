@@ -5,7 +5,8 @@
 #
 
 - name: Query kernel-devel packages.
-  command: rpm -q --qf='%{VERSION}-%{RELEASE}.%{ARCH}\n' kernel-devel
+  command:
+    cmd: "rpm -q --qf='%{VERSION}-%{RELEASE}.%{ARCH}\n' kernel-devel"
   changed_when: False
   failed_when: False
   register: rpm_query

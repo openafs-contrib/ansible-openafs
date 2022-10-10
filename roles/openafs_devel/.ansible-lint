@@ -5,3 +5,4 @@ skip_list:
   - command-instead-of-module
   - package-latest
   - fqcn-builtins
+  - name[casing]
