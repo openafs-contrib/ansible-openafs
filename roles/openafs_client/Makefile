@@ -12,7 +12,7 @@ help:
 
 lint:
 	yamllint .
-	ansible-lint .
+	ansible-lint --exclude=molecule --exclude=meta/main.yml
 
 test:
 	pytest -v
