@@ -117,7 +117,7 @@
 # Search for a matching debuginfo rpm for the kmod.
 - set_fact:
     kmods_debug: "{{ find_kmods.files
-      | selectattr('path', 'search', kmods[0] | replace('kmod-openafs-','kmod-openafs-debuginfo-'))
+      | selectattr('path', 'search', kmods[0] | replace('kmod-openafs-', 'kmod-openafs-debuginfo-'))
       | map(attribute='path')
       | list }}"
 

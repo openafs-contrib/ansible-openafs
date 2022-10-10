@@ -6,7 +6,7 @@
   become: yes
   ansible.posix.firewalld:
     port: "{{ item }}"
-    immediate: "{{ (ansible_facts.services['firewalld.service'].state == 'running') | ternary('yes','no') }}"
+    immediate: "{{ (ansible_facts.services['firewalld.service'].state == 'running') | ternary('yes', 'no') }}"
     permanent: yes
     state: enabled
   with_items:

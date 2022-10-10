@@ -30,7 +30,7 @@
         kdb5_util: "{{ afs_kdb5_util }}"
       krbserver:
         krb5_conf: "{{ afs_krbserver_krb5_conf }}"
-        kdc_conf: "{{ afs_krbserver_kdc_conf  }}"
+        kdc_conf: "{{ afs_krbserver_kdc_conf }}"
         kadm5_acl: "{{ afs_krbserver_kadm5_acl }}"
         principal: "{{ afs_krbserver_principal | d('omit') }}"
         stash: "{{ afs_krbserver_stash | d('omit') }}"

@@ -46,7 +46,7 @@ afs_user: "{{ ansible_user | d(lookup('env', 'USER') | d('test', True)) }}"
 afs_user_id: "{{ ansible_user_id | d(0, True) | int }}"
 
 # Admin user.
-afs_admin: "{{ (afs_user != 'test') | ternary(afs_user+'.admin', 'afsadmin') }}"
+afs_admin: "{{ (afs_user != 'test') | ternary(afs_user + '.admin', 'afsadmin') }}"
 
 # Temporary directory on remote nodes.
 afs_tmpdir: /tmp/ansible-openafs
