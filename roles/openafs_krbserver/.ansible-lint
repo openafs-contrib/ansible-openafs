@@ -1,2 +1,3 @@
 skip_list:
   - unnamed-task
+  - fqcn-builtins
