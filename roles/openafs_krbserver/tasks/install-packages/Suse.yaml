@@ -1,7 +1,7 @@
 ---
 - name: Install kerberos server
   become: yes
-  zypper:
+  community.general.zypper:
     state: present
     name:
       - krb5

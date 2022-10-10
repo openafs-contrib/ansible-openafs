@@ -4,7 +4,7 @@
 
 - name: Add OpenAFS zypper repo
   become: yes
-  zypper_repository:
+  community.general.zypper_repository:
     name: openafs
     description: OpenAFS zypper repo
     repo: "{{ afs_zypper_repo }}"
@@ -12,7 +12,7 @@
 
 - name: Install OpenAFS server packages
   become: yes
-  zypper:
+  community.general.zypper:
     state: present
     name:
       - openafs-server

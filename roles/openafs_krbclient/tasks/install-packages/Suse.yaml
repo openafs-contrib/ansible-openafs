@@ -1,6 +1,6 @@
 ---
 - name: Install kerberos client
   become: yes
-  zypper:
+  community.general.zypper:
     name: krb5-client
     state: present

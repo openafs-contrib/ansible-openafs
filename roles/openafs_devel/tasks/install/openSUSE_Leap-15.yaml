@@ -1,7 +1,7 @@
 ---
 - name: "openSUSE-15: Install build requirements"
   become: yes
-  zypper:
+  community.general.zypper:
     state: present
     name:
       - autoconf

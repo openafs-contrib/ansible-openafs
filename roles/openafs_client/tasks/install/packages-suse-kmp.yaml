@@ -14,7 +14,7 @@
 
 - name: Ensure tar is installed
   become: yes
-  zypper:
+  community.general.zypper:
     state: present
     name:
       - tar
@@ -65,7 +65,7 @@
 
 - name: Install OpenAFS client rpm files with kmp
   become: yes
-  zypper:
+  community.general.zypper:
     state: present
     disable_gpg_check: yes
     name: "{{ userspace_rpms }}"
