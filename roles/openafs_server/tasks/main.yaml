@@ -1,4 +1,8 @@
 ---
+- name: Import common definitions
+  import_role:
+    name: openafs_contrib.openafs.openafs_common
+
 - name: Gather operating specific specific variables
   include_vars: "{{ item }}"
   with_first_found:

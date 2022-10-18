@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2021 Sine Nomine Associates
+# Copyright (c) 2019-2022 Sine Nomine Associates
 
 .PHONY: help lint test clean
 
@@ -12,7 +12,7 @@ help:
 
 lint:
 	yamllint .
-	ansible-lint --exclude=molecule --exclude=meta/main.yml
+	ansible-lint --exclude=molecule
 
 test:
 	pytest -v

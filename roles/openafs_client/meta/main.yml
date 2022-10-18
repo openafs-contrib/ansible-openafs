@@ -17,5 +17,4 @@ galaxy_info:
     - system
     - openafs
 
-dependencies:
-  - openafs_contrib.openafs.openafs_common
+dependencies: []
