@@ -41,6 +41,8 @@ PLATFORMS = [
     'fedora35',
     'fedora36',
     'opensuse15',
+    'oracle8',
+    'oracle9',
     'rocky8',
     'solaris114',
     'ubuntu20',
