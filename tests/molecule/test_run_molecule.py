@@ -44,6 +44,7 @@ PLATFORMS = [
     'oracle8',
     'oracle9',
     'rocky8',
+    'rocky9',
     'solaris114',
     'ubuntu20',
     'ubuntu22',
