@@ -1,0 +1,2 @@
+---
+_afs_yum_repo: "https://download.sinenomine.net/openafs/rpms/ol$releasever/$basearch"
