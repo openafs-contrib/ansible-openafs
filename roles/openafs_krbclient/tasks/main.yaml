@@ -1,4 +1,8 @@
 ---
+- name: Import common definitions
+  import_role:
+    name: openafs_contrib.openafs.openafs_common
+
 - name: Gather variables for each operating system
   include_vars: "{{ item }}"
   with_first_found:

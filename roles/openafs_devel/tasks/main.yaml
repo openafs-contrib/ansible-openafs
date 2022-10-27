@@ -3,6 +3,10 @@
   setup:
   when: ansible_distribution is undefined
 
+- name: Import common definitions
+  import_role:
+    name: openafs_contrib.openafs.openafs_common
+
 - name: Install kernel headers
   include_tasks: "{{ afs_devel_kheaders_tasks }}"
   with_first_found:
