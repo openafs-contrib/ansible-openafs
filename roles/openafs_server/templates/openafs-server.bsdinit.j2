@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# PROVIDE: openafs_server
+# REQUIRE: DAEMON
+# KEYWORD: nojail shutdown
+#
+
+#
+# Add the following lines to /etc/rc.conf to enable openafs-server:
+#
+#openafs_server_enable="YES"
+#
+# Add bosserver flags to /etc/rc.conf to change startup options:
+#
+#openafs_server_flags="-pidfiles"
+
+. /etc/rc.subr
+
+name=openafs_server
+desc="OpenAFS distributed filesystem servers"
+rcvar=openafs_server_enable
+
+load_rc_config openafs_server
+: ${openafs_server_enable:=NO}
+: ${openafs_server_flags:="{{ afs_bosserver_opts }}"}
+
+command="{{ afs_bosserver }}"
+
+run_rc_command "$1"
