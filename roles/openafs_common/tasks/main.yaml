@@ -1,4 +1,10 @@
 ---
+#- debug: var=ansible_distribution
+#- debug: var=ansible_distribution_version
+#- debug: var=ansible_distribution_major_version
+#- debug: var=ansible_os_family
+#- debug: var=ansible_system
+
 - name: Gather variables for each operating system
   include_vars: "{{ item }}"
   with_first_found:

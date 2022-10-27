@@ -43,6 +43,6 @@
     src: krb5.conf.j2
     dest: "{{ afs_krbclient_krb5_conf }}"
     owner: root
-    group: root
+    group: "{{ _afs_root_group }}"
     mode: 0644
   when: ansible_local.openafs.krbserver.krb5_conf is not defined

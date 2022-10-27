@@ -27,7 +27,7 @@
     src: "{{ role_path }}/templates/{{ item }}.j2"
     dest: "{{ afs_viceetcdir }}/{{ item }}"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
     mode: 0644
   loop:
     - ThisCell
@@ -42,7 +42,7 @@
         src: "{{ afs_cellservdb_dist }}"
         dest: "{{ afs_viceetcdir }}/CellServDB.dist"
         owner: root
-        group: root
+        group: "{{ afs_root_group }}"
         mode: 0644
       when: afs_cellservdb_dist is defined
 
@@ -52,7 +52,7 @@
         state: touch
         path: "{{ afs_viceetcdir }}/CellServDB.dist"
         owner: root
-        group: root
+        group: "{{ afs_root_group }}"
         mode: 0644
         modification_time: preserve
         access_time: preserve
@@ -86,7 +86,7 @@
         src: "{{ afs_viceetcdir }}/CellServDB.d"
         dest: "{{ afs_viceetcdir }}/CellServDB"
         owner: root
-        group: root
+        group: "{{ afs_root_group }}"
         mode: 0644
 
 - name: Remove NetInfo
@@ -103,7 +103,7 @@
     src: "{{ role_path }}/templates/NetInfo.j2"
     dest: "{{ afs_viceetcdir }}/NetInfo"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
     mode: "644"
   when:
     - afs_client_netinfo is defined
@@ -123,7 +123,7 @@
     src: "{{ role_path }}/templates/NetRestrict.j2"
     dest: "{{ afs_viceetcdir }}/NetRestrict"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
     mode: "644"
   when:
     - afs_client_netrestrict is defined

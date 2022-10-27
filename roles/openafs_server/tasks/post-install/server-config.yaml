@@ -37,7 +37,7 @@
     path: "{{ afs_afsconfdir }}"
     mode: "755"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
 
 - name: Ensure server local directory exists
   become: yes
@@ -46,7 +46,7 @@
     path: "{{ afs_afslocaldir }}"
     mode: "700"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
 
 - name: Ensure BosConfig directory exists
   become: yes
@@ -55,7 +55,7 @@
     path: "{{ afs_afsbosconfigdir }}"
     mode: "755"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
   # The BosConfig dir has the same name and mode as afslocaldir when using
   # Transarc-style paths, otherwise it should have mode 755.
   when: afs_afsbosconfigdir != afs_afslocaldir
@@ -66,7 +66,7 @@
     src: "{{ role_path }}/templates/{{ item.name }}.j2"
     dest: "{{ item.path }}/{{ item.name }}"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
     mode: "644"
   loop:
     - name: ThisCell
@@ -105,7 +105,7 @@
     dest: "{{ afs_afsconfdir }}/krb.conf"
     mode: "644"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
   when: afs_realm != afs_cell.upper()
 
 - name: Remove NetInfo
@@ -124,7 +124,7 @@
     src: "{{ role_path }}/templates/NetInfo.j2"
     dest: "{{ afs_afslocaldir }}/NetInfo"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
     mode: "644"
   when:
     - afs_server_netinfo is defined
@@ -148,7 +148,7 @@
     src: "{{ role_path }}/templates/NetRestrict.j2"
     dest: "{{ afs_afslocaldir }}/NetRestrict"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
     mode: "644"
   when:
     - afs_server_netrestrict is defined

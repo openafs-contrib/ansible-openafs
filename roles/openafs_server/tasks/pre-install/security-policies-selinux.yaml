@@ -13,7 +13,7 @@
     path: /var/lib/ansible-openafs/selinux
     mode: "0755"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
 
 - name: Copy the SELinux module definitions for openafs server
   become: yes

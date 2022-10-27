@@ -85,6 +85,6 @@
     dest: "/etc/sysconfig/{{ ansible_local.openafs.server_service_name }}"
     mode: 0644
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
   notify:
     - Restart OpenAFS servers
