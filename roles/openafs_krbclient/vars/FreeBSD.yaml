@@ -1,0 +1,8 @@
+---
+# Install paths
+afs_kadmin: "/usr/bin/kadmin"
+afs_kdestroy: "/usr/bin/kdestroy"
+afs_kinit: "/usr/bin/kinit"
+
+# Kerberos client files
+afs_krbclient_krb5_conf: "/etc/krb5.conf"

@@ -48,6 +48,7 @@ PLATFORMS = [
     'solaris114',
     'ubuntu20',
     'ubuntu22',
+    'freebsd12',
 ]
 ROLE = Path(os.getcwd()).name
 LOGDIR = Path('/tmp/ansible-openafs/molecule') / ROLE
