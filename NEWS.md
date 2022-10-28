@@ -1,5 +1,36 @@
 OpenAFS Ansible Collection
 
+November 18, 2022 - version 1.8.0
+
+* Add support for Solaris IPS packages. A private IPS package repository is
+  required at this time.
+
+* Use SMF on Solaris instead of legacy init scripts when installing from
+  source or a transarc-style binary distribution.
+
+* Add support for FreeBSD 12, limited to 'source', 'sdist', and 'bdist' install
+  methods.  OpenAFS gerrit 15159 is required to build binaries for FreeBSD at
+  this time.
+
+* Add support for creating principals with Heimdal Kerberos (required for
+  FreeBSD12 support.)
+
+* Change `openafs_principal` module to create a keytab only when the password
+  parameter is not specified.
+
+* Fix OracleLinux and Rocky default yum repository URLs.
+
+* Enable Rocky 9 CRB yum repository when installing developement packages on
+  Rocky 9.
+
+* Add gerrit checkout method to build and install from a gerrit.openafs.org
+  change id number.
+
+* Fix many and various ansible-lint warnings introduced by the current
+  version of ansible-lint.
+
+* Refactor modules for improved multi-platform support.
+
 June 8, 2022 - verision 1.7.0
 
 * Add support for RHEL 9, CentOS 9 and, AlmaLinux 9
