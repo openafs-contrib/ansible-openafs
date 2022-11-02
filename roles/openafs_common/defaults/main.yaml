@@ -41,12 +41,15 @@ afs_cell_files: "{{ '~/.ansible-openafs' | expanduser }}/cell/{{ afs_cell }}"
 # used when afs_csdb is not defined in your inventory.
 afs_csdb_file: "{{ afs_cell_files }}/csdb.yaml"
 
-# Regular user. Set afs_user_id to 0 to let the ptserver select the next available pts id.
-afs_user: "{{ ansible_user | d(lookup('env', 'USER') | d('test', True)) }}"
+# Regular user name.
+afs_user: "{{ ansible_user | d(lookup('env', 'USER') | d('ansible', True)) }}"
+
+# The pts id of the afs_user.
+# Default is 0 to let the ptserver select the next available id.
 afs_user_id: "{{ ansible_user_id | d(0, True) | int }}"
 
-# Admin user.
-afs_admin: "{{ (afs_user != 'test') | ternary(afs_user + '.admin', 'afsadmin') }}"
+# Admin user name.
+afs_admin: "{{ afs_user + '.admin' }}"
 
 # Temporary directory on remote nodes.
 afs_tmpdir: /tmp/ansible-openafs
