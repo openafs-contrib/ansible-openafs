@@ -36,9 +36,9 @@
         krb5_conf: "{{ afs_krbserver_krb5_conf }}"
         kdc_conf: "{{ afs_krbserver_kdc_conf }}"
         kadm5_acl: "{{ afs_krbserver_kadm5_acl }}"
-        principal: "{{ afs_krbserver_principal | d('omit') }}"
-        stash: "{{ afs_krbserver_stash | d('omit') }}"
-        dict:  "{{ afs_krbserver_dict | d('omit') }}"
+        principal: "{{ afs_krbserver_principal | d(omit) }}"
+        stash: "{{ afs_krbserver_stash | d(omit) }}"
+        dict:  "{{ afs_krbserver_dict | d(omit) }}"
         kdc_service: "{{ afs_krbserver_kdc_service }}"
         admin_service: "{{ afs_krbserver_admin_service }}"
   when: not ansible_check_mode
