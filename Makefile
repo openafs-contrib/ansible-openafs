@@ -4,7 +4,7 @@
         pylint test-plugins test-roles test-playbooks reset
 
 PYTHON := /usr/bin/python3
-VERSION := $(strip $(subst version:,,$(shell grep version: galaxy.yml)))
+VERSION := $(shell $(PYTHON) version.py)
 UPDATE := --force --pre
 PYFILES := plugins/*/*.py tests/*/*.py tests/*/*/*.py
 ACPATH := $(realpath $(CURDIR)/../../..)
@@ -41,6 +41,7 @@ preview: docs
 	xdg-open docs/build/html/index.html
 
 builds/openafs_contrib-openafs-$(VERSION).tar.gz:
+	sed -e 's/@VERSION@/$(VERSION)/' galaxy.yml.in > galaxy.yml
 	mkdir -p builds
 	ansible-galaxy collection build --output-path builds .
 
