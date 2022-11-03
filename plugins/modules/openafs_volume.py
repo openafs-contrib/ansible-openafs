@@ -254,6 +254,7 @@ import os                       # noqa: E402
 import pprint                   # noqa: E402
 import re                       # noqa: E402
 import time                     # noqa: E402
+import errno                    # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
@@ -760,27 +761,31 @@ def main():
         """
         Returns true if the client dynroot is enabled.
 
-        When the dynamic root (-dynroot, -dynroot-sparse) and the fake stat
-        (-fakestat, -fakestat-all) modes are in effect, use the special
-        directory named /afs/.:mount to mount the root.cell volume and to set
-        root.afs access rights.
+        Stat the root vnode of the root.cell volume of the local cell to
+        determine if dynroot mode is enabled on the cache manager.  This check
+        assumes the root.cell volume has already been created, which is
+        normally done before a client is started, since non-dynroot clients
+        will mount the root.cell volume on startup.
 
-        The afsd command arguments are saved as an installation fact to provide
-        a portable way to lookup the client startup options.
+        Accesses to /afs/.:mount/<cell>:<volume>/<path> will fail with an
+        ENODEV error when dynroot is disabled.  Note that accesses to
+        /afs/.:mount/ and /afs/.:mount/<cell>:<volume> will succeed even when
+        dynroot is disabled, so be sure to check a vnode in the volume to
+        determine when dynroot mode is on.
         """
         global _dynroot  # Cached value.
-        if _dynroot is None:
-            try:
-                with open('/etc/ansible/facts.d/openafs.fact') as f:
-                    facts = json.load(f)
-                options = facts['client_options']
-            except Exception as e:
-                die('Unable to determine dynroot mode: '
-                    'afsd options not found; %s' % e)
-            options = set(options.split(' '))
-            dynroot = set(['-dynroot', '-dynroot-sparse'])
-            fakestat = set(['-fakestat', '-fakestat-all'])
-            _dynroot = (dynroot & options) and (fakestat & options)
+        if _dynroot is not None:
+            return _dynroot
+        path = '/afs/.:mount/{cell}:root.cell/.'.format(cell=get_cell_name())
+        try:
+            os.stat(path)
+            _dynroot = True
+        except OSError as e:
+            if e.errno == errno.ENODEV:
+                _dynroot = False
+            else:
+                die(str(e))
+        log.info('dynroot is {}'.format('enabled' if _dynroot else 'disabled'))
         return _dynroot
 
     def get_afs_root():
