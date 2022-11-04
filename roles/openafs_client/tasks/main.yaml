@@ -38,7 +38,7 @@
       service:
         state: started
         enabled: yes
-        name: "{{ afs_client_service_name }}"
+        name: "{{ ansible_local.openafs.client_service_name }}"
       register: afs_client_service_result
 
     - name: Run init script.

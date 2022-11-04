@@ -89,7 +89,7 @@
   copy:
     content: |
         DAEMON_ARGS="{{ afs_bosserver_opts }}"
-    dest: "/etc/default/{{ afs_server_service_name }}"
+    dest: "/etc/default/{{ ansible_local.openafs.server_service_name }}"
     mode: 0644
     owner: root
     group: root

@@ -83,7 +83,7 @@
   copy:
     content: |
         BOSSERVER_ARGS="{{ afs_bosserver_opts }}"
-    dest: "/etc/sysconfig/{{ afs_server_service_name }}"
+    dest: "/etc/sysconfig/{{ ansible_local.openafs.server_service_name }}"
     mode: 0644
     owner: root
     group: root

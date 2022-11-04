@@ -53,7 +53,6 @@
     facts:
       install_method: "{{ afs_install_method }}"
       server_installed: yes
-      server_service_name: openafs-server
       bins: "{{ install_results.bins }}"
       dirs: "{{ install_results.dirs }}"
   when: not ansible_check_mode

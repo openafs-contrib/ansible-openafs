@@ -68,9 +68,6 @@ afs_salvager_opts:
 # How to start and stop the bosserver.
 afs_server_service_mgr: "{{ _afs_server_service_mgr | d(ansible_service_mgr) }}"
 
-# Service name
-afs_server_service_name: "{{ ansible_local.openafs.server_service_name }}"
-
 # Paths
 afs_asetkey: "{{ ansible_local.openafs.bins['asetkey'] }}"
 afs_bos: "{{ ansible_local.openafs.bins['bos'] }}"
