@@ -138,7 +138,6 @@
       install_method: "{{ afs_install_method }}"
       client_installed: yes
       client_service_name: openafs-client
-      client_options: "{{ install_results.afsd_args | d(omit) }}"
       bins: "{{ install_results.bins }}"
       dirs: "{{ install_results.dirs }}"
   when: not ansible_check_mode

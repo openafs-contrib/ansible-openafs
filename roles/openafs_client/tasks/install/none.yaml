@@ -14,7 +14,6 @@
     that:
       - ansible_local.openafs is defined
       - ansible_local.openafs.client_service_name is defined
-      - ansible_local.openafs.client_options is defined
       - ansible_local.openafs.dirs is defined
       - ansible_local.openafs.bins is defined
     msg: Please define local facts when using 'none' install method.
