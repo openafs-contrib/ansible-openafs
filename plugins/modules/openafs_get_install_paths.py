@@ -291,38 +291,6 @@ def find_cacheinfo(dirs):
     return cacheinfo
 
 
-def find_afsd_args(files):
-    """
-    Detect the installed AFSD_ARGS envirnonment variable used
-    in the openafs-client systemd unit file.
-    """
-    unitfile = None
-    for path in files:
-        if path.endswith('openafs-client.service'):
-            unitfile = path
-    if unitfile is None:
-        return None
-    with open(unitfile) as f:
-        contents = f.readlines()
-    envfile = None
-    for line in contents:
-        if line.startswith('EnvironmentFile=/'):
-            fields = line.rstrip().split('=', 1)
-            if len(fields) == 2:
-                envfile = fields[1].strip()
-    if envfile is None:
-        return None
-    with open(envfile) as f:
-        contents = f.readlines()
-    afsd_args = None
-    for line in contents:
-        if line.startswith('AFSD_ARGS'):
-            fields = line.rstrip().split('=', 1)
-            if len(fields) == 2:
-                afsd_args = fields[1].lstrip('"').rstrip('"')
-    return afsd_args
-
-
 def main():
     global log
     results = dict(
@@ -379,9 +347,6 @@ def main():
     cacheinfo = find_cacheinfo(results['dirs'])
     if cacheinfo:
         results['cacheinfo'] = cacheinfo
-    afsd_args = find_afsd_args(files)
-    if afsd_args:
-        results['afsd_args'] = afsd_args
 
     log.debug('Results: %s', results)
     module.exit_json(**results)

@@ -29,10 +29,3 @@
     - /etc/rc2.d/S70openafs-client
   loop_control:
     loop_var: rc
-
-- name: Store installation facts
-  become: yes
-  openafs_contrib.openafs.openafs_store_facts:
-    state: update
-    facts:
-  when: not ansible_check_mode
