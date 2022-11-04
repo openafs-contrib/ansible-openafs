@@ -106,7 +106,6 @@
         state: update
         facts:
           install_method: "{{ afs_install_method }}"
-          server_service_name: openafs-server
           server_installed: yes
           client_installed: "{{ afs_is_client }}"
           bins: "{{ install_results.bins }}"
