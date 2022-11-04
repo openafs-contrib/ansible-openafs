@@ -10,7 +10,7 @@ PACKAGE=$CONFIG/package.options
 
 # EXTRAOPTS can be used to enable/disable AFSDB support (-afsdb)
 # and Dynroot (dynamically-generated /afs) support (-dynroot).
-EXTRAOPTS="{{ afs_afsd_opts }}"
+EXTRAOPTS="{{ afs_afsd_opts | d('-dynroot -fakestat -afsdb') }}"
 
 LARGE="-stat 2800 -dcache 2400 -daemons 5 -volumes 128"
 MEDIUM="-stat 2000 -dcache 800 -daemons 3 -volumes 70"

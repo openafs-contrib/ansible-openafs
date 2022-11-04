@@ -13,8 +13,9 @@ afs_mountpoint: "{{ ansible_local.openafs.cacheinfo.mountpoint | d('/afs') }}"
 afs_cachedir: "{{ ansible_local.openafs.cacheinfo.cachedir | d('/usr/vice/cache') }}"
 afs_cachesize: "{{ ansible_local.openafs.cacheinfo.cachesize | d(50000) }}"
 
-# afsd options (AFSD_ARGS)
-afs_afsd_opts: "{{ ansible_local.openafs.client_options | d('-dynroot -fakestat -afsdb') }}"
+# Set afs_afsd_opts to override the afsd command line options provided by the
+# client packages or the defaults when installing from source.
+#afs_afsd_opts: <auto-detected>
 
 # Service name
 afs_client_service_mgr: "{{ _afs_client_service_mgr | d(ansible_service_mgr) }}"

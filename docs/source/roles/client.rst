@@ -61,12 +61,10 @@ afs_cachesize
   Default: autodetected, fallback to 50000
 
 afs_afsd_opts
-  The ``afsd`` command line arguments.
+  The ``afsd`` command line arguments to override the value provided
+  by the client installation package.
 
-  Default value is autodetected from the service initialization files
-  installed by packages.
-
-  Default: autodetected, fallback to ``-dynroot -fakestat -afsdb``
+  Default: auto-detected
 
 afs_client_netinfo
   A single string, or a list of strings, to set the contents of the client

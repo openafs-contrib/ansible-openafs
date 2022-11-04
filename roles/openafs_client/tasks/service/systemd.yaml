@@ -15,10 +15,12 @@
 
 - name: Store installation facts
   become: yes
+  vars:
+    afsd_opts: "{{ afs_afsd_opts | d('-dynroot -fakestat -afsdb') }}"
   openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
       client_service_name: openafs-client
-      client_options: "{{ afs_afsd_opts }}"
-      client_dynroot: "{{ '-dynroot' in afs_afsd_opts }}"
+      client_options: "{{ afsd_opts }}"
+      client_dynroot: "{{ '-dynroot' in afsd_opts }}"
   when: not ansible_check_mode

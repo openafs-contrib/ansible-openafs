@@ -81,5 +81,6 @@
     regexp: "^AFSD_ARGS="
     line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
     state: present
+  when: afs_afsd_opts is defined
   notify:
     - Restart OpenAFS client
