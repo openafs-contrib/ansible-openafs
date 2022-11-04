@@ -5,7 +5,6 @@
     name: "{{ ansible_local.openafs.client_service_name }}"
     state: restarted
   when:
-    - _afs_use_client_service_mgr | d('yes') | bool
     - ansible_local.openafs.client_service_name is defined
     - afs_client_service_result.changed is defined
     - not afs_client_service_result.changed

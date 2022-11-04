@@ -46,24 +46,22 @@
       command:
         cmd: /etc/init.d/openafs-client start
 
-- name: Verify afs filesystem is mounted
-  when: _afs_use_client_service_mgr | d('yes') | bool
-  block:
-    - name: Get mounts.
-      command:
-        cmd: mount
-        warn: false
-      check_mode: no
-      changed_when: false
-      register: mount_results
+# Verify AFS is mounted.
+- name: Get mounts.
+  command:
+    cmd: mount
+    warn: false
+  check_mode: no
+  changed_when: false
+  register: mount_results
 
-    - name: Print mounts.
-      debug:
-        var: mount_results
-        verbosity: 1
+- name: Print mounts.
+  debug:
+    var: mount_results
+    verbosity: 1
 
-    - name: Verify afs filesystem is mounted.
-      assert:
-        that: mount_results.stdout is regex(_afs_mount_pattern)
-        fail_msg: AFS is not mounted.
-        success_msg: AFS is mounted.
+- name: Verify afs filesystem is mounted.
+  assert:
+    that: mount_results.stdout is regex(_afs_mount_pattern)
+    fail_msg: AFS is not mounted.
+    success_msg: AFS is mounted.
