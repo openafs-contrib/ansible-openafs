@@ -29,22 +29,7 @@
 - import_tasks: "post-install/directories.yaml"
 - import_tasks: "post-install/configure.yaml"
 - include_tasks: "post-install/preload/{{ afs_module_enable_preload | ternary(_afs_module_preload, 'none') }}.yaml"
-
-- name: Start client.
-  become: yes
-  block:
-    - name: Start client service.
-      when: afs_client_service_mgr != "sysv"
-      service:
-        state: started
-        enabled: yes
-        name: "{{ ansible_local.openafs.client_service_name }}"
-      register: afs_client_service_result
-
-    - name: Run init script.
-      when: afs_client_service_mgr == "sysv"
-      command:
-        cmd: /etc/init.d/openafs-client start
+- include_tasks: "post-install/enable-service/{{ afs_client_service_mgr }}.yaml"
 
 # Verify AFS is mounted.
 - name: Get mounts.
