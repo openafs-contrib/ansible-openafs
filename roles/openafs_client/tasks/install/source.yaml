@@ -111,9 +111,7 @@
       service:
         name: "{{ ansible_local.openafs.client_service_name }}"
         state: stopped
-      when:
-        - afs_client_service_mgr is not match('sysv*')
-        - ansible_local.openafs.client_service_name is defined
+      when: ansible_local.openafs.client_service_name is defined
 
     - name: Install binaries
       become: yes
@@ -135,4 +133,4 @@
 #----------------------------------------------------------------------------
 # Setup service.
 #
-- include_tasks: "{{ role_path }}/tasks/service/{{ afs_client_service_mgr }}.yaml"
+- include_tasks: "{{ role_path }}/tasks/service/{{ ansible_service_mgr }}.yaml"

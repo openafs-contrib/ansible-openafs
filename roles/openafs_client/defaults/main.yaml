@@ -17,9 +17,6 @@ afs_cachesize: "{{ ansible_local.openafs.cacheinfo.cachesize | d(50000) }}"
 # client packages or the defaults when installing from source.
 #afs_afsd_opts: <auto-detected>
 
-# Service name
-afs_client_service_mgr: "{{ _afs_client_service_mgr | d(ansible_service_mgr) }}"
-
 # Paths
 afs_afsd: "{{ ansible_local.openafs.bins['afsd'] }}"
 afs_fs: "{{ ansible_local.openafs.bins['fs'] }}"

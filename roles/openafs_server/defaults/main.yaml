@@ -65,9 +65,6 @@ afs_volserver_opts:
 # Legacy salvager options
 afs_salvager_opts:
 
-# How to start and stop the bosserver.
-afs_server_service_mgr: "{{ _afs_server_service_mgr | d(ansible_service_mgr) }}"
-
 # Paths
 afs_asetkey: "{{ ansible_local.openafs.bins['asetkey'] }}"
 afs_bos: "{{ ansible_local.openafs.bins['bos'] }}"

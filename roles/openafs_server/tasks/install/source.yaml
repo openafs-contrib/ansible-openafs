@@ -80,7 +80,6 @@
       when:
         - afs_is_client
         - ansible_local.openafs.client_service_name is defined
-        - afs_client_service_mgr | d(ansible_service_mgr) != 'sysv'
 
     - name: Ensure OpenAFS servers are stopped
       become: yes
@@ -88,7 +87,6 @@
         name: "{{ ansible_local.openafs.server_service_name }}"
         state: stopped
       when:
-        - afs_server_service_mgr != 'sysv'
         - ansible_local.openafs.server_service_name is defined
 
     - name: Install OpenAFS binaries
@@ -118,4 +116,4 @@
 #----------------------------------------------------------------------------
 # Setup service.
 #
-- include_tasks: "{{ role_path }}/tasks/service/{{ afs_server_service_mgr }}.yaml"
+- include_tasks: "{{ role_path }}/tasks/service/{{ ansible_service_mgr }}.yaml"

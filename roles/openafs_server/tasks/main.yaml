@@ -29,5 +29,5 @@
 - import_tasks: "post-install/server-config.yaml"
 - import_tasks: "post-install/server-key.yaml"
 - include_tasks: "post-install/security-contexts-{{ afs_security_model }}.yaml"
-- include_tasks: "post-install/enable-service/{{ afs_server_service_mgr }}.yaml"
+- include_tasks: "post-install/enable-service/{{ ansible_service_mgr }}.yaml"
 - import_tasks: "post-install/bootstrap-cell.yaml"

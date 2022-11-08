@@ -1,3 +1,1 @@
 ---
-_afs_server_service_mgr: sysv
-_afs_server_init_script: openafs-server.init.j2

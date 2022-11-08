@@ -1,0 +1,48 @@
+---
+- name: "Add openafs-client SMF methods script."
+  become: yes
+  template:
+    src: openafs-client.method.j2
+    dest: /lib/svc/method/openafs-client
+    owner: root
+    group: root
+    mode: 0755
+  register: afs_openafs_client_smf_method
+  notify:
+    - Restart OpenAFS client
+
+- name: "Add openafs-client SMF manifest."
+  become: yes
+  template:
+    src: openafs-client.xml.j2
+    dest: /var/svc/manifest/site/openafs-client.xml
+    owner: root
+    group: root
+    mode: 0644
+  register: afs_openafs_client_smf_manifest
+  notify:
+    - Restart OpenAFS client
+
+- name: "Validate openafs-client SMF manifest."
+  become: yes
+  command:
+    cmd: svccfg validate /var/svc/manifest/site/openafs-client.xml
+  changed_when: false
+  register: afs_openafs_client_smf_validate
+  failed_when: afs_openafs_client_smf_validate.rc != 0
+  when: afs_openafs_client_smf_manifest.changed
+
+# Note: Service is imported by not enabled.
+- name: "Import openafs-client SMF manifest."
+  become: yes
+  service:
+    name: manifest-import
+    state: restarted
+  when: afs_openafs_client_smf_manifest.changed
+
+- name: "Store client service name."
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      client_service_name: "openafs-client"

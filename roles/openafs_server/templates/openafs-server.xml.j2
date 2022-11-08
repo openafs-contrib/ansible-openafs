@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type="manifest" name="openafs-server">
+    <service name="site/openafs-server" type="service" version="1">
+        <single_instance/>
+
+        <dependency name="network" grouping="require_all" restart_on="error" type="service">
+            <service_fmri value="svc:/milestone/network:default"/>
+        </dependency>
+
+        <dependency name="filesystem" grouping="require_all" restart_on="error" type="service">
+            <service_fmri value="svc:/system/filesystem/local"/>
+        </dependency>
+
+        <exec_method
+            type="method"
+            name="start"
+            exec="{{ afs_bosserver }} -nofork {{ afs_bosserver_opts }}"
+            timeout_seconds="60"/>
+
+        <exec_method
+            type="method"
+            name="stop"
+            exec='/usr/bin/pkill -QUIT -x -U 0 -c %{restarter/contract} bosserver'
+            timeout_seconds="3600"/>
+
+        <instance name='default' enabled='false'>
+            <property_group name="startd" type="framework">
+                <propval name="duration" type="astring" value="child"/>
+                <propval name="ignore_error" type="astring" value="core,signal"/>
+            </property_group>
+            <property_group name="application" type="application" />
+        </instance>
+
+        <stability value="Evolving"/>
+
+        <template>
+            <common_name>
+                <loctext xml:lang="C">
+                    OpenAFS server.
+                </loctext>
+            </common_name>
+        </template>
+
+    </service>
+</service_bundle>

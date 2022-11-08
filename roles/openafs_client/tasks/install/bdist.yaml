@@ -60,4 +60,4 @@
       dirs: "{{ install_results.dirs }}"
   when: not ansible_check_mode
 
-- include_tasks: "{{ role_path }}/tasks/service/{{ afs_client_service_mgr }}.yaml"
+- include_tasks: "{{ role_path }}/tasks/service/{{ ansible_service_mgr }}.yaml"
