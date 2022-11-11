@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2020, Sine Nomine Associates
+# Copyright (c) 2020-2022, Sine Nomine Associates
 # BSD 2-Clause License
 
 ANSIBLE_METADATA = {
@@ -25,7 +25,7 @@ options:
   package_mgr_type:
     description:
       - The package manager type on the node.
-      - Supported values are C(rpm) and C(deb).
+      - Supported values are C(rpm) and C(apt).
     default: autodetect
 
 author:
@@ -48,305 +48,344 @@ import gzip                 # noqa: E402
 import os                   # noqa: E402
 import re                   # noqa: E402
 import stat                 # noqa: E402
-import subprocess           # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule   # noqa: E402
+from ansible.module_utils.facts.system.distribution import DistributionFactCollector  # noqa: E402, E501
+from ansible.module_utils.facts.system.pkg_mgr import PkgMgrFactCollector  # noqa: E402, E501
+
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
 
 module_name = os.path.basename(__file__).replace('.py', '')
-log = None
-
-canonical_name = {
-    'pagsh.openafs': 'pagsh',
-}
+log = Logger(module_name)
 
 
-class PkgMgr:
+def prefix_keys(prefix, facts):
     """
-    Lookup installed files.
+    Add a namespace prefix to the keys in a dictionary, e.g.,
+    change os_family to ansible_os_family.
     """
-    def parse_package(self, line):
-        return line.rstrip()
+    new_facts = {}
+    for key, value in facts.items():
+        if not key.startswith(prefix):
+            key = prefix + key
+        new_facts[key] = value
+    return new_facts
 
-    def parse_file(self, line):
-        return line.rstrip()
 
-    def list_packages(self, pattern):
+def get_system_pkg_mgr(module):
+    """
+    Run the Ansible PkgMgrFactCollector to find the ansible_pkg_mgr on this
+    system.  The PkgMgrFactCollector depends on the platform distribution
+    facts, prefixed with the ansible namespace, e.g. ansible_os_family, not
+    os_family.
+    """
+    dist_collector = DistributionFactCollector()
+    dist_facts = prefix_keys('ansible_', dist_collector.collect(module))
+
+    pkg_mgr_collector = PkgMgrFactCollector()
+    pkg_mgr_facts = pkg_mgr_collector.collect(module, dist_facts)
+    pkg_mgr = pkg_mgr_facts.get('pkg_mgr')
+    if not pkg_mgr:
+        raise ValueError('Unable to find the system package manager.')
+
+    log.info('pkg_mgr is %s', pkg_mgr)
+    return pkg_mgr
+
+
+def get_pkg_mgr_subclass(cls, module):
+    """
+    Find a suitable collector subclass for the package manager on this system.
+    Lookup the ansible_pkg_mgr if a package manager is not specified by as a
+    module parameter.
+    """
+    pkg_mgr = module.params.get('package_manager_type')
+    if not pkg_mgr:
+        pkg_mgr = get_system_pkg_mgr(module)
+
+    for subcls in cls.__subclasses__():
+        if pkg_mgr in subcls.pkg_mgrs:
+            return subcls
+
+    raise ValueError('Unknown package manager: {}'.format(pkg_mgr))
+
+
+class InstallationFactCollector(object):
+    """
+    Query the package manager to find the file paths of the currently installed
+    OpenAFS packages.   First lookup the installed package names, then lookup
+    the files for each package.  Package manager specific tasks are handled by
+    subclasses.
+    """
+
+    def __new__(cls, module):
+        new_cls = get_pkg_mgr_subclass(InstallationFactCollector, module)
+        return super(cls, new_cls).__new__(new_cls)
+
+    def __init__(self, module):
+        self.module = module
+
+    def collect(self):
         """
-        Find installed packages matching a name pattern.
+        Collect information about the OpenAFS installation on this system.
         """
-        packages = []
-        args = self.query_packages_command(pattern)
-        proc = subprocess.Popen(args, stdout=subprocess.PIPE)
-        for line in proc.stdout:
-            package = self.parse_package(line.decode())
-            if package:
-                packages.append(package)
-        rc = proc.wait()
+        packages = self.collect_package_names()
+        paths = self.collect_all_paths(packages)
+        bins = self.collect_bins(paths)
+        manpages = self.collect_manpages(paths)
+        dirs = self.collect_dirs(manpages)
+        cacheinfo = self.collect_cacheinfo(dirs)
+
+        facts = {
+            'packages': sorted(list(packages)),
+            'paths': sorted(list(paths)),
+            'bins': bins,
+            'manpages': manpages,
+            'dirs': dirs,
+            'cacheinfo': cacheinfo,
+        }
+        return facts
+
+    def collect_all_paths(self, packages):
+        """
+        Find all the paths for one or more installed packages.
+        """
+        paths = set()
+        for package in packages:
+            paths.update(self.collect_paths(package))
+        return paths
+
+    def collect_bins(self, paths):
+        """
+        Find the installed program files.
+        """
+        canonical_name = {
+            'pagsh.openafs': 'pagsh',
+        }
+        bins = {}
+        for path in paths:
+            if self.is_bin(path):
+                basename = os.path.basename(path)
+                name = canonical_name.get(basename, basename)
+                bins[name] = path
+        return bins
+
+    def collect_manpages(self, paths):
+        """
+        Find the installed man pages.
+        """
+        manpages = {}
+        for path in paths:
+            m = re.search(r'\.\d\.gz$', path)
+            if m:
+                name = re.sub(r'\.\d\.gz$', '', os.path.basename(path))
+                manpages[name] = path
+        return manpages
+
+    def collect_dirs(self, manpages):
+        """
+        Find the configuration directories.
+
+        This is a hacky workaround to find the OpenAFS configuration
+        directories, since that is a build time option, but we currently do not
+        have a way to query the binaries to show the embedded configuration
+        directories.  For now, try to find them in the man pages, which
+        fortunately do not change often.
+        """
+        dirs = {}
+
+        path = manpages.get('bosserver')
+        if path:
+            regex = r'create a file named (\S+)/BosConfig\.new'
+            dirs['afsbosconfigdir'] = self.search_page(path, regex)
+
+        path = manpages.get('KeyFile')
+        if path:
+            regex = r'The file must reside in the (\S+) directory'
+            dirs['afsconfdir'] = self.search_page(path, regex)
+
+        path = manpages.get('vldb.DB0')
+        if path:
+            regex = r'reside in the (\S+) directory'
+            dirs['afsdbdir'] = self.search_page(path, regex)
+
+        path = manpages.get('NetInfo')
+        if path:
+            regex = r'The server NetInfo file, if present in the (\S+) directory'  # noqa: E501
+            dirs['afslocaldir'] = self.search_page(path, regex)
+
+        path = manpages.get('FileLog')
+        if path:
+            regex = r'file does not already exist in the (\S+) directory'
+            dirs['afslogdir'] = self.search_page(path, regex)
+
+        path = manpages.get('fileserver')
+        if path:
+            regex = r'its binary file is located in the (\S+) directory'
+            dirs['afssrvdir'] = self.search_page(path, regex)
+
+        path = manpages.get('cacheinfo')
+        if path:
+            regex = r'must reside in the (\S+) directory'
+            dirs['viceetcdir'] = self.search_page(path, regex)
+
+        return dirs
+
+    def collect_cacheinfo(self, dirs):
+        """
+        Find the cache manager configuration parameters.
+        """
+        viceetcdir = dirs.get('viceetcdir')
+        if not viceetcdir:
+            return None
+        ci = os.path.join(viceetcdir, 'cacheinfo')
+        if not os.path.exists(ci):
+            log.warning('cacheinfo file not found: %s', ci)
+            return None
+        with open(ci) as f:
+            contents = f.read().rstrip()
+        try:
+            mount, cachedir, size = contents.split(':')
+            cacheinfo = {
+                'mountpoint': mount,
+                'cachedir': cachedir,
+                'cachesize': int(size)
+            }
+        except ValueError as e:
+            log.error('Failed to parse cacheinfo %s file: %s', ci, e)
+            cacheinfo = None
+        return cacheinfo
+
+    def search_page(self, path, pattern):
+        """
+        Search an OpenAFS man page for a directory.
+        """
+        with gzip.open(path) as z:
+            content = z.read().decode()
+        content = re.sub(r'\\&', '', content)
+        content = re.sub(r'\\f.', '', content)
+        content = re.sub(r'\s+', ' ', content)
+        m = re.search(pattern, content)
+        if not m:
+            raise ValueError('Failed to find directory in %s.' % path)
+        return m.group(1)
+
+    def is_bin(self, path):
+        """
+        Return true if path is an program file.
+        """
+        if re.search(r'\.so(\.\d+){0,3}$', path):
+            return False   # Skip shared object files.
+        if not self.is_x(path):
+            return False   # Skip non-executable files.
+        return True
+
+    def is_x(self, path):
+        """
+        Return true when the path is an executable file.
+        """
+        try:
+            mode = os.stat(path).st_mode
+        except OSError as e:  # OSError works in both PY2 and PY3.
+            if e.errno == errno.ENOENT:
+                return False
+            if e.errno == errno.EACCES:
+                return False
+            raise e
+        return stat.S_ISREG(mode) and (mode & 0o100 != 0)
+
+
+class RpmInstallationFactCollector(InstallationFactCollector):
+    """
+    RPM package manager specific collection methods.
+    """
+    pkg_mgrs = ['rpm', 'dnf', 'zypper']
+
+    def __init__(self, module):
+        super(RpmInstallationFactCollector, self).__init__(module)
+        self.rpm = module.get_bin_path('rpm', required=True)
+
+    def collect_package_names(self):
+        """
+        Find the names of the OpenAFS packages installed on this system.
+        """
+        args = [self.rpm, '--query', '--all', 'name=openafs*']
+        rc, out, err = self.module.run_command(args)
         if rc != 0:
-            raise Exception('Failed to run command: %s, code=%d' %
-                            (' '.join(args), rc))
+            log.error('rpm query failed', err)
+            self.module.fail_json(msg='rpm query failed', rc=rc, err=err)
+        return set(out.splitlines())
+
+    def collect_paths(self, package):
+        """
+        Find the paths of the files and directories installed by a package.
+        """
+        args = [self.rpm, '--query', '--list', package]
+        rc, out, err = self.module.run_command(args)
+        if rc != 0:
+            log.error('rpm query failed', err)
+            self.module.fail_json(msg='rpm query failed', rc=rc, err=err)
+        paths = set()
+        for path in out.splitlines():
+            if '.build-id' not in path:  # Omit build meta data files.
+                paths.add(path)
+        return paths
+
+
+class DebianInstallationFactCollector(InstallationFactCollector):
+    """
+    Debian package manager specific collection methods.
+    """
+    pkg_mgrs = ['apt', 'apt-get', 'dpkg']
+
+    def __init__(self, module):
+        super(DebianInstallationFactCollector, self).__init__(module)
+        self.dpkg_query = module.get_bin_path('dpkg-query', required=True)
+
+    def collect_package_names(self):
+        """
+        Find the names of the OpenAFS packages installed on this system.
+        """
+        args = [self.dpkg_query, '--no-pager', '--show', '--showformat',
+                '${Package} ${Status}\\n', 'openafs*']
+        rc, out, err = self.module.run_command(args)
+        if rc != 0:
+            log.error('dpkg-query failed', err)
+            self.module.fail_json(msg='dpkg-query failed', rc=rc, err=err)
+        packages = set()
+        for line in out.splitlines():
+            package, _, _, status = line.rstrip().split()
+            if status == 'installed':
+                packages.add(package)
         return packages
 
-    def list_files(self, package):
+    def collect_paths(self, package):
         """
-        List installed files for a given package name.
+        Find the paths of the files and directories installed by a package.
         """
-        files = []
-        args = self.query_files_command(package)
-        proc = subprocess.Popen(args, stdout=subprocess.PIPE)
-        for line in proc.stdout:
-            file_ = self.parse_file(line.decode())
-            if file_:
-                files.append(file_)
-        rc = proc.wait()
+        args = [self.dpkg_query, '--no-pager', '--listfiles', package]
+        rc, out, err = self.module.run_command(args)
         if rc != 0:
-            raise Exception('Failed to run command: %s, code=%d' %
-                            (' '.join(args), rc))
-        return files
-
-
-class RpmPkgMgr(PkgMgr):
-    """
-    rpm specific bits to lookup installed files.
-    """
-    def __init__(self, rpm):
-        self.rpm = rpm
-
-    def query_packages_command(self, pattern):
-        return [self.rpm, '--query', '--all', 'name=%s' % pattern]
-
-    def query_files_command(self, package):
-        return [self.rpm, '--query', '--list', package]
-
-
-class DebPkgMgr(PkgMgr):
-    """
-    dpkg specific bits to lookup installed files.
-    """
-    def __init__(self, dpkg_query):
-        self.dpkg_query = dpkg_query
-
-    def parse_package(self, line):
-        """
-        Parse a dpkg-query output line to find installed packages.
-        """
-        package, _, _, status = line.rstrip().split()
-        if status == 'installed':
-            return package
-        else:
-            return None
-
-    def query_packages_command(self, pattern):
-        return [self.dpkg_query, '--no-pager', '--show', '--showformat',
-                '${Package} ${Status}\\n', pattern]
-
-    def query_files_command(self, package):
-        return [self.dpkg_query, '--no-pager', '--listfiles', package]
-
-
-def is_x(path):
-    """
-    Return true when the path is an executable file.
-    """
-    try:
-        mode = os.stat(path).st_mode
-    except OSError as e:  # OSError works in both PY2 and PY3.
-        if e.errno == errno.ENOENT:
-            return False
-        if e.errno == errno.EACCES:
-            return False
-        raise e
-    return stat.S_ISREG(mode) and (mode & 0o100 != 0)
-
-
-def is_bin(path):
-    """
-    Return true if path is an program file.
-    """
-    if '.build-id' in path:
-        return False   # Skip build-id files.
-    if re.search(r'\.so(\.\d+){0,3}$', path):
-        return False   # Skip shared object files.
-    if not is_x(path):
-        return False   # Skip non-executable files.
-    return True
-
-
-def search_page(path, pattern):
-    """
-    Search an OpenAFS man page for a given token.
-
-    """
-    with gzip.open(path) as z:
-        content = z.read().decode()
-    content = re.sub(r'\\&', '', content)
-    content = re.sub(r'\\f.', '', content)
-    content = re.sub(r'\s+', ' ', content)
-    m = re.search(pattern, content)
-    if not m:
-        raise Exception('Failed to find directory in %s.' % path)
-    return m.group(1)
-
-
-def find_bins(files):
-    """
-    Find the installed program files.
-    """
-    bins = {}
-    for path in files:
-        if is_bin(path):
-            basename = os.path.basename(path)
-            name = canonical_name.get(basename, basename)
-            bins[name] = path
-    return bins
-
-
-def find_manpages(files):
-    """
-    Find the installed man pages.
-    """
-    manpages = {}
-    for path in files:
-        m = re.search(r'\.\d\.gz$', path)
-        if m:
-            name = re.sub(r'\.\d\.gz$', '', os.path.basename(path))
-            manpages[name] = path
-    return manpages
-
-
-def find_dirs(files):
-    """
-    Detect the configuration directories.
-
-    This is a hacky workaround to find the OpenAFS configuration directories,
-    since that is a build time option, but we currently do not have a way to
-    query the binaries to show the embedded configuration directories.  For
-    now, try to find them in the man pages, which fortunately do not change
-    often.
-    """
-    dirs = {}
-    manpages = find_manpages(files)
-
-    path = manpages.get('bosserver')
-    if path:
-        regex = r'create a file named (\S+)/BosConfig\.new'
-        dirs['afsbosconfigdir'] = search_page(path, regex)
-
-    path = manpages.get('KeyFile')
-    if path:
-        regex = r'The file must reside in the (\S+) directory'
-        dirs['afsconfdir'] = search_page(path, regex)
-
-    path = manpages.get('vldb.DB0')
-    if path:
-        regex = r'reside in the (\S+) directory'
-        dirs['afsdbdir'] = search_page(path, regex)
-
-    path = manpages.get('NetInfo')
-    if path:
-        regex = r'The server NetInfo file, if present in the (\S+) directory'
-        dirs['afslocaldir'] = search_page(path, regex)
-
-    path = manpages.get('FileLog')
-    if path:
-        regex = r'file does not already exist in the (\S+) directory'
-        dirs['afslogdir'] = search_page(path, regex)
-
-    path = manpages.get('fileserver')
-    if path:
-        regex = r'its binary file is located in the (\S+) directory'
-        dirs['afssrvdir'] = search_page(path, regex)
-
-    path = manpages.get('cacheinfo')
-    if path:
-        regex = r'must reside in the (\S+) directory'
-        dirs['viceetcdir'] = search_page(path, regex)
-    return dirs
-
-
-def find_cacheinfo(dirs):
-    """
-    Find the cache manager configuration parameters.
-    """
-    viceetcdir = dirs.get('viceetcdir')
-    if not viceetcdir:
-        return None
-    ci = os.path.join(viceetcdir, 'cacheinfo')
-    if not os.path.exists(ci):
-        log.warning('cacheinfo file not found: %s', ci)
-        return None
-    with open(ci) as f:
-        contents = f.read().rstrip()
-    try:
-        mount, cachedir, size = contents.split(':')
-        cacheinfo = {
-            'mountpoint': mount,
-            'cachedir': cachedir,
-            'cachesize': int(size)
-        }
-    except ValueError as e:
-        log.error('Failed to parse cacheinfo %s file: %s', ci, e)
-        cacheinfo = None
-    return cacheinfo
+            log.error('dpkg-query failed', err)
+            self.module.fail_json(msg='dpkg-query failed', rc=rc, err=err)
+        paths = set()
+        for path in out.splitlines():
+            if path != '/.':      # Omit root directory
+                paths.add(path)
+        return set(paths)
 
 
 def main():
-    global log
-    results = dict(
-        changed=False,
-        bins={},
-        dirs={},
-    )
     module = AnsibleModule(
         argument_spec=dict(
             package_manager_type=dict(type='str', default=None),
         ),
         supports_check_mode=False,
     )
-    log = Logger(module_name)
     log.info('Starting %s', module_name)
 
-    def die(msg):
-        log.error('Failed: %s' % msg)
-        module.fail_json(msg=msg)
-
-    package_manager_type = module.params['package_manager_type']
-    rpm = module.get_bin_path('rpm')
-    dpkg_query = module.get_bin_path('dpkg-query')
-
-    if package_manager_type is None:
-        if rpm and dpkg_query:
-            die('Unable to determine package manager; rpm and dpkg found.')
-        elif rpm:
-            log.info('Detected rpm package manager.')
-            pm = RpmPkgMgr(rpm)
-        elif dpkg_query:
-            log.info('Detected dpkg package manager.')
-            pm = DebPkgMgr(dpkg_query)
-        else:
-            die('Unable to determine package manager.')
-    elif package_manager_type in ('rpm', 'yum', 'dnf', 'zypper'):
-        if not rpm:
-            die('rpm command not found.')
-        pm = RpmPkgMgr(rpm)
-    elif package_manager_type in ('apt', 'deb', 'dpkg'):
-        if not dpkg_query:
-            die('dpkg_query command not found.')
-        pm = DebPkgMgr(dpkg_query)
-    else:
-        die('Invalid package_manager_type value: %s' % package_manager_type)
-
-    files = []
-    packages = pm.list_packages('openafs*')
-    for package in packages:
-        files.extend(pm.list_files(package))
-
-    results['bins'] = find_bins(files)
-    results['dirs'] = find_dirs(files)
-    cacheinfo = find_cacheinfo(results['dirs'])
-    if cacheinfo:
-        results['cacheinfo'] = cacheinfo
+    collector = InstallationFactCollector(module)
+    results = collector.collect()
+    results['changed'] = False
 
     log.debug('Results: %s', results)
     module.exit_json(**results)
