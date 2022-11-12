@@ -1,6 +1,5 @@
 #!/usr/bin/python
-
-# Copyright (c) 2021, Sine Nomine Associates
+# Copyright (c) 2021-2022, Sine Nomine Associates
 # BSD 2-Clause License
 
 ANSIBLE_METADATA = {
@@ -42,12 +41,6 @@ options:
     description: git project directory on the remote node.
     type: path
     default: C(openafs)
-
-  logdir:
-    description:
-      - The path to write build log files on the remote node.
-    type: path
-    default: I(topdir)/.ansible
 
   tar:
     description: C(tar) program path
@@ -106,164 +99,211 @@ files:
   type: list
 '''
 
-
 import glob                    # noqa: E402
 import os                      # noqa: E402
+import platform                # noqa: E402
 import re                      # noqa: E402
 import shutil                  # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
+
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import chdir  # noqa: E402, E501
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import tmpdir  # noqa: E402, E501
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import execute  # noqa: E402, E501
 
-# Globals
 module_name = os.path.basename(__file__).replace('.py', '')
-log = None
-logdir = None
-module = None
-results = None
+log = Logger(module_name)
+
+COMPRESSIONS = [
+    # suffix, command
+    ('gz',  'gzip'),
+    ('bz2', 'bzip2'),
+]
 
 
-def expand_path(p):
+def get_platform_subclass(cls):
+    for subcls in cls.__subclasses__():
+        if platform.system() == subcls.platform:
+            return subcls
+    return cls
+
+
+class SourceDistBuilder(object):
     """
-    Expand optional path to absolute path.
+    Create OpenAFS source distribution tar files from a git checkout.
     """
-    if p:
-        p = os.path.abspath(os.path.expanduser(p))
-    return p
+    def __new__(cls, module):
+        new_cls = get_platform_subclass(SourceDistBuilder)
+        return super(cls, new_cls).__new__(new_cls)
 
+    def __init__(self, module):
+        self.module = module
+        self.results = dict(files=[], commands=[])
+        # paths
+        self.sdist = self.get_path('sdist')
+        self.topdir = self.get_path('topdir')
+        # required bin paths
+        self.git = self.get_bin_path('git', required=True)
+        self.tar = self.get_bin_path('tar', required=True)
+        # add available compression programs
+        self.compressors = []
+        for suffix, command in COMPRESSIONS:
+            path = self.get_bin_path(command)
+            if path:
+                self.compressors.append(Compressor(self, suffix, path))
 
-def lookup_bin(name):
-    """
-    Lookup a binary path.
+    def build(self):
+        """
+        Create OpenAFS source distribution files.
+        """
+        sdist = self.sdist
+        topdir = self.topdir
+        git = self.git
+        tar = self.tar
 
-    Use the specified path if given, otherwise search the PATH for it. Use GNU
-    tar on Solaris by default.
-    """
-    bin_ = module.params.get(name, None)
-    if not bin_:
-        if name == 'tar' and os.uname()[0] == 'SunOS':
-            name = 'gtar'
-        bin_ = module.get_bin_path(name, required=True)
-    return bin_
+        # Create output directory if not present.
+        if not os.path.exists(sdist):
+            os.makedirs(sdist)
 
+        # Get the version and change log.
+        with chdir(topdir):
+            version = self.extract_version_string()
+            changelog = '%(sdist)s/ChangeLog' % locals()
+            self.shell('%(git)s log >%(changelog)s' % locals())
+            self.results['files'].append(changelog)
 
-def tostring(s):
-    """
-    Convert the object to string for py2/py3 compat.
-    """
-    try:
-        s = s.decode()
-    except (UnicodeDecodeError, AttributeError):
-        pass
-    return s
+        # Make source archives.
+        with tmpdir():
+            # Extract source tree into temp dir.
+            self.shell('(cd %(topdir)s &&'
+                       ' %(git)s archive'
+                       '  --format=tar'
+                       '  --prefix=openafs-%(version)s/  HEAD) |'
+                       ' %(tar)s xf -' % locals())
 
+            # Generate configure, makefiles, and documents in temp dir.
+            with chdir('openafs-%(version)s' % locals()):
+                with open('.version', 'w') as f:
+                    f.write(version + '\n')
+                self.shell('./regen.sh')
 
-def extract_version_string():
-    """
-    Find the OpenAFS version string from the .version file if found,
-    or the git describe.
-    """
-    if os.path.exists('.version'):
-        with open('.version') as f:
-            output = f.read().rstrip()
-        if output.startswith('openafs-'):
-            version = re.sub('openafs-[^-]*-', '', output).replace('_', '.')
-        elif output.startswith('BP-'):
-            version = re.sub('BP-openafs-[^-]*-', '', output).replace('_', '.')
+            # Create documentation and source archives.
+            self.shell('%(tar)s cf'
+                       ' openafs-%(version)s-doc.tar'
+                       ' openafs-%(version)s/doc' % locals())
+            shutil.rmtree('openafs-%(version)s/doc' % locals())
+            self.shell('%(tar)s cf '
+                       ' openafs-%(version)s-src.tar'
+                       ' openafs-%(version)s' % locals())
+
+            # Create compressed archives in destination directory.
+            for archive in glob.glob('*.tar'):
+                for c in self.compressors:
+                    c.compress(archive, sdist)
+
+        self.results['changed'] = True
+
+    def shell(self, command):
+        log.info('Running: %s', command)
+        rc, out, err = self.module.run_command(
+            command, check_rc=True, use_unsafe_shell=True)
+        self.results['commands'].append(command)
+        return out
+
+    def get_path(self, name):
+        """
+        Expand optional path to absolute path.
+        """
+        path = self.module.params[name]
+        if path:
+            path = os.path.abspath(os.path.expanduser(path))
+        return path
+
+    def get_bin_path(self, name, required=False):
+        """
+        Lookup a binary path.
+        """
+        bin_path = self.module.params.get(name, None)
+        if not bin_path:
+            bin_name = self.get_bin_name(name)
+            bin_path = self.module.get_bin_path(bin_name, required)
+        return bin_path
+
+    def get_bin_name(self, name):
+        """
+        Lookup a binary name from the parameter name.  Subclasses may
+        override to provide platform specific program names.
+        """
+        return name
+
+    def extract_version_string(self):
+        """
+        Find the OpenAFS version string from the .version file
+        or the output of 'git describe'.
+        """
+        if os.path.exists('.version'):
+            with open('.version') as f:
+                output = f.read().rstrip()
+            if output.startswith('openafs-'):
+                version = re.sub('openafs-[^-]*-', '', output).replace('_', '.')     # noqa: E501
+            elif output.startswith('BP-'):
+                version = re.sub('BP-openafs-[^-]*-', '', output).replace('_', '.')  # noqa: E501
+            else:
+                version = output  # Use the given version string.
         else:
-            version = output  # Use the given version string.
-    else:
-        output = execute('git describe --abbrev=4 HEAD').rstrip()
-        version = re.sub(r'^openafs-[^-]*-', '', output).replace('_', '.')
-    log.info('version is %s' % version)
-    results['version'] = version
-    return version
+            git = self.get_bin_path('git')
+            cmd = ' '.join([git, 'describe', '--abbrev=4', 'HEAD'])
+            output = self.shell(cmd).rstrip()
+            version = re.sub(r'^openafs-[^-]*-', '', output).replace('_', '.')
+        log.info('version is %s' % version)
+        self.results['version'] = version
+        return version
 
 
-def compress(format_, filename, destdir):
-    """
-    Create a compressed file and checksum file.
-    """
-    f2b = {
-        'gz': 'gzip',
-        'bz2': 'bzip2',
-    }
-    bin_ = lookup_bin(f2b[format_])
-    md5sum = lookup_bin('md5sum')
-    output = '%(destdir)s/%(filename)s.%(format_)s' % locals()
-    execute('%(bin_)s <%(filename)s >%(output)s' % locals())
-    execute('%(md5sum)s %(output)s >%(output)s.md5' % locals())
-    results['files'].append(output)
-    results['files'].append(output + '.md5')
+class Compressor(object):
+
+    def __init__(self, builder, suffix, command):
+        self.builder = builder
+        self.suffix = suffix
+        self.command = command
+        self.md5sum = builder.get_bin_path('md5sum')
+
+    def compress(self, filename, destdir):
+        """
+        Create a compressed archive and also create an md5 checksum file
+        if the md5sum program is available.
+        """
+        builder = self.builder
+        suffix = self.suffix
+        command = self.command
+
+        output = '%(destdir)s/%(filename)s.%(suffix)s' % locals()
+        builder.shell('%(command)s < %(filename)s > %(output)s' % locals())
+        builder.results['files'].append(output)
+
+        md5sum = self.md5sum
+        if md5sum:
+            output_md5 = '%(output)s.md5' % locals()
+            builder.shell('%(md5sum)s %(output)s > %(output_md5)s' % locals())
+            builder.results['files'].append(output_md5)
 
 
-def make_sdist(topdir, sdist):
-    """
-    Make source distribution files.
-    """
-    # Lookup bins
-    tar = lookup_bin('tar')
-    git = lookup_bin('git')
+class SolarisSourceDistBuilder(SourceDistBuilder):
+    platform = 'SunOS'
 
-    # Create output directory if not present.
-    if not os.path.exists(sdist):
-        os.makedirs(sdist)
-
-    # Get the version and change log.
-    with chdir(topdir):
-        version = extract_version_string()
-        changelog = '%(sdist)s/ChangeLog' % locals()
-        execute('%(git)s log >%(changelog)s' % locals())
-        results['files'].append(changelog)
-
-    # Make source archives.
-    with tmpdir():
-        # Extract source tree into temp dir.
-        execute('(cd %(topdir)s &&'
-                ' %(git)s archive'
-                '  --format=tar'
-                '  --prefix=openafs-%(version)s/  HEAD) |'
-                ' %(tar)s xf -' % locals())
-
-        # Generate configure, makefiles, and documents in temp dir.
-        with chdir('openafs-%(version)s' % locals()):
-            with open('.version', 'w') as f:
-                f.write(version + '\n')
-            execute('./regen.sh')
-
-        # Create documentation and source archives.
-        execute('%(tar)s cf'
-                ' openafs-%(version)s-doc.tar'
-                ' openafs-%(version)s/doc' % locals())
-        shutil.rmtree('openafs-%(version)s/doc' % locals())
-        execute('%(tar)s cf '
-                ' openafs-%(version)s-src.tar'
-                ' openafs-%(version)s' % locals())
-
-        # Create compressed archives in destination directory.
-        for archive in glob.glob('*.tar'):
-            compress('gz', archive, sdist)
-            compress('bz2', archive, sdist)
+    def get_bin_name(self, name):
+        # Use GNU tar on Solaris.
+        if name == 'tar':
+            return 'gtar'
+        else:
+            return name
 
 
 def main():
-    global log
-    global logdir
-    global results
-    global module
-    results = dict(
-        changed=False,
-        version='',
-        files=[],
-    )
     module = AnsibleModule(
         argument_spec=dict(
             sdist=dict(type='path', required=True),
             topdir=dict(type='path', default='openafs'),
-            logdir=dict(type='path', default=None),
             # bin paths
             git=dict(type='path', default=None),
             tar=dict(type='path', default=None),
@@ -273,16 +313,11 @@ def main():
         ),
         supports_check_mode=False,
     )
-    log = Logger(module_name)
     log.info('Starting %s', module_name)
 
-    sdist = expand_path(module.params['sdist'])
-    topdir = expand_path(module.params['topdir'])
-    logdir = expand_path(module.params['logdir'])
-
-    make_sdist(topdir, sdist)
-    results['changed'] = True
-    module.exit_json(**results)
+    builder = SourceDistBuilder(module)
+    builder.build()
+    module.exit_json(**builder.results)
 
 
 if __name__ == '__main__':
