@@ -8,7 +8,6 @@ import errno                    # noqa: E402
 import json                     # noqa: E402
 import os                       # noqa: E402
 import shutil                   # noqa: E402
-import subprocess               # noqa: E402
 import syslog                   # noqa: E402
 import tempfile                 # noqa: E402
 
@@ -61,30 +60,6 @@ def tmpdir():
     finally:
         os.chdir(previous)
         shutil.rmtree(tmp)
-
-
-def execute(cmd):
-    """
-    Execute a command and return stdout as captured string.
-    """
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    o, e = proc.communicate()
-    rc = proc.returncode
-    try:
-        output = o.decode()
-    except (UnicodeDecodeError, AttributeError):
-        pass
-    try:
-        error = e.decode()
-    except (UnicodeDecodeError, AttributeError):
-        pass
-    if rc:
-        message = 'Failed: %s, code %d' % (cmd, rc)
-        if error:
-            message += '\nError:\n' + error
-        raise Exception(message)
-    return output
 
 
 def lookup_facts():
