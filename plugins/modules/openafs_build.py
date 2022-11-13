@@ -1,6 +1,5 @@
 #!/usr/bin/python
-
-# Copyright (c) 2020, Sine Nomine Associates
+# Copyright (c) 2020-2022, Sine Nomine Associates
 # BSD 2-Clause License
 
 ANSIBLE_METADATA = {
@@ -18,11 +17,11 @@ short_description: Build OpenAFS binaries from source
 description:
   - Build OpenAFS server and client binaries from source code by running
     C(regen.sh), C(configure), and C(make). The source code must be already
-    present in the I(projectdir) directory.
+    present in the I(srcdir) directory.
 
   - The M(openafs_build) module will run the OpenAFS C(regen.sh) command to
     generate the C(configure) script when the C(configure) script is not
-    already present in the I(projectdir).
+    already present in the I(srcdir).
 
   - Unless the I(configure_options) option is specified, the configure command
     line arguments are determined automatically, based on the platform and
@@ -37,8 +36,8 @@ description:
   - Out-of-tree builds are supported by specifying a build directory with the
     I(builddir) option.
 
-  - C(git clean) is run in the I(projectdir) when I(clean) is true and a
-    C(.git) directory is found in the C(projectdir).  When I(clean) is true
+  - C(git clean) is run in the I(srcdir) when I(clean) is true and a
+    C(.git) directory is found in the C(srcdir).  When I(clean) is true
     but a C(.git) directory is not found, then C(make clean) is run to remove
     artifacts from a previous build.  When I(clean) is true and an out-of-tree
     build is being done, all of the files and directories are removed from the
@@ -55,9 +54,8 @@ requirements:
   - tools and libraries required to build OpenAFS
 
 options:
-  projectdir:
+  srcdir:
     description:
-      - The project directory.
       - Source files must have been previously checkout or copied to this
         path.
     required: true
@@ -66,17 +64,17 @@ options:
   builddir:
     description:
       - The path for out-of-tree builds.
-    default: <projectdir>
+    default: <srcdir>
     type: path
 
   logdir:
     description:
       - The path to store build log files.
-      - The logdir may be a subdirectory of the C(projectdir).
+      - The logdir may be a subdirectory of the C(srcdir).
       - The logdir may not be a subdirectory of the C(builddir) when doing
         an out-of-tree build.
     type: path
-    default: <projectdir>/.ansible
+    default: <srcdir>/.ansible
 
   destdir:
     description:
@@ -84,18 +82,18 @@ options:
         variants.
       - The tree staged in this directory may be installed with the
         M(openafs_install_bdist) module.
-    default: <projectdir>/packages/dest
+    default: <srcdir>/packages/dest
     type: path
 
   clean:
     description:
-      - Run C(git clean) in the I(projectdir) when it contains a C(.git)
+      - Run C(git clean) in the I(srcdir) when it contains a C(.git)
         directory, otherwise run C(make clean).
       - Remove the I(builddir) when using an out of tree build, that is
-        the I(builddir) is different than the I(projectdir).
+        the I(builddir) is different than the I(srcdir).
       - A I(clean) build should be done to force a complete rebuild.
       - The I(clean) option will remove any new files you added manually
-        on the remote node and did not commit when the I(projectdir) is
+        on the remote node and did not commit when the I(srcdir) is
         a git repository.
     type: bool
     default: false
@@ -194,22 +192,22 @@ author:
 EXAMPLES = r'''
 - name: Build OpenAFS from source
   openafs_contrib.openafs.openafs_build:
-    projectdir: ~/src/openafs
+    srcdir: ~/src/openafs
 
 - name: Build OpenAFS binaries for the current system.
   openafs_contrib.openafs.openafs_build:
-    projectdir: ~/src/openafs
+    srcdir: ~/src/openafs
     clean: yes
 
 - name: Build OpenAFS legacy distribution
   openafs_contrib.openafs.openafs_build:
-    projectdir: ~/src/openafs
+    srcdir: ~/src/openafs
     clean: yes
     with_transarc_paths: yes
 
 - name: Build OpenAFS server binaries with custom install paths.
   openafs_contrib.openafs.openafs_build:
-    projectdir: ~/src/openafs
+    srcdir: ~/src/openafs
     clean: yes
     target: install_nolibafs
     destdir: packages/dest
@@ -232,13 +230,7 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
-msg:
-  description: Informational message.
-  returned: always
-  type: string
-  sample: Build completed
-
-projectdir:
+srcdir:
   description: Absolute path to the project directory.
   returned: always
   type: string
@@ -280,26 +272,27 @@ kmods:
     - /home/tycobb/projects/myproject/src/libafs/MODLOAD-5.1.0-SP/openafs.ko
 '''
 
-import glob       # noqa: E402
-import os         # noqa: E402
-import platform   # noqa: E402
-import pprint     # noqa: E402
-import re         # noqa: E402
-import shlex      # noqa: E402
-import shutil     # noqa: E402
+import glob        # noqa: E402
+import json        # noqa: E402
+import os          # noqa: E402
+import platform    # noqa: E402
+import re          # noqa: E402
+import shlex       # noqa: E402
+import shutil      # noqa: E402
 import subprocess  # noqa: E402
-import json       # noqa: E402
+
 from multiprocessing import cpu_count  # noqa: E402
+
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible.module_utils.six import string_types  # noqa: E402
+
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common \
     import Logger, chdir, lookup_fact  # noqa: E402
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.o2a \
     import options_to_args  # noqa: E402
 
 module_name = os.path.basename(__file__).replace('.py', '')
-log = None
-module = None
+log = Logger(module_name)
 
 MAKEFILE_PATHS = r"""
 include ./src/config/Makefile.config
@@ -339,18 +332,6 @@ long:
 """  # noqa: W191,E101
 
 
-class FileError(Exception):
-    pass
-
-
-def is_linux():
-    return platform.system() == 'Linux'
-
-
-def is_solaris():
-    return platform.system() == 'SunOS'
-
-
 def copy_tree(src, dst):
     """Copy an entire directory tree.
 
@@ -362,11 +343,11 @@ def copy_tree(src, dst):
     """
     outputs = []
     if not os.path.isdir(src):
-        raise FileError("cannot copy tree '%s': not a directory" % src)
+        raise ValueError("cannot copy tree '%s': not a directory" % src)
     try:
         names = os.listdir(src)
     except os.error:
-        raise FileError("error listing files in '%s'" % src)
+        raise ValueError("error listing files in '%s'" % src)
     if not os.path.isdir(dst):
         os.makedirs(dst)
     for n in names:
@@ -386,313 +367,590 @@ def copy_tree(src, dst):
     return outputs
 
 
-def abspath(base, rel):
-    """ Get absolute path name relative to a base directory. """
-    prev = os.getcwd()
-    os.chdir(base)
-    path = os.path.abspath(rel)
-    os.chdir(prev)
-    return path
+def get_platform_subclass(cls):
+    for subcls in cls.__subclasses__():
+        if platform.system() == subcls.platform:
+            return subcls
+    raise ValueError('Unknown platform: {}'.format(platform.system()))
 
 
-def tail(s, n=256):
-    """ Get the last n chars of a string. """
-    if len(s) <= n:
-        return s
-    else:
-        return s[-n:]
+class Builder(object):
 
+    def __new__(cls, module):
+        new_cls = get_platform_subclass(Builder)
+        return super(cls, new_cls).__new__(new_cls)
 
-def run_command(name, command, cwd, logdir, results, extra_env=None):
-    """Run a command and log the stdout and stderr to a file.
+    def __init__(self, module):
+        self._stage = 'init'
+        self.module = module
+        self.logdir = None
+        self.logfiles = set()
+        self.changed = False
+        self.srcdir = None
+        self.builddir = None
+        self.gitdir = None
+        self.destdir = None
+        self.version = None
+        self.make = None
+        self.target = None
+        self.transarc_paths = None
+        self.sysname = None
+        self.configure_args = None
+        self.make_args = None
+        self.kmods = []
+        self.install_dirs = {}
 
-    :arg command: command argument list
-    :arg cwd: current directory to run the command
-    :arg logdir: where to place stdout and stderr logs
-    :arg results: the module results dictionary
-    """
-    env = os.environ.copy()
-    if extra_env:
-        env.update(extra_env)
+        # Verify srcdir exists.
+        self.srcdir = os.path.abspath(self.module.params['srcdir'])
+        if not os.path.exists(self.srcdir):
+            self.fail('srcdir directory not found: %s' % self.srcdir)
+        if not os.path.isdir(self.srcdir):
+            self.fail('srcdir is not a directory: %s' % self.srcdir)
 
-    logfile = os.path.join(logdir, '%s.log' % name)
-    results['logfiles'].append(logfile)
-    with open(logfile, 'w') as f:
-        with chdir(cwd):
-            log.info('[%s] %s' % (cwd, ' '.join(command)))
-            proc = subprocess.Popen(command,
-                                    stdout=f.fileno(),
-                                    stderr=f.fileno(),
-                                    env=env)
-            rc = proc.wait()
-    if rc != 0:
-        log.error('%s failed; rc=%d' % (name, rc))
-        module.fail_json(
-            msg='%s command failed. See log file "%s".' % (name, logfile),
-        )
+        # Setup build logging path.
+        self.logdir = self.module.params['logdir']
+        if not self.logdir:
+            self.logdir = os.path.join(self.srcdir, '.ansible')
 
+        # Setup builddir paths for out of tree builds.
+        self.builddir = self.module.params['builddir']
+        if self.builddir:
+            self.builddir = self.abspath(self.srcdir, self.builddir)
+        else:
+            self.builddir = self.srcdir
 
-def configured_sysname(builddir):
-    """ Get the afs sysname from the results of configure.
+        # Is the srcdir a git repo?
+        self.gitdir = os.path.abspath(os.path.join(self.srcdir, '.git'))
+        if not (os.path.exists(self.gitdir) and os.path.isdir(self.gitdir)):
+            self.gitdir = None
 
-    :arg builddir: the location of the configure log
-    :returns: the afs sysname value or None if not found
-    """
-    config_log = os.path.join(builddir, 'config.log')
-    try:
-        with open(config_log) as f:
-            for line in f.readlines():
-                m = re.match(r"AFS_SYSNAME='([^']*)'", line)
-                if m:
-                    return m.group(1)
-    except Exception:
-        pass
-    return ''
+        # Find make if not specified.
+        self.make = self.module.params['make']
+        if not self.make:
+            self.make = self.module.get_bin_path('make', required=True)
 
+        # Setup environment variables.
+        self.set_environment_variables()
 
-def find_kmods_linux(builddir):
-    """
-    Search for built kernel modules on Linux.
-    """
-    pattern = os.path.join(builddir, 'src/libafs/MODLOAD-*/*afs.ko')
-    kmods = glob.glob(pattern)
-    return kmods
+    def build(self):
+        """
+        Build OpenAFS binaries.
+        """
+        self.build_clean()
+        self.build_version()
+        self.build_regen()
+        self.build_configure()
+        self.build_make()
+        log.info('Build completed.')
+        results = {
+            'changed': self.changed,
+            'logdir': self.logdir,
+            'logfiles': sorted(list(self.logfiles)),
+            'srcdir': self.srcdir,
+            'builddir': self.builddir,
+            'configure': ' '.join(self.configure_args),
+            'make': ' '.join(self.make_args),
+            'kmods': self.kmods,
+            'install_dirs': self.install_dirs,
+        }
+        if self.gitdir:
+            results['gitdir'] = self.gitdir
+        if self.destdir:
+            results['destdir'] = self.destdir
+        if self.sysname:
+            results['sysname'] = self.sysname
+        if self.version:
+            results['version'] = self.version
+        if self.target:
+            results['target'] = self.target
+        return results
 
+    def build_clean(self):
+        """
+        Clean intermediates from the previous build.
+        """
+        if self._stage != 'init':
+            raise AssertionError('sequence error: %s' % self._stage)
+        self._stage = 'clean'
 
-def kmod_check_linux(module, results):
-    """
-    Verify we built a kernel module that matches the running kernel version.
-    """
-    log.info('Checking for linux kernel module for %s.' % platform.release())
-    modloads = []
-    for kmod in results['kmods']:
-        pattern = r'/MODLOAD-%s-[A-Z]*/(lib|open)afs\.ko$' % platform.release()
-        m = re.search(pattern, kmod)
-        if m:
-            modloads.append(kmod)
-    log.info('Modules found: %s' % ' '.join(modloads))
-    if not modloads:
-        results['msg'] = 'Loadable linux kernel module not found for %s' \
-                         % platform.release()
-        log.error(results['msg'])
-        module.fail_json(**results)
+        clean = self.module.params['clean']
+        if not clean:
+            return   # Skip clean
 
+        if self.builddir == self.srcdir:
+            # In-tree build. Use git clean if this is a git repo, otherwise try
+            # to run make clean if the Makefile is present.
+            if self.gitdir:
+                self.run('clean', ['git', 'clean', '-f', '-d', '-x',
+                         '--exclude=.ansible'], self.srcdir)
+            else:
+                makefile = os.path.join(self.srcdir, 'Makefile')
+                if os.path.exists(makefile):
+                    self.run('clean', [self.make, 'clean'], self.srcdir)
+        else:
+            # Out-of-tree build.
+            if os.path.exists(self.builddir):
+                makefile = os.path.join(self.builddir, 'Makefile')
+                if os.path.exists(makefile):
+                    self.run('clean', [self.make, 'clean'], self.builddir)
+                else:
+                    if self.builddir == '/':
+                        self.fail('Refusing to remove "/" builddir!')
+                    log.info('Removing old build directory %s' % self.builddir)
+                    shutil.rmtree(self.builddir)
+            # Setup build directory. This must be done after running clean!
+            if not os.path.isdir(self.builddir):
+                log.info('Creating build directory %s' % self.builddir)
+                os.makedirs(self.builddir)
 
-def find_kmods_solaris(builddir):
-    """
-    Search for built kernel modules on Solaris.
-    """
-    kmods = []
-    for name in ('libafs.o', 'libafs.nonfs.o'):
-        kmod = os.path.join(builddir, 'src/libafs/MODLOAD64', name)
-        if os.path.exists(kmod):
-            kmods.append(kmod)
-    return kmods
+    def build_version(self):
+        """
+        Create the .version file if the with_version parameter was set.
+        Run git-version to get the version string.
+        """
+        if self._stage != 'clean':
+            raise AssertionError('sequence error: %s' % self._stage)
+        self._stage = 'version'
 
+        # Optionally write a .version file. This will overwrite the current
+        # .version file if one was is already present.
+        with_version = self.module.params['with_version']
+        if with_version:
+            version_file = os.path.join(self.srcdir, '.version')
+            log.info('Writing version %s to file %s' %
+                     (with_version, version_file))
+            with open(version_file, 'w') as f:
+                f.write(with_version)
 
-def kmod_check_solaris(module, results):
-    """
-    Verify we built a kernel module.
-    """
-    log.info('Checking for solaris kernel modules.')
-    if not results['kmods']:
-        results['msg'] = 'Kernel module not found.'
-        log.error(results['msg'])
-        module.fail_json(**results)
+        # Report the version string. This is read from the .version file if
+        # present, otherwise it is generated from `git describe`.
+        git_version = os.path.join(self.srcdir, 'build-tools', 'git-version')
+        output = self.shell([git_version, self.srcdir])
+        self.version = output.rstrip()
 
+    def build_regen(self):
+        """
+        Run regen.sh to generate configure.
+        """
+        if self._stage != 'version':
+            raise AssertionError('sequence error: %s' % self._stage)
+        self._stage = 'regen'
 
-def determine_configure_options(module):
-    """
-    Determine configure arguments for this system.
+        if os.path.exists(os.path.join(self.srcdir, 'configure')):
+            log.info('Skipping regen.sh: configure already exists.')
+            return
+        regen = [os.path.join(self.srcdir, 'regen.sh')]
+        if not self.module.params['build_manpages']:
+            regen.append('-q')
+        self.run('regen', regen, self.srcdir)
 
-    Automatically determine configure options for this system and build
-    options when the explicit configure options are not specified.
-    """
-    options = module.params['configure_options']
-    build_userspace = module.params['build_userspace']
-    build_module = module.params['build_module']
-    build_terminal_programs = module.params['build_terminal_programs']
-    build_bindings = module.params['build_bindings']
-    build_fuse_client = module.params['build_fuse_client']
-    with_transarc_paths = module.params['with_transarc_paths']
-    with_debug_symbols = module.params['with_debug_symbols']
-    with_rxgk = module.params['with_rxgk']
+    def build_configure(self):
+        """
+        Run configure to configure the build tree.
+        """
+        if self._stage != 'regen':
+            raise AssertionError('sequence error: %s' % self._stage)
+        self._stage = 'configure'
 
-    if options is None:
+        options = self.module.params['configure_options']
+        if options is None:
+            options = self.get_configure_options()
+
+        # Convert structured data to a list of command line arguments.
+        if not options:
+            args = []
+        elif isinstance(options, dict):
+            args = options_to_args(options)
+        elif isinstance(options, list):
+            args = options
+        elif isinstance(options, tuple):
+            args = list(options)
+        elif isinstance(options, string_types):
+            args = shlex.split(options)
+        else:
+            self.fail("Invalid configure options type")
+
+        command = [os.path.join(self.srcdir, 'configure')]
+        command.extend(args)
+        self.configure_args = command
+        self.transarc_paths = '--enable-transarc-paths' in command
+
+        configure_environment = self.module.params['configure_environment']
+        self.run('configure', self.configure_args, self.builddir,
+                 extra_env=configure_environment)
+
+        # Extract info from the configured build tree.
+        self.collect_sysname()
+        self.collect_install_dirs()
+
+    def build_make(self):
+        """
+        Run make to perform the build.
+        """
+        if self._stage != 'configure':
+            raise AssertionError('sequence error: %s' % self._stage)
+        self._stage = 'make'
+
+        make = [self.make]
+        jobs = self.module.params['jobs']
+        if jobs > 0:
+            make.extend(['-j', '%d' % jobs])
+        self.target = self.get_target()
+        if self.target:
+            make.append(self.target)
+        path = self.module.params['destdir']
+        if path:
+            self.destdir = self.abspath(self.builddir, path)
+            if not self.target.startswith('dest'):
+                make.append('DESTDIR=%s' % self.destdir)
+
+        self.make_args = make
+        self.run('make', make, self.builddir)
+        self.changed = True
+
+        # make may silently fail to build a kernel module for the running
+        # kernel version (or any version). Let's fail early instead of finding
+        # out later when we try to start the cache manager.
+        self.kmods = self.collect_kernel_modules(self.builddir)
+        self.verify_kernel_module()
+
+        if self.transarc_paths:
+            # Transarc style specific post build tasks.
+            self.transarc_post_build()
+
+        # Save configured build paths in a meta-data file for
+        # openafs_install_bdist module.
+        filename = os.path.join(self.destdir, '.build-info.json')
+        log.info('Saving build file %s', filename)
+        build_info = {
+            'dirs': self.install_dirs,
+            'configure': self.configure_args,
+            'make': self.make_args,
+        }
+        with open(filename, 'w') as f:
+            f.write(json.dumps(build_info, indent=4))
+
+    def abspath(self, base, rel):
+        """
+        Get absolute path name relative to a base directory.
+        """
+        prev = os.getcwd()
+        os.chdir(base)
+        path = os.path.abspath(rel)
+        os.chdir(prev)
+        return path
+
+    def fail(self, msg):
+        """
+        Log and error message and abort.
+        """
+        log.error(msg)
+        self.module.fail_json(msg=msg)
+
+    def shell(self, args, cwd=None):
+        """
+        Run a command and return the stdout as a string.
+        """
+        if cwd:
+            msg = '[%s] %s' % (cwd, ' '.join(args))
+        else:
+            msg = '%s' % ' '.join(args)
+        log.info(msg)
+        rc, out, err = self.module.run_command(args, check_rc=True, cwd=cwd)
+        if err:
+            log.error(err)
+        return out
+
+    def run(self, name, command, cwd, extra_env=None):
+        """
+        Run a command and write stdout and stderr a tailable file.
+
+        Unlike the standard run_command(), this function pipes the output as
+        received to a file that can be followed with tail -f.  This can be
+        helpful when troubleshooting builds.
+        """
+        env = os.environ.copy()
+        if extra_env:
+            env.update(extra_env)
+
+        if not os.path.isdir(self.logdir):
+            os.makedirs(self.logdir)
+            self.changed = True
+
+        msg = '[%s] %s' % (cwd, ' '.join(command))
+        log.info(msg)
+        build_log = os.path.join(self.logdir, 'build.log')
+        with open(build_log, 'a') as f:
+            f.write('%s\n' % msg)
+        self.logfiles.add(build_log)
+
+        logfile = os.path.join(self.logdir, '%s.log' % name)
+        self.logfiles.add(logfile)
+        with open(logfile, 'w') as f:
+            with chdir(cwd):
+                proc = subprocess.Popen(command,
+                                        stdout=f.fileno(),
+                                        stderr=f.fileno(),
+                                        env=env)
+                rc = proc.wait()
+        if rc != 0:
+            self.fail('%s command failed; see "%s".' % (name, logfile))
+
+    def get_configure_options(self):
+        """
+        Determine configure options based on parameters.
+        """
+        build_userspace = self.module.params['build_userspace']
+        build_module = self.module.params['build_module']
+        build_terminal_programs = self.module.params['build_terminal_programs']
+        build_bindings = self.module.params['build_bindings']
+        build_fuse_client = self.module.params['build_fuse_client']
+        with_transarc_paths = self.module.params['with_transarc_paths']
+        with_debug_symbols = self.module.params['with_debug_symbols']
+        with_rxgk = self.module.params['with_rxgk']
+
+        if not (build_userspace or build_module):
+            self.fail("specify build_userspace and/or build_module")
+
         options = {'enable': [], 'disable': [], 'with': [], 'without': []}
-
-        if not build_userspace or not build_module:
-            module.fail_json(msg="build_userspace and build_module are false.")
-
         if build_module:
             options['enable'].append('kernel-module')
-            if is_linux():
-                options['with'].append('linux-kernel-packaging')
+            self.kernel_module_configure_options(options)
         else:
             options['disable'].append('kernel-module')
-
         if not build_terminal_programs:
             options['disable'].append('gtx')
-
         if not build_bindings:
             options['without'].append('swig')
-
         if not build_fuse_client:
             options['disable'].append('fuse-client')
-
         if with_debug_symbols:
             options['enable'].append('debug')
             options['disable'].extend(['optimize', 'strip-binaries'])
             if build_module:
                 options['enable'].append('debug-kernel')
                 options['disable'].append('optimize-kernel')
-
         if with_transarc_paths:
             options['enable'].append('transarc-paths')
-
         if with_rxgk:
             options['enable'].append('rxgk')
+        return options
 
-    return options
+    def get_target(self):
+        """
+        Determine the make target name.
 
+        Determine the top level make target for the build. First, use the
+        explicit target if given. Next interpret the explicit configure options
+        if given. Finally, interpret the build options.
 
-def configure_command(module, results):
-    """
-    Determine configure command line.
+        This function may only be used after the configure step, since we may
+        check the configure command line arguments to determine the target.
 
-    Use the explicitly specified configure_options when specified, otherwise,
-    determine the options depeneding on the current system and build
-    parameters.
-    """
-    # Convert structured data to a list of command line arguments.
-    configure_options = determine_configure_options(module)
-    if not configure_options:
-        args = []
-    elif isinstance(configure_options, dict):
-        args = options_to_args(configure_options)
-    elif isinstance(configure_options, list):
-        args = configure_options
-    elif isinstance(configure_options, tuple):
-        args = list(configure_options)
-    elif isinstance(configure_options, string_types):
-        args = shlex.split(configure_options)
-    else:
-        module.fail_json(msg="Invalid configure_options type.")
+        Historically, the make target depends on the directory path mode
+        specified by the configure options.  `make dest` target is used to
+        build transarc style paths and `make install` is used to build modern
+        style paths (although, hybrid styles are possible).  To make it easier
+        to support both modes, by default, just figure out the make target
+        based on the configure options.  The caller my specify a explicit
+        target (even an empty one) to override.
+        """
+        target = self.module.params['target']
+        if target is not None:
+            return target
 
-    projectdir = module.params['projectdir']
-    command = [os.path.join(projectdir, 'configure')]
-    command.extend(args)
-    results['configure'] = command
-    return command
+        if self.configure_args is None:
+            raise AssertionError('sequence error: configure_args not found')
 
-
-def determine_target(module, results):
-    """
-    Determine the make target name.
-
-
-    Determine the top level make target for the build. First, use the
-    explicit target if given. Next interpret the explicit configure options
-    if given. Finally, interpret the build options.
-
-    This function may only be used after the configure step, since we
-    may check the configure command line arguments to determine the target.
-
-    Historically, the make target depends on the directory path mode
-    specified by the configure options.  `make dest` target is used to build
-    transarc style paths and `make install` is used to build modern style paths
-    (although, hybrid styles are possible).  To make it easier to support
-    both modes, by default, just figure out the make target based on the
-    configure options.  The caller my specify a explicit target (even
-    an empty one) to override.
-    """
-    build_userspace = module.params['build_userspace']
-    build_module = module.params['build_module']
-    with_transarc_paths = module.params['with_transarc_paths']
-    configure_options = module.params['configure_options']
-    target = module.params['target']
-
-    if target is not None:
-        pass
-    elif configure_options is not None:
-        # Use the flattened version, already created during the configure.
-        if 'configure' not in results:
-            module.fail_json(msg='Internal error: configure result not found.')
-        configure = results['configure']
-        if '--enable-transarc-paths' in configure:
-            target = 'dest'      # legacy mode
-        else:
-            target = 'install'   # implies "all"
-        if '--disable-kernel-module' in configure:
-            target += '_nolibafs'
-    else:
-        if with_transarc_paths:
+        build_userspace = self.module.params['build_userspace']
+        build_module = self.module.params['build_module']
+        if self.transarc_paths:
             target = 'dest'
         else:
             target = 'install'
-        if not build_module:
+
+        if '--disable-kernel-module' in self.configure_args:
             target += '_nolibafs'
-        elif not build_userspace:
+        elif build_module and not build_userspace:
             target += '_only_libafs'
 
-    results['target'] = target
-    return target
+        return target
+
+    def collect_sysname(self):
+        """
+        Get the afs sysname from the results of configure.
+        """
+        config_log = os.path.join(self.builddir, 'config.log')
+        try:
+            with open(config_log) as f:
+                for line in f.readlines():
+                    m = re.match(r"AFS_SYSNAME='([^']*)'", line)
+                    if m:
+                        self.sysname = m.group(1)
+                        return
+        except Exception:
+            pass
+
+    def collect_install_dirs(self):
+        """
+        Extract the configured installation directories.
+
+        Create and run a dummy make file to export the configured symbols.
+        """
+        with open(os.path.join(self.builddir, '.Makefile-paths'), 'w') as f:
+            f.write(MAKEFILE_PATHS)
+        output = self.shell([self.make, '-f', '.Makefile-paths'],
+                            cwd=self.builddir)
+        for line in output.splitlines():
+            line = line.rstrip()
+            if '=' in line:
+                name, value = line.split('=', 1)
+                if value.startswith('//'):
+                    # Cleanup leading double slashes.
+                    value = value.replace('//', '/', 1)
+                # Cleanup trailing slashes.
+                value = value.rstrip('/')
+                self.install_dirs[name] = value
+
+    def transarc_post_build(self):
+        """
+        Post build tasks for transarc-style builds.
+        """
+        #
+        # Copy the transarc-style distribution tree into a DESTDIR file tree
+        # for installation.
+        #
+        if self.target in ('dest', 'dest_nolibafs', 'dest_only_libafs'):
+            log.info('Copying transarc-style distribution files to %s',
+                     self.destdir)
+            sysname = self.sysname
+            if not sysname:
+                self.fail('Unable to get destdir; sysname not found.')
+            dest = os.path.join(self.builddir, sysname, 'dest')
+            if not os.path.isdir(dest):
+                self.fail('Missing dest directory: %s' % dest)
+            copy_tree(dest, self.destdir)
+            self.changed = True
+
+        #
+        # Copy security key utilities to a standard location.
+        #
+        if self.target in ('install', 'install_nolibafs', 'dest',
+                           'dest_nolibafs'):
+            log.info('Copying security key utilities to %s' % self.destdir)
+            for p in ('asetkey', 'akeyconvert'):
+                src = os.path.join(self.builddir, 'src', 'aklog', p)
+                dst = os.path.join(self.destdir, 'usr', 'sbin')
+                if os.path.isfile(src):
+                    if not os.path.isdir(dst):
+                        os.makedirs(dst)
+                    log.debug('shutil.copy2("%s", "%s")' % (src, dst))
+                    shutil.copy2(src, dst)
+                    self.changed = True
 
 
-def make_command(module, results):
-    """
-    Determine make command line.
+class LinuxBuilder(Builder):
+    platform = 'Linux'
 
-    """
-    make = module.params['make']
-    if not make:
-        make = module.get_bin_path('make', required=True)
-    jobs = module.params['jobs']
-    destdir = module.params['destdir']
-    if destdir:
-        destdir = abspath(results['builddir'], destdir)
-        results['destdir'] = destdir
+    def set_environment_variables(self):
+        """
+        Set environment variables needed when building on Linux.
+        """
+        pass
 
-    command = [make]
-    if jobs > 0:
-        command.extend(['-j', '%d' % jobs])
-    target = determine_target(module, results)
-    if target:
-        command.append(target)
-    if destdir and not target.startswith('dest'):
-        command.append('DESTDIR=%s' % destdir)
+    def kernel_module_configure_options(self, options):
+        options['with'].append('linux-kernel-packaging')
 
-    results['make'] = command
-    return command
+    def collect_kernel_modules(self, builddir):
+        """
+        Search for built kernel modules on Linux.
+        """
+        pattern = os.path.join(builddir, 'src/libafs/MODLOAD-*/*afs.ko')
+        kmods = glob.glob(pattern)
+        return kmods
+
+    def verify_kernel_module(self):
+        """
+        Verify we built a kernel module that matches the running kernel
+        version.
+        """
+
+        if 'nolibafs' in self.target:
+            log.info('Skipping check for kernel module: target is %s',
+                     self.target)
+            return
+
+        if '--disable-kernel-module' in self.configure_args:
+            log.info('Skipping check for kernel module: configure is %s',
+                     self.configure_args)
+            return
+
+        log.info('Checking for linux kernel module for linux '
+                 'kernel version %s.' % platform.release())
+        modloads = []
+        for kmod in self.kmods:
+            pattern = \
+                r'/MODLOAD-%s-[A-Z]*/(lib|open)afs\.ko$' % platform.release()
+            m = re.search(pattern, kmod)
+            if m:
+                modloads.append(kmod)
+        log.info('Modules found: %s' % ' '.join(modloads))
+        if not modloads:
+            self.fail('Loadable kernel module not found for linux '
+                      'kernel version %s' % platform.release())
 
 
-def is_kmod_expected(results):
-    target = results['target']
-    configure = results['configure']
-    targets = ('', 'all', 'install', 'dest',
-               'install_onlylibafs', 'dest_onlylibafs')
+class SolarisBuilder(Builder):
+    platform = 'SunOS'
 
-    if target in targets and '--with-linux-kernel-headers' not in configure:
-        return True
-    return False
+    def set_environment_variables(self):
+        """
+        Set environment variables needed when building on Solaris.
+        """
+        solariscc = lookup_fact('solariscc')
+        if solariscc:
+            os.environ['SOLARISCC'] = solariscc
+        os.environ['UT_NO_USAGE_TRACKING'] = '1'
+        os.environ['SUNW_NO_UPDATE_NOTIFY'] = '1'
+
+    def kernel_module_configure_options(self, options):
+        pass
+
+    def collect_kernel_modules(self, builddir):
+        """
+        Search for built kernel modules on Solaris.
+        """
+        kmods = []
+        for name in ('libafs.o', 'libafs.nonfs.o'):
+            kmod = os.path.join(builddir, 'src/libafs/MODLOAD64', name)
+            if os.path.exists(kmod):
+                kmods.append(kmod)
+        return kmods
+
+    def verify_kernel_module(self):
+        """
+        Verify we built a kernel module.
+        """
+        if 'nolibafs' in self.target:
+            log.info('Skipping check for kernel module: target is %s',
+                     self.target)
+            return
+
+        if '--disable-kernel-module' in self.configure_args:
+            log.info('Skipping check for kernel module: configure is %s',
+                     self.configure_args)
+            return
+
+        log.info('Checking for solaris kernel modules.')
+        if not self.kmods:
+            self.fail('Kernel module not found.')
 
 
 def main():
-    global log
-    results = dict(
-        changed=False,
-        msg='',
-        projectdir=None,
-        logfiles=[],
-        sysname='',
-        kmods=[],
-        install_dirs={},
-    )
-    global module
     module = AnsibleModule(
         argument_spec=dict(
             state=dict(type='str'),  # Not used.
-            projectdir=dict(type='path', required=True),
+            srcdir=dict(type='path', required=True, aliases=['projectdir']),
             builddir=dict(type='path'),
             logdir=dict(type='path'),
             destdir=dict(type='path'),
@@ -725,231 +983,10 @@ def main():
         ),
         supports_check_mode=False,
     )
-    log = Logger(module_name)
     log.info('Starting %s', module_name)
 
-    projectdir = module.params['projectdir']
-    builddir = module.params['builddir']
-    logdir = module.params['logdir']
-    clean = module.params['clean']
-    make = module.params['make']
-    build_manpages = module.params['build_manpages']
-    with_version = module.params['with_version']
-    configure_environment = module.params['configure_environment']
-
-    if not (os.path.exists(projectdir) and os.path.isdir(projectdir)):
-        module.fail_json(msg='projectdir directory not found: %s' % projectdir)
-    results['projectdir'] = os.path.abspath(projectdir)
-
-    # Find `make` if not specified.
-    if not make:
-        make = module.get_bin_path('make', required=True)
-
-    #
-    # Setup build logging.
-    #
-    if not logdir:
-        logdir = os.path.join(projectdir, '.ansible')
-    if not os.path.isdir(logdir):
-        os.makedirs(logdir)
-        results['changed'] = True
-    results['logdir'] = logdir
-
-    #
-    # Setup paths.
-    #
-    if builddir:
-        builddir = abspath(projectdir, builddir)
-    else:
-        builddir = projectdir
-    results['builddir'] = builddir
-    log.debug("builddir='%s'", builddir)
-
-    gitdir = os.path.abspath(os.path.join(projectdir, '.git'))
-    if not (os.path.exists(gitdir) and os.path.isdir(gitdir)):
-        gitdir = None
-    log.debug("gitdir='%s'.", gitdir)
-
-    #
-    # Setup environment.
-    #
-    solariscc = lookup_fact('solariscc')
-    if solariscc:
-        os.environ['SOLARISCC'] = solariscc
-        os.environ['UT_NO_USAGE_TRACKING'] = '1'
-        os.environ['SUNW_NO_UPDATE_NOTIFY'] = '1'
-
-    #
-    # Clean previous build.
-    #
-    if clean and gitdir:
-        clean_command = [
-            module.get_bin_path('git', required=True),
-            'clean', '-f', '-d', '-x', '--exclude=.ansible',
-        ]
-        log.info('Running git clean.')
-        run_command('clean', clean_command, projectdir, logdir, results)
-
-    #
-    # Clean out of tree build files.
-    #
-    if clean and builddir != projectdir and os.path.exists(builddir):
-        if builddir == '/':
-            module.fail_json(msg='Refusing to remove "/" builddir!')
-        log.info('Removing old build directory %s' % builddir)
-        shutil.rmtree(builddir)
-
-    #
-    # Setup build directory. (This must be done after the clean step.)
-    #
-    if not os.path.isdir(builddir):
-        log.info('Creating build directory %s' % builddir)
-        os.makedirs(builddir)
-
-    #
-    # Set the version string, if supplied.
-    #
-    if with_version:
-        version_file = os.path.join(projectdir, '.version')
-        log.info('Writing version %s to file %s' %
-                 (with_version, version_file))
-        with open(version_file, 'w') as f:
-            f.write(with_version)
-
-    #
-    # Report the version string. This is read from the .version file if
-    # present, otherwise it is generated from `git describe`.
-    #
-    cwd = os.path.join(builddir, 'build-tools')
-    rc, out, err = module.run_command(['./git-version', builddir], cwd=cwd)
-    if rc != 0:
-        log.info('Unable to determine version string.')
-    else:
-        results['version'] = out
-
-    #
-    # Run autoconf.
-    #
-    if os.path.exists(os.path.join(projectdir, 'configure')):
-        log.info('Skipping regen.sh: configure found.')
-    else:
-        regen_command = [os.path.join(projectdir, 'regen.sh')]
-        if not build_manpages:
-            regen_command.append('-q')
-        run_command('regen', regen_command, projectdir, logdir, results)
-
-    #
-    # Run configure.
-    #
-    run_command('configure', configure_command(module, results), builddir,
-                logdir, results, extra_env=configure_environment)
-    results['sysname'] = configured_sysname(builddir)
-    log.info("configured sysname is '%s'.", results['sysname'])
-
-    #
-    # Get installation directories.
-    #
-    with open(os.path.join(builddir, '.Makefile.dirs'), 'w') as f:
-        f.write(MAKEFILE_PATHS)
-    rc, out, err = module.run_command([make, '-f', '.Makefile.dirs'],
-                                      cwd=builddir)
-    if rc != 0:
-        module.fail_json(
-            msg='Failed to find installation directories: %s' % err)
-    for line in out.splitlines():
-        line = line.rstrip()
-        if '=' in line:
-            name, value = line.split('=', 1)
-            if value.startswith('//'):
-                # Cleanup leading double slashes.
-                value = value.replace('//', '/', 1)
-            results['install_dirs'][name] = value
-
-    #
-    # Run make clean if we did not run git clean.
-    #
-    if clean and not gitdir:
-        run_command('make', [make, 'clean'], builddir, logdir, results)
-
-    #
-    # Run make.
-    #
-    run_command('make', make_command(module, results), builddir, logdir,
-                results)
-
-    #
-    # `make` may silently fail to build a kernel module for the running kernel
-    # version (or any version). Let's fail early instead of finding out later
-    # when we try to start the cache manager.
-    #
-    if is_linux():
-        results['kmods'] = find_kmods_linux(builddir)
-    elif is_solaris():
-        results['kmods'] = find_kmods_solaris(builddir)
-    else:
-        log.warning('Unable to find kernel modules; unknown platform %s'
-                    % platform.system())
-    if is_kmod_expected(results):
-        if is_linux():
-            kmod_check_linux(module, results)
-        elif is_solaris():
-            kmod_check_solaris(module, results)
-
-    #
-    # Copy the transarc-style distribution tree into a DESTDIR file tree
-    # for installation.
-    #
-    if 'destdir' in results and 'target' in results and \
-            results['target'] in ('dest', 'dest_nolibafs', 'dest_only_libafs'):
-        log.info('Copying transarc-style distribution files to %s' %
-                 results['destdir'])
-        sysname = configured_sysname(builddir)
-        if not sysname:
-            module.fail_json(msg='Unable to get destdir; sysname not found.')
-        dest = os.path.join(builddir, sysname, 'dest')
-        if not os.path.isdir(dest):
-            module.fail_json(msg='Missing dest directory: %s' % dest)
-        copy_tree(dest, results['destdir'])
-        results['changed'] = True
-
-    #
-    # Copy security key utilities to a standard location.
-    #
-    if 'destdir' in results and 'target' in results and \
-            results['target'] in ('install', 'install_nolibafs',
-                                  'dest', 'dest_nolibafs'):
-        log.info('Copying security key utilities to %s' % results['destdir'])
-        for p in ('asetkey', 'akeyconvert'):
-            src = os.path.join(builddir, 'src', 'aklog', p)
-            dst = os.path.join(results['destdir'], 'usr', 'sbin')
-            if os.path.isfile(src):
-                if not os.path.isdir(dst):
-                    os.makedirs(dst)
-                log.debug('shutil.copy2("%s", "%s")' % (src, dst))
-                shutil.copy2(src, dst)
-                results['changed'] = True
-
-    #
-    # Save configured build paths in a meta-data file for installation.
-    #
-    if 'destdir' in results and 'target' in results and \
-            results['target'] in ('install', 'install_nolibafs'):
-        filename = os.path.join(results['destdir'], '.build-info.json')
-        build_info = {
-          'dirs': results['install_dirs']
-        }
-        with open(filename, 'w') as f:
-            f.write(json.dumps(build_info, indent=4))
-
-    log.debug('Results: %s' % pprint.pformat(results))
-    results['msg'] = 'Build completed'
-    log.info(results['msg'])
-
-    #
-    # Save results.
-    #
-    with open(os.path.join(logdir, 'results.json'), 'w') as f:
-        f.write(json.dumps(results, indent=4))
+    builder = Builder(module)
+    results = builder.build()
 
     module.exit_json(**results)
 
