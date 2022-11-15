@@ -294,40 +294,15 @@ from ansible_collections.openafs_contrib.openafs.plugins.module_utils.o2a \
 module_name = os.path.basename(__file__).replace('.py', '')
 log = Logger(module_name)
 
-MAKEFILE_PATHS = r"""
+MAKEFILE_DIRS = r"""
 include ./src/config/Makefile.config
-short:
-	@echo afsbosconfigdir=$(afsbosconfigdir)
-	@echo afsconfdir=$(afsconfdir)
-	@echo afsdbdir=$(afsdbdir)
-	@echo afslocaldir=$(afslocaldir)
-	@echo afslogsdir=$(afslogsdir)
-	@echo viceetcdir=$(viceetcdir)
 
-long:
-	@echo afsbackupdir=$(afsbackupdir)
+all:
 	@echo afsbosconfigdir=$(afsbosconfigdir)
 	@echo afsconfdir=$(afsconfdir)
 	@echo afsdbdir=$(afsdbdir)
 	@echo afslocaldir=$(afslocaldir)
 	@echo afslogsdir=$(afslogsdir)
-	@echo afssrvbindir=$(afssrvbindir)
-	@echo afskerneldir=$(afskerneldir)
-	@echo afssrvlibexecdir=$(afssrvlibexecdir)
-	@echo afssrvsbindir=$(afssrvsbindir)
-	@echo afsdatadir=$(afsdatadir)
-	@echo bindir=$(bindir)
-	@echo exec_prefix=$(exec_prefix)
-	@echo datarootdir=$(datarootdir)
-	@echo datadir=$(datadir)
-	@echo includedir=$(includedir)
-	@echo libdir=$(libdir)
-	@echo libexecdir=$(libexecdir)
-	@echo localstatedir=$(localstatedir)
-	@echo mandir=$(mandir)
-	@echo prefix=$(prefix)
-	@echo sbindir=$(sbindir)
-	@echo sysconfdir=$(sysconfdir)
 	@echo viceetcdir=$(viceetcdir)
 """  # noqa: W191,E101
 
@@ -407,17 +382,17 @@ class Builder(object):
         if not os.path.isdir(self.srcdir):
             self.fail('srcdir is not a directory: %s' % self.srcdir)
 
-        # Setup build logging path.
-        self.logdir = self.module.params['logdir']
-        if not self.logdir:
-            self.logdir = os.path.join(self.srcdir, '.ansible')
-
-        # Setup builddir paths for out of tree builds.
+        # Set builddir paths for out of tree builds.
         self.builddir = self.module.params['builddir']
         if self.builddir:
             self.builddir = self.abspath(self.srcdir, self.builddir)
         else:
             self.builddir = self.srcdir
+
+        # Set build logging path.
+        self.logdir = self.module.params['logdir']
+        if not self.logdir:
+            self.logdir = os.path.join(self.builddir, '.ansible')
 
         # Is the srcdir a git repo?
         self.gitdir = os.path.abspath(os.path.join(self.srcdir, '.git'))
@@ -441,7 +416,7 @@ class Builder(object):
         self.build_regen()
         self.build_configure()
         self.build_make()
-        log.info('Build completed.')
+        self.log('Build completed.')
         results = {
             'changed': self.changed,
             'logdir': self.logdir,
@@ -496,11 +471,11 @@ class Builder(object):
                 else:
                     if self.builddir == '/':
                         self.fail('Refusing to remove "/" builddir!')
-                    log.info('Removing old build directory %s' % self.builddir)
+                    self.log('Removing old build directory %s' % self.builddir)
                     shutil.rmtree(self.builddir)
             # Setup build directory. This must be done after running clean!
             if not os.path.isdir(self.builddir):
-                log.info('Creating build directory %s' % self.builddir)
+                self.log('Creating build directory %s' % self.builddir)
                 os.makedirs(self.builddir)
 
     def build_version(self):
@@ -517,7 +492,7 @@ class Builder(object):
         with_version = self.module.params['with_version']
         if with_version:
             version_file = os.path.join(self.srcdir, '.version')
-            log.info('Writing version %s to file %s' %
+            self.log('Writing version %s to file %s' %
                      (with_version, version_file))
             with open(version_file, 'w') as f:
                 f.write(with_version)
@@ -537,7 +512,7 @@ class Builder(object):
         self._stage = 'regen'
 
         if os.path.exists(os.path.join(self.srcdir, 'configure')):
-            log.info('Skipping regen.sh: configure already exists.')
+            self.log('Skipping regen.sh: configure already exists.')
             return
         regen = [os.path.join(self.srcdir, 'regen.sh')]
         if not self.module.params['build_manpages']:
@@ -614,21 +589,33 @@ class Builder(object):
         self.kmods = self.collect_kernel_modules(self.builddir)
         self.verify_kernel_module()
 
+        # Transarc style post build tasks.
         if self.transarc_paths:
-            # Transarc style specific post build tasks.
             self.transarc_post_build()
 
-        # Save configured build paths in a meta-data file for
-        # openafs_install_bdist module.
-        filename = os.path.join(self.destdir, '.build-info.json')
-        log.info('Saving build file %s', filename)
+        # Save configured build paths in a meta-data file.
         build_info = {
             'dirs': self.install_dirs,
             'configure': self.configure_args,
             'make': self.make_args,
         }
+        filename = os.path.join(self.destdir, '.build-info.json')
+        self.log('Writing %s' % filename)
         with open(filename, 'w') as f:
             f.write(json.dumps(build_info, indent=4))
+
+    def log(self, msg):
+        """
+        Log a message to the build.log file and the syslog.
+        """
+        log.info(msg)
+        if not os.path.isdir(self.logdir):
+            os.makedirs(self.logdir)
+            self.changed = True
+        build_log = os.path.join(self.logdir, 'build.log')
+        with open(build_log, 'a') as f:
+            f.write('%s\n' % msg)
+        self.logfiles.add(build_log)
 
     def abspath(self, base, rel):
         """
@@ -655,7 +642,7 @@ class Builder(object):
             msg = '[%s] %s' % (cwd, ' '.join(args))
         else:
             msg = '%s' % ' '.join(args)
-        log.info(msg)
+        self.log(msg)
         rc, out, err = self.module.run_command(args, check_rc=True, cwd=cwd)
         if err:
             log.error(err)
@@ -677,21 +664,13 @@ class Builder(object):
             os.makedirs(self.logdir)
             self.changed = True
 
-        msg = '[%s] %s' % (cwd, ' '.join(command))
-        log.info(msg)
-        build_log = os.path.join(self.logdir, 'build.log')
-        with open(build_log, 'a') as f:
-            f.write('%s\n' % msg)
-        self.logfiles.add(build_log)
-
+        self.log('Running [%s] %s' % (cwd, ' '.join(command)))
         logfile = os.path.join(self.logdir, '%s.log' % name)
         self.logfiles.add(logfile)
         with open(logfile, 'w') as f:
             with chdir(cwd):
-                proc = subprocess.Popen(command,
-                                        stdout=f.fileno(),
-                                        stderr=f.fileno(),
-                                        env=env)
+                proc = subprocess.Popen(command, env=env, stdout=f.fileno(),
+                                        stderr=f.fileno())
                 rc = proc.wait()
         if rc != 0:
             self.fail('%s command failed; see "%s".' % (name, logfile))
@@ -797,20 +776,22 @@ class Builder(object):
 
         Create and run a dummy make file to export the configured symbols.
         """
-        with open(os.path.join(self.builddir, '.Makefile-paths'), 'w') as f:
-            f.write(MAKEFILE_PATHS)
-        output = self.shell([self.make, '-f', '.Makefile-paths'],
+        makefile_dirs = os.path.join(self.logdir, 'Makefile.dirs')
+        with open(makefile_dirs, 'w') as f:
+            f.write(MAKEFILE_DIRS)
+        output = self.shell([self.make, '-f', makefile_dirs],
                             cwd=self.builddir)
+        self.log('Makefile.dirs output')
         for line in output.splitlines():
             line = line.rstrip()
-            if '=' in line:
-                name, value = line.split('=', 1)
-                if value.startswith('//'):
-                    # Cleanup leading double slashes.
-                    value = value.replace('//', '/', 1)
-                # Cleanup trailing slashes.
-                value = value.rstrip('/')
-                self.install_dirs[name] = value
+            self.log(line)
+            if '=' not in line:
+                continue
+            name, value = line.split('=', 1)
+            value = value.rstrip('/')
+            if value.startswith('//'):
+                value = value.replace('/', '', 1)
+            self.install_dirs[name] = value
 
     def transarc_post_build(self):
         """
@@ -821,7 +802,7 @@ class Builder(object):
         # for installation.
         #
         if self.target in ('dest', 'dest_nolibafs', 'dest_only_libafs'):
-            log.info('Copying transarc-style distribution files to %s',
+            self.log('Copying transarc-style distribution files to %s' %
                      self.destdir)
             sysname = self.sysname
             if not sysname:
@@ -837,7 +818,7 @@ class Builder(object):
         #
         if self.target in ('install', 'install_nolibafs', 'dest',
                            'dest_nolibafs'):
-            log.info('Copying security key utilities to %s' % self.destdir)
+            self.log('Copying security key utilities to %s' % self.destdir)
             for p in ('asetkey', 'akeyconvert'):
                 src = os.path.join(self.builddir, 'src', 'aklog', p)
                 dst = os.path.join(self.destdir, 'usr', 'sbin')
@@ -876,16 +857,16 @@ class LinuxBuilder(Builder):
         """
 
         if 'nolibafs' in self.target:
-            log.info('Skipping check for kernel module: target is %s',
+            self.log('Skipping check for kernel module: target is %s' %
                      self.target)
             return
 
         if '--disable-kernel-module' in self.configure_args:
-            log.info('Skipping check for kernel module: configure is %s',
+            self.log('Skipping check for kernel module: configure is %s' %
                      self.configure_args)
             return
 
-        log.info('Checking for linux kernel module for linux '
+        self.log('Checking for linux kernel module for linux '
                  'kernel version %s.' % platform.release())
         modloads = []
         for kmod in self.kmods:
@@ -894,7 +875,7 @@ class LinuxBuilder(Builder):
             m = re.search(pattern, kmod)
             if m:
                 modloads.append(kmod)
-        log.info('Modules found: %s' % ' '.join(modloads))
+        self.log('Modules found: %s' % ' '.join(modloads))
         if not modloads:
             self.fail('Loadable kernel module not found for linux '
                       'kernel version %s' % platform.release())
@@ -932,16 +913,16 @@ class SolarisBuilder(Builder):
         Verify we built a kernel module.
         """
         if 'nolibafs' in self.target:
-            log.info('Skipping check for kernel module: target is %s',
+            self.log('Skipping check for kernel module: target is %s' %
                      self.target)
             return
 
         if '--disable-kernel-module' in self.configure_args:
-            log.info('Skipping check for kernel module: configure is %s',
+            self.log('Skipping check for kernel module: configure is %s' %
                      self.configure_args)
             return
 
-        log.info('Checking for solaris kernel modules.')
+        self.log('Checking for solaris kernel modules.')
         if not self.kmods:
             self.fail('Kernel module not found.')
 
@@ -983,7 +964,6 @@ def main():
         ),
         supports_check_mode=False,
     )
-    log.info('Starting %s', module_name)
 
     builder = Builder(module)
     results = builder.build()

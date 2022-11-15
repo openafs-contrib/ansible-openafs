@@ -7,10 +7,48 @@
     - import_role:
         name: openafs_devel
 
-    - name: Build RPMs
-      include_tasks: build_rpms.yml
-      when: ansible_os_family == 'RedHat'
+    - name: Checkout source
+      git:
+        repo: "{{ afs_git_repo }}"
+        version: "{{ afs_git_version }}"
+        dest: "~/openafs"
 
-    - name: Build debs
-      include_tasks: build_debs.yml
-      when: ansible_os_family == 'Debian'
+    - name: Build source distribution
+      openafs_contrib.openafs.openafs_build_sdist:
+        topdir: "~/openafs"
+        sdist: "~/openafs/packages"
+      register: build_results
+
+    - name: Build packages
+      openafs_contrib.openafs.openafs_build_packages:
+        build: all
+        sdist: "~/openafs/packages"
+      register: build_results
+
+    - debug:
+        var: build_results
+
+    - name: Create archive
+      vars:
+        version: "{{ build_results.version.openafs_version | replace('-', '_') }}"
+        type: "{{ build_results.package_type }}"
+        dist: "{{ ansible_distribution | replace(' ', '_') | lower + ansible_distribution_major_version }}"
+        arch: "{{ ansible_architecture }}"
+      block:
+        - name: Create archive
+          archive:
+            path: "{{ build_results.packages }}"
+            dest: "openafs-{{ version }}-{{ dist }}-{{ arch }}.{{ type }}.tar.gz"
+            format: gz
+            force_archive: yes
+
+        - name: Download
+          fetch:
+            flat: yes
+            src: "openafs-{{ version }}-{{ dist }}-{{ arch }}.{{ type }}.tar.gz"
+            dest: "{{ afs_builds }}/"
+          register: fetch_results
+
+        - name: Downloaded
+          debug:
+            msg: "{{ fetch_results.dest }}"
