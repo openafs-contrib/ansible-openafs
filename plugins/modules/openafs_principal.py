@@ -28,13 +28,6 @@ description:
   - If the state is C(absent), then the principal and keytab files are
     removed if present.
 
-  - If the state is C(rekey), and the princical already exists, then new keys
-    are generated with the given C(enctypes) and are added to the existing
-    keytab file. The updated keytab file must be redistributed servers to avoid
-    authentication failures. If the state is C(rekey) and the principal is not
-    present, a principal is created and a keytab is generated as if the state
-    is C(present).
-
   - Keytabs for the principals created by the module are stored in the
     C(keytabs) directory on the KDC, readable by root. The default path is
     C(/var/lib/ansible-openafs/keytabs).
@@ -53,7 +46,6 @@ options:
     description:
       - C(present) ensure the principal and keytab file exist.
       - C(absent) ensure the principal and keytab file are removed.
-      - C(rekey) generate new keys and add them to the keytab file.
     type: str
     required: false
     default: present
@@ -79,12 +71,6 @@ options:
       - encryption_type
       - encryption_types
       - keysalts
-
-  rekey:
-    description: Generate new key versions.
-    type: bool
-    required: false
-    default: false
 
   acl:
     description: Administrative permissions
@@ -130,12 +116,6 @@ EXAMPLES = r'''
     flat: yes
     src: "{{ service_key.keytab }}"
     dest: "rxkad.keytab"
-
-- name: Generate new keys
-  become: yes
-  openafs_contrib.openafs.openafs_principal:
-    state: rekey
-    principal: afs/example.com
 
 # Requires an old version of Kerberos.
 - name: Obsolete DES key for testing
@@ -227,7 +207,7 @@ def main():
     module = AnsibleModule(
             argument_spec=dict(
                 state=dict(type='str',
-                           choices=['present', 'absent', 'rekey'],
+                           choices=['present', 'absent'],
                            default='present'),
                 principal=dict(type='str', required=True),
                 password=dict(type='str', no_log=True),
@@ -324,15 +304,13 @@ def main():
         run('delete_principal', '-force', principal)
         results['changed'] = True
 
-    def ktadd(rekey=False):
+    def ktadd():
         if not os.path.exists(keytabs):
             os.makedirs(keytabs)
         args = ['-keytab', keytab]
-        if rekey:
-            if enctypes:
-                args.extend(['-e', '"%s"' % ','.join(enctypes)])
-        else:
-            args.append('-norandkey')
+        args.append('-norandkey')
+        if enctypes:
+            args.extend(['-e', '"%s"' % ','.join(enctypes)])
         args.append(principal)
         run('ktadd', *args)
         if not os.path.exists(keytab):
@@ -436,18 +414,6 @@ def main():
             add_acl(principal, acl)
         if not os.path.exists(keytab):
             ktadd()
-        results['metadata'] = metadata
-        results['keytab'] = keytab
-    elif state == 'rekey':
-        if get_principal():
-            ktadd(rekey=True)
-        else:
-            delete_keytab()  # Remove stale keytab, if present.
-            add_principal()
-            ktadd()
-        metadata = get_principal()
-        if not metadata:
-            die('Failed to add principal.')
         results['metadata'] = metadata
         results['keytab'] = keytab
     elif state == 'absent':
