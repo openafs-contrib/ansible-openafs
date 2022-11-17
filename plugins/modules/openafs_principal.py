@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2020, Sine Nomine Associates
+# Copyright (c) 2020-2022, Sine Nomine Associates
 # BSD 2-Clause License
 
 ANSIBLE_METADATA = {
@@ -17,7 +17,7 @@ short_description: Create principals and keytab files
 description:
   - Create a kerberos principal on a primary KDC using C(kadmin.local) and
     export the keys to a keytab file on the KDC. The keytab may be transfered
-    to remote nodes with C(syncrhonize) or encrypted with C(ansible-vault) then
+    to remote nodes with C(synchronize) or encrypted with C(ansible-vault) then
     downloaded to the controller for distribution in subsequent plays. This
 
   - If the state is C(present), then a principal is added if it is not
@@ -31,11 +31,6 @@ description:
   - Keytabs for the principals created by the module are stored in the
     C(keytabs) directory on the KDC, readable by root. The default path is
     C(/var/lib/ansible-openafs/keytabs).
-
-  - Currently, this module does not check the keytabs to verify if the key
-    versions numbers are in sync with the database. If the principal's password
-    is changed manually, remove the keytab file on the kdc before running
-    with the C(present) state to generate a new keytab.
 
 requirements:
   - The Kerberos realm has been created.
@@ -65,7 +60,7 @@ options:
       - See C(kadmin) documenation for possible values.
     type: list
     required: false
-    default: See <kadmin>
+    default: See C(kadmin)
     aliases:
       - enctype
       - encryption_type
@@ -88,10 +83,10 @@ options:
     desciption: Keytab storage directory on the KDC
     type: path
     required: false
-    default: /var/lib/ansible-openafs/keytabs
+    default: C(/var/lib/ansible-openafs/keytabs)
 
   kadmin:
-    desciption: Path to the <kadmin.local> command
+    desciption: Path to the C(kadmin.local) command
     type: path
     required: false
     default: search PATH
@@ -139,8 +134,8 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
-metadata:
-  description: Principal metadata from C(get_principal)
+attributes:
+  description: Principal attributes from C(get_principal)
   type: list
   returned: success
 
@@ -174,177 +169,303 @@ realm:
 #  sample: EXAMPLE.COM
 '''
 
-import json                     # noqa: E402
-import os                       # noqa: E402
-import pprint                   # noqa: E402
-import re                       # noqa: E402
+import os        # noqa: E402
+import re        # noqa: E402
+import platform  # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule   # noqa: E402
+from ansible.module_utils.common.sys_info import (     # noqa: E402
+    get_distribution,
+    get_platform_subclass,
+)
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.kerberos import Keytab  # noqa: E402, E501
 
 module_name = os.path.basename(__file__).replace('.py', '')
-log = None
+log = Logger(module_name)
 
 
-def load_facts():
-    try:
-        with open('/etc/ansible/facts.d/openafs.fact') as f:
-            facts = json.load(f)
-        krbserver = facts.get('krbserver', {})
-    except Exception as e:
-        log.warn('Unable to load krbserver facts: %s' % (str(e)))
-        krbserver = {}
-    log.debug('krbserver facts: %s' % (pprint.pformat(krbserver)))
-    return krbserver
+class KerberosAdmin(object):
 
+    def __new__(cls, *args, **kwargs):
+        new_cls = get_platform_subclass(KerberosAdmin)
+        return super(cls, new_cls).__new__(new_cls)
 
-def main():
-    global log
-    results = dict(
-        changed=False,
-        debug=[],
-    )
-    module = AnsibleModule(
-            argument_spec=dict(
-                state=dict(type='str',
-                           choices=['present', 'absent'],
-                           default='present'),
-                principal=dict(type='str', required=True),
-                password=dict(type='str', no_log=True),
-                enctypes=dict(type='list',
-                              aliases=['enctype', 'encryption_type',
-                                       'encryption_types', 'keysalts']),
-                acl=dict(type='str'),
-                keytab_name=dict(type='str'),
-                keytabs=dict(type='path',
-                             default='/var/lib/ansible-openafs/keytabs'),
-                kadmin=dict(type='path'),
-            ),
-            supports_check_mode=False,
-    )
-    log = Logger(module_name)
-    log.info('Starting %s', module_name)
+    def __init__(self, module):
+        self.module = module
+        self.kadmin = module.params['kadmin']
+        self.realm = module.params['realm']
+        self.keytabs = module.params['keytabs']
+        self.changed = False
+        self.debug = []
 
-    state = module.params['state']
-    principal = module.params['principal']
-    password = module.params['password']
-    enctypes = module.params['enctypes']
-    acl = module.params['acl']
-    keytab_name = module.params['keytab_name']
-    keytabs = module.params['keytabs']
-    kadmin = module.params['kadmin']
+    def get_principal(self, principal):
+        self._unknown_platform()
 
-    if '@' in principal:
-        principal, realm = principal.split('@', 1)
-    else:
-        realm = None
+    def add_principal(self, principal):
+        self._unknown_platform()
 
-    # Convert k4 to k5 name.
-    if '.' in principal and '/' not in principal:
-        principal = principal.replace('.', '/')
+    def delete_principal(self, principal):
+        self._unknown_platform()
 
-    if not keytab_name:
-        keytab_name = principal.replace('/', '.')
-    if not keytab_name.endswith('.keytab'):
-        keytab_name += '.keytab'
-    keytab = '%s/%s' % (keytabs, keytab_name)
+    def ktadd(self, principal, kvno=None):
+        self._unknown_platform()
 
-    if not kadmin:
-        kadmin = module.get_bin_path('kadmin.local', required=True)
+    def update_acl(self, principal, acl):
+        self._unknown_platform()
 
-    facts = load_facts()  # Read our installation facts.
+    def clear_acl(self, principal):
+        self._unknown_platform()
 
-    results['principal'] = principal
-    results['kadmin'] = kadmin
-    if realm:
-        results['realm'] = realm
+    def _unknown_platform(self):
+        self.module.fail_json(msg='Unknown platform',
+                              platform=platform.system(),
+                              distribution=get_distribution())
 
-    def die(msg):
-        log.error("%s: %s", msg, results)
-        results['msg'] = msg
-        module.fail_json(**results)
+    def ensure_present(self):
+        """
+        Ensure the principal exists and return the attributes.
+        Create a keytab if a password was not specfied.
+        """
+        principal = self.normalize(self.module.params['principal'])
+        password = self.module.params['password']
+        acl = self.module.params['acl']
+        keytab = None
 
-    def run(*cmd):
-        query = ' '.join(cmd)
-        args = [kadmin]
-        if realm:
-            args.extend(['-r', realm])
-        args.extend(['-q', query])
-        rc, out, err = module.run_command(args)
-        results['debug'].append(dict(cmd=args, rc=rc, out=out, err=err))
-        if rc != 0:
-            die('%s failed' % cmd[0])
-        return out, err
+        attributes = self.get_principal(principal)
+        if not attributes:
+            self.add_principal(principal, password)
+            attributes = self.get_principal(principal)
+            if not attributes:
+                self.fail('Failed to add principal "%s".' % principal)
 
-    def delete_keytab():
+        principal = attributes['principal']  # fully qualified
+        kvno = attributes['kvno']
+
+        if not password:
+            keytab = self.ktadd(principal, kvno)
+
+        if acl:
+            self.update_acl(principal, acl)
+
+        results = {
+            'changed': self.changed,
+            'attributes': attributes,
+            'kvno': kvno,
+            'debug': self.debug,
+        }
+        if keytab:
+            results['keytab'] = keytab
+        return results
+
+    def ensure_absent(self):
+        """
+        Ensure the principal and keytab does not exist.
+        """
+        principal = self.normalize(self.module.params['principal'])
+
+        if self.get_principal(principal):
+            self.delete_principal(principal)
+        if self.get_principal(principal):
+            self.fail('Failed to delete principal "%s".' % principal)
+
+        self.clear_acl(principal)
+
+        keytab = self.get_keytab_filename(principal)
         if os.path.exists(keytab):
             os.remove(keytab)
-            results['debug'].append(dict(cmd='rm %s' % keytab))
+            self.changed = True
+            self.debug.append(dict(cmd='rm %s' % keytab))
 
-    def get_principal():
-        metadata = None
-        out, err = run('get_principal', principal)
-        if 'Principal does not exist' not in err:
-            metadata = out.splitlines()
-        return metadata
+        results = {
+            'changed': self.changed,
+            'debug': self.debug,
+        }
+        return results
 
-    def add_principal():
-        args = []
-        if password:
-            args.extend(['-pw', password])
+    def run(self, command):
+        args = self.kadmin_args(command)
+        rc, out, err = self.module.run_command(args)
+        self.debug.append(dict(cmd=' '.join(args), rc=rc, out=out, err=err))
+        if rc != 0:
+            self.fail('Command failed: %s' % ' '.join(args))
+        return out, err
+
+    def fail(self, msg):
+        """
+        Log and error and abort.
+        """
+        log.error(msg)
+        self.module.fail_json(msg=msg)
+
+    def normalize(self, principal):
+        """
+        Convert k4 formatted principals to k5 format.
+        k4 format is still used for AFS identities.
+        """
+        if re.search(r'[^a-zA-Z0-9_\-\./@]', principal):
+            self.fail('Illegal character found in principal "%s".' % principal)
+        primary, instance, realm = self.get_principal_components(principal)
+        tokens = [primary]
+        if instance:
+            tokens.append('/')
+            tokens.append(instance)
+        if realm:
+            tokens.append('@')
+            tokens.append(realm)
+        return ''.join(tokens)
+
+    def get_principal_components(self, principal):
+        """
+        Split the principal names into components.
+        """
+        if '@' in principal:
+            name, realm = principal.split('@', 1)
         else:
-            args.append('-randkey')
-        if enctypes:
-            args.extend(['-e', '"%s"' % ','.join(enctypes)])
-        args.append(principal)
-        run('add_principal', *args)
-        results['changed'] = True
+            name = principal
+            realm = None
 
-    def delete_principal():
-        run('delete_principal', '-force', principal)
-        results['changed'] = True
+        if '/' not in name and '.' in name:  # k4 style separator
+            primary, instance = name.split('.', 1)
+        elif '/' in name:  # k5 style separator
+            primary, instance = name.split('/', 1)
+        else:
+            primary = name
+            instance = None
+        return primary, instance, realm
 
-    def ktadd():
-        if not os.path.exists(keytabs):
-            os.makedirs(keytabs)
-        args = ['-keytab', keytab]
-        if enctypes:
-            args.extend(['-e', '"%s"' % ','.join(enctypes)])
-        args.append(principal)
-        run('ktadd', *args)
+    def get_keytab_filename(self, principal):
+        """
+        Determine the keytab file name from the principal name.
+        """
+        keytab_name = self.module.params['keytab_name']
+        if not keytab_name:
+            # Format a file name in the form "<primary>[.<instance>].keytab".
+            # The realm name is not included to retain compatibility with older
+            # versions of this module.
+            primary, instance, realm = self.get_principal_components(principal)
+            tokens = [primary]
+            if instance:
+                tokens.append('.')
+                tokens.append(instance)
+            tokens.append('.keytab')
+            keytab_name = ''.join(tokens)
+        return os.path.join(self.keytabs, keytab_name)
+
+
+class MITKerberosAdmin(KerberosAdmin):
+    platform = None
+    distribution = None
+
+    def __init__(self, module):
+        super(MITKerberosAdmin, self).__init__(module)
+        self.enctypes = module.params['enctypes']
+        if not self.kadmin:
+            self.kadmin = module.get_bin_path('kadmin.local', required=True)
+        if not self.keytabs:
+            self.keytabs = '/var/lib/ansible-openafs/keytabs'  # use kdb dir?
+
+    def kadmin_args(self, command):
+        """
+        Assemble kadmin command arguments.
+        """
+        args = [self.kadmin]
+        if self.realm:
+            args.extend(['-r', self.realm])
+        query = ' '.join(command)
+        args.extend(['-q', query])
+        return args
+
+    def get_principal(self, principal):
+        """
+        Lookup a principal in the kerberos database and return the attributes
+        as a dict.
+        """
+        out, err = self.run(['get_principal', principal])
+        if 'Principal does not exist' in err:
+            return None
+        attributes = {}
+        keys = []
+        kvnos = set()
+        for line in out.splitlines():
+            if ':' not in line:
+                continue   # Skip info lines
+            name, value = line.split(':', 1)
+            name = name.strip().replace(' ', '_').lower()
+            value = value.strip()
+            if value in ('[never]', '[none]'):
+                value = None
+            if name == 'key':
+                keys.append(value)
+                m = re.search(r'vno (\d+)', value)
+                if m:
+                    kvnos.add(int(m.group(1)))
+            else:
+                attributes[name] = value
+        attributes['keys'] = keys
+        attributes['kvno'] = max(kvnos)
+        return attributes
+
+    def add_principal(self, principal, password=None):
+        """
+        Add a principal to the kerberos database.
+        """
+        command = ['add_principal']
+        if password:
+            command.extend(['-pw', password])
+        else:
+            command.append('-randkey')
+        if self.enctypes:
+            command.extend(['-e', '"%s"' % ','.join(self.enctypes)])
+        command.append(principal)
+        self.run(command)
+        self.changed = True
+
+    def delete_principal(self, principal):
+        """
+        Delete a principal in the kerberos database.
+        """
+        self.run(['delete_principal', '-force', principal])
+        self.changed = True
+
+    def ktadd(self, principal, kvno=None):
+        """
+        Write the principal's keys to a keytab file.
+
+        If the keytab file already exists, verify the kvno number matches the
+        specified kvno, and if not, remove the old keytab file, and create
+        a new keytab file.
+        """
+        keytab = self.get_keytab_filename(principal)
+        if os.path.exists(keytab):
+            if kvno:
+                kt = Keytab(keytab)
+                if kt.get_kvno(principal) == kvno:
+                    return keytab  # kvno matches.
+            os.remove(keytab)
+            self.changed = True
+
+        if not os.path.exists(os.path.dirname(keytab)):
+            os.makedirs(os.path.dirname(keytab))
+            self.changed = True
+
+        command = ['ktadd', '-keytab', keytab]
+        if self.enctypes:
+            command.extend(['-e', '"%s"' % ','.join(self.enctypes)])
+        command.append(principal)
+        self.run(command)
         if not os.path.exists(keytab):
-            die('Failed to create keytab; file not found.')
-        results['changed'] = True
+            self.fail('Failed to create keytab; file not found.')
+        self.changed = True
+        return keytab
 
-    def read_acl_file():
+    def update_acl(self, principal, acl):
         """
-        Slurp acl file into a list of lines.
-        """
-        kadm5_acl = facts.get('kadm5_acl', None)
-        if not kadm5_acl:
-            die('Unable to read kadm5.acl; path not found in local facts.')
-        log.info('Reading %s', kadm5_acl)
-        with open(kadm5_acl) as fh:
-            lines = fh.readlines()
-        return lines
-
-    def write_acl_file(lines):
-        kadm5_acl = facts.get('kadm5_acl', None)
-        if not kadm5_acl:
-            die('Unable to write kadm5.acl; path not found in local facts.')
-        log.info('Updating %s', kadm5_acl)
-        with open(kadm5_acl, 'w') as fh:
-            for line in lines:
-                fh.write(line)
-        results['changed'] = True
-
-    def add_acl(principal, permissions):
-        """
-        Add permissions for a principal to the ACL file.
+        Update an entry in the ACL file.
         """
         found = False
         output = []
-        for line in read_acl_file():
+        for line in self.read_acl_file():
             m = re.match(r'^\s*#', line)
             if m:
                 output.append(line)
@@ -355,34 +476,32 @@ def main():
                 continue
             m = re.match(r'^\s*(\S+)\s+(\S+)', line)
             if m:
-                # Note: To keep this simple, we don't bother with the wildcard
-                #       matching.
-                if m.group(1) == principal and m.group(2) == permissions:
-                    # Already present.
+                # Wildcard matching is not supported to keep this simple.
+                if m.group(1) == principal and m.group(2) == acl:
                     log.debug("Permissions '%s' for principal '%s' already "
-                              "present in acl file.", permissions, principal)
+                              "present in acl file.", acl, principal)
                     return
                 if m.group(1) == principal:
                     # Update in place.
                     found = True
-                    line = '%s %s\n' % (principal, permissions)
+                    line = '%s %s\n' % (principal, acl)
                     log.info("Updating line in acl file: '%s'" % (line))
                     output.append(line)
                     continue
             output.append(line)
         if not found:
-            line = '%s %s\n' % (principal, permissions)
+            line = '%s %s\n' % (principal, acl)
             log.info("Adding line to acl file: '%s'" % (line))
             output.append(line)
-        write_acl_file(output)
+        self.write_acl_file(output)
 
-    def remove_acl(principal):
+    def clear_acl(self, principal):
         """
-        Remove the permissions for a principal.
+        Remove the acl entry for the given principal.
         """
         found = False
         output = []
-        for line in read_acl_file():
+        for line in self.read_acl_file():
             m = re.match(r'^\s*#', line)
             if m:
                 output.append(line)
@@ -399,34 +518,107 @@ def main():
                     continue
             output.append(line)
         if found:
-            write_acl_file(output)
+            self.write_acl_file(output)
 
+    def read_acl_file(self):
+        """
+        Slurp acl file into a list of lines.
+        """
+        log.info('Reading %s', self.kadm5_acl)
+        with open(self.kadm5_acl) as fh:
+            lines = fh.readlines()
+        return lines
+
+    def write_acl_file(self, lines):
+        log.info('Updating %s', self.kadm5_acl)
+        with open(self.kadm5_acl, 'w') as fh:
+            for line in lines:
+                fh.write(line)
+                self.changed = True
+
+
+class RedHatMITKerberosAdmin(MITKerberosAdmin):
+    platform = 'Linux'
+    distribution = 'Redhat'
+    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+
+
+class CentOSMITKerberosAdmin(MITKerberosAdmin):
+    platform = 'Linux'
+    distribution = 'Centos'
+    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+
+
+class FedoraMITKerberosAdmin(MITKerberosAdmin):
+    platform = 'Linux'
+    distribution = 'Fedora'
+    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+
+
+class AlmaMITKerberosAdmin(MITKerberosAdmin):
+    platform = 'Linux'
+    distribution = 'Almalinux'
+    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+
+
+class RockyMITKerberosAdmin(MITKerberosAdmin):
+    platform = 'Linux'
+    distribution = 'Rocky'
+    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+
+
+class OracleMITKerberosAdmin(MITKerberosAdmin):
+    platform = 'Linux'
+    distribution = 'Oracle'
+    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+
+
+class DebianMITKerberosAdmin(MITKerberosAdmin):
+    platform = 'Linux'
+    distribution = 'Debian'
+    kadm5_acl = '/etc/krb5kdc/kadm5.acl'
+
+
+class UbuntuMITKerberosAdmin(MITKerberosAdmin):
+    platform = 'Linux'
+    distribution = 'Ubuntu'
+    kadm5_acl = '/etc/krb5kdc/kadm5.acl'
+
+
+class SolarisMITKerberosAdmin(MITKerberosAdmin):
+    platform = 'SunOS'
+    kadm5_acl = '/etc/krb5/kadm5.acl'
+
+
+def main():
+    module = AnsibleModule(
+            argument_spec=dict(
+                state=dict(type='str',
+                           choices=['present', 'absent'],
+                           default='present'),
+                principal=dict(type='str', required=True),
+                realm=dict(type='str'),
+                password=dict(type='str', no_log=True),
+                enctypes=dict(type='list',
+                              aliases=['enctype', 'encryption_type',
+                                       'encryption_types', 'keysalts']),
+                acl=dict(type='str'),
+                keytab_name=dict(type='str'),
+                keytabs=dict(type='path'),
+                kadmin=dict(type='path'),
+            ),
+            supports_check_mode=False,
+    )
+    log.info('Starting %s', module_name)
+
+    kadmin = KerberosAdmin(module)
+    state = module.params['state']
     if state == 'present':
-        metadata = get_principal()
-        if not metadata:
-            delete_keytab()  # Remove stale keytab, if present.
-            add_principal()
-            metadata = get_principal()
-            if not metadata:
-                die('Failed to add principal.')
-        if acl:
-            add_acl(principal, acl)
-        if not password:
-            if not os.path.exists(keytab):
-                ktadd()
-        results['metadata'] = metadata
-        results['keytab'] = keytab
+        results = kadmin.ensure_present()
     elif state == 'absent':
-        delete_keytab()
-        if get_principal():
-            delete_principal()
-        if get_principal():
-            die('Failed to delete principal.')
-        remove_acl(principal)
+        results = kadmin.ensure_absent()
     else:
-        die('Internal error; invalid state: %s' % state)
-
-    log.info('Results: %s', pprint.pformat(results))
+        raise ValueError('Invalid state %s ' % state)
     module.exit_json(**results)
 
 
