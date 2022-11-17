@@ -23,7 +23,7 @@ description:
   - If the state is C(present), then a principal is added if it is not
     already present and a keyfile is created. The initial password may
     be specified with the C(password) parameter, otherwise a random key
-    is generated. The key is not randomized when the keytab is generated.
+    is generated and a keytab file will be created.
 
   - If the state is C(absent), then the principal and keytab files are
     removed if present.
@@ -308,7 +308,6 @@ def main():
         if not os.path.exists(keytabs):
             os.makedirs(keytabs)
         args = ['-keytab', keytab]
-        args.append('-norandkey')
         if enctypes:
             args.extend(['-e', '"%s"' % ','.join(enctypes)])
         args.append(principal)
@@ -412,8 +411,9 @@ def main():
                 die('Failed to add principal.')
         if acl:
             add_acl(principal, acl)
-        if not os.path.exists(keytab):
-            ktadd()
+        if not password:
+            if not os.path.exists(keytab):
+                ktadd()
         results['metadata'] = metadata
         results['keytab'] = keytab
     elif state == 'absent':
