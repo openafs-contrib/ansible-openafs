@@ -10,7 +10,7 @@ if not sys.version_info >= (3, 8):
 
 
 def git_describe():
-    args = shlex.split('git describe --tags --long --dirty')
+    args = shlex.split('git describe --long --dirty')
     result = subprocess.run(args, capture_output=True)
     return result.stdout.decode('UTF-8').strip()
 
