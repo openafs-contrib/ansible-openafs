@@ -25,7 +25,3 @@ afs_krb_master_password: "{{ lookup('password', afs_realm_files + '/afs_krb_mast
 
 # Kerberos admin principal
 afs_krb_admin_principal: "root/admin"
-
-# Kerberos admin password (random default)
-# NOTE: Put this in ansible-vault!
-afs_krb_admin_password: "{{ lookup('password', afs_realm_files + '/afs_krb_admin_password chars=ascii_letters,digits,hexdigits length=15') }}"
