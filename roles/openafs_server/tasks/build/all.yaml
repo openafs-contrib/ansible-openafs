@@ -33,6 +33,16 @@
     facts:
       build_completed: yes
       destdir: "{{ build_results.destdir }}"
+      dirs: "{{ build_results.install_dirs }}"
   when:
     - build_results.changed
     - not ansible_check_mode
+
+- assert:
+    that:
+      - ansible_local.openafs.dirs.afsbosconfigdir is defined
+      - ansible_local.openafs.dirs.afsconfdir is defined
+      - ansible_local.openafs.dirs.afsdbdir is defined
+      - ansible_local.openafs.dirs.afslocaldir is defined
+      - ansible_local.openafs.dirs.afslogsdir is defined
+      - ansible_local.openafs.dirs.viceetcdir is defined
