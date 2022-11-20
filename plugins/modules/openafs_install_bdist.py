@@ -110,7 +110,7 @@ TRANSARC_INSTALL_DIRS = {
     'afsconfdir': '/usr/afs/etc',
     'afsdbdir': '/usr/afs/db',
     'afslocaldir': '/usr/afs/local',
-    'afslogdir': '/usr/afs/logs',
+    'afslogsdir': '/usr/afs/logs',
     'afssrvdir': '/usr/afs/bin',
     'viceetcdir': '/usr/vice/etc',
 }

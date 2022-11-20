@@ -216,7 +216,7 @@ class InstallationFactCollector(object):
         path = manpages.get('FileLog')
         if path:
             regex = r'file does not already exist in the (\S+) directory'
-            dirs['afslogdir'] = self.search_page(path, regex)
+            dirs['afslogsdir'] = self.search_page(path, regex)
 
         path = manpages.get('fileserver')
         if path:
