@@ -13,31 +13,11 @@ DOCUMENTATION = r'''
 ---
 module: openafs_build_redhat_rpms
 
-short_description: Build OpenAFS RPM packages for RedHat family distributions.
+short_description: This module is deprecated. Use openafs_build_packages.
 
 description:
-- Build OpenAFS source and binary RPM packages for RedHat family distributions
-  from an OpenAFS source distibution.
-
-- The source distribution files must be already present in the I(sdist)
-  directory on the remote node. The source distribution files may be created
-  with the C(openafs_build_sdist) module.
-
-- The M(openafs_build_redhat_rpms) module will create the rpm workspace
-  directories and populate the SPECS and SOURCES directories from the source
-  distribution files and the file options, then will build the source and
-  binary rpm files with C(rpmbuild).
-
-- The RPM package version and release strings are generated from the OpenAFS
-  version string extracted from the C(.version) file in the source archive.
-
-- See the C(openafs_devel) role for tasks to install the required build tools
-  and libraries.
-
-requirements:
-  - Tools and libraries required to build OpenAFS.
-  - The C(kernel-devel) package, when building the kernel module.
-  - C(rpmbuild) tool
+- This module is obsolete and will be removed in a future release. Use
+  openafs_build_packages in new playbooks.
 
 options:
   build:

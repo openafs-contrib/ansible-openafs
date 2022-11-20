@@ -1,6 +1,5 @@
 #!/usr/bin/python
-
-# Copyright (c) 2020, Sine Nomine Associates
+# Copyright (c) 2020-2022, Sine Nomine Associates
 # BSD 2-Clause License
 
 ANSIBLE_METADATA = {
@@ -96,43 +95,28 @@ import json               # noqa: E402
 import os                 # noqa: E402
 import platform           # noqa: E402
 import pprint             # noqa: E402
+import re                 # noqa: E402
 import shutil             # noqa: E402
 import stat               # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import execute  # noqa: E402, E501
 
 module_name = os.path.basename(__file__).replace('.py', '')
-log = None
+log = Logger(module_name)
 
 TRANSARC_INSTALL_DIRS = {
     'afsbosconfigdir': '/usr/afs/local',
     'afsconfdir': '/usr/afs/etc',
     'afsdbdir': '/usr/afs/db',
     'afslocaldir': '/usr/afs/local',
-    'afslogdir': '/usr/afs/logs',
-    'afssrvdir': '/usr/afs/bin',
+    'afslogsdir': '/usr/afs/logs',
     'viceetcdir': '/usr/vice/etc',
 }
 
 
-class FileError(Exception):
+class CopyTreeError(Exception):
     pass
-
-
-def solaris_driver_path():
-    """
-    Determine the solaris afs driver path.
-    """
-    output = execute('isainfo -k')
-    if 'amd64' in output:
-        driver = '/kernel/drv/amd64/afs'
-    elif 'sparcv9' in output:
-        driver = 'kernel/drv/sparcv9/afs'
-    else:
-        driver = '/kernel/drv/afs'
-    return driver
 
 
 def copy_tree(src, dst, exclude=None):
@@ -161,11 +145,11 @@ def copy_tree(src, dst, exclude=None):
         return False
 
     if not os.path.isdir(src):
-        raise FileError("Cannot copy tree '%s': not a directory." % src)
+        raise CopyTreeError("Cannot copy tree '%s': not a directory." % src)
     try:
         names = os.listdir(src)
     except os.error:
-        raise FileError("Error listing files in '%s'." % src)
+        raise CopyTreeError("Error listing files in '%s'." % src)
     if not os.path.isdir(dst):
         os.makedirs(dst)
     for n in names:
@@ -192,120 +176,117 @@ def copy_tree(src, dst, exclude=None):
     return files
 
 
-def find_destdir(path, sysname=None):
-    """
-    Search for a legacy dest directory in the binary distribution. The legacy
-    dest directory is the old style format created for AFS binary
-    distributions. The dest directory contains a 'root.server' directory for
-    the server binaries, a 'root.client' directory for the client binaries,
-    and a set of common directories.
-    """
-    log.debug('find_destdir: %s', path)
-    if not sysname:
-        sysname = '*'
-    roots = set(['bin', 'etc', 'include', 'lib', 'man', 'root.server',
-                'root.client'])
-    for pattern in ('/%s/dest' % sysname, '/dest', '/'):
-        dirs = set(glob.glob(path + pattern))
-        log.debug('dirs=%s', dirs)
-        for destdir in dirs:
-            subdirs = set(map(os.path.basename, glob.glob(destdir + '/*')))
-            log.debug('subirs %s', subdirs)
-            if roots.issubset(subdirs):
-                return destdir
-    return None
+def get_platform_subclass(cls):
+    for subcls in cls.__subclasses__():
+        if platform.system() == subcls.platform:
+            return subcls
+    raise ValueError('Unknown platform: {}'.format(platform.system))
 
 
-def install_dest(destdir, components, exclude=None):
+class BinaryDistInstaller(object):
     """
-    Install Transarc-style distribution files.
+    Install OpenAFS from a binary distribution.
     """
-    log.debug('install_dest: %s', destdir)
-    files = []
-    if 'common' in components:
-        for d in ('bin', 'etc', 'include', 'lib', 'man'):
-            src = '%s/%s' % (destdir, d)
-            if d == 'etc':
-                dst = '/usr/bin'  # Put misc programs in the PATH.
-            else:
-                dst = '/%s' % d
+
+    def __new__(cls, module):
+        new_cls = get_platform_subclass(BinaryDistInstaller)
+        return super(cls, new_cls).__new__(new_cls)
+
+    def __init__(self, module):
+        self.module = module
+        self.changed = False
+        self.logfiles = []
+        self.kmods = []
+        self.bins = {}
+        self.dirs = {}
+
+    def install(self):
+        """
+        Install OpenAFS binaries.
+        """
+        path = self.module.params['path']
+        if not os.path.isdir(path):
+            self.module.fail_json(msg='path not found', path=path)
+
+        destdir = self.detect_transarc_dist(path)
+        if destdir:
+            log.info('Installing files from %s to legacy paths.', destdir)
+            files = self.install_transarc(destdir)
+            self.dirs = TRANSARC_INSTALL_DIRS
+            self.collect_bins(files)
+        else:
+            log.info('Installing files from %s to modern paths.', path)
+            exclude = self.module.params['exclude']
+            files = copy_tree(path, '/', exclude)
+            self.collect_dirs(path)
+            self.collect_bins(files)
+
+        self.install_shared_libraries(files)
+        self.install_kernel_module(files)
+
+        results = dict(
+            changed=self.changed,
+            platform=self.platform,
+            logfiles=self.logfiles,
+            kmods=self.kmods,
+            bins=self.bins,
+            dirs=self.dirs,
+        )
+        return results
+
+    def install_transarc(self, destdir):
+        """
+        Install a Transarc-style distribution to the lecacy paths.
+        """
+        components = self.module.params['components']
+        exclude = self.module.params['exclude']
+        files = []
+        if 'common' in components:
+            for d in ('bin', 'etc', 'include', 'lib', 'man'):
+                src = '%s/%s' % (destdir, d)
+                if d == 'etc':
+                    dst = '/usr/bin'  # Put misc programs in the PATH.
+                else:
+                    dst = '/%s' % d
+                files.extend(copy_tree(src, dst, exclude))
+        if 'server' in components:
+            src = '%s/%s' % (destdir, 'root.server')
+            dst = '/'
             files.extend(copy_tree(src, dst, exclude))
-    if 'server' in components:
-        src = '%s/%s' % (destdir, 'root.server')
-        dst = '/'
-        files.extend(copy_tree(src, dst, exclude))
-    if 'client' in components:
-        src = '%s/%s' % (destdir, 'root.client')
-        dst = '/'
-        files.extend(copy_tree(src, dst, exclude))
-    return files
+        if 'client' in components:
+            src = '%s/%s' % (destdir, 'root.client')
+            dst = '/'
+            files.extend(copy_tree(src, dst, exclude))
+        return files
 
+    def detect_transarc_dist(self, path, sysname=None):
+        """
+        Search for a legacy dest directory in the binary distribution. The
+        legacy dest directory is the old style format created for AFS binary
+        distributions. The dest directory contains a 'root.server' directory
+        for the server binaries, a 'root.client' directory for the client
+        binaries, and a set of common directories.
+        """
+        sysname = self.module.params['sysname']
+        if not sysname:
+            sysname = '*'
+        roots = set(['bin', 'etc', 'include', 'lib', 'man', 'root.server',
+                    'root.client'])
+        for pattern in ('/%s/dest' % sysname, '/dest', '/'):
+            dirs = set(glob.glob(path + pattern))
+            log.debug('dirs=%s', dirs)
+            for destdir in dirs:
+                subdirs = set(map(os.path.basename, glob.glob(destdir + '/*')))
+                log.debug('subirs %s', subdirs)
+                if roots.issubset(subdirs):
+                    return destdir
+        return None
 
-def find_by_suffix(files, suffix):
-    """Find a list of files by filename suffix."""
-    found = []
-    for f in files:
-        filename, _ = f
-        if filename.endswith(suffix):
-            found.append(filename)
-    return found
-
-
-def directories(filenames):
-    """Find the set of directory names for the given filename paths."""
-    dirs = set()
-    for filename in filenames:
-        dirs.add(os.path.dirname(filename))
-    return dirs
-
-
-def main():
-    global log
-    results = dict(
-        changed=False,
-        msg='',
-        ansible_facts={},
-        logfiles=[],
-        kmods=[],
-        bins={},
-        dirs={},
-    )
-    module = AnsibleModule(
-        argument_spec=dict(
-            path=dict(type='path', required=True, aliases=['destdir']),
-            exclude=dict(type='list', default=[]),
-            sysname=dict(type='str', default=None),
-            components=dict(type='list',
-                            default=['common', 'client', 'server']),
-            ldconfig=dict(type='path', default='/sbin/ldconfig'),
-            depmod=dict(type='path', default='/sbin/depmod'),
-        ),
-        supports_check_mode=False
-    )
-    log = Logger(module_name)
-    log.info('Starting %s', module_name)
-
-    path = module.params['path']
-    exclude = module.params['exclude']
-    components = module.params['components']
-    ldconfig = module.params['ldconfig']
-    depmod = module.params['depmod']
-
-    if not os.path.isdir(path):
-        msg = 'Directory not found: %s' % path
-        log.error(msg)
-        module.fail_json(msg=msg)
-
-    sysname = module.params['sysname']
-    destdir = find_destdir(path, sysname)
-    if destdir:
-        log.info("Installing %s from path '%s'." %
-                 (','.join(components), destdir))
-        files = install_dest(destdir, components)
-        results['dirs'] = TRANSARC_INSTALL_DIRS
-    else:
-        log.info('Copying files from %s to /' % path)
-        files = copy_tree(path, '/', exclude)
+    def collect_dirs(self, path):
+        """
+        Read the build metadata file created by the openafs_build module to
+        determine the configure-time generated installation paths.
+        """
         dirs = {}
         filename = os.path.join(path, '.build-info.json')
         if os.path.exists(filename):
@@ -314,51 +295,86 @@ def main():
                 build_info = json.load(f)
             log.info("build_info=%s", pprint.pformat(build_info))
             dirs = build_info.get('dirs', {})
-            log.info("dirs=%s", pprint.pformat(dirs))
-        results['dirs'] = dirs
+        self.dirs = dirs
 
-    for f in files:
-        fn, changed = f
-        if changed:
-            results['changed'] = True
-        try:
-            mode = os.stat(fn).st_mode
-            if stat.S_ISREG(mode) and (mode & stat.S_IXUSR):
-                results['bins'][os.path.basename(fn)] = fn
-        except IOError as e:
-            log.error('Failed to stat installed file "%s: %s".' % (fn, e))
+    def collect_bins(self, files):
+        """
+        Scan the list of installed files to determine the dictionary
+        of program files.
+        """
+        bins = {}
+        for f in files:
+            fn, changed = f
+            if changed:
+                self.changed = True
+            if re.match(r'^lib.*\.so[.\d]*$', os.path.basename(fn)):
+                continue  # Skip shared libraries.
+            try:
+                mode = os.stat(fn).st_mode
+                if stat.S_ISREG(mode) and (mode & stat.S_IXUSR):
+                    bins[os.path.basename(fn)] = fn
+            except IOError as e:
+                log.error('Failed to stat installed file "%s: %s".' % (fn, e))
+        self.bins = bins
 
-    if platform.system() == 'Linux':
-        results['kmods'] = find_by_suffix(files, '.ko')
+    def find_by_suffix(self, files, suffix):
+        """Find a list of files by filename suffix."""
+        found = []
+        for f in files:
+            filename, _ = f
+            if filename.endswith(suffix):
+                found.append(filename)
+        return found
 
-        if results['changed']:
+    def directories(self, filenames):
+        """Find the set of directory names for the given filename paths."""
+        dirs = set()
+        for filename in filenames:
+            dirs.add(os.path.dirname(filename))
+        return dirs
+
+
+class LinuxBinaryDistInstaller(BinaryDistInstaller):
+    platform = 'Linux'
+
+    def install_shared_libraries(self, files):
+        if self.changed:
             log.info('Updating shared object cache.')
-            libdirs = directories(find_by_suffix(files, '.so'))
+            libdirs = self.directories(self.find_by_suffix(files, '.so'))
             if libdirs and os.path.exists('/etc/ld.so.conf.d'):
                 with open('/etc/ld.so.conf.d/openafs.conf', 'w') as f:
                     for libdir in libdirs:
                         f.write('%s\n' % libdir)
-            module.run_command([ldconfig], check_rc=True)
+            ldconfig = self.module.params['ldconfig']
+            self.module.run_command([ldconfig], check_rc=True)
 
-        if results['changed']:
-            if results['kmods']:
-                log.info('Updating module dependencies.')
-                module.run_command([depmod, '-a'], check_rc=True)
-    elif platform.system() == 'SunOS':
-        if results['changed']:
-            libdirs = directories(find_by_suffix(files, '.so'))
+    def install_kernel_module(self, files):
+        self.kmods = self.find_by_suffix(files, '.ko')
+        if self.changed and self.kmods:
+            log.info('Updating module dependencies.')
+            depmod = self.module.params['depmod']
+            self.module.run_command([depmod, '-a'], check_rc=True)
+
+
+class SolarisBinaryDistInstaller(BinaryDistInstaller):
+    platform = 'SunOS'
+
+    def install_shared_libraries(self, files):
+        if self.changed:
+            libdirs = self.directories(self.find_by_suffix(files, '.so'))
             for libdir in libdirs:
                 log.info('Configuring runtime link path: %s', libdir)
-                module.run_command(['crle', '-64', '-u', '-l', libdir],
-                                   check_rc=True)
+                self.module.run_command(['crle', '-64', '-u', '-l',
+                                        libdir], check_rc=True)
 
-        results['kmods'] = find_by_suffix(files, 'libafs64.o')
-        if results['kmods']:
-            kmod = results['kmods'][0]
+    def install_kernel_module(self, files):
+        self.kmods = self.find_by_suffix(files, 'libafs64.o')
+        if self.kmods:
+            kmod = self.kmods[0]
         else:
             kmod = None
         if kmod:
-            driver = solaris_driver_path()
+            driver = self._driver_path()
             if not os.path.exists(driver):
                 update = True
                 log.debug('Driver to be installed.')
@@ -371,12 +387,41 @@ def main():
             if update:
                 log.info('Copying "%s" to "%s"', kmod, driver)
                 shutil.copy2(kmod, driver)
-                results['kmods'].append(driver)
-                results['changed'] = True
+                self.kmods.append(driver)
+                self.changed = True
 
-    msg = 'Install completed'
-    log.info(msg)
-    results['msg'] = msg
+    def _driver_path(self):
+        """
+        Determine the Solaris afs driver path.
+        """
+        rc, out, err = self.module.run_command(['isainfo', '-k'],
+                                               check_rc=True)
+        if 'amd64' in out:
+            driver = '/kernel/drv/amd64/afs'
+        elif 'sparcv9' in out:
+            driver = 'kernel/drv/sparcv9/afs'
+        else:
+            driver = '/kernel/drv/afs'
+        return driver
+
+
+def main():
+    log.info('Starting %s', module_name)
+    module = AnsibleModule(
+        argument_spec=dict(
+            path=dict(type='path', required=True, aliases=['destdir']),
+            exclude=dict(type='list', default=[]),
+            sysname=dict(type='str', default=None),
+            components=dict(type='list',
+                            default=['common', 'client', 'server']),
+            ldconfig=dict(type='path', default='/sbin/ldconfig'),
+            depmod=dict(type='path', default='/sbin/depmod'),
+        ),
+        supports_check_mode=False
+    )
+
+    installer = BinaryDistInstaller(module)
+    results = installer.install()
     log.info('Results: %s', pprint.pformat(results))
     module.exit_json(**results)
 

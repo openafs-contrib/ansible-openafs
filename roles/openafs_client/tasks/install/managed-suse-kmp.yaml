@@ -54,7 +54,6 @@
 
 - name: Get installation paths
   openafs_contrib.openafs.openafs_get_install_paths:
-    package_manager_type: rpm
   register: install_results
 
 - name: Store installation facts
