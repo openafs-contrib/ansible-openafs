@@ -221,7 +221,7 @@ class InstallationFactCollector(object):
         path = manpages.get('fileserver')
         if path:
             regex = r'its binary file is located in the (\S+) directory'
-            dirs['afssrvdir'] = self.search_page(path, regex)
+            dirs['afssrvbindir'] = self.search_page(path, regex)
 
         path = manpages.get('cacheinfo')
         if path:
