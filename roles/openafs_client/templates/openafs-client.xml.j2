@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type='manifest' name='openafs-client'>
+    <service name='site/openafs-client' type='service' version='1'>
+
+    <dependency name='network'
+        grouping='require_any'
+        restart_on='error'
+        type='service'>
+        <service_fmri value='svc:/milestone/network' />
+    </dependency>
+
+    <dependency name='filesystem-local'
+        grouping='require_all'
+        restart_on='error'
+        type='service'>
+        <service_fmri value='svc:/system/filesystem/local' />
+    </dependency>
+
+    <dependent
+        name='openafs-client_multi-user'
+        grouping='optional_all'
+        restart_on='none'>
+        <service_fmri value='svc:/milestone/multi-user' />
+    </dependent>
+
+    <!--
+        Startup can take a while because servers are taking a while to
+        respond (without -dynroot), or because afsd needs to
+        prepopulate a lot of cache files (for large disk caches). Err
+        on the side of caution, and allow a lot of time, just in case.
+    -->
+    <exec_method
+        type='method'
+        name='start'
+        exec='/lib/svc/method/openafs-client %m'
+        timeout_seconds='3600' />
+
+    <!--
+        Shutdown can also take a while, since we usually need to contact
+        fileservers to give up our callbacks.
+    -->
+    <exec_method
+        type='method'
+        name='stop'
+        exec='/lib/svc/method/openafs-client %m'
+        timeout_seconds='1800' />
+
+    <instance name='default' enabled='false'>
+        <property_group name='afsd' type='application'>
+            <!--
+            <property name='arguments' type='astring'>
+                <astring_list>
+                    <value_node value='-dynroot-sparse' />
+                    <value_node value='-fakestat' />
+                    <value_node value='-afsdb' />
+                </astring_list>
+            </property>
+            -->
+        </property_group>
+    </instance>
+
+    <template>
+        <common_name>
+            <loctext xml:lang='C'>
+                OpenAFS client
+            </loctext>
+        </common_name>
+        <documentation>
+            <manpage title='afsd' section='8' manpath='/usr/share/man' />
+        </documentation>
+    </template>
+
+    </service>
+</service_bundle>

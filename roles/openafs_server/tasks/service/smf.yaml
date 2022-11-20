@@ -1,0 +1,36 @@
+---
+- name: "Add openafs-server SMF manifest."
+  become: yes
+  template:
+    src: openafs-server.xml.j2
+    dest: /var/svc/manifest/site/openafs-server.xml
+    owner: root
+    group: root
+    mode: 0644
+  register: afs_openafs_server_smf_manifest
+  notify:
+    - Restart OpenAFS servers
+
+- name: "Validate openafs-server SMF manifest."
+  become: yes
+  command:
+    cmd: svccfg validate /var/svc/manifest/site/openafs-server.xml
+  changed_when: false
+  register: afs_openafs_server_smf_validate
+  failed_when: afs_openafs_server_smf_validate.rc != 0
+  when: afs_openafs_server_smf_manifest.changed
+
+# Note: Service is imported by not enabled.
+- name: "Import openafs-server SMF manifest."
+  become: yes
+  service:
+    name: manifest-import
+    state: restarted
+  when: afs_openafs_server_smf_manifest.changed
+
+- name: "Store server service name."
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      server_service_name: openafs-server

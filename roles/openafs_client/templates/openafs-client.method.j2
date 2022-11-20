@@ -1,0 +1,163 @@
+#!/sbin/sh
+
+. /lib/svc/share/smf_include.sh
+
+if [ -z $SMF_FMRI ]; then
+    echo "SMF framework variables are not initialized."
+    exit $SMF_EXIT_ERR_NOSMF
+fi
+
+ETCDIR={{ afs_viceetcdir }}
+
+arch64() {
+    case $(/sbin/uname -p) in
+        sparc) echo "sparcv9" ;;
+        i386) echo "amd64" ;;
+        *)
+            echo "Unknown architecture $(uname -p)"
+            exit $SMF_EXIT_ERR_FATAL
+            ;;
+    esac
+}
+
+getprop() {
+    svcprop -p $1 $SMF_FMRI
+}
+
+dorun() {
+    echo Running "$@"
+    "$@"
+    status=$?
+    if [ $status -ne 0 ]; then
+        echo "$@" "failed with status $status"
+        exit $SMF_EXIT_ERR_FATAL
+    fi
+}
+
+ismodloaded() {
+    /sbin/modinfo | grep -q '(afs filesystem)'
+}
+
+is_nfs_server_loaded() {
+    /sbin/modinfo | grep -q '(NFS server module)'
+}
+
+ismounted() {
+    mount -v | grep -q '^AFS on .* type afs '
+}
+
+isrunning() {
+    pgrep -u 0 -x afsd > /dev/null
+}
+
+generate_csdb() {
+    if [ -f $ETCDIR/CellServDB.local -a -f $ETCDIR/CellServDB.dist ]; then
+        if [ -h $ETCDIR/CellServDB ]; then
+            rm -f $ETCDIR/CellServDB
+        fi
+        cat $ETCDIR/CellServDB.local $ETCDIR/CellServDB.dist >$ETCDIR/CellServDB
+        chmod 644 $ETCDIR/CellServDB
+    fi
+}
+
+case "$1" in
+    start)
+        if ismounted; then
+            echo "AFS is already mounted; skipping startup"
+            exit $SMF_EXIT_OK
+        fi
+
+        if isrunning; then
+            echo "AFS is already running; skipping startup"
+            exit $SMF_EXIT_OK
+        fi
+
+        if [ ! -f $ETCDIR/cacheinfo ]; then
+            echo "Error cacheinfo file $ETCDIR/cacheinfo does not exist"
+            exit $SMF_EXIT_ERR_FATAL
+        else
+            CACHEDIR=$(awk -F: '{print $2}' $ETCDIR/cacheinfo)
+
+            if ! [ -d "$CACHEDIR" ]; then
+                dorun mkdir -m 0700 "$CACHEDIR"
+            fi
+        fi
+
+        if is_nfs_server_loaded; then
+            echo "NFS server module already loaded"
+        else
+            echo "Loading NFS server module"
+            dorun /sbin/modload /kernel/misc/$(arch64)/nfssrv
+        fi
+
+        if ismodloaded; then
+            echo "AFS kernel module already loaded"
+        else
+            if [ ! -f /kernel/drv/afs.conf ]; then
+                echo "Creating kernel afs.conf"
+                echo 'name="afs" parent="pseudo";' > /kernel/drv/afs.conf
+            fi
+
+            if grep '^afs ' /etc/name_to_major >/dev/null ; then
+                echo "Loading AFS kernel extensions"
+                dorun /sbin/modload /kernel/drv/$(arch64)/afs
+                # This can sometimes be necessary to get the /devices afs device to attach.
+                dorun update_drv afs
+            else
+                echo "Installing AFS driver and loading kernel extensions"
+                dorun add_drv -m '* 0666 root root' afs
+            fi
+
+            if grep name=afs /etc/devlink.tab >/dev/null ; then
+                echo "Entry for afs already exists in /etc/devlink.tab"
+            else
+                echo "Adding entry for afs in /etc/devlink.tab"
+                echo "type=ddi_pseudo;name=afs;addr=0;minor=afs	\D" >> /etc/devlink.tab
+                devfsadm
+            fi
+        fi
+
+        generate_csdb
+        dorun {{ afs_afsd }} {{ afs_afsd_opts | d('-dynroot -fakestat -afsdb') }}
+
+        ;;
+
+    stop)
+
+        if ! ismodloaded; then
+            echo "AFS kernel module is already unloaded; skipping shutdown"
+            exit $SMF_EXIT_OK
+        fi
+
+        if ismounted; then
+            dorun /sbin/umountall -F afs
+        else
+            # AFS is not mounted. It's possible some afsd processes are still
+            # running, if we failed partway through afsd startup. Try to stop those
+            # processes with -shutdown
+            echo "AFS is not mounted; trying to shutdown possible dangling"
+            echo "afsd processes"
+            dorun {{ afs_afsd }} -shutdown
+        fi
+
+        modid=$(/sbin/modinfo | awk '/(afs filesystem)/ {print $1}')
+        if [ "$modid" -gt 0 ]; then
+            dorun /sbin/modunload -i "$modid"
+        else
+            echo "Error determining AFS kernel module id ($modid)"
+            exit $SMF_EXIT_ERR_FATAL
+        fi
+
+        if isrunning; then
+            echo "AFS is still running; please check"
+            exit $SMF_EXIT_ERR_OTHER
+        fi
+
+        ;;
+
+    *)
+        echo "Usage: $0 <start|stop>"
+        exit $SMF_EXIT_ERR_FATAL
+        ;;
+esac
+exit $SMF_EXIT_OK

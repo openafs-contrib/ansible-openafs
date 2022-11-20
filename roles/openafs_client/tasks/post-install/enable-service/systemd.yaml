@@ -1,0 +1,8 @@
+---
+- name: "Enable OpenAFS client service."
+  become: yes
+  service:
+    name: "{{ ansible_local.openafs.client_service_name }}"
+    state: started
+    enabled: yes
+  register: afs_client_service_result
