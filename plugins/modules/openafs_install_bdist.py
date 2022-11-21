@@ -195,6 +195,7 @@ class BinaryDistInstaller(object):
     def __init__(self, module):
         self.module = module
         self.changed = False
+        self.transarc_dist = None
         self.logfiles = []
         self.kmods = []
         self.bins = {}
@@ -208,15 +209,16 @@ class BinaryDistInstaller(object):
         if not os.path.isdir(path):
             self.module.fail_json(msg='path not found', path=path)
 
-        destdir = self.detect_transarc_dist(path)
-        if destdir:
-            log.info('Installing files from %s to legacy paths.', destdir)
-            files = self.install_transarc(destdir)
+        exclude = self.get_excluded_paths()
+        self.transarc_dist = self.detect_transarc_dist(path)
+        if self.transarc_dist:
+            log.info('Installing files from %s to legacy paths.',
+                     self.transarc_dist)
+            files = self.install_transarc(self.transarc_dist, exclude)
             self.dirs = TRANSARC_INSTALL_DIRS
             self.collect_bins(files)
         else:
             log.info('Installing files from %s to modern paths.', path)
-            exclude = self.module.params['exclude']
             files = copy_tree(path, '/', exclude)
             self.collect_dirs(path)
             self.collect_bins(files)
@@ -234,12 +236,11 @@ class BinaryDistInstaller(object):
         )
         return results
 
-    def install_transarc(self, destdir):
+    def install_transarc(self, destdir, exclude):
         """
         Install a Transarc-style distribution to the lecacy paths.
         """
         components = self.module.params['components']
-        exclude = self.module.params['exclude']
         files = []
         if 'common' in components:
             for d in ('bin', 'etc', 'include', 'lib', 'man'):
@@ -337,6 +338,9 @@ class BinaryDistInstaller(object):
 class LinuxBinaryDistInstaller(BinaryDistInstaller):
     platform = 'Linux'
 
+    def get_excluded_paths(self):
+        return self.module.params['exclude']
+
     def install_shared_libraries(self, files):
         if self.changed:
             log.info('Updating shared object cache.')
@@ -358,6 +362,9 @@ class LinuxBinaryDistInstaller(BinaryDistInstaller):
 
 class SolarisBinaryDistInstaller(BinaryDistInstaller):
     platform = 'SunOS'
+
+    def get_excluded_paths(self):
+        return self.module.params['exclude']
 
     def install_shared_libraries(self, files):
         if self.changed:
@@ -403,6 +410,33 @@ class SolarisBinaryDistInstaller(BinaryDistInstaller):
         else:
             driver = '/kernel/drv/afs'
         return driver
+
+
+class FreeBSDBinaryDistInstaller(BinaryDistInstaller):
+    platform = 'FreeBSD'
+
+    def get_excluded_paths(self):
+        exclude = self.module.params['exclude']
+        if exclude is None:
+            exclude = []
+        if '/bin/libafs.ko' not in exclude:
+            exclude.append('/bin/libafs.ko')  # Obsolete module path.
+        return exclude
+
+    def install_shared_libraries(self, files):
+        pass
+
+    def install_kernel_module(self, files):
+        if self.transarc_dist:
+            src = os.path.join(self.transarc_dist, 'root.client/bin/libafs.ko')
+            dst = '/boot/modules'
+            if not os.path.isdir(dst):
+                os.makedirs(dst)
+            log.info("Copying '%s' to '%s'.", src, dst)
+            shutil.copy2(src, dst)
+            os.chmod(os.path.join(dst, 'libafs.ko'),
+                     stat.S_IRUSR | stat.S_IXUSR | stat.S_IRGRP |
+                     stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
 
 
 def main():
