@@ -1,0 +1,66 @@
+---
+- name: "Create kerberos krb5.conf file."
+  become: yes
+  vars:
+    # Fallback to the raw address for now, since DNS may not be setup.
+    afs_krb_kdc: "{{ ansible_default_ipv4.address }}"
+    afs_krb_admin_server: "{{ ansible_default_ipv4.address }}"
+  template:
+    src: krb5.conf.j2
+    dest: "{{ afs_krbserver_krb5_conf }}"
+    owner: root
+    group: "{{ afs_root_group }}"
+    mode: 0644
+
+- name: "Create kerberos master key."
+  become: yes
+  command:
+    cmd: kstash --random-key
+    creates: "/var/heimdal/m-key"
+
+- name: "Create kerberos database."
+  become: yes
+  command:
+    cmd: "kadmin --local init --realm-max-ticket-life=unlimited --realm-max-renewable-life=unlimited {{ afs_realm }}"
+    creates: "/var/heimdal/heimdal.db"
+
+- name: "Check for kerberos admin principal."
+  become: yes
+  command:
+    cmd: "kadmin --local get {{ afs_krb_admin_principal }}"
+  changed_when: false
+  failed_when: false
+  register: check_admin
+
+- name: "Create kerberos admin principal."
+  become: yes
+  command:
+    cmd: "kadmin --local add --use-defaults --random-password {{ afs_krb_admin_principal }}"
+  when: check_admin.rc != 0
+
+- name: "Make kerberos keytabs directory."
+  become: yes
+  file:
+    state: directory
+    path: /var/heimdal/keytabs
+    owner: root
+    group: wheel
+    mode: 0644
+  register: keytabs
+
+- name: "Create kerberos admin keytab."
+  become: yes
+  vars:
+    keytab: "{{ keytabs.path }}/{{ afs_krb_admin_principal | replace('/', '.') }}.keytab"
+  block:
+    - name: "Create kerberos admin keytab."
+      command:
+        cmd: "kadmin --local ext_keytab --keytab={{ keytab }} {{ afs_krb_admin_principal }}"
+        creates: "{{ keytab }}"
+
+    - name: "Download kerberos admin keytab."
+      fetch:
+        flat: yes
+        src: "{{ keytab }}"
+        dest: "{{ afs_realm_files }}/"
+      when: not ansible_check_mode

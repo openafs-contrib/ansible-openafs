@@ -1,0 +1,66 @@
+---
+- name: "Create kerberos krb5.conf file."
+  become: yes
+  vars:
+    afs_krb_kdc: "{{ ansible_hostname }}"
+    afs_krb_admin_server: "{{ ansible_hostname }}"
+  template:
+    src: krb5.conf.j2
+    dest: "{{ afs_krbserver_krb5_conf }}"
+    owner: root
+    group: "{{ afs_root_group }}"
+    mode: 0644
+
+- name: "Configure kerberos kdc server."
+  become: yes
+  template:
+    src: kdc.conf.j2
+    dest: "{{ afs_krbserver_kdc_conf }}"
+    owner: root
+    group: "{{ afs_root_group }}"
+    mode: 0600
+  when: afs_krbserver_kdc_conf is defined
+  notify:
+    - Restart kerberos key server
+
+- name: "Create kerberos kdc acls."
+  become: yes
+  template:
+    force: no
+    src: kadm5.acl.j2
+    dest: "{{ afs_krbserver_kadm5_acl }}"
+    owner: root
+    group: "{{ afs_root_group }}"
+    mode: 0600
+  when: afs_krbserver_kadm5_acl is defined
+
+- name: "Create kerberos kdc database."
+  become: yes
+  command:
+    cmd: "{{ afs_kdb5_util }} -P {{ afs_krb_master_password }} -r {{ afs_realm }} create -s"
+    creates: "{{ afs_krbserver_principal }}"
+  when: afs_kdb5_util is defined
+  register: krb5_util_results
+
+- name: "Create kerberos admin principal."
+  become: yes
+  openafs_contrib.openafs.openafs_principal:
+    state: present
+    principal: "{{ afs_krb_admin_principal }}"
+    acl: "*"
+    kadmin: "{{ afs_kadmin_local | default(omit) }}"
+  register: admin_principal_results
+
+- name: "Download kerberos admin keytab."
+  become: yes
+  fetch:
+    flat: yes
+    src: "{{ admin_principal_results.keytab }}"
+    dest: "{{ afs_realm_files }}/"
+  when: not ansible_check_mode
+  register: download_results
+
+- name: "Downloaded kerberos admin keytab."
+  debug:
+    var: download_results.dest
+  when: not ansible_check_mode
