@@ -1,0 +1,73 @@
+#!/bin/sh
+# {{ ansible_managed }}
+#
+# PROVIDE: openafs_client
+# REQUIRE: named
+# KEYWORD: shutdown
+#
+# Add the following lines to /etc/rc.conf to enable this service:
+#
+# openafs_client_enable (bool):	Set to NO by default.
+#			Set it to YES to enable afsd.
+#
+# Suggested values for a "large" configuration:
+# openafs_client_flags="-stat 2800 -daemons 5 -volumes 128"
+#
+# Suggested values for a "medium" configuration:
+# openafs_client_flags="-stat 2000 -daemons 3 -volumes 70"
+#
+# Suggested values for a "small" configuration:
+# openafs_client_flags="-stat 300 -daemons 2 -volumes 50"
+
+. /etc/rc.subr
+
+name="openafs_client"
+rcvar="openafs_client_enable"
+
+command="{{ afs_afsd }}"
+command_args="{{ afs_afsd_opts | d('-dynroot -fakestat -afsdb') }}"
+
+start_precmd="openafs_client_prestart"
+start_postcmd="openafs_client_poststart"
+stop_cmd="openafs_client_stop"
+
+kmod="libafs"
+vicedir="{{ afs_viceetcdir }}"
+required_modules="libafs:afs"
+required_files="${vicedir}/cacheinfo ${vicedir}/ThisCell ${vicedir}/CellServDB"
+
+load_rc_config "$name"
+
+: ${openafs_client_enable:="NO"}
+: ${openafs_client_flags:="-stat 2800 -daemons 6 -volumes 128"}
+
+openafs_client_prestart()
+{
+	local dir
+
+	# need a mountpoint and a cache dir (well, if we have a disk cache)
+	# Should use required_dirs, but no good way to extract from cacheinfo
+	for dir in $(awk -F: '{print $1, $2}' ${vicedir}/cacheinfo); do
+		if [ ! -d "${dir}" ]; then
+			err 1 "Directory ${dir} does not exist. Not starting AFS client."
+		fi
+	done
+}
+
+openafs_client_poststart()
+{
+	{{ afs_fs }} setcrypt -crypt on
+}
+
+openafs_client_stop()
+{
+	local afsdir
+
+	afsdir=$(awk -F: '{print $1}' ${vicedir}/cacheinfo)
+	if ! umount $afsdir; then
+		[ -n "${rc_force}" ] && umount -f ${afsdir}
+	fi
+	kldunload ${kmod}
+}
+
+run_rc_command "$1"
