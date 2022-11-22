@@ -70,8 +70,9 @@
         state: built-module
         clean: "{{ afs_clean_build | bool }}"
         fakeroot: "{{ afs_fakeroot | d(omit) }}"
-        projectdir: "{{ afs_topdir }}"
+        srcdir: "{{ afs_topdir }}"
         destdir: "{{ afs_topdir }}/packages/dest"
+        build_module: yes
         transarc_paths: "{{ afs_transarc_build }}"
         configure_options: "{{ afs_configure_options | default(omit) }}"
         configure_environment: "{{ afs_configure_environment | default(omit) }}"

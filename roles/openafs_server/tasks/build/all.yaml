@@ -11,11 +11,15 @@
 # build so we only build once on a given node.
 #
 
+- debug:
+    var: afs_configure_options
+
 - name: Build OpenAFS binaries and kernel module
   openafs_contrib.openafs.openafs_build:
     state: built-module
     clean: "{{ afs_clean_build | bool }}"
-    projectdir: "{{ afs_topdir }}"
+    build_module: yes
+    srcdir: "{{ afs_topdir }}"
     destdir: "{{ afs_topdir }}/packages/dest"
     transarc_paths: "{{ afs_transarc_build }}"
     configure_options: "{{ afs_configure_options | default(omit) }}"

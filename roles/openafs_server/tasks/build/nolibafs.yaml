@@ -4,16 +4,23 @@
 # is only a server.
 #
 
+- debug:
+    var: afs_nolibafs_configure_options
+
+- debug:
+    var: afs_configure_options
+
 - name: Build OpenAFS binaries
   openafs_contrib.openafs.openafs_build:
     state: built
     clean: "{{ afs_clean_build | bool }}"
-    projectdir: "{{ afs_topdir }}"
+    build_module: no
+    srcdir: "{{ afs_topdir }}"
     destdir: "{{ afs_topdir }}/packages/dest"
     transarc_paths: "{{ afs_transarc_build }}"
-    configure_options: "{{ afs_nolibafs_configure_options | default(omit) }}"
-    configure_environment: "{{ afs_nolibafs_configure_environment | default(omit) }}"
-    fakeroot: "{{ afs_fakeroot | default(omit) }}"
+    configure_options: "{{ afs_nolibafs_configure_options | d(afs_configure_options) | d(omit) }}"
+    configure_environment: "{{ afs_nolibafs_configure_environment | d(afs_configure_environment | d(omit) }}"
+    fakeroot: "{{ afs_fakeroot | d(omit) }}"
   register: build_results
 
 - name: Build results
