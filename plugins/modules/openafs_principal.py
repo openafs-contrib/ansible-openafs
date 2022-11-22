@@ -199,29 +199,43 @@ class KerberosAdmin(object):
         self.changed = False
         self.debug = []
 
-    def get_principal(self, principal):
-        self._unknown_platform()
+    def _not_implemented(self):
+        myname = self.__class__.__name__
+        if myname != 'KerberosAdmin':
+            raise NotImplementedError('class %s' % myname)
+        else:
+            self.module.fail_json(msg='Unknown platform.',
+                                  module=module_name,
+                                  platform=platform.system(),
+                                  distribution=get_distribution())
 
-    def add_principal(self, principal):
-        self._unknown_platform()
+    # -------------------------------------------------------------------------
+    # Abstract methods: Must be implemented by subclasses.
+    #
+    def kadmin_args(self, command):
+        self._not_implemented()
+
+    def get_principal(self, principal):
+        self._not_implemented()
+
+    def add_principal(self, principal, password=None):
+        self._not_implemented()
 
     def delete_principal(self, principal):
-        self._unknown_platform()
+        self._not_implemented()
 
     def ktadd(self, principal, kvno=None):
-        self._unknown_platform()
+        self._not_implemented()
 
     def update_acl(self, principal, acl):
-        self._unknown_platform()
+        self._not_implemented()
 
     def clear_acl(self, principal):
-        self._unknown_platform()
+        self._not_implemented()
 
-    def _unknown_platform(self):
-        self.module.fail_json(msg='Unknown platform',
-                              platform=platform.system(),
-                              distribution=get_distribution())
-
+    # -------------------------------------------------------------------------
+    # Main methods
+    #
     def ensure_present(self):
         """
         Ensure the principal exists and return the attributes.
