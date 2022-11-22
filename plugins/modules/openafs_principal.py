@@ -224,7 +224,7 @@ class KerberosAdmin(object):
     def delete_principal(self, principal):
         self._not_implemented()
 
-    def ktadd(self, principal, kvno=None):
+    def write_keytab(self, keytab, principal):
         self._not_implemented()
 
     def update_acl(self, principal, acl):
@@ -257,7 +257,7 @@ class KerberosAdmin(object):
         kvno = attributes['kvno']
 
         if not password:
-            keytab = self.ktadd(principal, kvno)
+            keytab = self.ensure_present_keytab(principal, kvno)
 
         if acl:
             self.update_acl(principal, acl)
@@ -271,6 +271,31 @@ class KerberosAdmin(object):
         if keytab:
             results['keytab'] = keytab
         return results
+
+    def ensure_present_keytab(self, principal, kvno):
+        """
+        Ensure a current keytab exists for the given principal.
+        """
+        keytab = self.get_keytab_filename(principal)
+        if os.path.exists(keytab):
+            if self.is_keytab_current(keytab, principal, kvno):
+                self.debug.append(
+                    dict(msg='Existing keytab is current.',
+                         keytab=keytab, kvno=kvno, principal=principal))
+                return keytab
+            # Remove old version.
+            self.debug.append(dict(cmd='rm %s' % keytab))
+            os.remove(keytab)
+            self.changed = True
+
+        keytab_dir = os.path.dirname(keytab)
+        if not os.path.exists(keytab_dir):
+            self.debug.append(dict(cmd='mkdir -p %s' % keytab_dir))
+            os.makedirs(keytab_dir)
+            self.changed = True
+
+        self.write_keytab(keytab, principal)
+        return keytab
 
     def ensure_absent(self):
         """
@@ -300,7 +325,8 @@ class KerberosAdmin(object):
     def run(self, command):
         args = self.kadmin_args(command)
         rc, out, err = self.module.run_command(args)
-        self.debug.append(dict(cmd=' '.join(args), rc=rc, out=out, err=err))
+        self.debug.append(dict(cmd=' '.join(args), rc=rc,
+                          out=out.splitlines(), err=err.splitlines()))
         if rc != 0:
             self.fail('Command failed: %s' % ' '.join(args))
         return out, err
@@ -365,6 +391,23 @@ class KerberosAdmin(object):
             tokens.append('.keytab')
             keytab_name = ''.join(tokens)
         return os.path.join(self.keytabs, keytab_name)
+
+    def is_keytab_current(self, keytab, principal, kvno):
+        """
+        Check the kvno of this keytab to see if it already matches the one in
+        use by the principal.
+        """
+        kt = Keytab(keytab)
+        kt_kvno = kt.get_kvno(principal)
+        self.debug.append(dict(msg='checking keytab', principal=principal,
+                          keytab=keytab, kvno=kvno, kt_kvno=kt_kvno))
+        if kt_kvno is None:
+            log.error('Unable to get keytab %s kvno.' % keytab)
+        elif kvno is None:
+            log.error('Unable to get principal %s kvno.' % principal)
+        elif kt_kvno == kvno:
+            return True   # Valid
+        return False
 
 
 class MITKerberosAdmin(KerberosAdmin):
@@ -442,27 +485,10 @@ class MITKerberosAdmin(KerberosAdmin):
         self.run(['delete_principal', '-force', principal])
         self.changed = True
 
-    def ktadd(self, principal, kvno=None):
+    def write_keytab(self, keytab, principal):
         """
         Write the principal's keys to a keytab file.
-
-        If the keytab file already exists, verify the kvno number matches the
-        specified kvno, and if not, remove the old keytab file, and create
-        a new keytab file.
         """
-        keytab = self.get_keytab_filename(principal)
-        if os.path.exists(keytab):
-            if kvno:
-                kt = Keytab(keytab)
-                if kt.get_kvno(principal) == kvno:
-                    return keytab  # kvno matches.
-            os.remove(keytab)
-            self.changed = True
-
-        if not os.path.exists(os.path.dirname(keytab)):
-            os.makedirs(os.path.dirname(keytab))
-            self.changed = True
-
         command = ['ktadd', '-keytab', keytab]
         if self.enctypes:
             command.extend(['-e', '"%s"' % ','.join(self.enctypes)])
@@ -471,7 +497,6 @@ class MITKerberosAdmin(KerberosAdmin):
         if not os.path.exists(keytab):
             self.fail('Failed to create keytab; file not found.')
         self.changed = True
-        return keytab
 
     def update_acl(self, principal, acl):
         """
