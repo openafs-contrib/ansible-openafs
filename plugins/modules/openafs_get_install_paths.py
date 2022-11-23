@@ -106,7 +106,7 @@ def get_pkg_mgr_subclass(cls, module):
         if pkg_mgr in subcls.pkg_mgrs:
             return subcls
 
-    raise ValueError('Unknown package manager: {}'.format(pkg_mgr))
+    raise NotImplementedError('Unknown package manager: {}'.format(pkg_mgr))
 
 
 class InstallationFactCollector(object):
@@ -372,6 +372,77 @@ class DebianInstallationFactCollector(InstallationFactCollector):
             if path != '/.':      # Omit root directory
                 paths.add(path)
         return set(paths)
+
+
+class SolarisInstallationFactCollector(InstallationFactCollector):
+    """
+    Solaris package manager specific collection methods.
+    """
+    pkg_mgrs = ['pkg5']  # aka IPS
+
+    def __init__(self, module):
+        super(SolarisInstallationFactCollector, self).__init__(module)
+        self.pkg = module.get_bin_path('pkg', required=True)
+
+    def collect_package_names(self):
+        """
+        Find the names of the OpenAFS packages installed on this system.
+        """
+        args = [self.pkg, 'list', '-H', '*openafs*']
+        rc, out, err = self.module.run_command(args)
+        if rc != 0:
+            if 'no packages matching' in err:
+                return set()
+            log.error('pkg list failed', err)
+            self.module.fail_json(msg='pkg list failed', rc=rc, err=err)
+        packages = set()
+        for line in out.splitlines():
+            words = line.rstrip().split()
+            if len(words) > 0:
+                packages.add(words[0])
+        return packages
+
+    def collect_paths(self, package):
+        """
+        Find the paths of the files and directories installed by a package.
+        """
+        args = [self.pkg, 'contents', '-H', package]
+        rc, out, err = self.module.run_command(args)
+        if rc != 0:
+            log.error('pkg contents failed', err)
+            self.module.fail_json(msg='pkg contents failed', rc=rc, err=err)
+        paths = set()
+        for path in out.splitlines():
+            if not path.startswith('/'):
+                path = '/%s' % path
+            paths.add(path)
+        return paths
+
+    def collect_manpages(self, paths):
+        """
+        Find the installed man pages.
+        """
+        manpages = {}
+        for path in paths:
+            m = re.search(r'man/man\d/.*\.\d$', path)
+            if m:
+                name = re.sub(r'\.\d$', '', os.path.basename(path))
+                manpages[name] = path
+        return manpages
+
+    def search_page(self, path, pattern):
+        """
+        Search an OpenAFS man page for a directory.
+        """
+        with open(path) as f:
+            content = f.read()
+        content = re.sub(r'\\&', '', content)
+        content = re.sub(r'\\f.', '', content)
+        content = re.sub(r'\s+', ' ', content)
+        m = re.search(pattern, content)
+        if not m:
+            raise ValueError('Failed to find directory in %s.' % path)
+        return m.group(1)
 
 
 def main():
