@@ -25,12 +25,18 @@
         acl: "*"
       register: admin_princ_results
 
+    - debug:
+        var: admin_princ_results
+
     - name: Create user principal.
       become: yes
       openafs_principal:
         state: present
         principal: "{{ afs_user }}"
       register: user_princ_results
+
+    - debug:
+        var: user_princ_results
 
     - name: Download keytabs.
       become: yes
