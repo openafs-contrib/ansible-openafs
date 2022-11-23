@@ -322,13 +322,11 @@ class KerberosAdmin(object):
         }
         return results
 
-    def run(self, command):
+    def run(self, command, check_rc=True):
         args = self.kadmin_args(command)
-        rc, out, err = self.module.run_command(args)
+        rc, out, err = self.module.run_command(args, check_rc)
         self.debug.append(dict(cmd=' '.join(args), rc=rc,
                           out=out.splitlines(), err=err.splitlines()))
-        if rc != 0:
-            self.fail('Command failed: %s' % ' '.join(args))
         return out, err
 
     def fail(self, msg):
