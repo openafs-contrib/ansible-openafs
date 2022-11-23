@@ -45,10 +45,6 @@ Parameters
     git project directory on the remote node.
 
 
-  logdir (optional, path, I(topdir)/.ansible)
-    The path to write build log files on the remote node.
-
-
   tar (optional, path, detected)
     ``tar`` program path
 

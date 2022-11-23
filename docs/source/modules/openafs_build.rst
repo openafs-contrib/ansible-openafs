@@ -12,9 +12,9 @@ openafs_build -- Build OpenAFS binaries from source
 Synopsis
 --------
 
-Build OpenAFS server and client binaries from source code by running ``regen.sh``, ``configure``, and ``make``. The source code must be already present in the *projectdir* directory.
+Build OpenAFS server and client binaries from source code by running ``regen.sh``, ``configure``, and ``make``. The source code must be already present in the *srcdir* directory.
 
-The :ref:`openafs_build <openafs_build_module>` module will run the OpenAFS ``regen.sh`` command to generate the ``configure`` script when the ``configure`` script is not already present in the *projectdir*.
+The :ref:`openafs_build <openafs_build_module>` module will run the OpenAFS ``regen.sh`` command to generate the ``configure`` script when the ``configure`` script is not already present in the *srcdir*.
 
 Unless the *configure_options* option is specified, the configure command line arguments are determined automatically, based on the platform and :ref:`openafs_build <openafs_build_module>` options.
 
@@ -24,7 +24,7 @@ A complete set of build log files are written on the *logdir* directory on the h
 
 Out-of-tree builds are supported by specifying a build directory with the *builddir* option.
 
-``git clean`` is run in the *projectdir* when *clean* is true and a ``.git`` directory is found in the ``projectdir``.  When *clean* is true but a ``.git`` directory is not found, then ``make clean`` is run to remove artifacts from a previous build.  When *clean* is true and an out-of-tree build is being done, all of the files and directories are removed from the *builddir*.
+``git clean`` is run in the *srcdir* when *clean* is true and a ``.git`` directory is found in the ``srcdir``.  When *clean* is true but a ``.git`` directory is not found, then ``make clean`` is run to remove artifacts from a previous build.  When *clean* is true and an out-of-tree build is being done, all of the files and directories are removed from the *builddir*.
 
 An installation file tree is created in the *destdir* directory when the *target* starts with ``install`` or ``dest``. The files in *destdir* may be installed with the :ref:`openafs_install_bdist <openafs_install_bdist_module>` module.
 
@@ -43,38 +43,36 @@ The below requirements are needed on the host that executes this module.
 Parameters
 ----------
 
-  projectdir (True, path, None)
-    The project directory.
-
+  srcdir (True, path, None)
     Source files must have been previously checkout or copied to this path.
 
 
-  builddir (optional, path, <projectdir>)
+  builddir (optional, path, <srcdir>)
     The path for out-of-tree builds.
 
 
-  logdir (optional, path, <projectdir>/.ansible)
+  logdir (optional, path, <srcdir>/.ansible)
     The path to store build log files.
 
-    The logdir may be a subdirectory of the ``projectdir``.
+    The logdir may be a subdirectory of the ``srcdir``.
 
     The logdir may not be a subdirectory of the ``builddir`` when doing an out-of-tree build.
 
 
-  destdir (optional, path, <projectdir>/packages/dest)
+  destdir (optional, path, <srcdir>/packages/dest)
     The destination directory for ``install`` and ``dest`` targets and variants.
 
     The tree staged in this directory may be installed with the :ref:`openafs_install_bdist <openafs_install_bdist_module>` module.
 
 
   clean (optional, bool, False)
-    Run ``git clean`` in the *projectdir* when it contains a ``.git`` directory, otherwise run ``make clean``.
+    Run ``git clean`` in the *srcdir* when it contains a ``.git`` directory, otherwise run ``make clean``.
 
-    Remove the *builddir* when using an out of tree build, that is the *builddir* is different than the *projectdir*.
+    Remove the *builddir* when using an out of tree build, that is the *builddir* is different than the *srcdir*.
 
     A *clean* build should be done to force a complete rebuild.
 
-    The *clean* option will remove any new files you added manually on the remote node and did not commit when the *projectdir* is a git repository.
+    The *clean* option will remove any new files you added manually on the remote node and did not commit when the *srcdir* is a git repository.
 
 
   make (optional, path, detect)
@@ -162,22 +160,22 @@ Examples
     
     - name: Build OpenAFS from source
       openafs_contrib.openafs.openafs_build:
-        projectdir: ~/src/openafs
+        srcdir: ~/src/openafs
 
     - name: Build OpenAFS binaries for the current system.
       openafs_contrib.openafs.openafs_build:
-        projectdir: ~/src/openafs
+        srcdir: ~/src/openafs
         clean: yes
 
     - name: Build OpenAFS legacy distribution
       openafs_contrib.openafs.openafs_build:
-        projectdir: ~/src/openafs
+        srcdir: ~/src/openafs
         clean: yes
         with_transarc_paths: yes
 
     - name: Build OpenAFS server binaries with custom install paths.
       openafs_contrib.openafs.openafs_build:
-        projectdir: ~/src/openafs
+        srcdir: ~/src/openafs
         clean: yes
         target: install_nolibafs
         destdir: packages/dest
@@ -203,11 +201,7 @@ Examples
 Return Values
 -------------
 
-msg (always, string, Build completed)
-  Informational message.
-
-
-projectdir (always, string, /home/tycobb/projects/myproject)
+srcdir (always, string, /home/tycobb/projects/myproject)
   Absolute path to the project directory.
 
 

@@ -1,8 +1,8 @@
-.. _openafs_build_redhat_rpms_module:
+.. _openafs_build_packages_module:
 
 
-openafs_build_redhat_rpms -- This module is deprecated. Use openafs_build_packages.
-===================================================================================
+openafs_build_packages -- Build OpenAFS installation packages
+=============================================================
 
 .. contents::
    :local:
@@ -12,10 +12,27 @@ openafs_build_redhat_rpms -- This module is deprecated. Use openafs_build_packag
 Synopsis
 --------
 
-This module is obsolete and will be removed in a future release. Use openafs_build_packages in new playbooks.
+Build OpenAFS installation packages from an OpenAFS source distribution.
+
+This module supports building RPM packages for RedHat family distributions. Other packaging types may be added in the future.
+
+The source distribution files must be already present in the *sdist* directory on the remote node. The source distribution files may be created with the ``openafs_build_sdist`` module.
+
+The :ref:`openafs_build_packages <openafs_build_packages_module>` module will create the rpm workspace directories and populate the SPECS and SOURCES directories from the source distribution files and the file options, then will build the source and binary rpm files with ``rpmbuild``.
+
+The RPM package version and release strings are generated from the OpenAFS version string extracted from the ``.version`` file in the source archive.
+
+See the ``openafs_devel`` role for tasks to install the required build tools and libraries.
 
 
 
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- Tools and libraries required to build OpenAFS.
+- The ``kernel-devel`` package, when building the kernel module.
+- ``rpmbuild`` tool
 
 
 
@@ -23,7 +40,7 @@ Parameters
 ----------
 
   build (optional, str, all)
-    Specifies which rpms to build.
+    Specifies which packages to build.
 
     ``all`` build source and binary RPMs for userspace and kernel module
 
@@ -115,7 +132,7 @@ Examples
         sdist: openafs/packages
 
     - name: "Build RPM files."
-      openafs_build_redhat_rpms:
+      openafs_build_packages:
         build: all
         sdist: openafs/packages
       register: build_results
@@ -133,8 +150,8 @@ logfiles (always, list, )
   The build log files written on the remote node.
 
 
-rpms (always, list, )
-  The list of rpm files created on the remote node.
+packages (always, list, )
+  The list of package files created on the remote node.
 
 
 

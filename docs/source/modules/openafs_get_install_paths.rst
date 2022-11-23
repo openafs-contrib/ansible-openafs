@@ -27,7 +27,7 @@ Parameters
   package_mgr_type (optional, any, autodetect)
     The package manager type on the node.
 
-    Supported values are ``rpm`` and ``deb``.
+    Supported values are ``rpm`` and ``apt``.
 
 
 
