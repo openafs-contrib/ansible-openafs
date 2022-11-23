@@ -7,6 +7,13 @@
   import_role:
     name: openafs_contrib.openafs.openafs_common
 
+#- debug: msg="{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
+#- debug: msg="{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
+#- debug: msg="{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}.yaml"
+#- debug: msg="{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
+#- debug: msg="{{ role_path }}/vars/{{ ansible_system }}.yaml"
+#- debug: msg="{{ role_path }}/vars/defaults.yaml"
+
 - name: Gather variables for each operating system
   include_vars: "{{ afs_devel_os_item }}"
   loop_control:
