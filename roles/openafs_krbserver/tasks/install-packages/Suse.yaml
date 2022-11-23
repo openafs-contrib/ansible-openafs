@@ -16,5 +16,5 @@
     state: directory
     path: /run/user/0/krb5cc
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
     mode: "0600"

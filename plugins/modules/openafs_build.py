@@ -567,6 +567,9 @@ class Builder(object):
         self._stage = 'make'
 
         make = [self.make]
+        fakeroot = self.module.params['fakeroot']
+        if fakeroot:
+            make.insert(0, fakeroot)
         jobs = self.module.params['jobs']
         if jobs > 0:
             make.extend(['-j', '%d' % jobs])
@@ -927,6 +930,27 @@ class SolarisBuilder(Builder):
             self.fail('Kernel module not found.')
 
 
+class FreeBSDBuilder(Builder):
+    platform = 'FreeBSD'
+
+    def set_environment_variables(self):
+        pass
+
+    def kernel_module_configure_options(self, options):
+        pass
+
+    def collect_kernel_modules(self, builddir):
+        """
+        Search for built kernel module on FreeBSD.
+        """
+        pattern = os.path.join(builddir, 'src/libafs/MODLOAD/libafs.ko')
+        kmods = glob.glob(pattern)
+        return kmods
+
+    def verify_kernel_module(self):
+        pass
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -937,6 +961,7 @@ def main():
             destdir=dict(type='path'),
 
             # Procesing options
+            fakeroot=dict(type='path'),
             make=dict(type='path'),
             clean=dict(type='bool', default=False),
             jobs=dict(type='int', fallback=(cpu_count, [])),

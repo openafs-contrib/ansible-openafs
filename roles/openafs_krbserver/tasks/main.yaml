@@ -31,11 +31,12 @@
     state: update
     facts:
       bins:
-        kdb5_util: "{{ afs_kdb5_util }}"
+        kdb5_util: "{{ afs_kdb5_util | d(omit) }}"
       krbserver:
-        krb5_conf: "{{ afs_krbserver_krb5_conf }}"
-        kdc_conf: "{{ afs_krbserver_kdc_conf }}"
-        kadm5_acl: "{{ afs_krbserver_kadm5_acl }}"
+        flavor: "{{ afs_krbserver_flavor }}"
+        krb5_conf: "{{ afs_krbserver_krb5_conf | d(omit) }}"
+        kdc_conf: "{{ afs_krbserver_kdc_conf | d(omit) }}"
+        kadm5_acl: "{{ afs_krbserver_kadm5_acl | d(omit) }}"
         principal: "{{ afs_krbserver_principal | d(omit) }}"
         stash: "{{ afs_krbserver_stash | d(omit) }}"
         dict:  "{{ afs_krbserver_dict | d(omit) }}"
@@ -43,69 +44,7 @@
         admin_service: "{{ afs_krbserver_admin_service }}"
   when: not ansible_check_mode
 
-- name: Set default realm
-  become: yes
-  template:
-    src: krb5.conf.j2
-    dest: "{{ afs_krbserver_krb5_conf }}"
-    owner: root
-    group: root
-    mode: 0644
-
-- name: Configure kerberos key server
-  become: yes
-  template:
-    src: kdc.conf.j2
-    dest: "{{ afs_krbserver_kdc_conf }}"
-    owner: root
-    group: root
-    mode: 0600
-  notify:
-    - Restart kerberos key server
-
-- name: Ensure acl file exists
-  become: yes
-  template:
-    force: no
-    src: kadm5.acl.j2
-    dest: "{{ afs_krbserver_kadm5_acl }}"
-    owner: root
-    group: root
-    mode: 0600
-
-- name: Create kerberos kdc database
-  become: yes
-  command: >
-    {{ afs_kdb5_util }}
-    -P {{ afs_krb_master_password }}
-    -r {{ afs_realm }}
-    create -s
-  args:
-    creates: "{{ afs_krbserver_principal }}"
-  register: krb5_util_results
-
-- name: Create admin principal
-  become: yes
-  openafs_contrib.openafs.openafs_principal:
-    state: present
-    principal: "{{ afs_krb_admin_principal }}"
-    acl: "*"
-    kadmin: "{{ afs_kadmin_local | default(omit) }}"
-  register: admin_principal_results
-
-- name: Download admin keytab
-  become: yes
-  fetch:
-    flat: yes
-    src: "{{ admin_principal_results.keytab }}"
-    dest: "{{ afs_realm_files }}/"
-  when: not ansible_check_mode
-  register: download_results
-
-- name: Downloaded.
-  debug:
-    var: download_results.dest
-  when: not ansible_check_mode
+- include_tasks: "setup/{{ afs_krbserver_flavor }}.yaml"
 
 - name: Start kerberos key server
   become: yes

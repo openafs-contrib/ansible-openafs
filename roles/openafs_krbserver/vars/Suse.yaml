@@ -1,4 +1,6 @@
 ---
+afs_krbserver_flavor: mit
+
 # Kerberos commands
 afs_kdb5_util: "/usr/lib/mit/sbin/kdb5_util"
 afs_kadmin_local: "/usr/lib/mit/sbin/kadmin.local"

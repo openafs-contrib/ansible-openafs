@@ -199,29 +199,43 @@ class KerberosAdmin(object):
         self.changed = False
         self.debug = []
 
-    def get_principal(self, principal):
-        self._unknown_platform()
+    def _not_implemented(self):
+        myname = self.__class__.__name__
+        if myname != 'KerberosAdmin':
+            raise NotImplementedError('class %s' % myname)
+        else:
+            self.module.fail_json(msg='Unknown platform.',
+                                  module=module_name,
+                                  platform=platform.system(),
+                                  distribution=get_distribution())
 
-    def add_principal(self, principal):
-        self._unknown_platform()
+    # -------------------------------------------------------------------------
+    # Abstract methods: Must be implemented by subclasses.
+    #
+    def kadmin_args(self, command):
+        self._not_implemented()
+
+    def get_principal(self, principal):
+        self._not_implemented()
+
+    def add_principal(self, principal, password=None):
+        self._not_implemented()
 
     def delete_principal(self, principal):
-        self._unknown_platform()
+        self._not_implemented()
 
-    def ktadd(self, principal, kvno=None):
-        self._unknown_platform()
+    def write_keytab(self, keytab, principal):
+        self._not_implemented()
 
     def update_acl(self, principal, acl):
-        self._unknown_platform()
+        self._not_implemented()
 
     def clear_acl(self, principal):
-        self._unknown_platform()
+        self._not_implemented()
 
-    def _unknown_platform(self):
-        self.module.fail_json(msg='Unknown platform',
-                              platform=platform.system(),
-                              distribution=get_distribution())
-
+    # -------------------------------------------------------------------------
+    # Main methods
+    #
     def ensure_present(self):
         """
         Ensure the principal exists and return the attributes.
@@ -243,7 +257,7 @@ class KerberosAdmin(object):
         kvno = attributes['kvno']
 
         if not password:
-            keytab = self.ktadd(principal, kvno)
+            keytab = self.ensure_present_keytab(principal, kvno)
 
         if acl:
             self.update_acl(principal, acl)
@@ -257,6 +271,31 @@ class KerberosAdmin(object):
         if keytab:
             results['keytab'] = keytab
         return results
+
+    def ensure_present_keytab(self, principal, kvno):
+        """
+        Ensure a current keytab exists for the given principal.
+        """
+        keytab = self.get_keytab_filename(principal)
+        if os.path.exists(keytab):
+            if self.is_keytab_current(keytab, principal, kvno):
+                self.debug.append(
+                    dict(msg='Existing keytab is current.',
+                         keytab=keytab, kvno=kvno, principal=principal))
+                return keytab
+            # Remove old version.
+            self.debug.append(dict(cmd='rm %s' % keytab))
+            os.remove(keytab)
+            self.changed = True
+
+        keytab_dir = os.path.dirname(keytab)
+        if not os.path.exists(keytab_dir):
+            self.debug.append(dict(cmd='mkdir -p %s' % keytab_dir))
+            os.makedirs(keytab_dir)
+            self.changed = True
+
+        self.write_keytab(keytab, principal)
+        return keytab
 
     def ensure_absent(self):
         """
@@ -283,12 +322,11 @@ class KerberosAdmin(object):
         }
         return results
 
-    def run(self, command):
+    def run(self, command, check_rc=True):
         args = self.kadmin_args(command)
-        rc, out, err = self.module.run_command(args)
-        self.debug.append(dict(cmd=' '.join(args), rc=rc, out=out, err=err))
-        if rc != 0:
-            self.fail('Command failed: %s' % ' '.join(args))
+        rc, out, err = self.module.run_command(args, check_rc)
+        self.debug.append(dict(cmd=' '.join(args), rc=rc,
+                          out=out.splitlines(), err=err.splitlines()))
         return out, err
 
     def fail(self, msg):
@@ -351,6 +389,23 @@ class KerberosAdmin(object):
             tokens.append('.keytab')
             keytab_name = ''.join(tokens)
         return os.path.join(self.keytabs, keytab_name)
+
+    def is_keytab_current(self, keytab, principal, kvno):
+        """
+        Check the kvno of this keytab to see if it already matches the one in
+        use by the principal.
+        """
+        kt = Keytab(keytab)
+        kt_kvno = kt.get_kvno(principal)
+        self.debug.append(dict(msg='checking keytab', principal=principal,
+                          keytab=keytab, kvno=kvno, kt_kvno=kt_kvno))
+        if kt_kvno is None:
+            log.error('Unable to get keytab %s kvno.' % keytab)
+        elif kvno is None:
+            log.error('Unable to get principal %s kvno.' % principal)
+        elif kt_kvno == kvno:
+            return True   # Valid
+        return False
 
 
 class MITKerberosAdmin(KerberosAdmin):
@@ -428,27 +483,10 @@ class MITKerberosAdmin(KerberosAdmin):
         self.run(['delete_principal', '-force', principal])
         self.changed = True
 
-    def ktadd(self, principal, kvno=None):
+    def write_keytab(self, keytab, principal):
         """
         Write the principal's keys to a keytab file.
-
-        If the keytab file already exists, verify the kvno number matches the
-        specified kvno, and if not, remove the old keytab file, and create
-        a new keytab file.
         """
-        keytab = self.get_keytab_filename(principal)
-        if os.path.exists(keytab):
-            if kvno:
-                kt = Keytab(keytab)
-                if kt.get_kvno(principal) == kvno:
-                    return keytab  # kvno matches.
-            os.remove(keytab)
-            self.changed = True
-
-        if not os.path.exists(os.path.dirname(keytab)):
-            os.makedirs(os.path.dirname(keytab))
-            self.changed = True
-
         command = ['ktadd', '-keytab', keytab]
         if self.enctypes:
             command.extend(['-e', '"%s"' % ','.join(self.enctypes)])
@@ -457,7 +495,6 @@ class MITKerberosAdmin(KerberosAdmin):
         if not os.path.exists(keytab):
             self.fail('Failed to create keytab; file not found.')
         self.changed = True
-        return keytab
 
     def update_acl(self, principal, acl):
         """
@@ -537,6 +574,85 @@ class MITKerberosAdmin(KerberosAdmin):
                 self.changed = True
 
 
+class HeimdalKerberosAdmin(KerberosAdmin):
+    platform = None
+    distribution = None
+
+    def __init__(self, module):
+        super(HeimdalKerberosAdmin, self).__init__(module)
+        self.enctypes = module.params['enctypes']
+        if not self.kadmin:
+            self.kadmin = module.get_bin_path('kadmin', required=True)
+        if not self.keytabs:
+            self.keytabs = '/var/lib/ansible-openafs/keytabs'  # use kdb dir?
+
+    def kadmin_args(self, command):
+        """
+        Assemble kadmin command arguments.
+        """
+        args = [self.kadmin, '--local']
+        if self.realm:
+            args.extend(['-r', self.realm])
+        args.extend(command)
+        return args
+
+    def get_principal(self, principal):
+        """
+        Lookup a principal in the kerberos database and return the attributes
+        as a dict.
+        """
+        out, err = self.run(['get_entry', principal], check_rc=False)
+        if 'Principal does not exist' in err:
+            return None
+        attributes = {}
+        for line in out.splitlines():
+            if ':' not in line:
+                continue   # Skip info lines
+            name, value = line.split(':', 1)
+            name = name.strip().replace(' ', '_').lower()
+            value = value.strip()
+            if value in ('[never]', '[none]'):
+                value = None
+            if name == 'kvno':
+                value = int(value)
+            attributes[name] = value
+        return attributes
+
+    def add_principal(self, principal, password=None):
+        """
+        Add a principal to the kerberos database.
+        """
+        command = ['add']
+        if password:
+            command.extend(['-p', password])
+        else:
+            command.append('--random-password')
+        command.append('--use-default')
+        command.append(principal)
+        self.run(command)
+        self.changed = True
+
+    def delete_principal(self, principal):
+        self.run(['delete', principal])
+        self.changed = True
+
+    def write_keytab(self, keytab, principal):
+        """
+        Write the principal's keys to a keytab file.
+        """
+        self.run(['ext_keytab', '-k', keytab, principal])
+        if not os.path.exists(keytab):
+            self.fail('Failed to create keytab; file not found.')
+        self.changed = True
+        return keytab
+
+    def update_acl(self, principal, acl):
+        pass  # Not implemented
+
+    def clear_acl(self, principal):
+        pass  # Not implemented
+
+
 class RedHatMITKerberosAdmin(MITKerberosAdmin):
     platform = 'Linux'
     distribution = 'Redhat'
@@ -588,6 +704,11 @@ class UbuntuMITKerberosAdmin(MITKerberosAdmin):
 class SolarisMITKerberosAdmin(MITKerberosAdmin):
     platform = 'SunOS'
     kadm5_acl = '/etc/krb5/kadm5.acl'
+
+
+class FreeBSDHeimdalKerberosAdmin(HeimdalKerberosAdmin):
+    platform = 'FreeBSD'
+    distribution = 'Freebsd'
 
 
 def main():

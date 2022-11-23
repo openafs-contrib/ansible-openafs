@@ -6,7 +6,7 @@
     dest: "{{ afs_afsconfdir }}/rxkad.keytab"
     mode: 0600
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
   when:
     - not afs_service_keytab_externally_managed | bool
 

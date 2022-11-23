@@ -104,3 +104,6 @@ afs_clean_build: yes
 # When the install method is 'sdist' or 'source', add --enable-transarc-paths
 # to the configure options.
 afs_transarc_build: "{{ _afs_transarc_build | d('no') }}"
+
+# root group name. May be root or wheel depending on the OS.
+afs_root_group: "{{ _afs_root_group | d('root') }}"

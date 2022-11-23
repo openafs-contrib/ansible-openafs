@@ -13,7 +13,7 @@
     path: "{{ item.path }}"
     mode: "{{ item.mode }}"
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
   with_items:
     - path: "{{ afs_cachedir }}"
       mode: "0700"
@@ -40,7 +40,7 @@
         path: "{{ afs_mountpoint }}"
         mode: "0755"
         owner: root
-        group: root
+        group: "{{ afs_root_group }}"
     - name: Create not mounted placeholder file
       copy:
         content: |
@@ -48,4 +48,4 @@
         dest: "{{ afs_mountpoint }}/afs-is-not-mounted"
         mode: "0644"
         owner: root
-        group: root
+        group: "{{ afs_root_group }}"

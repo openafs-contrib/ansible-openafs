@@ -1,0 +1,9 @@
+---
+afs_krbserver_flavor: heimdal
+
+# Kerberos files
+afs_krbserver_krb5_conf: "/etc/krb5.conf"
+
+# Kerberos service names
+afs_krbserver_kdc_service: kdc
+afs_krbserver_admin_service: kadmind

@@ -5,7 +5,7 @@
     path: /vicep{{ item }}
     state: directory
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
     mode: 0700
   with_items: "{{ afs_pseudo_partitions }}"
 
@@ -16,6 +16,6 @@
     dest: /vicep{{ item }}/AlwaysAttach
     force: no
     owner: root
-    group: root
+    group: "{{ afs_root_group }}"
     mode: 0600
   with_items: "{{ afs_pseudo_partitions }}"

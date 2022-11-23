@@ -69,6 +69,7 @@
       openafs_contrib.openafs.openafs_build:
         state: built-module
         clean: "{{ afs_clean_build | bool }}"
+        fakeroot: "{{ afs_fakeroot | d(omit) }}"
         projectdir: "{{ afs_topdir }}"
         destdir: "{{ afs_topdir }}/packages/dest"
         transarc_paths: "{{ afs_transarc_build }}"

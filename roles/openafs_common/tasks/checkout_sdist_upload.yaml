@@ -9,6 +9,16 @@
       - bzip2
   when: ansible_pkg_mgr in ('yum', 'dnf')
 
+- name: Ensure gtar is installed
+  become: yes
+  community.general.pkgng:
+    state: present
+    name:
+      - gtar
+      - gzip
+      - bzip2
+  when: ansible_pkg_mgr == 'pkgng'
+
 - debug:
     msg: "Installing {{ afs_install_archive }}"
 
