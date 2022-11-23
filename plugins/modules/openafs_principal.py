@@ -574,6 +574,85 @@ class MITKerberosAdmin(KerberosAdmin):
                 self.changed = True
 
 
+class HeimdalKerberosAdmin(KerberosAdmin):
+    platform = None
+    distribution = None
+
+    def __init__(self, module):
+        super(HeimdalKerberosAdmin, self).__init__(module)
+        self.enctypes = module.params['enctypes']
+        if not self.kadmin:
+            self.kadmin = module.get_bin_path('kadmin', required=True)
+        if not self.keytabs:
+            self.keytabs = '/var/lib/ansible-openafs/keytabs'  # use kdb dir?
+
+    def kadmin_args(self, command):
+        """
+        Assemble kadmin command arguments.
+        """
+        args = [self.kadmin, '--local']
+        if self.realm:
+            args.extend(['-r', self.realm])
+        args.extend(command)
+        return args
+
+    def get_principal(self, principal):
+        """
+        Lookup a principal in the kerberos database and return the attributes
+        as a dict.
+        """
+        out, err = self.run(['get_entry', principal], check_rc=False)
+        if 'Principal does not exist' in err:
+            return None
+        attributes = {}
+        for line in out.splitlines():
+            if ':' not in line:
+                continue   # Skip info lines
+            name, value = line.split(':', 1)
+            name = name.strip().replace(' ', '_').lower()
+            value = value.strip()
+            if value in ('[never]', '[none]'):
+                value = None
+            if name == 'kvno':
+                value = int(value)
+            attributes[name] = value
+        return attributes
+
+    def add_principal(self, principal, password=None):
+        """
+        Add a principal to the kerberos database.
+        """
+        command = ['add']
+        if password:
+            command.extend(['-p', password])
+        else:
+            command.append('--random-password')
+        command.append('--use-default')
+        command.append(principal)
+        self.run(command)
+        self.changed = True
+
+    def delete_principal(self, principal):
+        self.run(['delete', principal])
+        self.changed = True
+
+    def write_keytab(self, keytab, principal):
+        """
+        Write the principal's keys to a keytab file.
+        """
+        self.run(['ext_keytab', '-k', keytab, principal])
+        if not os.path.exists(keytab):
+            self.fail('Failed to create keytab; file not found.')
+        self.changed = True
+        return keytab
+
+    def update_acl(self, principal, acl):
+        pass  # Not implemented
+
+    def clear_acl(self, principal):
+        pass  # Not implemented
+
+
 class RedHatMITKerberosAdmin(MITKerberosAdmin):
     platform = 'Linux'
     distribution = 'Redhat'
@@ -625,6 +704,11 @@ class UbuntuMITKerberosAdmin(MITKerberosAdmin):
 class SolarisMITKerberosAdmin(MITKerberosAdmin):
     platform = 'SunOS'
     kadm5_acl = '/etc/krb5/kadm5.acl'
+
+
+class FreeBSDHeimdalKerberosAdmin(HeimdalKerberosAdmin):
+    platform = 'FreeBSD'
+    distribution = 'Freebsd'
 
 
 def main():
