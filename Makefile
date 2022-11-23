@@ -44,6 +44,7 @@ builds/openafs_contrib-openafs-$(VERSION).tar.gz:
 	sed -e 's/@VERSION@/$(VERSION)/' galaxy.yml.in > galaxy.yml
 	mkdir -p builds
 	ansible-galaxy collection build --output-path builds .
+	sed -e "s|@BUILD@|$(CURDIR)/$@|" collections.yml.in > builds/collections.yml
 
 build: builds/openafs_contrib-openafs-$(VERSION).tar.gz
 

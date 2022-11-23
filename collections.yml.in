@@ -1,0 +1,5 @@
+---
+collections:
+  - name: openafs_contrib.openafs
+    type: file
+    source: @BUILD@
