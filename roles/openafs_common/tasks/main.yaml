@@ -6,7 +6,9 @@
 #- debug: var=ansible_system
 
 - name: Gather variables for each operating system
-  include_vars: "{{ item }}"
+  include_vars: "{{ afs_common_os_item }}"
+  loop_control:
+    loop_var: afs_common_os_item
   with_first_found:
     - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
