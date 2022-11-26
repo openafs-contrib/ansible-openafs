@@ -30,7 +30,7 @@
     facts:
       install_method: "{{ afs_install_method }}"
       client_installed: yes
-      client_service_name: network/openafs/client
+      client_service_name: 'svc:/network/openafs/client'
       bins: "{{ install_results.bins }}"
       dirs: "{{ install_results.dirs }}"
   when: not ansible_check_mode
@@ -38,5 +38,14 @@
 - assert:
     that: ansible_local.openafs.dirs.viceetcdir is defined
 
-#- name: Set client startup options
-#  become: yes
+- name: "Set client startup options."
+  become: yes
+  openafs_contrib.openafs.openafs_service_property:
+    state: present
+    service: "{{ ansible_local.openafs.client_service_name }}"
+    property: "afsd/arguments"
+    value: "{{ afs_afsd_opts }}"
+    single: no
+  when: afs_afsd_opts is defined
+  notify:
+    - Restart OpenAFS client

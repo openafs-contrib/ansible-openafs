@@ -30,7 +30,7 @@
     facts:
       install_method: "{{ afs_install_method }}"
       server_installed: yes
-      server_service_name: network/openafs/server
+      server_service_name: "svc:/network/openafs/server"
       bins: "{{ install_results.bins }}"
       dirs: "{{ install_results.dirs }}"
   when: not ansible_check_mode
@@ -42,8 +42,15 @@
       - ansible_local.openafs.dirs.afsdbdir is defined
       - ansible_local.openafs.dirs.afslocaldir is defined
 
-#- name: Set bosserver startup options
-#  become: yes
-#  xxx
-#  notify:
-#    - Restart OpenAFS servers
+- name: "Set bosserver startup options."
+  become: yes
+  openafs_contrib.openafs.openafs_service_property:
+    state: present
+    service: "{{ ansible_local.openafs.server_service_name }}"
+    property: "bosserver/arguments"
+    value: "{{ afs_bosserver_opts }}"
+    single: no
+  register: service_property_results
+  when: afs_bosserver_opts is defined
+  notify:
+    - Restart OpenAFS servers

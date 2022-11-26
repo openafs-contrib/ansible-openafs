@@ -24,6 +24,7 @@ provisioner:
         afs_server_netrestrict:
           - 1.1.1.1
           - 2.2.2.2
+        # afs_bosserver_opts: -pidfiles -transarc-logs
 verifier:
   name: ansible
 scenario:
