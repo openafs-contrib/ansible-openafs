@@ -42,4 +42,4 @@
     line: 'BOSSERVER_ARGS="{{ afs_bosserver_opts }}"'
     state: present
   notify:
-    - Restart OpenAFS servers
+    - "server configuration changed"

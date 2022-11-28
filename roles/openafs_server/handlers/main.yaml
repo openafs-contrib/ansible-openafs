@@ -1,10 +1,8 @@
 ---
-- name: Restart OpenAFS servers
+- name: "Restart OpenAFS server service."
   become: yes
   service:
     name: "{{ ansible_local.openafs.server_service_name }}"
     state: restarted
-  when:
-    - ansible_local.openafs.server_service_name is defined
-    - afs_server_service_results.changed is defined
-    - not afs_server_service_result.changed
+  listen: "server configuration changed"
+  when: not (afs_cancel_restart_server_service | d('no') | bool)

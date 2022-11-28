@@ -9,7 +9,7 @@
     mode: 0644
   register: afs_openafs_server_smf_manifest
   notify:
-    - Restart OpenAFS servers
+    - "server configuration changed"
 
 - name: "Validate openafs-server SMF manifest."
   become: yes

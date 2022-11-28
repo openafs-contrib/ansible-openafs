@@ -87,7 +87,7 @@
     - not ansible_check_mode
     - (config_files.results | selectattr('dest', 'search', 'BosConfig') | list)[0].changed
   notify:
-    - Restart OpenAFS servers
+    - "server configuration changed"
 
 - name: Ensure admin is a superuser
   become: yes
@@ -116,7 +116,7 @@
   when:
     - (afs_server_netinfo is undefined) or (afs_server_netinfo | count == 0)
   notify:
-    - Restart OpenAFS servers
+    - "server configuration changed"
 
 - name: Update NetInfo
   become: yes
@@ -130,7 +130,7 @@
     - afs_server_netinfo is defined
     - afs_server_netinfo | count > 0
   notify:
-    - Restart OpenAFS servers
+    - "server configuration changed"
 
 - name: Remove NetRestrict
   become: yes
@@ -140,7 +140,7 @@
   when:
     - (afs_server_netrestrict is undefined) or (afs_server_netrestrict | count == 0)
   notify:
-    - Restart OpenAFS servers
+    - "server configuration changed"
 
 - name: Update NetRestrict
   become: yes
@@ -154,4 +154,4 @@
     - afs_server_netrestrict is defined
     - afs_server_netrestrict | count > 0
   notify:
-    - Restart OpenAFS servers
+    - "server configuration changed"

@@ -64,7 +64,7 @@
     state: present
   when: afs_afsd_opts is defined
   notify:
-    - Restart OpenAFS client
+    - "client configuration changed"
 
 - name: Set client crypt option.
   become: yes
@@ -76,4 +76,4 @@
     line: 'CRYPT="{{ crypt }}"'
     state: present
   notify:
-    - Restart OpenAFS client
+    - "client configuration changed"

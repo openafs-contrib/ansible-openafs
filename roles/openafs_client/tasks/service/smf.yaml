@@ -9,7 +9,7 @@
     mode: 0755
   register: afs_openafs_client_smf_method
   notify:
-    - Restart OpenAFS client
+    - "client configuration changed"
 
 - name: "Add openafs-client SMF manifest."
   become: yes
@@ -21,7 +21,7 @@
     mode: 0644
   register: afs_openafs_client_smf_manifest
   notify:
-    - Restart OpenAFS client
+    - "client configuration changed"
 
 - name: "Validate openafs-client SMF manifest."
   become: yes

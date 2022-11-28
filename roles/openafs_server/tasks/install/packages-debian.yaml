@@ -93,4 +93,4 @@
     owner: root
     group: "{{ afs_root_group }}"
   notify:
-    - Restart OpenAFS servers
+    - "server configuration changed"

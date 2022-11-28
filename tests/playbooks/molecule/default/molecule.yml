@@ -30,6 +30,8 @@ provisioner:
         afs_git_version: "${AFS_GIT_VERSION:-master}"
         afs_always_build: "${AFS_ALWAYS_BUILD:-no}"
         afs_clean_build: "${AFS_CLEAN_BUILD:-yes}"
+        # afs_afsd_opts: "-debug -dynroot -fakestat -afsdb"
+        # afs_bosserver_opts: ""
 verifier:
   name: ansible
 scenario:

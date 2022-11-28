@@ -53,4 +53,4 @@
   register: service_property_results
   when: afs_bosserver_opts is defined
   notify:
-    - Restart OpenAFS servers
+    - "server configuration changed"

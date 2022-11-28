@@ -6,3 +6,8 @@
     state: started
     enabled: yes
   register: afs_server_service_result
+
+- name: "Cancel restart server handler."
+  set_fact:
+    afs_cancel_restart_server_service: yes
+  when: afs_server_service_result.changed

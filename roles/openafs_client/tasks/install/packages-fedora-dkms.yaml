@@ -131,4 +131,4 @@
     state: present
   when: afs_afsd_opts is defined
   notify:
-    - Restart OpenAFS client
+    - "client configuration changed"
