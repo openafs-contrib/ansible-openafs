@@ -45,6 +45,9 @@ options:
       - If False, the value is a space separated list of strings.
     type: bool
     default: True
+
+author:
+  - Michael Meffie
 '''
 
 EXAMPLES = r'''
