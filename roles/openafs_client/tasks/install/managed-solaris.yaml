@@ -1,0 +1,51 @@
+---
+- name: "Get current publishers."
+  command: pkg publisher -H
+  register: publisher_results
+  changed_when: no
+
+- name: "Set OpenAFS publisher."
+  become: yes
+  command:
+    cmd: "pkg set-publisher -g {{ afs_pkg5_repo }} openafs"
+  when: not 'openafs' in publisher_results.get('stdout', '')
+
+- name: "Install OpenAFS server packages."
+  become: yes
+  community.general.pkg5:
+    state: present
+    accept_licenses: yes
+    name:
+      - openafs-client
+      - openafs-krb5
+
+- name: "Get installation paths."
+  openafs_contrib.openafs.openafs_get_install_paths:
+  register: install_results
+
+- name: "Store installation facts."
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      install_method: "{{ afs_install_method }}"
+      client_installed: yes
+      client_service_name: 'svc:/network/openafs/client'
+      bins: "{{ install_results.bins }}"
+      dirs: "{{ install_results.dirs }}"
+  when: not ansible_check_mode
+
+- assert:
+    that: ansible_local.openafs.dirs.viceetcdir is defined
+
+- name: "Set client startup options."
+  become: yes
+  openafs_contrib.openafs.openafs_service_property:
+    state: present
+    service: "{{ ansible_local.openafs.client_service_name }}"
+    property: "afsd/arguments"
+    value: "{{ afs_afsd_opts }}"
+    single: no
+  when: afs_afsd_opts is defined
+  notify:
+    - Restart OpenAFS client

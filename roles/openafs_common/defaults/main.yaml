@@ -63,10 +63,11 @@ afs_install_method: managed
 # Source checkout method; one of 'git', 'sdist_upload', 'gerrit'
 afs_checkout_method: git
 
-# Yum repository url or path for 'managed' installs on yum based systems. The
-# default depends on the platform (see vars).
+# Package repository url or path for 'managed' installs.
+# The default is platform dependent, see vars/*.yaml
 afs_yum_repo: "{{ _afs_yum_repo }}"
 afs_zypper_repo: "{{ _afs_zypper_repo }}"
+afs_pkg5_repo: "{{ _afs_pkg5_repo }}"
 
 # Path to installation tarball on controller for non-managed installs.
 afs_install_archive: ""

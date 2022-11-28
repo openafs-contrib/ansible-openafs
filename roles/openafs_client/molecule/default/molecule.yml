@@ -21,6 +21,7 @@ provisioner:
         afs_client_netrestrict:
           - 1.1.1.1
           - 2.2.2.2
+        # afs_afsd_opts: "-dynroot -fakestat -afsdb"
 verifier:
   name: ansible
 scenario:
