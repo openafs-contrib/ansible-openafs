@@ -21,10 +21,11 @@
 - name: Install packages
   include_tasks: "{{ item }}"
   with_first_found:
-    - "install-packages/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
-    - "install-packages/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
-    - "install-packages/{{ ansible_distribution | replace(' ', '_') }}.yaml"
-    - "install-packages/{{ ansible_os_family }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_distribution | replace(' ', '_') }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_os_family }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_system }}.yaml"
     - "unknown.yaml"
 
 - name: Store installation facts

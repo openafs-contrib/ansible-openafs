@@ -1,8 +1,13 @@
 ---
-- name: Unsupported install method or platform
+- name: "Unsupported install method."
   fail:
-    msg: >
-      Searched
-      '{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_os_family | lower }}-{{ afs_module_install_method }}.yaml',
-      '{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_os_family | lower }}.yaml',
-      '{{ role_path }}/tasks/install/{{ afs_install_method }}.yaml'
+    msg:
+      - "Install method {{ afs_install_method }} is not supported."
+      - "File not found:"
+      - "{{ afs_install_method }}-{{ ansible_distribution | replace(' ', '_') | lower }}-{{ afs_module_install_method }}.yaml"
+      - "{{ afs_install_method }}-{{ ansible_distribution | replace(' ', '_') | lower }}.yaml"
+      - "{{ afs_install_method }}-{{ ansible_os_family | lower }}-{{ afs_module_install_method }}.yaml"
+      - "{{ afs_install_method }}-{{ ansible_os_family | lower }}.yaml"
+      - "{{ afs_install_method }}.yaml"
+      - "Search path:"
+      - "{{ role_path }}/tasks/install"

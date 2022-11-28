@@ -1,9 +1,12 @@
 ---
-- name: Unsupported OS
+- name: "Unsupported platform."
   fail:
-    msg: >
-      Sorry, no tasks found for this operating system;
-      {{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }},
-      {{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }},
-      {{ ansible_distribution | replace(' ', '_') }},
-      {{ ansible_os_family }}
+    msg:
+      - "File not found:"
+      - "{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
+      - "{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
+      - "{{ ansible_distribution | replace(' ', '_') }}.yaml"
+      - "{{ ansible_os_family }}.yaml"
+      - "{{ ansible_system | replace(' ', '_') }}.yaml"
+      - "Search path:"
+      - "{{ role_path }}/tasks/install-packages"
