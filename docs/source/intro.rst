@@ -19,6 +19,7 @@ Platforms supported
 * CentOS 7, 8
 * Debian 10, 11
 * Fedora 35, 36
+* FreeBSD 12
 * openSUSE 15
 * OracleLinux 8, 9
 * Red Hat Entrerprise Linux 7, 8, 9
