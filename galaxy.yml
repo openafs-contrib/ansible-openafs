@@ -1,6 +1,6 @@
 namespace: openafs_contrib
 name: openafs
-version: @VERSION@
+version: 1.7.0-dev.84+21173a9.dirty
 readme: README.md
 authors:
   - Cheyenne Wills <cwills@sinenomine.net>

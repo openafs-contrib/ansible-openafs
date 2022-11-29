@@ -41,7 +41,7 @@ preview: docs
 	xdg-open docs/build/html/index.html
 
 builds/openafs_contrib-openafs-$(VERSION).tar.gz:
-	sed -e 's/@VERSION@/$(VERSION)/' galaxy.yml.in > galaxy.yml
+	sed -i -e 's/^version: .*/version: $(VERSION)/' galaxy.yml
 	mkdir -p builds
 	ansible-galaxy collection build --output-path builds .
 	sed -e "s|@BUILD@|$(CURDIR)/$@|" collections.yml.in > builds/collections.yml
