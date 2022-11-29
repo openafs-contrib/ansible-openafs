@@ -3,7 +3,7 @@
   assert:
     that:
       - afs_gerrit_number is defined
-      - afs_gerrit_number | count > 0
+      - (afs_gerrit_number | int ) > 0
       - afs_topdir is defined
       - afs_topdir | count > 0
 
