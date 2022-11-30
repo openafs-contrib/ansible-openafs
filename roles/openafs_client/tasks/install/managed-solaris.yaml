@@ -10,7 +10,7 @@
     cmd: "pkg set-publisher -g {{ afs_pkg5_repo }} openafs"
   when: not 'openafs' in publisher_results.get('stdout', '')
 
-- name: "Install OpenAFS server packages."
+- name: "Install OpenAFS client packages."
   become: yes
   community.general.pkg5:
     state: present
