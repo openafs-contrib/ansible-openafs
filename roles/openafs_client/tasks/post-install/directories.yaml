@@ -25,7 +25,6 @@
 - name: Lookup mounts
   command:
     cmd: mount
-    warn: false
   check_mode: no
   changed_when: false
   register: mount_results

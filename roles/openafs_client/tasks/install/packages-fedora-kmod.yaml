@@ -89,7 +89,6 @@
 - name: Query rpm provides information
   command:
     cmd: rpm -q --provides -p "{{ kmod }}"
-    warn: false
   changed_when: false
   register: rpm_query
   with_items: "{{ find_kmods.files | map(attribute='path') | list }}"
