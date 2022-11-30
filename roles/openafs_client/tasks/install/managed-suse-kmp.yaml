@@ -37,7 +37,6 @@
 - name: Query OpenAFS version
   become: yes
   command: rpm -q --queryformat "%{VERSION}" openafs
-  args:
   changed_when: False
   register: rpm_query
   check_mode: no
