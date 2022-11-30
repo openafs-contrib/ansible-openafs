@@ -689,7 +689,7 @@ class OracleMITKerberosAdmin(MITKerberosAdmin):
     kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
 
 
-class OracleMITKerberosAdmin(MITKerberosAdmin):
+class OpensuseMITKerberosAdmin(MITKerberosAdmin):
     platform = 'Linux'
     distribution = 'Opensuse'
     kadm5_acl = '/var/lib/kerberos/krb5kdc/kadm5.acl'
