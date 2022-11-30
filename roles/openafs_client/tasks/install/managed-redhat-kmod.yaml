@@ -33,10 +33,15 @@
 - name: Query OpenAFS version
   become: yes
   command: rpm -q --queryformat "%{VERSION}" openafs
-  args:
-    warn: False
   changed_when: False
   register: rpm_query
+  check_mode: no
+
+- name: Query OpenAFS release
+  become: yes
+  command: rpm -q --queryformat "%{RELEASE}" openafs
+  changed_when: False
+  register: rpm_release
   check_mode: no
 
 - name: Install OpenAFS client with kmod
@@ -47,7 +52,7 @@
       - openafs
       - openafs-client
       - openafs-krb5
-      - "kmod-openafs-{{ rpm_query.stdout }}-1.{{ ansible_kernel | regex_replace('-', '_') }}"
+      - "kmod-openafs-{{ rpm_query.stdout }}-{{ rpm_release.stdout | regex_replace('\\.[^.]*$', '') }}.{{ ansible_kernel | regex_replace('-', '_') }}"
   register: yum_results
 
 - name: Get installation paths
