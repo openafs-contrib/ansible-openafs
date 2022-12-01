@@ -7,4 +7,5 @@
       - autoconf
       - automake
       - fakeroot
+      - git
       - libtool
