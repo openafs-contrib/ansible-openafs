@@ -38,8 +38,8 @@ PLATFORMS = [
     'centos8',
     'debian10',
     'debian11',
-    'fedora35',
     'fedora36',
+    'fedora37',
     'opensuse15',
     'oracle8',
     'oracle9',
@@ -49,6 +49,7 @@ PLATFORMS = [
     'ubuntu20',
     'ubuntu22',
     'freebsd12',
+    'freebsd13',
 ]
 ROLE = Path(os.getcwd()).name
 LOGDIR = Path('/tmp/ansible-openafs/molecule') / ROLE

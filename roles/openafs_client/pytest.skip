@@ -11,7 +11,7 @@ opensuse15-*-kmod
 opensuse15-*-dkms
 !opensuse15-managed-kmp
 
-freebsd12-*
-!freebsd12-bdist
-!freebsd12-sdist
-!freebsd12-source
+freebsd*-*
+!freebsd*-bdist
+!freebsd*-sdist
+!freebsd*-source
