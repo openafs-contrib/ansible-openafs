@@ -2,6 +2,21 @@
 # Ensure a kernel-headers package is installed that matches the current kernel
 # version. This is required in order to build the OpenAFS client kernel module.
 #
+
+# Be sure we have the tools needed to build the kernel module when we are not
+# installing the full suite of development packages.
+- name: "Debian: Install kernel module build tools."
+  become: yes
+  apt:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - gcc
+      - libtool
+      - make
+  when: not afs_devel_install_tools
+
 - name: "Query linux-header package."
   command:
     cmd: "dpkg-query --show --showformat='${Status}:${Package}\n' linux-headers-{{ ansible_kernel }}"

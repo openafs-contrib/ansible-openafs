@@ -4,6 +4,20 @@
 # running kernel version.
 #
 
+# Be sure we have the tools needed to build the kernel module when we are not
+# installing the full suite of development packages.
+- name: "RedHat: Install kernel module build tools."
+  become: yes
+  yum:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - gcc
+      - libtool
+      - make
+  when: not afs_devel_install_tools
+
 - name: Query kernel-devel packages.
   command:
     cmd: "rpm -q --qf='%{VERSION}-%{RELEASE}.%{ARCH}\n' kernel-devel"

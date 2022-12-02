@@ -10,6 +10,20 @@
 # - preempt
 #
 
+# Be sure we have the tools needed to build the kernel module when we are not
+# installing the full suite of development packages.
+- name: "openSUSE: Install kernel module build tools."
+  become: yes
+  community.general.zypper:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - gcc
+      - libtool
+      - make
+  when: not afs_devel_install_tools
+
 - block:
   # ansible_kernel in openSuSE has a different behaviour than other Linux-distros.
   # No ARCH and last '.N' in RELEASE of the kernel-package is skipped
