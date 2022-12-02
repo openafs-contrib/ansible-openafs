@@ -30,6 +30,9 @@ platforms:
       - afs_clients
 provisioner:
   name: ansible
+  env:
+    ANSIBLE_PIPELINING: "True"
+    ANSIBLE_STDOUT_CALLBACK: "yaml"
   inventory:
     group_vars:
       all:

@@ -6,6 +6,9 @@ platforms:
     box: "${AFS_IMAGE:-generic/centos7}"
 provisioner:
   name: ansible
+  env:
+    ANSIBLE_PIPELINING: "True"
+    ANSIBLE_STDOUT_CALLBACK: "yaml"
   inventory:
     group_vars:
       all:
