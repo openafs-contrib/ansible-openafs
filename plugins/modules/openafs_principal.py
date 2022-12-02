@@ -186,6 +186,7 @@ log = Logger(module_name)
 
 
 class KerberosAdmin(object):
+    extra_path = None
 
     def __new__(cls, *args, **kwargs):
         new_cls = get_platform_subclass(KerberosAdmin)
@@ -416,7 +417,8 @@ class MITKerberosAdmin(KerberosAdmin):
         super(MITKerberosAdmin, self).__init__(module)
         self.enctypes = module.params['enctypes']
         if not self.kadmin:
-            self.kadmin = module.get_bin_path('kadmin.local', required=True)
+            self.kadmin = module.get_bin_path('kadmin.local', required=True,
+                                              opt_dirs=self.extra_path)
         if not self.keytabs:
             self.keytabs = '/var/lib/ansible-openafs/keytabs'  # use kdb dir?
 
@@ -582,7 +584,8 @@ class HeimdalKerberosAdmin(KerberosAdmin):
         super(HeimdalKerberosAdmin, self).__init__(module)
         self.enctypes = module.params['enctypes']
         if not self.kadmin:
-            self.kadmin = module.get_bin_path('kadmin', required=True)
+            self.kadmin = module.get_bin_path('kadmin', required=True,
+                                              opt_dirs=self.extra_path)
         if not self.keytabs:
             self.keytabs = '/var/lib/ansible-openafs/keytabs'  # use kdb dir?
 
@@ -693,6 +696,14 @@ class OpensuseMITKerberosAdmin(MITKerberosAdmin):
     platform = 'Linux'
     distribution = 'Opensuse'
     kadm5_acl = '/var/lib/kerberos/krb5kdc/kadm5.acl'
+    extra_path = ['/usr/lib/mit/sbin']
+
+
+class OpensuseLeapMITKerberosAdmin(MITKerberosAdmin):
+    platform = 'Linux'
+    distribution = 'Opensuse-leap'
+    kadm5_acl = '/var/lib/kerberos/krb5kdc/kadm5.acl'
+    extra_path = ['/usr/lib/mit/sbin']
 
 
 class DebianMITKerberosAdmin(MITKerberosAdmin):
