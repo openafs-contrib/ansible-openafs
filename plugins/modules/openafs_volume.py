@@ -282,8 +282,8 @@ class ExtraRights:
             log.info("Adding temporary rights '%s %s' to directory '%s.",
                      self.name, ''.join(self.rights), self.path)
             rights = ''.join(self.augmented)
-            self.volume.fs('setacl', '-dir', self.path, '-acl', self.name,
-                           rights)
+            self.volume.cmd.fs('setacl', '-dir', self.path, '-acl', self.name,
+                               rights)
         return self
 
     def __exit__(self, *exc):
@@ -293,84 +293,20 @@ class ExtraRights:
             rights = ''.join(self.existing)
             if not rights:
                 rights = 'none'
-            self.volume.fs('setacl', '-dir', self.path, '-acl', self.name,
-                           rights)
+            self.volume.cmd.fs('setacl', '-dir', self.path, '-acl', self.name,
+                               rights)
 
 
-class Volume(object):
+class Command(object):
+    """
+    Run commands with retries.
+    """
 
-    def __init__(self, module):
+    def __init__(self, module, results):
         self._commands = {}
-        self._cell = None
-        self._afsroot = None
-        self._dynroot = None
-
-        self.results = dict(changed=False)
         self.module = module
-        self.state = module.params['state']
-        self.volume = module.params['volume']
-        self.server = module.params['server']
-        self.partition = module.params['partition']
-        self.mount = module.params['mount']
-        self.acl = module.params['acl']
-        self.quota = module.params['quota']
-        self.replicas = module.params['replicas']
+        self.results = results
         self.localauth = module.params['localauth']
-        self.auth_user = module.params['auth_user']
-        self.auth_keytab = module.params['auth_keytab']
-
-        # Convert k4 to k5 name.
-        if '.' in self.auth_user and '/' not in self.auth_user:
-            self.auth_user = self.auth_user.replace('.', '/')
-
-        if self.mount and not self.mount.startswith('/'):
-            module.fail_json(
-                msg='Invalid parameter: mount must be an asolute path; %s' %
-                    self.mount)
-
-    def ensure_present(self):
-        if not self.localauth:
-            self.login()
-        if not self.server:
-            servers = self.vos_listaddrs()
-            if not servers:
-                self.die('No fileservers found.')
-            self.server = servers[0]['addrs'][0]  # Pick the first one found.
-        if not self.partition:
-            partitions = self.vos_listpart(self.server)
-            if not partitions:
-                self.die('No partitions found on server %s.' % self.server)
-            self.partition = partitions[0]  # Pick the first one found.
-        self.vos_create(self.volume, self.server, self.partition, self.quota)
-        if self.mount:
-            self.make_mounts(self.volume, self.mount)
-        if self.mount and self.acl:
-            self.set_acl(self.volume, self.mount, self.acl)
-        if self.replicas:
-            for addr, part in self.determine_sites(self.volume, self.replicas):
-                self.vos_addsite(self.volume, addr, part)
-        entry = self.get_entry(self.volume)
-        if self.volume != 'root.afs':
-            # Defer root.afs release until root.cell is mounted.
-            for s in entry['sites']:
-                if s['flags'] != '':
-                    self.vos_release(self.volume)
-                    entry = self.get_entry(self.volume)
-                    break
-        self.results['volume'] = entry
-
-    def ensure_absent(self):
-        if not self.localauth:
-            self.login()
-        if self.mount:
-            self.remove_mounts(self.volume, self.mount)
-        entry = self.get_entry(self.volume, retry_not_found=False)
-        if 'ro' in entry:
-            ro = entry['ro']
-            for s in entry['sites']:
-                if s['type'] == 'ro':
-                    self.vos_remove(ro, s['server'], s['partition'])
-        self.vos_remove(self.volume)
 
     def die(self, msg):
         log.error(msg)
@@ -394,18 +330,6 @@ class Volume(object):
         self._commands[name] = cmd
         return cmd
 
-    def lookup_directory(self, name):
-        """
-        Lookup an OpenAFS directory from the local facts file.
-        """
-        try:
-            with open('/etc/ansible/facts.d/openafs.fact') as f:
-                facts = json.load(f)
-            dir = facts['dirs'][name]
-        except Exception:
-            self.module.fail_json(msg='Unable to locate %s directory.' % name)
-        return dir
-
     def run_command(self, cmd, *args):
         """
         Run a command.
@@ -419,17 +343,26 @@ class Volume(object):
                      (cmdline, rc, out, err))
         return out
 
-    def login(self):
+    def kinit(self, keytab, principal):
         """
-        Get a token for authenicated access.
+        Run the kinit command.
         """
-        log.debug("login()")
-        if not os.path.exists(self.auth_keytab):
-            self.die('keytab %s not found.' % self.auth_keytab)
         kinit = self.lookup_command('kinit')
+        self.run_command(kinit, '-k', '-t', keytab, principal)
+
+    def aklog(self):
+        """
+        Run the aklog command.
+        """
         aklog = self.lookup_command('aklog')
-        self.run_command(kinit, '-k', '-t', self.auth_keytab, self.auth_user)
         self.run_command(aklog, '-d')
+
+    def fs(self, *args):
+        """
+        Run the fs command and return the stdout.
+        """
+        fs = self.lookup_command('fs')
+        return self.run_command(fs, *args)
 
     def vos(self, args, done=None, retry=None):
         """
@@ -454,7 +387,8 @@ class Volume(object):
         if retry is None:
             retry = _retry
 
-        args.insert(0, self.lookup_command('vos'))
+        vos = self.lookup_command('vos')
+        args.insert(0, vos)
         if self.localauth:
             args.append('-localauth')
         cmdline = ' '.join(args)
@@ -474,11 +408,71 @@ class Volume(object):
             retries -= 1
             time.sleep(5)
 
-    def fs(self, *args):
+    def vos_listvldb(self, name, retry_not_found=True):
         """
-        Run the fs command and return the stdout.
+        Return the entry of an existing volume.
         """
-        return self.run_command(self.lookup_command('fs'), *args)
+        log.debug("get_entry(name='%s')", name)
+        entry = {
+            'sites': []
+        }
+        vos_fields = {
+            'rw': r'RWrite: (\d+)',
+            'ro': r'ROnly: (\d+)',
+            'bk': r'Backup: (\d+)',
+            'rc': r'RClone: (\d+)'
+        }
+
+        def done(rc, out, err):
+            if rc == 0:
+                return True
+            if "no such entry" in err:
+                if retry_not_found:
+                    log.warning("Volume %s not found.", name)
+                    return False  # Retry.
+                else:
+                    return True  # Volume is not present.
+            return False
+
+        def retry(rc, out, err):
+            if "server or network not reponding" in err:
+                return True
+            if "no quorum elected" in err:
+                return True
+            if "invalid RPC (RX) operation" in err:
+                return True  # May occur during server startup.
+            if "Couldn't read/write the database" in err:
+                return True  # May occur during server startup.
+            if "no such entry" in err:
+                if retry_not_found:
+                    return True  # Retry not found!
+            return False
+
+        out = self.vos(['listvldb', '-name', name, '-noresolve', '-nosort'],
+                       done, retry)
+        for line in out.splitlines():
+            if line == '':
+                continue  # Skip blank lines
+            m = re.match(r'(\S+)', line)
+            if m:
+                entry['name'] = m.group(1)
+                continue
+            for name, pattern in vos_fields.items():
+                m = re.search(pattern, line)
+                if m:
+                    entry[name] = int(m.group(1))
+            m = re.search(r'server (\S+) partition (\S+) (RO|RW) Site(.*)',
+                          line)
+            if m:
+                site = {
+                    'server': m.group(1),
+                    'partition': m.group(2).replace('/vicep', ''),
+                    'type': m.group(3).lower(),
+                    'flags': m.group(4).replace('--', '').lower().strip()
+                }
+                entry['sites'].append(site)
+
+        return entry
 
     def vos_listaddrs(self):
         """
@@ -549,72 +543,6 @@ class Volume(object):
         log.debug('partitions=%s', parts)
         return parts
 
-    def get_entry(self, name, retry_not_found=True):
-        """
-        Return the entry of an existing volume.
-        """
-        log.debug("get_entry(name='%s')", name)
-        entry = {
-            'sites': []
-        }
-        vos_fields = {
-            'rw': r'RWrite: (\d+)',
-            'ro': r'ROnly: (\d+)',
-            'bk': r'Backup: (\d+)',
-            'rc': r'RClone: (\d+)'
-        }
-
-        def done(rc, out, err):
-            if rc == 0:
-                return True
-            if "no such entry" in err:
-                if retry_not_found:
-                    log.warning("Volume %s not found.", name)
-                    return False  # Retry.
-                else:
-                    return True  # Volume is not present.
-            return False
-
-        def retry(rc, out, err):
-            if "server or network not reponding" in err:
-                return True
-            if "no quorum elected" in err:
-                return True
-            if "invalid RPC (RX) operation" in err:
-                return True  # May occur during server startup.
-            if "Couldn't read/write the database" in err:
-                return True  # May occur during server startup.
-            if "no such entry" in err:
-                if retry_not_found:
-                    return True  # Retry not found!
-            return False
-
-        out = self.vos(['listvldb', '-name', name, '-noresolve', '-nosort'],
-                       done, retry)
-        for line in out.splitlines():
-            if line == '':
-                continue  # Skip blank lines
-            m = re.match(r'(\S+)', line)
-            if m:
-                entry['name'] = m.group(1)
-                continue
-            for name, pattern in vos_fields.items():
-                m = re.search(pattern, line)
-                if m:
-                    entry[name] = int(m.group(1))
-            m = re.search(r'server (\S+) partition (\S+) (RO|RW) Site(.*)',
-                          line)
-            if m:
-                site = {
-                    'server': m.group(1),
-                    'partition': m.group(2).replace('/vicep', ''),
-                    'type': m.group(3).lower(),
-                    'flags': m.group(4).replace('--', '').lower().strip()
-                }
-                entry['sites'].append(site)
-
-        return entry
-
     def vos_create(self, name, server, partition, quota):
         """
         Ensure a user exists.
@@ -649,86 +577,6 @@ class Volume(object):
 
         self.vos(['create', '-server', server, '-partition', partition,
                  '-name', name, '-maxquota', str(quota)], done, retry)
-
-    def lookup_index(self, fileservers, addr):
-        for i in fileservers:
-            for a in fileservers[i]['addrs']:
-                if a == addr:
-                    return i
-        return None
-
-    def determine_sites(self, name, nreplicas):
-        """
-        Determine the fileserver addresses and partitions for
-        read-only sites.
-        """
-        log.debug("determine_ro_sites(name='%s', nreplicas=%d)",
-                  name, nreplicas)
-
-        # Use a simple integer server index key to reference fileservers.
-        fileservers = {}
-        for i, entry in enumerate(self.vos_listaddrs()):
-            if not entry['addrs']:
-                log.warning("No addresses found for fileserver %d; "
-                            "ignoring.", i)
-                continue
-            fileservers[i] = entry
-        log.debug('determine_sites: fileservers=%s',
-                  pprint.pformat(fileservers))
-
-        # Convert the ipv4 addresses of the rw and ro sites to the server
-        # index.
-        entry = self.get_entry(name)
-        rw = None  # rw (index, partition) tuple
-        ro = []    # list of (index, partition) tuples for ro sites
-        for s in entry['sites']:
-            i = self.lookup_index(fileservers, s['server'])
-            if s['type'] == 'rw':
-                rw = (i, s['partition'])
-            elif s['type'] == 'ro':
-                ro.append((i, s['partition']))
-
-        log.debug('determine_sites: rw=%s, ro=%s',
-                  pprint.pformat(rw), pprint.pformat(ro))
-
-        # Assemble a list of server indexes to matching our goal state. Start
-        # with the existing ro sites.
-        goal = list(ro)
-        all_ = sorted(fileservers.keys())
-        taken = [s[0] for s in goal]
-
-        # First, add the read-only clone, if one is not already present.
-        if len(goal) < nreplicas and rw:
-            clone = rw  # Same server and partition as the rw volume.
-            if not clone[0] in taken:
-                goal.append(clone)
-
-        # Add remote read-only sites, if needed. Additional read-onlies
-        # are added in listaddrs order.
-        if len(goal) < nreplicas:
-            available = []
-            taken = [s[0] for s in goal]
-            for i in all_:
-                if i not in taken:
-                    available.append(i)
-            while len(goal) < nreplicas and available:
-                goal.append((available.pop(0), None))
-        log.debug('determine_sites: goal=%s', pprint.pformat(goal))
-
-        # Finally, get the addresses and partitions to be added. Order is
-        # important here, since we want to add the clone first.
-        sites = []
-        ro_indexes = [s[0] for s in ro]
-        for s in goal:
-            i, part = s
-            if i not in ro_indexes:
-                addr = fileservers[i]['addrs'][0]
-                if not part:
-                    parts = self.vos_listpart(addr)
-                    part = parts[0]
-                sites.append((addr, part))
-        log.debug('determine_sites: sites=%s', pprint.pformat(sites))
-        return sites
 
     def vos_addsite(self, name, server, partition):
         log.debug("vos_addsite(name='%s', server='%s', partition='%s')",
@@ -798,13 +646,196 @@ class Volume(object):
             args.extend(['-partition', partition])
         self.vos(args, done, retry)
 
+
+class Volume(object):
+
+    def __init__(self, module):
+        self._cell = None
+        self._afsroot = None
+        self._dynroot = None
+
+        self.results = dict(changed=False)
+        self.module = module
+        self.cmd = Command(module, self.results)
+
+        self.state = module.params['state']
+        self.volume = module.params['volume']
+        self.server = module.params['server']
+        self.partition = module.params['partition']
+        self.mount = module.params['mount']
+        self.acl = module.params['acl']
+        self.quota = module.params['quota']
+        self.replicas = module.params['replicas']
+        self.auth_user = module.params['auth_user']
+        self.auth_keytab = module.params['auth_keytab']
+
+        # Convert k4 to k5 name.
+        if '.' in self.auth_user and '/' not in self.auth_user:
+            self.auth_user = self.auth_user.replace('.', '/')
+
+        if self.mount and not self.mount.startswith('/'):
+            module.fail_json(
+                msg='Invalid parameter: mount must be an asolute path; %s' %
+                    self.mount)
+
+    def ensure_present(self):
+        if not self.cmd.localauth:
+            self.login()
+        if not self.server:
+            servers = self.cmd.vos_listaddrs()
+            if not servers:
+                self.die('No fileservers found.')
+            self.server = servers[0]['addrs'][0]  # Pick the first one found.
+        if not self.partition:
+            partitions = self.cmd.vos_listpart(self.server)
+            if not partitions:
+                self.die('No partitions found on server %s.' % self.server)
+            self.partition = partitions[0]  # Pick the first one found.
+        self.cmd.vos_create(self.volume, self.server, self.partition,
+                            self.quota)
+        if self.mount:
+            self.make_mounts(self.volume, self.mount)
+        if self.mount and self.acl:
+            self.set_acl(self.volume, self.mount, self.acl)
+        if self.replicas:
+            for addr, part in self.determine_sites(self.volume, self.replicas):
+                self.cmd.vos_addsite(self.volume, addr, part)
+        entry = self.cmd.vos_listvldb(self.volume)
+        if self.volume != 'root.afs':
+            # Defer root.afs release until root.cell is mounted.
+            for s in entry['sites']:
+                if s['flags'] != '':
+                    self.cmd.vos_release(self.volume)
+                    entry = self.cmd.vos_listvldb(self.volume)
+                    break
+        self.results['volume'] = entry
+
+    def ensure_absent(self):
+        if not self.cmd.localauth:
+            self.login()
+        if self.mount:
+            self.remove_mounts(self.volume, self.mount)
+        entry = self.cmd.vos_listvldb(self.volume, retry_not_found=False)
+        if 'ro' in entry:
+            ro = entry['ro']
+            for s in entry['sites']:
+                if s['type'] == 'ro':
+                    self.cmd.vos_remove(ro, s['server'], s['partition'])
+        self.cmd.vos_remove(self.volume)
+
+    def die(self, msg):
+        log.error(msg)
+        self.module.fail_json(msg=msg)
+
+    def lookup_directory(self, name):
+        """
+        Lookup an OpenAFS directory from the local facts file.
+        """
+        try:
+            with open('/etc/ansible/facts.d/openafs.fact') as f:
+                facts = json.load(f)
+            dir = facts['dirs'][name]
+        except Exception:
+            self.module.fail_json(msg='Unable to locate %s directory.' % name)
+        return dir
+
+    def login(self):
+        """
+        Get a token for authenicated access.
+        """
+        log.debug("login()")
+        if not os.path.exists(self.auth_keytab):
+            self.die('keytab %s not found.' % self.auth_keytab)
+        self.cmd.kinit(self.auth_keytab, self.auth_user)
+        self.cmd.aklog()
+
+    def lookup_index(self, fileservers, addr):
+        for i in fileservers:
+            for a in fileservers[i]['addrs']:
+                if a == addr:
+                    return i
+        return None
+
+    def determine_sites(self, name, nreplicas):
+        """
+        Determine the fileserver addresses and partitions for
+        read-only sites.
+        """
+        log.debug("determine_ro_sites(name='%s', nreplicas=%d)",
+                  name, nreplicas)
+
+        # Use a simple integer server index key to reference fileservers.
+        fileservers = {}
+        for i, entry in enumerate(self.cmd.vos_listaddrs()):
+            if not entry['addrs']:
+                log.warning("No addresses found for fileserver %d; "
+                            "ignoring.", i)
+                continue
+            fileservers[i] = entry
+        log.debug('determine_sites: fileservers=%s',
+                  pprint.pformat(fileservers))
+
+        # Convert the ipv4 addresses of the rw and ro sites to the server
+        # index.
+        entry = self.cmd.vos_listvldb(name)
+        rw = None  # rw (index, partition) tuple
+        ro = []    # list of (index, partition) tuples for ro sites
+        for s in entry['sites']:
+            i = self.lookup_index(fileservers, s['server'])
+            if s['type'] == 'rw':
+                rw = (i, s['partition'])
+            elif s['type'] == 'ro':
+                ro.append((i, s['partition']))
+
+        log.debug('determine_sites: rw=%s, ro=%s',
+                  pprint.pformat(rw), pprint.pformat(ro))
+
+        # Assemble a list of server indexes to matching our goal state. Start
+        # with the existing ro sites.
+        goal = list(ro)
+        all_ = sorted(fileservers.keys())
+        taken = [s[0] for s in goal]
+
+        # First, add the read-only clone, if one is not already present.
+        if len(goal) < nreplicas and rw:
+            clone = rw  # Same server and partition as the rw volume.
+            if not clone[0] in taken:
+                goal.append(clone)
+
+        # Add remote read-only sites, if needed. Additional read-onlies
+        # are added in listaddrs order.
+        if len(goal) < nreplicas:
+            available = []
+            taken = [s[0] for s in goal]
+            for i in all_:
+                if i not in taken:
+                    available.append(i)
+            while len(goal) < nreplicas and available:
+                goal.append((available.pop(0), None))
+        log.debug('determine_sites: goal=%s', pprint.pformat(goal))
+
+        # Finally, get the addresses and partitions to be added. Order is
+        # important here, since we want to add the clone first.
+        sites = []
+        ro_indexes = [s[0] for s in ro]
+        for s in goal:
+            i, part = s
+            if i not in ro_indexes:
+                addr = fileservers[i]['addrs'][0]
+                if not part:
+                    parts = self.cmd.vos_listpart(addr)
+                    part = parts[0]
+                sites.append((addr, part))
+        log.debug('determine_sites: sites=%s', pprint.pformat(sites))
+        return sites
+
     def get_cell_name(self):
         """
         Get the current cell name.
         Assumes this node is a client.
         """
         if self._cell is None:
-            out = self.fs('wscell')
+            out = self.cmd.fs('wscell')
             m = re.search(r"This workstation belongs to cell '(.*)'", out)
             if m:
                 self._cell = m.group(1)
@@ -878,7 +909,7 @@ class Volume(object):
         Get positive and negative acls for a given path.
         Returns a tuple of dictionaries.
         """
-        out = self.fs('listacl', '-path', path)
+        out = self.cmd.fs('listacl', '-path', path)
         acls = {'normal': {}, 'negative': {}}
         for line in out.splitlines():
             if line.startswith('Accces list for'):
@@ -900,7 +931,7 @@ class Volume(object):
         """
         Check to see if the given path is to a read-only volume.
         """
-        out = self.fs('examine', '-path', path)
+        out = self.cmd.fs('examine', '-path', path)
         m = re.search(r'Volume status for vid = (\d+) named (\S+)', out)
         if not m:
             self.die("Unable to examine path '%s'." % path)
@@ -963,7 +994,7 @@ class Volume(object):
             if vcell:
                 args.extend(['-cell', vcell])
             with ExtraRights(self, 'ia', parent):
-                self.fs(*args)
+                self.cmd.fs(*args)
             log.info('changed: mounted volume %s on path %s.',
                      volume, path_reg)
             self.results['changed'] = True
@@ -980,7 +1011,7 @@ class Volume(object):
                 if vcell:
                     args.extend(['-cell', vcell])
                 with ExtraRights(self, 'ia', parent):
-                    self.fs(*args)
+                    self.cmd.fs(*args)
                 log.info('changed: mounted volume %s on path %s with '
                          'read/write flag.', volume, path_rw)
                 self.results['changed'] = True
@@ -989,14 +1020,14 @@ class Volume(object):
 
         # Release the parent volume if we changed it.
         if parent_changed:
-            out = self.fs('getfid', '-path', parent)
+            out = self.cmd.fs('getfid', '-path', parent)
             m = re.search(r'File .* \((\d+)\.\d+\.\d+\)', out)
             if not m:
                 self.die("Failed to find parent volume id for mount path '%s'."
                          % path)
             parent_id = m.group(1)
             log.info("Releasing parent volume '%s'.", parent_id)
-            self.vos_release(parent_id)
+            self.cmd.vos_release(parent_id)
 
     def remove_mounts(self, volume, path):
         """
@@ -1048,21 +1079,21 @@ class Volume(object):
         for p in paths:
             if os.path.exists(p):
                 with ExtraRights(self, 'd', parent):
-                    self.fs('rmmount', '-dir', p)
+                    self.cmd.fs('rmmount', '-dir', p)
                 log.info('changed: removed mount %s', p)
                 self.results['changed'] = True
                 parent_changed = True
 
         # Release the parent volume if we changed it.
         if parent_changed:
-            out = self.fs('getfid', '-path', parent)
+            out = self.cmd.fs('getfid', '-path', parent)
             m = re.search(r'File .* \((\d+)\.\d+\.\d+\)', out)
             if not m:
                 self.die("Failed to find parent volume id for mount "
                          "path '%s'." % path)
             parent_id = m.group(1)
             log.info("Releasing parent volume '%s'.", parent_id)
-            self.vos_release(parent_id)
+            self.cmd.vos_release(parent_id)
 
     def parse_acl_param(self, acl):
         """
@@ -1129,7 +1160,7 @@ class Volume(object):
 
         log.info("Setting acl '%s' on path '%s'.", ' '.join(acl), path)
         old = self.get_acls(path)
-        self.fs('setacl', '-clear', '-dir', path, '-acl', *acl)
+        self.cmd.fs('setacl', '-clear', '-dir', path, '-acl', *acl)
         new = self.get_acls(path)
         self.results['acl'] = new
         if new != old:
