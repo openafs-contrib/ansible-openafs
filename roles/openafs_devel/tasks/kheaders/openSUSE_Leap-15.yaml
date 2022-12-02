@@ -1,2 +1,88 @@
 ---
-# Not implemented
+
+#------------------------------------------------------------------------------
+# Ensure a kernel-devel and kernel-FLAVOR-devel package are installed that matches the current kernel
+# version. This is required in order to build the OpenAFS client kernel module.
+#
+# Threre are different kernel FLAVORS avaialbe for openSuSE:
+# - default
+# - vanilla
+# - preempt
+#
+
+- block:
+  # ansible_kernel in openSuSE has a different behaviour than other Linux-distros.
+  # No ARCH and last '.N' in RELEASE of the kernel-package is skipped
+  #
+  - set_fact:
+      kernel_version: "{{ ansible_kernel | regex_replace('-default|-preempt|-vanilla', '') }}"
+      kernel_flavor: "{{ ansible_kernel | split('-') | last }}"
+
+  - debug:
+      msg:
+        - "kernel version: {{ kernel_version }}"
+        - "kernel flavor: {{ kernel_flavor }}"
+
+  - name: "Query kernel-devel packages."
+    command: rpm -q --qf='%{VERSION}-%{RELEASE}\n' kernel-devel
+    changed_when: False
+    failed_when: False
+    register: rpm_query_devel
+
+  - name: "Query kernel-devel flavor."
+    command: "rpm -q --qf='%{VERSION}-%{RELEASE}\n' kernel-{{ kernel_flavor }}-devel"
+    changed_when: False
+    failed_when: False
+    register: rpm_query_flavor
+
+  - name: "Verify kernel-devel version."
+    assert:
+      that:
+        - kernel_version in "{{ rpm_query_devel.stdout_lines }}"
+        - kernel_version in "{{ rpm_query_flavor.stdout_lines }}"
+      success_msg: "kernel-[{{ kernel_flavor }}]-devel-{{ kernel_version }} is/are installed."
+      fail_msg: "kernel-[{{ kernel_flavor }}]-devel-{{ kernel_version }} is/are not installed. Will attempt to install."
+
+  rescue:
+  - block:
+    - name: "Install kernel-devel packages."
+      become: yes
+      community.general.zypper:
+        state: present
+        name:
+          - "kernel-devel={{ kernel_version }}"
+          - "kernel-{{ kernel_flavor }}-devel={{ kernel_version }}"
+        disable_recommends: no
+
+    rescue:
+    - fail:
+        msg:
+          - Refusing to update kernel and reboot.
+          - Manually update your kernel version or set 'afs_devel_allow_kernel_update' to 'yes' and retry.
+      when: not afs_devel_allow_kernel_update
+
+    - name: "Update kernel."
+      become: yes
+      block:
+      - name: "Update kernel."
+        community.general.zypper:
+          state: latest
+          name:
+          - kernel
+          - kernel-devel
+          - "kernel-{{ kernel_flavor }}-devel"
+          disable_recommends: no
+        register: zypper_update_results
+
+      - name: "Reboot."
+        when: zypper_update_results.changed
+        reboot:
+          reboot_timeout: 600
+
+      - name: "Wait for reboot to finish."
+        when: zypper_update_results.changed
+        wait_for_connection:
+
+      - name: "Regather facts after reboot."
+        when: zypper_update_results.changed
+        setup:
