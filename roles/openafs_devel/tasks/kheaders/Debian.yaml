@@ -13,6 +13,10 @@
     var: dpkg_query
     verbosity: 1
 
+- debug:
+    msg: "linux-headers package is already installed for {{ ansible_kernel }}."
+  when: ansible_kernel not in dpkg_query.stdout_lines
+
 - name: "Install kernel headers."
   when: ansible_kernel not in dpkg_query.stdout_lines
   become: yes

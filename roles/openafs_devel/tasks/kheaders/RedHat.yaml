@@ -15,6 +15,10 @@
     var: rpm_query
     verbosity: 1
 
+- debug:
+    msg: "kernel-devel package is already installed for {{ ansible_kernel }}."
+  when: ansible_kernel in rpm_query.stdout_lines
+
 - name: Install kernel headers
   when: ansible_kernel not in rpm_query.stdout_lines
   become: yes
