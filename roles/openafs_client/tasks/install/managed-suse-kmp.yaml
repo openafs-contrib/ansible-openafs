@@ -14,6 +14,12 @@
 # string from the installed base package. Then we use that version string plus
 # the running kernel version to specify the full openafs-kmp package name.
 #
+- name: Install module build pre-requirements
+  import_role:
+    name: openafs_contrib.openafs.openafs_devel
+  vars:
+    afs_devel_kernel_headers: yes
+    afs_devel_install_tools: no
 
 - set_fact:
     kernel_version: "{{ ansible_kernel | regex_replace('-default|-preempt|-vanilla', '') }}"

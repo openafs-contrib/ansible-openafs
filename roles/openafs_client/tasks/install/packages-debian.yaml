@@ -10,6 +10,13 @@
       - afs_install_archive is defined
       - afs_install_archive != ''
 
+- name: "Debian: Install kernel module build requirements."
+  import_role:
+    name: openafs_contrib.openafs.openafs_devel
+  vars:
+    afs_devel_kernel_headers: yes
+    afs_devel_install_tools: no
+
 - debug:
     msg: "Installing {{ afs_install_archive }}"
 

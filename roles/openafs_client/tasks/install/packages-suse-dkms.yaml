@@ -7,6 +7,14 @@
 # The directory on the control node must contain packages for only one
 # OpenAFS version.
 #
+
+- name: Install kernel module build requirements
+  import_role:
+    name: openafs_contrib.openafs.openafs_devel
+  vars:
+    afs_devel_kernel_headers: yes
+    afs_devel_install_tools: no
+
 - name: Ensure tar is installed
   become: yes
   community.general.zypper:
