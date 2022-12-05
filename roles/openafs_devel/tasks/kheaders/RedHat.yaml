@@ -46,6 +46,9 @@
     - name: Reboot
       when: yum_update_results.changed
       block:
+        - set_fact:
+            old_kernel_version: "{{ ansible_kernel }}"
+
         - name: Rebooting
           reboot:
             reboot_timeout: 600
@@ -55,6 +58,9 @@
 
         - name: Gathering facts
           setup:
+
+        - debug:
+            msg: "Updated kernel from {{ old_kernel_version }} to {{ ansible_kernel }}."
 
         - name: "Install kernel-devel package."
           yum:

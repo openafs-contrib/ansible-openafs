@@ -64,6 +64,9 @@
     - name: "Update kernel."
       become: yes
       block:
+      - set_fact:
+          old_kernel_version: "{{ ansible_kernel }}"
+
       - name: "Update kernel."
         community.general.zypper:
           state: latest
@@ -86,3 +89,6 @@
       - name: "Regather facts after reboot."
         when: zypper_update_results.changed
         setup:
+
+      - debug:
+          msg: "Updated kernel from {{ old_kernel_version }} to {{ ansible_kernel }}."
