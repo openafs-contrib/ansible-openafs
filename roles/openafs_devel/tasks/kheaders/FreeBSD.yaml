@@ -1,2 +1,34 @@
+#------------------------------------------------------------------------------
+# FreeBSD has no kernel-source package, instead it is possible to clone the hole source via git
+# The OS-release should be same as the tag-version of the source.
+#
 ---
-# Headers are included in the base system.
+- set_fact:
+    freebsd_repo: "https://git.FreeBSD.org/src.git"
+
+- name: "Check if kernel-source is available"
+  stat:
+    path: /usr/src/sys/amd64/conf
+  register: kernel_source
+
+- name: Install kernel-source
+  block:
+    - name: "Get tags from FreeBSD repo: {{ freebsd_repo }}"
+      shell: git ls-remote --tags -o freebsd "{{ freebsd_repo }}" | awk '$2 ~ "refs/tags/release/{{ ansible_distribution_version }}(.[0-9])?$" {print $2}'
+      register: freebsd_tag
+      changed_when: no
+
+    - name: "Checkout kernel-source..."
+      debug:
+        msg: "Using version: {{ freebsd_tag.stdout_lines[0] | regex_replace('refs/tags/', '') }}"
+      when: freebsd_tag is defined
+
+    - name: "Git Kernel-checkout source"
+      ansible.builtin.git:
+        repo: '{{ freebsd_repo }}'
+        remote: freebsd
+        dest: /usr/src
+        version: "{{ freebsd_tag.stdout_lines[0] | regex_replace('refs/tags/', '') }}"
+      become: yes
+      when: freebsd_tag is defined
+  when: not kernel_source.stat.exists
