@@ -4,17 +4,17 @@
 # requires a private yum repo populated with OpenAFS rpm packages.
 #
 
-- debug:
-    var: afs_yum_repo
-    verbosity: 1
-
 - name: Add OpenAFS yum repo
   become: yes
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
-    baseurl: "{{ afs_yum_repo }}"
+    baseurl: "{{ repo }}"
     gpgcheck: no
+  loop:
+    - "{{ afs_yum_repo }}"
+  loop_control:
+    loop_var: "repo"
 
 # Workaround missing dkms-openafs package requires. These
 # must be installed with a separate yum command before the

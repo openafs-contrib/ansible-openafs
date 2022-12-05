@@ -9,8 +9,12 @@
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
-    baseurl: "{{ afs_yum_repo }}"
+    baseurl: "{{ repo }}"
     gpgcheck: no
+  loop:
+    - "{{ afs_yum_repo }}"
+  loop_control:
+    loop_var: repo
 
 - name: Add epel yum repo
   become: yes

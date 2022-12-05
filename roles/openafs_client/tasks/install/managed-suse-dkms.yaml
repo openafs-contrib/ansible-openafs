@@ -9,8 +9,12 @@
   community.general.zypper_repository:
     name: openafs
     description: OpenAFS zypper repo
-    repo: "{{ afs_zypper_repo }}"
+    repo: "{{ repo }}"
     disable_gpg_check: yes
+  loop:
+    - "{{ afs_zypper_repo }}"
+  loop_control:
+    loop_var: repo
 
 - name: Install OpenAFS client with DKMS
   become: yes
