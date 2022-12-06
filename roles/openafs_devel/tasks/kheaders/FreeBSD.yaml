@@ -3,32 +3,46 @@
 # The OS-release should be same as the tag-version of the source.
 #
 ---
-- set_fact:
-    freebsd_repo: "https://git.FreeBSD.org/src.git"
 
-- name: "Check if kernel-source is available"
+- name: "FreeBSD: Install development packages"
+  become: yes
+  community.general.pkgng:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - fakeroot
+      - git
+      - libtool
+  when: not afs_devel_install_tools
+
+- name: "FreeBSD: Check if kernel source is available."
   stat:
     path: /usr/src/sys/amd64/conf
   register: kernel_source
 
-- name: Install kernel-source
-  block:
-    - name: "Get tags from FreeBSD repo: {{ freebsd_repo }}"
-      shell: git ls-remote --tags -o freebsd "{{ freebsd_repo }}" | awk '$2 ~ "refs/tags/release/{{ ansible_distribution_version }}(.[0-9])?$" {print $2}'
-      register: freebsd_tag
-      changed_when: no
+- debug:
+    msg: "FreeBSD: Kernel source is already installed."
+  when: kernel_source.stat.exists
 
-    - name: "Checkout kernel-source..."
-      debug:
-        msg: "Using version: {{ freebsd_tag.stdout_lines[0] | regex_replace('refs/tags/', '') }}"
-      when: freebsd_tag is defined
-
-    - name: "Git Kernel-checkout source"
-      ansible.builtin.git:
-        repo: '{{ freebsd_repo }}'
-        remote: freebsd
-        dest: /usr/src
-        version: "{{ freebsd_tag.stdout_lines[0] | regex_replace('refs/tags/', '') }}"
-      become: yes
-      when: freebsd_tag is defined
+- name: "FreeBSD: Install kernel source."
   when: not kernel_source.stat.exists
+  block:
+    - name: "FreeBSD: Ensure git is installed."
+      become: yes
+      community.general.pkgng:
+        state: present
+        name: git
+
+    - debug:
+        msg:
+          - "FreeBSD: Checking out {{ afs_freebsd_branch }} from repo {{ afs_freebsd_repo }} into /usr/src."
+          - "WARNING: This checkout may take a long time."
+          - "WARNING: You may want to use a FreeBSD image that includes source code to avoid this delay."
+
+    - name: "FreeBSD: Checkout source."
+      become: yes
+      ansible.builtin.git:
+        repo: '{{ afs_freebsd_repo }}'
+        dest: /usr/src
+        version: "{{ afs_freebsd_branch }}"
