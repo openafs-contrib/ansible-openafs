@@ -1,17 +1,12 @@
 *-kmp
 
-solaris114-packages-dkms
-solaris114-default
+solaris114-packages-*
 solaris114-managed-dkms
-solaris114-packages-kmod
-solaris114-managed-kmod
 
 opensuse15-default
 opensuse15-*-kmod
 opensuse15-*-dkms
 !opensuse15-managed-kmp
 
-freebsd*-*
-!freebsd*-bdist
-!freebsd*-sdist
-!freebsd*-source
+freebsd*-packages-*
+freebsd*-managed-*

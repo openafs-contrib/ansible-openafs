@@ -2,20 +2,16 @@
 - name: "Verify checkout variables are set."
   assert:
     that:
-      - afs_git_version is defined
-      - afs_git_version | count > 0
-      - afs_git_repo is defined
-      - afs_git_repo | count > 0
       - afs_topdir is defined
       - afs_topdir | count > 0
 
 - name: "Checkout info."
   debug:
-    msg: "Checking out '{{ afs_git_version }}' from repo '{{ afs_git_repo }}' into '{{ afs_topdir }}'."
+    msg: "Checking out '{{ afs_git_version | d(_afs_git_version, true) }}' from repo '{{ afs_git_repo | d(_afs_git_repo, true) }}' into '{{ afs_topdir }}'."
 
 - name: "Checkout source code."
   git:
-    repo: "{{ afs_git_repo }}"
-    version: "{{ afs_git_version }}"
+    repo: "{{ afs_git_repo | d(_afs_git_repo, true) }}"
+    version: "{{ afs_git_version | d(_afs_git_version, true) }}"
     dest: "{{ afs_topdir }}"
   register: checkout_results

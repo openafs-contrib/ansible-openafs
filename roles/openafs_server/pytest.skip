@@ -1,4 +1,3 @@
-solaris114-default
-solaris114-packages
-freebsd*-default
+solaris*-packages
+freebsd*-managed
 freebsd*-packages

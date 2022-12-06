@@ -16,3 +16,10 @@
     - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_system }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
+
+- set_fact:
+    afs_install_method: "{{ _afs_install_method | d('managed') }}"
+  when: afs_install_method is undefined or afs_install_method | count == 0
+
+- debug:
+    var: afs_install_method

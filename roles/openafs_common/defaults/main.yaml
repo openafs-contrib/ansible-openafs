@@ -58,7 +58,7 @@ afs_tmpdir: /tmp/ansible-openafs
 afs_topdir: ~/openafs
 
 # Installation method; managed, package, bdist, sdist, source, none
-afs_install_method: managed
+# afs_install_method: (default is platform dependent)
 
 # Source checkout method; one of 'git', 'sdist_upload', 'gerrit'
 afs_checkout_method: git
@@ -73,8 +73,8 @@ afs_pkg5_repo: "{{ _afs_pkg5_repo }}"
 afs_install_archive: ""
 
 # Git repository and branch info for builds and source based installs.
-afs_git_repo: "git://git.openafs.org/openafs.git"
-afs_git_version: "master"
+_afs_git_repo: "git://git.openafs.org/openafs.git"
+_afs_git_version: "master"
 
 # Gerrit host name  when afs_checkout_method is 'gerrit'.
 afs_gerrit_host: "gerrit.openafs.org"
