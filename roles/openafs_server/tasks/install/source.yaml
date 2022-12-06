@@ -31,9 +31,16 @@
     - (ansible_selinux | type_debug) == 'dict'
     - ansible_selinux.status == 'enabled'
 
+- debug:
+    var: afs_is_client
+
+# Install tools before checkout to ensure git is available.
 - name: Ensure development tools are installed.
   import_role:
     name: openafs_contrib.openafs.openafs_devel
+  vars:
+    afs_devel_kernel_headers: "{{ afs_is_client | ternary('yes', 'no') | bool }}"
+    afs_devel_install_tools: yes
 
 #----------------------------------------------------------------------------
 # Checkout source code.
@@ -62,8 +69,10 @@
 # Build all the binaries when this node is both a server and a client.
 # Skip building the kernel module when this node is only a server.
 #
-- include_tasks: "{{ role_path }}/tasks/build/{{ afs_is_client |
-                  ternary('all', 'nolibafs') }}.yaml"
+- name: Build binaries
+  vars:
+    _build: "{{ afs_is_client | ternary('all', 'nolibafs') }}"
+  include_tasks: "{{ role_path }}/tasks/build/{{ _build }}.yaml"
   when: not ansible_local.openafs.build_completed
 
 #----------------------------------------------------------------------------

@@ -1,2 +1,48 @@
+#------------------------------------------------------------------------------
+# FreeBSD has no kernel-source package, instead it is possible to clone the hole source via git
+# The OS-release should be same as the tag-version of the source.
+#
 ---
-# Headers are included in the base system.
+
+- name: "FreeBSD: Install development packages"
+  become: yes
+  community.general.pkgng:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - fakeroot
+      - git
+      - libtool
+  when: not afs_devel_install_tools
+
+- name: "FreeBSD: Check if kernel source is available."
+  stat:
+    path: /usr/src/sys/amd64/conf
+  register: kernel_source
+
+- debug:
+    msg: "FreeBSD: Kernel source is already installed."
+  when: kernel_source.stat.exists
+
+- name: "FreeBSD: Install kernel source."
+  when: not kernel_source.stat.exists
+  block:
+    - name: "FreeBSD: Ensure git is installed."
+      become: yes
+      community.general.pkgng:
+        state: present
+        name: git
+
+    - debug:
+        msg:
+          - "FreeBSD: Checking out {{ afs_freebsd_branch }} from repo {{ afs_freebsd_repo }} into /usr/src."
+          - "WARNING: This checkout may take a long time."
+          - "WARNING: You may want to use a FreeBSD image that includes source code to avoid this delay."
+
+    - name: "FreeBSD: Checkout source."
+      become: yes
+      ansible.builtin.git:
+        repo: '{{ afs_freebsd_repo }}'
+        dest: /usr/src
+        version: "{{ afs_freebsd_branch }}"

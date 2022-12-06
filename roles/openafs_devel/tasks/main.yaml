@@ -37,7 +37,7 @@
     - "kheaders/unknown.yaml"
   loop_control:
     loop_var: afs_devel_kheaders_tasks
-  when: afs_devel_kernel_headers | d('yes') | bool
+  when: afs_devel_kernel_headers
 
 - name: Install development tools and libraries
   include_tasks: "{{ afs_devel_install_tasks }}"
@@ -50,3 +50,4 @@
     - "install/unknown.yaml"
   loop_control:
     loop_var: afs_devel_install_tasks
+  when: afs_devel_install_tools

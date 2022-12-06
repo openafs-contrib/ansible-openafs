@@ -3,14 +3,24 @@
 # Install the OpenAFS kernel module with DKMS. This install method
 # requires a private yum repo populated with OpenAFS rpm packages.
 #
+- name: Install kernel module build requirements
+  import_role:
+    name: openafs_contrib.openafs.openafs_devel
+  vars:
+    afs_devel_kernel_headers: yes
+    afs_devel_install_tools: no
 
 - name: Add OpenAFS zypper repo
   become: yes
   community.general.zypper_repository:
     name: openafs
     description: OpenAFS zypper repo
-    repo: "{{ afs_zypper_repo }}"
+    repo: "{{ repo }}"
     disable_gpg_check: yes
+  loop:
+    - "{{ afs_zypper_repo }}"
+  loop_control:
+    loop_var: repo
 
 - name: Install OpenAFS client with DKMS
   become: yes

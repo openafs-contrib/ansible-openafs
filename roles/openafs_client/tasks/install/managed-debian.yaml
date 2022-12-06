@@ -1,12 +1,10 @@
 ---
-- name: "Debian: Install build prereqs"
-  become: yes
-  apt:
-    state: present
-    name:
-      - build-essential
-      - "linux-headers-{{ ansible_kernel }}"
-    update_cache: yes
+- name: "Debian: Install kernel module build requirements."
+  import_role:
+    name: openafs_contrib.openafs.openafs_devel
+  vars:
+    afs_devel_kernel_headers: yes
+    afs_devel_install_tools: no
 
 - name: "Debian: Install client"
   become: yes

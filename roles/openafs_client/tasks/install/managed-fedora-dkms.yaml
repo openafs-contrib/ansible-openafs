@@ -4,28 +4,27 @@
 # requires a private yum repo populated with OpenAFS rpm packages.
 #
 
-- debug:
-    var: afs_yum_repo
-    verbosity: 1
-
 - name: Add OpenAFS yum repo
   become: yes
   yum_repository:
     name: openafs
     description: OpenAFS yum repo
-    baseurl: "{{ afs_yum_repo }}"
+    baseurl: "{{ repo }}"
     gpgcheck: no
+  loop:
+    - "{{ afs_yum_repo }}"
+  loop_control:
+    loop_var: "repo"
 
 # Workaround missing dkms-openafs package requires. These
 # must be installed with a separate yum command before the
 # openafs rpms are installed.
-- name: Install dkms-openafs pre-requirements
-  become: yes
-  yum:
-    state: present
-    name:
-      - make
-      - "kernel-devel-{{ ansible_kernel }}"
+- name: Install kernel module build requirements
+  import_role:
+    name: openafs_contrib.openafs.openafs_devel
+  vars:
+    afs_devel_kernel_headers: yes
+    afs_devel_install_tools: no
 
 - name: Install OpenAFS client with DKMS
   become: yes

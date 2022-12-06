@@ -9,11 +9,18 @@ binaries.
 
 Variables
 ---------
+afs_devel_install_tools:
+  Install development tools and libraries needed to build OpenAFS.
+
+  Default: yes
 
 afs_devel_kernel_headers
   Install kernel headers matching the currently running kernel version.
   This is required to build a kernel module, either with dkms or with
   the OpenAFS build system.
+
+  Install development tools needed to build the OpenAFS client module
+  when `afs_devel_install_tools` is false.
 
   Default: yes
 
