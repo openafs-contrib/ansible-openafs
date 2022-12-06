@@ -1,2 +1,3 @@
 ---
+_afs_install_method: source
 _afs_pkg5_repo: "http://172.17.16.215:9001"

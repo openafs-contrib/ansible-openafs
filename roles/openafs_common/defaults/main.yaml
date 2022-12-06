@@ -58,7 +58,7 @@ afs_tmpdir: /tmp/ansible-openafs
 afs_topdir: ~/openafs
 
 # Installation method; managed, package, bdist, sdist, source, none
-afs_install_method: managed
+# afs_install_method: (default is platform dependent)
 
 # Source checkout method; one of 'git', 'sdist_upload', 'gerrit'
 afs_checkout_method: git
