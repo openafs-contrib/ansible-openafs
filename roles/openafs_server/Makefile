@@ -15,7 +15,7 @@ lint:
 	ansible-lint --exclude=molecule
 
 test:
-	pytest -v
+	pytest
 
 clean:
 	rm -rf .pytest_cache .cache

@@ -14,4 +14,4 @@ lint:
 	ansible-lint $(PLAYBOOKS)
 
 test:
-	pytest -v
+	pytest
