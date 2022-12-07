@@ -1,0 +1,7 @@
+---
+# Allow Linux kernel update and reboot.
+afs_devel_allow_kernel_update: yes
+
+# FreeBSD source.
+afs_freebsd_repo: "https://git.FreeBSD.org/src.git"
+afs_freebsd_branch: "releng/{{ ansible_distribution_version }}"

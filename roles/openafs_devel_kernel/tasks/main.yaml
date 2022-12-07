@@ -1,9 +1,9 @@
 ---
-- name: Gather
+- name: "Gathering facts."
   setup:
   when: ansible_distribution is undefined
 
-- name: Import common definitions
+- name: "Import common variables."
   import_role:
     name: openafs_contrib.openafs.openafs_common
 
@@ -14,10 +14,10 @@
 #- debug: msg="{{ role_path }}/vars/{{ ansible_system }}.yaml"
 #- debug: msg="{{ role_path }}/vars/defaults.yaml"
 
-- name: Gather variables for each operating system
-  include_vars: "{{ afs_devel_os_item }}"
+- name: "Include operating system specific variables."
+  include_vars: "{{ _item }}"
   loop_control:
-    loop_var: afs_devel_os_item
+    loop_var: _item
   with_first_found:
     - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
@@ -26,16 +26,16 @@
     - "{{ role_path }}/vars/{{ ansible_system }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
-- name: Install development tools and libraries
+- name: "Install kernel module development packages."
   vars:
     _path: "{{ role_path }}/tasks/install"
   include_tasks: "{{ _tasks }}"
+  loop_control:
+    loop_var: _tasks
   with_first_found:
     - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
     - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
     - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}.yaml"
     - "{{ _path }}/{{ ansible_os_family | replace(' ', '_') }}.yaml"
     - "{{ _path }}/{{ ansible_system | replace(' ', '_') }}.yaml"
-    - "{{ _paht }}/unknown.yaml"
-  loop_control:
-    loop_var: _tasks
+    - "{{ _path }}/unknown.yaml"

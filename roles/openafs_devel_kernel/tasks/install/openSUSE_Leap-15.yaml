@@ -22,7 +22,6 @@
       - gcc
       - libtool
       - make
-  when: not afs_devel_install_tools
 
 - block:
   # ansible_kernel in openSuSE has a different behaviour than other Linux-distros.

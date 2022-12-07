@@ -14,7 +14,6 @@
       - fakeroot
       - git
       - libtool
-  when: not afs_devel_install_tools
 
 - name: "FreeBSD: Check if kernel source is available."
   stat:

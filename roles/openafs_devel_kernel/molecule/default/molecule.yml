@@ -2,13 +2,17 @@
 dependency:
   name: galaxy
 platforms:
-  - name: m-role-devel${AFS_TESTID}
+  - name: m-role-devel-kernel${AFS_TESTID}
     box: "${AFS_IMAGE:-generic/centos7}"
 provisioner:
   name: ansible
   env:
     ANSIBLE_PIPELINING: "True"
     ANSIBLE_STDOUT_CALLBACK: "yaml"
+  inventory:
+    group_vars:
+      all:
+        afs_devel_allow_kernel_update: yes
 verifier:
   name: ansible
 scenario:

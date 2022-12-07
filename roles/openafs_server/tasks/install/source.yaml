@@ -35,12 +35,14 @@
     var: afs_is_client
 
 # Install tools before checkout to ensure git is available.
+- name: Ensure kernel development packages are installed.
+  when: afs_is_client
+  import_role:
+    name: openafs_contrib.openafs.openafs_devel_kernel
+
 - name: Ensure development tools are installed.
   import_role:
     name: openafs_contrib.openafs.openafs_devel
-  vars:
-    afs_devel_kernel_headers: "{{ afs_is_client | ternary('yes', 'no') | bool }}"
-    afs_devel_install_tools: yes
 
 #----------------------------------------------------------------------------
 # Checkout source code.

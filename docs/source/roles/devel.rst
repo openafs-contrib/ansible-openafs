@@ -4,32 +4,11 @@ openafs_devel - OpenAFS Development Role
 Description
 -----------
 
-Install development packages needed to build OpenAFS clients and server
+Install development packages needed to build OpenAFS userspace
 binaries.
 
 Variables
 ---------
-afs_devel_install_tools:
-  Install development tools and libraries needed to build OpenAFS.
-
-  Default: yes
-
-afs_devel_kernel_headers
-  Install kernel headers matching the currently running kernel version.
-  This is required to build a kernel module, either with dkms or with
-  the OpenAFS build system.
-
-  Install development tools needed to build the OpenAFS client module
-  when `afs_devel_install_tools` is false.
-
-  Default: yes
-
-afs_devel_allow_kernel_update
-  When the kernel headers cannot be installed for the currently running
-  kernel version, automatically update the kernel and reboot.
-
-  Default: no
-
 afs_devel_oracle_key
   Fully qualified path of your Oracle Developer Studio key on the controller.
   Used to install Oracle Developer Studio when the remote node operating system

@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  namespace: openafs_contrib
+  role_name: openafs_devel_kernel
+  description: OpenAFS kernel module development
+  author: Michael Meffie
+  company: Sine Nomine Associates
+  license: license (BSD)
+  min_ansible_version: "2.7"
+
+  platforms:
+    - name: EL
+    - name: Ubuntu
+    - name: Debian
+
+  galaxy_tags:
+    - system
+    - openafs
+
+dependencies: []

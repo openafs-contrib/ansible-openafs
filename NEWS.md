@@ -12,10 +12,11 @@ December 6, 2022 - version 1.8.0
   'bdist' install methods.  OpenAFS gerrit 15173 is required to build binaries
   for FreeBSD at this time.
 
-* Improved support for installing required kernel headers and development tools
-  when needed to build the OpenAFS kernel module on Linux and FreeBSD.  By
-  default, the roles will update the Linux kernel version and reboot if is needed
-  to install an available kernel headers (kernel-devel) package.
+* Add `openafs_devel_kernel` role to improved support for installing required
+  kernel headers and development tools when needed to build the OpenAFS kernel
+  module on Linux and FreeBSD.  By default, the `openafs_devel_kernel` role will
+  update the Linux kernel version and reboot if is needed to install an available
+  kernel headers (kernel-devel) package.
 
 * Add support for creating principals with Heimdal Kerberos (required for
   FreeBSD support.)

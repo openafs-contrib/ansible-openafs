@@ -30,13 +30,13 @@
     - (ansible_selinux | type_debug) == 'dict'
     - ansible_selinux.status == 'enabled'
 
-- name: Install build requirements
+- name: "Install kernel module build requirements."
+  import_role:
+    name: openafs_contrib.openafs.openafs_devel_kernel
+
+- name: "Install build requirements."
   import_role:
     name: openafs_contrib.openafs.openafs_devel
-  vars:
-    afs_devel_kernel_headers: yes
-    afs_devel_install_tools: yes
-  when: not afs_is_server
 
 #----------------------------------------------------------------------------
 # Checkout source code.

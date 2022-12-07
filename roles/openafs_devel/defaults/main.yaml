@@ -1,18 +1,7 @@
 ---
-# Ensure kernel headers are installed.
-afs_devel_kernel_headers: yes
-afs_devel_allow_kernel_update: yes
-
-# Ensure tools and libraries are installed to build OpenAFS
-afs_devel_install_tools: yes
-
 # Keys for Solaris Studio installation
 afs_devel_oracle_key: "{{ '~/.certs/pkg.oracle.com.key.pem' | expanduser }}"
 afs_devel_oracle_cert: "{{ '~/.certs/pkg.oracle.com.certificate.pem' | expanduser }}"
 
 # Build with fakeroot.
 afs_fakeroot: "{{ _afs_fakeroot | d('') }}"
-
-# FreeBSD source.
-afs_freebsd_repo: "https://git.FreeBSD.org/src.git"
-afs_freebsd_branch: "releng/{{ ansible_distribution_version }}"

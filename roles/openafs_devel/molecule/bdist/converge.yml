@@ -3,6 +3,9 @@
   hosts: all
   tasks:
     - import_role:
+        name: openafs_devel_kernel
+
+    - import_role:
         name: openafs_devel
 
     - name: Checkout source

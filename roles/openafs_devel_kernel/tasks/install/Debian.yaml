@@ -9,13 +9,13 @@
   become: yes
   apt:
     state: present
+    update_cache: true
     name:
       - autoconf
       - automake
       - gcc
       - libtool
       - make
-  when: not afs_devel_install_tools
 
 - name: "Query linux-header package."
   command:
