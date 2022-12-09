@@ -1,0 +1,75 @@
+# -----------------------------------------------------------------------------
+# The autoconf which ships in RHEL6/CentOS6 is too old to build modern versions
+# of OpenAFS.  Install autoconf from a source archive. The installed path is
+# /usr/local/bin which is early in the PATH, so the new version will be run by
+# regen.sh.
+---
+- name: "autoconf: Query autoconf version."
+  ansible.builtin.command:
+    cmd: "autoconf --version"
+  changed_when: false
+  register: _autoconf_version
+
+- name: "autoconf: Collect autoconf version."
+  vars:
+    _line: "{{ _autoconf_version.stdout_lines[0] }}"
+    _prefix: "autoconf (GNU Autoconf) "
+  set_fact:
+    afs_autoconf_version: "{{ _line | replace(_prefix, '') }}"
+
+- debug:
+    msg: "autoconf version is {{ afs_autoconf_version }}"
+
+- name: "autoconf: Install autoconf"
+  when: afs_autoconf_version != "2.69"
+  block:
+    - name: "autoconf: Ensure downloads directory exists."
+      ansible.builtin.file:
+        state: "directory"
+        path: "downloads"
+
+    # Note: The unarchive module fails to find a handler on
+    #       CentOS-6, so fallback to get_url/tar.
+    - name: "autoconf: Download auto tools source archives."
+      ansible.builtin.get_url:
+        url: "{{ item }}"
+        dest: "downloads"
+      loop:
+        - "http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz"
+
+    - name: "autoconf: Unzip archives."
+      ansible.builtin.command:
+        chdir: "downloads"
+        cmd: "tar xzf {{ item }}"
+      changed_when: true
+      loop:
+        - "autoconf-2.69.tar.gz"
+
+    - name: "autoconf: Install autoconf."
+      ansible.builtin.command:
+        chdir: "downloads/autoconf-2.69"
+        cmd: "{{ item }}"
+      changed_when: true
+      loop:
+        - "./configure"
+        - "make"
+        - "sudo -n make install"
+
+    - name: "autoconf: Query autoconf version."
+      ansible.builtin.command:
+        cmd: "autoconf --version"
+      changed_when: false
+      register: _autoconf_version
+
+    - name: "autoconf: Collect autoconf version."
+      vars:
+        _line: "{{ _autoconf_version.stdout_lines[0] }}"
+        _prefix: "autoconf (GNU Autoconf) "
+      set_fact:
+        afs_autoconf_version: "{{ _line | replace(_prefix, '') }}"
+
+- name: "autoconf: Verify autoconf version."
+  assert:
+    that: afs_autoconf_version == "2.69"
+    success_msg: "autoconf version is ok; found {{ afs_autoconf_version }}"
+    fail_msg: "autoconf version is not ok; found {{ afs_autoconf_version }}, expected 2.69"

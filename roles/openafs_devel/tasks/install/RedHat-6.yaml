@@ -1,0 +1,42 @@
+---
+- name: "RedHat-6: Add EPEL repository"
+  become: yes
+  yum:
+    state: present
+    name: epel-release
+    update_cache: yes
+  tags: root
+
+- name: "RedHat-6: Install development packages"
+  become: yes
+  yum:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - bison
+      - elfutils-devel
+      - flex
+      - fuse-devel
+      - gcc
+      - git
+      - glibc-devel
+      - jansson-devel
+      - krb5-devel
+      - libevent-devel
+      - libtool
+      - make
+      - ncurses-devel
+      - openssl-devel
+      - pam-devel
+      - perl-devel
+      - perl-ExtUtils-Embed
+      - redhat-rpm-config
+      - rpm-build
+      - swig
+      - wget
+  tags: root
+
+- include_role:
+    name: openafs_contrib.openafs.openafs_common
+    tasks_from: "autoconf"

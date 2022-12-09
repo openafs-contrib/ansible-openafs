@@ -1,0 +1,83 @@
+---
+#
+# Ensure the kernel-devel package is installed which matches the currently
+# running kernel version.
+#
+
+# Be sure we have the tools needed to build the kernel module when we are not
+# installing the full suite of development packages.
+- name: "CentOS-6: Install kernel module build tools."
+  become: yes
+  yum:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - gcc
+      - libtool
+      - make
+
+- include_role:
+    name: openafs_contrib.openafs.openafs_common
+    tasks_from: "autoconf"
+
+- name: "CentOS-6: Query kernel-devel packages."
+  command:
+    cmd: "rpm -q --qf='%{VERSION}-%{RELEASE}.%{ARCH}\n' kernel-devel"
+  changed_when: False
+  failed_when: False
+  register: rpm_query
+
+- name: "CentOS-6: Show query results."
+  debug:
+    msg: "kernel-devel package is already installed for {{ ansible_kernel }}."
+  when: ansible_kernel in rpm_query.stdout_lines
+
+- name: "CentOS-6: Install kernel headers."
+  when: ansible_kernel not in rpm_query.stdout_lines
+  become: yes
+  block:
+    - name: "CentOS-6: Install kernel-devel package."
+      yum:
+        state: present
+        name: "kernel-devel-uname-r == {{ ansible_kernel }}"
+  rescue:
+    # If we are unable to install the kernel-devel package the current
+    # kernel version may be too old. When allowed, automatically update
+    # the kernel and then retry the kernel-devel install.
+    # This entails a reboot.
+    - fail:
+        msg: Kernel update and reboot required.
+      when: not (afs_devel_allow_kernel_update | d('no') | bool)
+
+    - name: "CentOS-6: Update kernel."
+      yum:
+        state: latest
+        name:
+          - kernel
+      register: yum_update_results
+
+    - name: "CentOS-6: Reboot."
+      when: yum_update_results.changed
+      block:
+        - set_fact:
+            old_kernel_version: "{{ ansible_kernel }}"
+
+        - name: "CentOS-6: Rebooting."
+          reboot:
+            reboot_timeout: 600
+
+        - name: "CentOS-6: Waiting for reboot to complete."
+          wait_for_connection:
+
+        - name: "CentOS-6: Gathering facts."
+          setup:
+
+        - name: "CentOS-6: Show kernel versions."
+          debug:
+            msg: "Updated kernel from {{ old_kernel_version }} to {{ ansible_kernel }}."
+
+        - name: "CentOS-6: Install kernel-devel package."
+          yum:
+            state: present
+            name: "kernel-devel-uname-r == {{ ansible_kernel }}"
