@@ -399,6 +399,16 @@ class Builder(object):
         if not (os.path.exists(self.gitdir) and os.path.isdir(self.gitdir)):
             self.gitdir = None
 
+        # Do we have git clean --exclude option? (It is not available on
+        # very old git versions, notably on it is not available on RHEL6.)
+        self.git = self.module.get_bin_path('git')
+        self.have_git_clean_exclude = False
+        if self.git:
+            args = [self.git, 'clean', '-h']
+            rc, out, err = self.module.run_command(args)
+            if '--exclude' in out:
+                self.have_git_clean_exclude = True
+
         # Find make if not specified.
         self.make = self.module.params['make']
         if not self.make:
@@ -453,10 +463,9 @@ class Builder(object):
             return   # Skip clean
 
         if self.builddir == self.srcdir:
-            # In-tree build. Use git clean if this is a git repo, otherwise try
-            # to run make clean if the Makefile is present.
-            if self.gitdir:
-                self.run('clean', ['git', 'clean', '-f', '-d', '-x',
+            # In-tree build; do our best to clean intermediates.
+            if self.gitdir and self.have_git_clean_exclude:
+                self.run('clean', [self.git, 'clean', '-f', '-d', '-x',
                          '--exclude=.ansible'], self.srcdir)
             else:
                 makefile = os.path.join(self.srcdir, 'Makefile')
