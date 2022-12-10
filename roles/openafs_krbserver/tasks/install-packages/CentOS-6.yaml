@@ -1,0 +1,17 @@
+---
+
+# Install haveged to avoid hang when creating the kerberos database.
+- name: "CentOS-6: Install kerberos server."
+  become: yes
+  yum:
+    state: present
+    name:
+      - haveged
+      - krb5-server
+
+- name: "CentOS-6: Enable haveged service."
+  become: yes
+  ansible.builtin.sysvinit:
+    name: haveged
+    state: started
+    enabled: yes
