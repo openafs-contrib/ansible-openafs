@@ -1,0 +1,13 @@
+---
+- name: "Upstart: Enable OpenAFS client service."
+  become: yes
+  service:
+    name: "{{ ansible_local.openafs.client_service_name }}"
+    state: started
+    enabled: yes
+  register: afs_client_service_result
+
+- name: "Upstart: kCancel restart client handler."
+  set_fact:
+    afs_cancel_restart_client_service: yes
+  when: afs_client_service_result.changed

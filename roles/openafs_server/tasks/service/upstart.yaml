@@ -1,0 +1,16 @@
+- name: "Upstart: Install init script."
+  become: yes
+  template:
+    src: "{{ _afs_server_init_script | d('openafs-server.upstart.j2') }}"
+    dest: /etc/init.d/openafs-server
+    owner: root
+    group: "{{ afs_root_group }}"
+    mode: "0744"
+
+- name: "Upstart: Store installation facts."
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      server_service_name: openafs-server
+  when: not ansible_check_mode

@@ -1,0 +1,17 @@
+---
+- name: "Upstart: Install init script."
+  become: yes
+  template:
+    src: "{{ _afs_client_init_script | d('openafs-client.upstart.j2') }}"
+    dest: /etc/init.d/openafs-client
+    owner: root
+    group: "{{ afs_root_group }}"
+    mode: "0744"
+
+- name: "Upstart: Store client service name."
+  become: yes
+  openafs_contrib.openafs.openafs_store_facts:
+    state: update
+    facts:
+      client_service_name: openafs-client
+  when: not ansible_check_mode
