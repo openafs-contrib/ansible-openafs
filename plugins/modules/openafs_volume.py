@@ -874,7 +874,7 @@ class Volume(object):
                 self.die(str(e))
 
         status = 'enabled' if self._dynroot else 'disabled'
-        log.info('dynroot is {}'.format(status))
+        log.info('dynroot is {0}'.format(status))
         return self._dynroot
 
     def get_afs_root(self):

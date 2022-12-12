@@ -106,7 +106,7 @@ def get_pkg_mgr_subclass(cls, module):
         if pkg_mgr in subcls.pkg_mgrs:
             return subcls
 
-    raise NotImplementedError('Unknown package manager: {}'.format(pkg_mgr))
+    raise NotImplementedError('Unknown package manager: {0}'.format(pkg_mgr))
 
 
 class InstallationFactCollector(object):

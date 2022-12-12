@@ -189,8 +189,8 @@ class UUID:
         Return string representation of the UUID.
         """
         sep = ''
-        return "{:08x}-{:04x}-{:04x}-{:02x}{}{:02x}-"\
-               "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}"\
+        return "{0:08x}-{1:04x}-{2:04x}-{3:02x}{4}{5:02x}-"\
+               "{6:02x}{7:02x}{8:02x}{9:02x}{10:02x}{11:02x}"\
             .format(self.time_low, self.time_mid, self.time_hi,
                     self.clock_hi, sep, self.clock_low, *self.node)
 

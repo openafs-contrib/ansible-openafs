@@ -346,7 +346,7 @@ def get_platform_subclass(cls):
     for subcls in cls.__subclasses__():
         if platform.system() == subcls.platform:
             return subcls
-    raise ValueError('Unknown platform: {}'.format(platform.system()))
+    raise ValueError('Unknown platform: {0}'.format(platform.system()))
 
 
 class Builder(object):
