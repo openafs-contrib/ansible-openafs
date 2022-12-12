@@ -2,7 +2,7 @@
 - name: Install init script.
   become: yes
   template:
-    src: "{{ _afs_server_init_script | d('openafs-client.bsdinit.j2') }}"
+    src: "{{ _afs_client_init_script | d('openafs-client.bsdinit.j2') }}"
     dest: /usr/local/etc/rc.d/openafs-client
     owner: root
     group: "{{ afs_root_group }}"
