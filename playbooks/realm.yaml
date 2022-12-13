@@ -12,9 +12,6 @@
       openafs_principal:
         state: present
         principal: "afs/{{ afs_cell }}"
-        encryption_types:
-          - aes128-cts
-          - aes256-cts
       register: service_key_results
 
     - name: Create admin principal.
