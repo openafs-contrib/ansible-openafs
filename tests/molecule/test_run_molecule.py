@@ -34,6 +34,7 @@ import pytest
 PLATFORMS = [
     'alma8',
     'alma9',
+    'centos6',
     'centos7',
     'centos8',
     'debian10',
@@ -51,6 +52,11 @@ PLATFORMS = [
     'freebsd12',
     'freebsd13',
 ]
+PLATFORM_ENV = {
+    'centos6': {
+        'AFS_PREP_SELINUX_MODE': 'none',
+    },
+}
 ROLE = Path(os.getcwd()).name
 LOGDIR = Path('/tmp/ansible-openafs/molecule') / ROLE
 BASECONFIGDIR = Path('~/.config/molecule').expanduser()
@@ -161,6 +167,9 @@ def test_scenario(number, platform, scenario):
         os.environ['ANSIBLE_NOCOLOR'] = '1'
         os.environ['ANSIBLE_FORCE_COLOR'] = '0'
         os.environ['AFS_IMAGE'] = image_name(platform)
+        if platform in PLATFORM_ENV:
+            for name, value in PLATFORM_ENV[platform].items():
+                os.environ[name] = value
         os.environ['AFS_TESTID'] = '-%d-%d' % (os.getpid(), number)
         print('AFS_IMAGE=%s' % os.environ['AFS_IMAGE'])
         print('AFS_TESTID=%s' % os.environ['AFS_TESTID'])
