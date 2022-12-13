@@ -15,9 +15,9 @@
 #- debug: msg="{{ role_path }}/vars/defaults.yaml"
 
 - name: "Include operating system specific variables."
-  include_vars: "{{ _item }}"
+  include_vars: "{{ afs_devel_kernel_os_item }}"
   loop_control:
-    loop_var: _item
+    loop_var: afs_devel_kernel_os_item
   with_first_found:
     - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
     - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
@@ -29,9 +29,9 @@
 - name: "Install kernel module development packages."
   vars:
     _path: "{{ role_path }}/tasks/install"
-  include_tasks: "{{ _tasks }}"
+  include_tasks: "{{ afs_devel_kernel_install_item }}"
   loop_control:
-    loop_var: _tasks
+    loop_var: afs_devel_kernel_install_item
   with_first_found:
     - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
     - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"

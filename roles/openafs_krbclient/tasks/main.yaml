@@ -19,7 +19,9 @@
   when: afs_firewall is defined
 
 - name: Install packages
-  include_tasks: "{{ item }}"
+  include_tasks: "{{ afs_krbclient_install_item }}"
+  loop_control:
+    loop_var: afs_krbclient_install_item
   with_first_found:
     - "install-packages/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
     - "install-packages/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"

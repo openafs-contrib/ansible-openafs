@@ -29,7 +29,9 @@
 - name: Install development tools and libraries
   vars:
     _path: "{{ role_path }}/tasks/install"
-  include_tasks: "{{ _tasks }}"
+  include_tasks: "{{ afs_devel_install_item }}"
+  loop_control:
+    loop_var: afs_devel_install_item
   with_first_found:
     - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
     - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
@@ -37,5 +39,3 @@
     - "{{ _path }}/{{ ansible_os_family | replace(' ', '_') }}.yaml"
     - "{{ _path }}/{{ ansible_system | replace(' ', '_') }}.yaml"
     - "{{ _paht }}/unknown.yaml"
-  loop_control:
-    loop_var: _tasks

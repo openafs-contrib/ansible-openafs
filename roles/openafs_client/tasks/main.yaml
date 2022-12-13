@@ -19,7 +19,9 @@
 - include_tasks: "pre-install/firewall-{{ afs_firewall | default('none') }}.yaml"
 
 - name: Install client
-  include_tasks: "{{ item }}"
+  include_tasks: "{{ afs_client_install_item }}"
+  loop_control:
+    loop_var: afs_client_install_item
   with_first_found:
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_distribution | replace(' ', '_') | lower }}-{{ afs_module_install_method }}.yaml"
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_distribution | replace(' ', '_') | lower }}.yaml"

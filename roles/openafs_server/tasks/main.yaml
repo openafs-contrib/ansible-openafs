@@ -22,7 +22,9 @@
 - include_tasks: "pre-install/security-policies-{{ afs_security_model }}.yaml"
 
 - name: Install server
-  include_tasks: "{{ item }}"
+  include_tasks: "{{ afs_server_install_item }}"
+  loop_control:
+    loop_var: afs_server_install_item
   with_first_found:
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_os_family | lower }}.yaml"
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}.yaml"
