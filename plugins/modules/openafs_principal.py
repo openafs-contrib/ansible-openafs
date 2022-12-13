@@ -335,7 +335,7 @@ class KerberosAdmin(object):
         Log and error and abort.
         """
         log.error(msg)
-        self.module.fail_json(msg=msg)
+        self.module.fail_json(msg=msg, debug=self.debug)
 
     def normalize(self, principal):
         """
