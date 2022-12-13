@@ -1,6 +1,6 @@
 OpenAFS Ansible Collection
 
-December 6, 2022 - version 1.8.0
+December 13, 2022 - version 1.8.0
 
 * Add support for Solaris IPS packages. A private IPS package repository is
   required at this time.
@@ -11,6 +11,8 @@ December 6, 2022 - version 1.8.0
 * Add support for FreeBSD 12 and FreeBSD 13, limited to 'source', 'sdist', and
   'bdist' install methods.  OpenAFS gerrit 15173 is required to build binaries
   for FreeBSD at this time.
+
+* Add support for CentOS 6.
 
 * Add `openafs_devel_kernel` role to improved support for installing required
   kernel headers and development tools when needed to build the OpenAFS kernel
