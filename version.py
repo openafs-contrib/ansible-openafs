@@ -10,23 +10,23 @@ if not sys.version_info >= (3, 8):
 
 
 def git_describe():
-    args = shlex.split('git describe --long --dirty')
+    args = shlex.split('git describe')
     result = subprocess.run(args, capture_output=True)
     return result.stdout.decode('UTF-8').strip()
 
 
 def main():
     desc = git_describe()
-    if m := re.match(r'^\d+.\d+.\d+$', desc):
+    if m := re.match(r'^\d+\.\d+\.\d+$', desc):
         version = desc
-    if m := re.match(r'^\d+.\d+.\d+-rc\d+$', desc):
+    elif m := re.match(r'^\d+\.\d+\.\d+-rc\d+$', desc):
         version = desc
-    elif m := re.match(r'^(\d+.\d+.\d+)-(\d+)-g([0-9a-fA-F]+)$', desc):
+    elif m := re.match(r'^(\d+\.\d+\.\d+)-(\d+)-g([0-9a-fA-F]+)$', desc):
         version_core = m.group(1)
         changes = m.group(2)
         commit = m.group(3)
         version = f'{version_core}-dev.{changes}+{commit}'
-    elif m := re.match(r'^(\d+.\d+.\d+)-(\d+)-g([0-9a-fA-F]+)-dirty$', desc):
+    elif m := re.match(r'^(\d+\.\d+\.\d+)-(\d+)-g([0-9a-fA-F]+)-dirty$', desc):
         version_core = m.group(1)
         changes = m.group(2)
         commit = m.group(3)
