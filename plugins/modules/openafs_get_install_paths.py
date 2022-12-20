@@ -298,7 +298,7 @@ class RpmInstallationFactCollector(InstallationFactCollector):
     """
     RPM package manager specific collection methods.
     """
-    pkg_mgrs = ['rpm', 'dnf', 'zypper']
+    pkg_mgrs = ['rpm', 'dnf', 'yum', 'zypper']
 
     def __init__(self, module):
         super(RpmInstallationFactCollector, self).__init__(module)
