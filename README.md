@@ -36,7 +36,8 @@ Documentation: [https://openafs-ansible-collection.readthedocs.io][2]
 * `openafs_krbserver` Deploy Kerberos servers
 * `openafs_client` Deploy OpenAFS clients
 * `openafs_server` Deploy OpenAFS servers
-* `openafs_devel` Install OpenAFS development packages
+* `openafs_devel` Install development packages to build OpenAFS binaries
+* `openafs_devel_kernel` Install development packages to build the OpenAFS kernel module
 
 ## Plugins
 
