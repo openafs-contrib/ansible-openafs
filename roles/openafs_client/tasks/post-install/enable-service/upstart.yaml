@@ -7,7 +7,7 @@
     enabled: yes
   register: afs_client_service_result
 
-- name: "Upstart: kCancel restart client handler."
+- name: "Upstart: Cancel restart client handler."
   set_fact:
     afs_cancel_restart_client_service: yes
   when: afs_client_service_result.changed
