@@ -68,6 +68,7 @@ afs_checkout_method: git
 afs_yum_repo: "{{ _afs_yum_repo }}"
 afs_zypper_repo: "{{ _afs_zypper_repo }}"
 afs_pkg5_repo: "{{ _afs_pkg5_repo }}"
+afs_pkg5_publisher: "{{ _afs_pkg5_publisher }}"
 
 # Path to installation tarball on controller for non-managed installs.
 afs_install_archive: ""
