@@ -259,8 +259,8 @@ class InstallationFactCollector(object):
         """
         Search an OpenAFS man page for a directory.
         """
-        with gzip.open(path) as z:
-            content = z.read().decode()
+        z = gzip.open(path)
+        content = z.read().decode()
         content = re.sub(r'\\&', '', content)
         content = re.sub(r'\\f.', '', content)
         content = re.sub(r'\s+', ' ', content)
