@@ -259,8 +259,11 @@ class InstallationFactCollector(object):
         """
         Search an OpenAFS man page for a directory.
         """
+        # Note: Avoiding a context manager here to support ancient versions
+        #       of Python found on RHEL/CentOS 6.
         z = gzip.open(path)
         content = z.read().decode()
+        z.close()
         content = re.sub(r'\\&', '', content)
         content = re.sub(r'\\f.', '', content)
         content = re.sub(r'\s+', ' ', content)
