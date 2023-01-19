@@ -17,7 +17,6 @@ provisioner:
         afs_cell: "example.com"
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
         afs_module_install_method: "kmod"
-        # afs_yum_repo: "${AFS_YUM_REPO}"
         afs_csdb_file: ""
         afs_client_netinfo: 0.0.0.0
         afs_client_netrestrict:
