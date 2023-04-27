@@ -9,6 +9,11 @@ UPDATE := --force --pre
 PYFILES := plugins/*/*.py tests/*/*.py tests/*/*/*.py
 ACPATH := $(realpath $(CURDIR)/../../..)
 EXTRACT := ANSIBLE_COLLECTIONS_PATHS=$(ACPATH) ansible-doc-extractor
+ifdef VIRTUAL_ENV
+VENV =
+else
+VENV = . .venv/bin/activate;
+endif
 
 help:
 	@echo "usage: make <target>"
@@ -33,9 +38,9 @@ init: .venv/bin/activate
 
 doc docs:
 	mkdir -p docs/source/modules docs/source/plugins/lookup
-	$(EXTRACT) docs/source/modules plugins/modules/[!_]*.py
-	$(EXTRACT) docs/source/plugins/lookup plugins/lookup/[!_]*.py
-	$(MAKE) -C docs html
+	$(VENV) $(EXTRACT) docs/source/modules plugins/modules/[!_]*.py
+	$(VENV) $(EXTRACT) docs/source/plugins/lookup plugins/lookup/[!_]*.py
+	$(VENV) $(MAKE) -C docs html
 
 preview: docs
 	xdg-open docs/build/html/index.html
@@ -43,50 +48,50 @@ preview: docs
 builds/openafs_contrib-openafs-$(VERSION).tar.gz:
 	sed -i -e 's/^version: .*/version: $(VERSION)/' galaxy.yml
 	mkdir -p builds
-	ansible-galaxy collection build --output-path builds .
+	$(VENV) ansible-galaxy collection build --output-path builds .
 	sed -e "s|@BUILD@|$(CURDIR)/$@|" collections.yml.in > builds/collections.yml
 
 build: builds/openafs_contrib-openafs-$(VERSION).tar.gz
 
 install: build
-	ansible-galaxy collection install $(UPDATE) builds/openafs_contrib-openafs-$(VERSION).tar.gz
+	$(VENV) ansible-galaxy collection install $(UPDATE) builds/openafs_contrib-openafs-$(VERSION).tar.gz
 
 pylint:
-	pyflakes $(PYFILES)
-	flake8 $(PYFILES)
+	$(VENV) pyflakes $(PYFILES)
+	$(VENV) flake8 $(PYFILES)
 
 lint: pylint
-	$(MAKE) -C roles/openafs_krbserver lint
-	$(MAKE) -C roles/openafs_krbclient lint
-	$(MAKE) -C roles/openafs_common lint
-	$(MAKE) -C roles/openafs_devel lint
-	$(MAKE) -C roles/openafs_server lint
-	$(MAKE) -C roles/openafs_client lint
+	$(VENV) $(MAKE) -C roles/openafs_krbserver lint
+	$(VENV) $(MAKE) -C roles/openafs_krbclient lint
+	$(VENV) $(MAKE) -C roles/openafs_common lint
+	$(VENV) $(MAKE) -C roles/openafs_devel lint
+	$(VENV) $(MAKE) -C roles/openafs_server lint
+	$(VENV) $(MAKE) -C roles/openafs_client lint
 
 test: test-plugins test-roles test-playbooks
 
 test-plugins:
-	$(MAKE) -C tests test
+	$(VENV) $(MAKE) -C tests test
 
 test-roles:
-	$(MAKE) -C roles/openafs_krbserver test
-	$(MAKE) -C roles/openafs_krbclient test
-	$(MAKE) -C roles/openafs_common test
-	$(MAKE) -C roles/openafs_devel test
-	$(MAKE) -C roles/openafs_server test
-	$(MAKE) -C roles/openafs_client test
+	$(VENV) $(MAKE) -C roles/openafs_krbserver test
+	$(VENV) $(MAKE) -C roles/openafs_krbclient test
+	$(VENV) $(MAKE) -C roles/openafs_common test
+	$(VENV) $(MAKE) -C roles/openafs_devel test
+	$(VENV) $(MAKE) -C roles/openafs_server test
+	$(VENV) $(MAKE) -C roles/openafs_client test
 
 test-playbooks:
-	$(MAKE) -C tests/playbooks test
+	$(VENV) $(MAKE) -C tests/playbooks test
 
 reset:
-	for r in roles/*; do $(MAKE) -C $$r reset; done
-	$(MAKE) -C tests/playbooks reset
+	for r in roles/*; do $(VENV) $(MAKE) -C $$r reset; done
+	$(VENV) $(MAKE) -C tests/playbooks reset
 
 clean:
 	rm -rf builds docs/build
 	rm -rf */*/__pycache__ */*/.pytest_cache */*/.cache
-	$(MAKE) -C tests clean
+	$(VENV) $(MAKE) -C tests clean
 
 distclean: clean
 	rm -rf .venv
