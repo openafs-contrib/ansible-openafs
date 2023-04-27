@@ -12,6 +12,8 @@ description: Playbooks, roles, and modules to deploy the OpenAFS distributed fil
 license: BSD-2-Clause
 tags:
   - openafs
+  - system
+  - development
 build_ignore:
   - '.*'
   - 'builds'
@@ -25,3 +27,6 @@ build_ignore:
   - '*/.pytest*'
   - '*/pytest.*'
 repository: 'https://github.com/openafs-contrib/ansible-openafs'
+documentation: 'https://openafs-ansible-collection.readthedocs.io'
+homepage: 'https://github.com/openafs-contrib/ansible-openafs'
+issues: 'https://github.com/openafs-contrib/ansible-openafs/issues'
