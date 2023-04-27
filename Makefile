@@ -3,7 +3,7 @@
 .PHONY: help init lint test doc docs preview build install clean distclean \
         pylint test-plugins test-roles test-playbooks reset
 
-PYTHON := /usr/bin/python3
+PYTHON ?= /usr/bin/python3
 VERSION := $(shell $(PYTHON) version.py)
 UPDATE := --force --pre
 PYFILES := plugins/*/*.py tests/*/*.py tests/*/*/*.py
@@ -23,7 +23,7 @@ help:
 	@echo "  clean       remove generated files"
 	@echo "  distclean   remove generated files and virtualenv"
 
-.venv/bin/activate:
+.venv/bin/activate: requirements.txt
 	test -d .venv || $(PYTHON) -m venv .venv
 	.venv/bin/pip install -U pip wheel
 	.venv/bin/pip install -U -r requirements.txt
