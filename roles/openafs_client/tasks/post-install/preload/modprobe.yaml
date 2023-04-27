@@ -18,6 +18,7 @@
   become: yes
   command: modprobe {{ afs_module | default('openafs') }}
   when: (modules.content | b64decode) is not search(afs_module | default('openafs'))
+  changed_when: True
 
 - name: Verify the OpenAFS kernel module is loaded
   wait_for:

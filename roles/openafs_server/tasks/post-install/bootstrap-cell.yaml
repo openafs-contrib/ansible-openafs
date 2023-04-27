@@ -24,6 +24,7 @@
   when:
     - afs_is_fileserver
     - afs_server_cold_start
+  changed_when: True
 
 - name: Wait for fileserver registration
   become: yes

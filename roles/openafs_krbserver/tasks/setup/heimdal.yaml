@@ -37,6 +37,7 @@
   command:
     cmd: "kadmin --local add --use-defaults --random-password {{ afs_krb_admin_principal }}"
   when: check_admin.rc != 0
+  changed_when: True
 
 - name: "Make kerberos keytabs directory."
   become: yes

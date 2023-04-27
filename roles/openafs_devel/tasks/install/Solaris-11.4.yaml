@@ -34,6 +34,7 @@
   when: >
     not 'solarisstudio' in publisher_results.get('stdout', '') or
     upload_certs.changed
+  changed_when: True
   tags: root
 
 - name: "Solaris 11.4: Get perl mediator"

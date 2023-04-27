@@ -8,11 +8,12 @@
   become: yes
   command:
     cmd: "pkg set-publisher -g {{ repo }} {{ afs_pkg5_publisher }}"
-  when: not '{{ afs_pkg5_publisher }}' in publisher_results.get('stdout', '')
+  when: afs_pkg5_publisher not in publisher_results.get('stdout', '')
   loop:
     - "{{ afs_pkg5_repo }}"
   loop_control:
     loop_var: repo
+  changed_when: True
 
 - name: "Install OpenAFS server packages."
   become: yes
