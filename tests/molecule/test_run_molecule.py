@@ -39,6 +39,7 @@ PLATFORMS = [
     'centos8',
     'debian10',
     'debian11',
+    'debian12',
     'fedora36',
     'fedora37',
     'opensuse15',
