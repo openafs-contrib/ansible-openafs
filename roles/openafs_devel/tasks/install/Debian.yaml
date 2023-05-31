@@ -1,5 +1,5 @@
 ---
-- name: "Debian-9: Install development packages"
+- name: "Debian: Install development packages"
   become: yes
   apt:
     state: present
