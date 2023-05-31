@@ -1,7 +1,4 @@
 ---
-- set_fact:
-    debian_codename: buster
-
 - name: "Debian-10: Install development packages"
   become: yes
   apt:
