@@ -2,6 +2,7 @@
 !.gitignore
 !.ansible-lint
 !.yamllint
+!.readthedocs.yaml
 *.retry
 ansible.cfg
 *.tar.gz
