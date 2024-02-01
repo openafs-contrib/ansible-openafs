@@ -1,7 +1,7 @@
 flake8==6.0.0
 pyflakes==3.0.1
 pytest==7.3.1
-ansible==7.5.0
+ansible==8.5.0
 ansible-lint==6.15.0
 ansible-doc-extractor==0.1.9
 molecule==4.0.1
