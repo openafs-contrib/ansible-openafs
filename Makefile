@@ -3,7 +3,7 @@
 .PHONY: help init lint test doc docs preview build install clean distclean \
         pylint test-plugins test-roles test-playbooks reset
 
-PYTHON ?= /usr/bin/python3
+PYTHON ?= /usr/bin/python3.12
 VERSION := $(shell $(PYTHON) version.py)
 UPDATE := --force --pre
 PYFILES := plugins/*/*.py tests/*/*.py tests/*/*/*.py
@@ -91,7 +91,6 @@ reset:
 clean:
 	rm -rf builds docs/build
 	rm -rf */*/__pycache__ */*/.pytest_cache */*/.cache
-	$(VENV) $(MAKE) -C tests clean
 
 distclean: clean
 	rm -rf .venv
