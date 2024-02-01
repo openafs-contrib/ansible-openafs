@@ -335,7 +335,7 @@ class Command(object):
         Run a command.
         """
         cmdargs = [cmd] + list(args)
-        cmdline = ' '. join(args)
+        cmdline = ' '.join(cmdargs)
         rc, out, err = self.module.run_command(cmdargs)
         log.debug('command=%s, rc=%d, out=%s, err=%s', cmdline, rc, out, err)
         if rc != 0:
