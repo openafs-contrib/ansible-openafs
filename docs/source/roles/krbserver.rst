@@ -4,8 +4,9 @@ openafs-krbserver - Kerberos Server Role
 Description
 -----------
 
-Install and configure the MIT Kerberos master KDC on single host, create the
-Kerberos database and the first administrator principal.
+Install and configure the MIT or Heimdal Kerberos master KDC on single host,
+create the Kerberos database, the first administrator principal, and a keytab
+for the first administrator.
 
 Variables
 ---------
@@ -15,24 +16,29 @@ afs_realm
 
   Default: EXAMPLE.COM
 
+afs_realm_files
+  Path to realm related files on the controller. It is recommended to use
+  ``ansible-vault`` to encrypt the files in this directory.
+
+  Default: ``$HOME/.ansible-openafs/realm/{{ afs_realm }}``
+
 afs_krb_master_password
-  The secret Kerberos database master password. The password is random by
-  default. If a value is provided, it should be encrypted with
-  ``ansible-vault``.
+  The secret Kerberos database master password. If this host variable is not
+  present, the password is read from the ``afs_krb_master_password`` file located
+  in the ``{{ afs_realm_files }}`` directory on the controller.  If this file does not
+  exist, a random password is generated and written to the file.
+
+  Note: It is recommended to use ``ansible-vault`` to encrypt this secret.
 
   Default: <random>
 
 afs_krb_admin_principal
-  A administrator principal to be created by this role. A keytab is always
-  created for this principal, even when the password is also provided.
+  An administrator principal to be created by this role. A keytab is always
+  created for this principal with a random key. The keytab is downloaded to
+  ``{{ afs_realm_files }}/{{ afs_krb_admin_principlal }}.keytab`` file on
+  the controller.
 
   Default: root/admin
-
-afs_krb_admin_password
-  The admin principal password. This password random by default.
-  If a value is provided, it should be encrypted with ``ansible-vault``.
-
-  Default: <random>
 
 afs_kdc_servers
   A comma separated list of kdc host names to be set in the krb5.conf file.
