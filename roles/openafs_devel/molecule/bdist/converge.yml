@@ -19,7 +19,7 @@
         clean: yes
         fakeroot: "{{ afs_fakeroot }}"
         projectdir: "~/openafs"
-        destdir: "~/openafs/packages/dest"
+        destdir: "~/openafs/packages/install_root"
         build_userspace: yes
         build_module: yes
         with_transarc_paths: yes
@@ -38,7 +38,7 @@
 
     - name: Create archive
       archive:
-        path: "~/openafs/packages/dest/"
+        path: "~/openafs/packages/install_root/"
         dest: "{{ tarball }}"
         format: gz
 

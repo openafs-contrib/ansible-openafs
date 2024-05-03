@@ -59,7 +59,7 @@ Parameters
     The logdir may not be a subdirectory of the ``builddir`` when doing an out-of-tree build.
 
 
-  destdir (optional, path, <srcdir>/packages/dest)
+  destdir (optional, path, <srcdir>/packages/install_root)
     The destination directory for ``install`` and ``dest`` targets and variants.
 
     The tree staged in this directory may be installed with the :ref:`openafs_install_bdist <openafs_install_bdist_module>` module.
@@ -157,7 +157,7 @@ Examples
 
 .. code-block:: yaml+jinja
 
-    
+
     - name: Build OpenAFS from source
       openafs_contrib.openafs.openafs_build:
         srcdir: ~/src/openafs
@@ -178,7 +178,7 @@ Examples
         srcdir: ~/src/openafs
         clean: yes
         target: install_nolibafs
-        destdir: packages/dest
+        destdir: packages/install_root
         configure_options:
           prefix: /usr
           bindir: /usr/bin
@@ -209,7 +209,7 @@ builddir (always, string, /home/tycobb/projects/myproject)
   Absolute path to the build directory
 
 
-destdir (when destdir is specified, string, /home/tycobb/projects/myproject/packages/dest)
+destdir (when destdir is specified, string, /home/tycobb/projects/myproject/packages/install_root)
   Absolute path to the installation files.
 
 

@@ -22,7 +22,7 @@
       openafs_build:
         projectdir: ~/src/openafs
         clean: yes
-        destdir: packages/dest
+        destdir: packages/install_root
         with_bindings: no
         with_transarc_paths: yes
       register: build_results
