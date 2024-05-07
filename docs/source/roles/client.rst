@@ -39,26 +39,32 @@ afs_mountpoint
   The AFS filesystem mount point. This value is written to the ``cacheinfo``
   file.
 
-  Default value is autodetected from the ``cacheinfo`` file installed by
+  Default value is auto-detected from the ``cacheinfo`` file installed by
   packages.
 
-  Default: autodetected, fallback to ``/afs``
+  Default: auto-detected, fallback to ``/afs``
 
 afs_cachedir
-  The path to the AFS cache.  This value is written to the ``cacheinfo`` file.
+  The path to the OpenAFS cache directory.  This value is written to the
+  ``cacheinfo`` file.
 
-  Default value is autodetected from the ``cacheinfo`` file installed by
-  packages.
+  When installing the client from packages, the default value is detected from
+  the packaged ``cacheinfo`` file.
 
-  Default: autodetected, fallback to ``/usr/vice/cache``
+  When installing the client from source, the default value is
+  ``/var/cache/openafs`` when the client was build with modern installation
+  paths, otherwise the default value is ``/usr/vice/cache`` if the client was
+  built with the Transarc compatibility paths.
+
+  Default: auto-detected, fallback to ``/var/cache/openafs``
 
 afs_cachesize
-  The size of the AFS cache. This valus is written to the ``cacheinfo`` file.
+  The size of the OpenAFS cache. This value is written to the ``cacheinfo`` file.
 
-  Default value is autodetected from the ``cacheinfo`` file installed by
+  Default value is auto-detected from the ``cacheinfo`` file installed by
   packages.
 
-  Default: autodetected, fallback to 50000
+  Default: auto-detected, fallback to 50000
 
 afs_afsd_opts
   The ``afsd`` command line arguments to override the value provided

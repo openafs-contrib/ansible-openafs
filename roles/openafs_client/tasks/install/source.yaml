@@ -92,6 +92,10 @@
           build_completed: yes
           destdir: "{{ build_results.destdir }}"
           dirs: "{{ build_results.install_dirs }}"
+          cacheinfo:
+            mountpoint: "{{ afs_mountpoint }}"
+            cachedir: "{{ afs_cachedir }}"
+            cachesize: "{{ afs_cachesize }}"
 
     - assert:
         that:

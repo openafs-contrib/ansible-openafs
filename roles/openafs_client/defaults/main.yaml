@@ -8,9 +8,12 @@ afs_module_install_method: "{{ _afs_module_install_method | default('dkms') }}"
 # Optionally, preload the kernel module before starting the client service.
 afs_module_enable_preload: no
 
-# afs mountpoint
+# Default values for the cacheinfo file when installing from source.
+# When installing from packages, the defaults are read from the packaged cachinfo file.
+_is_transarc: "{{ (build_results.install_dirs.viceetcdir | d('') == '/usr/vice/etc') }}"
+_afs_cachedir: "{{ _is_transarc | ternary('/usr/vice/cache', '/var/cache/openafs') }}"
 afs_mountpoint: "{{ ansible_local.openafs.cacheinfo.mountpoint | d('/afs') }}"
-afs_cachedir: "{{ ansible_local.openafs.cacheinfo.cachedir | d('/usr/vice/cache') }}"
+afs_cachedir: "{{ ansible_local.openafs.cacheinfo.cachedir | d(_afs_cachedir) }}"
 afs_cachesize: "{{ ansible_local.openafs.cacheinfo.cachesize | d(50000) }}"
 
 # Set afs_afsd_opts to override the afsd command line options provided by the

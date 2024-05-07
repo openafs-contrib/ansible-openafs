@@ -32,12 +32,22 @@
 
 - name: Store build facts
   become: yes
+  vars:
+    _is_transarc: "{{ (build_results.install_dirs.viceetcdir | d('') == '/usr/vice/etc') }}"
+    _afs_cachedir: "{{ _is_transarc | ternary('/usr/vice/cache', '/var/cache/openafs') }}"
+    mountpoint: "{{ afs_mountpoint | d(ansible_local.openafs.cacheinfo.mountpoint) | d('/afs') }}"
+    cachedir: "{{ afs_cachedir | d(ansible_local.openafs.cacheinfo.cachedir) | d(_afs_cachedir) }}"
+    cachesize: "{{ afs_cachesize | d(ansible_local.openafs.cacheinfo.cachesize) | d(50000) }}"
   openafs_contrib.openafs.openafs_store_facts:
     state: update
     facts:
       build_completed: yes
       destdir: "{{ build_results.destdir }}"
       dirs: "{{ build_results.install_dirs }}"
+      cacheinfo:
+        mountpoint: "{{ mountpoint }}"
+        cachedir: "{{ cachedir }}"
+        cachesize: "{{ cachesize }}"
   when:
     - build_results.changed
     - not ansible_check_mode
