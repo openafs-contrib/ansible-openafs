@@ -6,6 +6,16 @@ ANSIBLE_METADATA = {
     'metadata_version': '1.1.',
     'status': ['preview'],
     'supported_by': 'community',
+    'deprecate_parameters': [
+        {'name': 'with_transarc_paths', 'since': '1.9.0'},
+        {'name': 'with_debug_symbols', 'since': '1.9.0'},
+        {'name': 'build_manpages', 'since': '1.9.0'},
+        {'name': 'build_userspace', 'since': '1.9.0'},
+        {'name': 'build_module', 'since': '1.9.0'},
+        {'name': 'build_terminal_programs', 'since': '1.9.0'},
+        {'name': 'build_fuse_client', 'since': '1.9.0'},
+        {'name': 'build_bindings', 'since': '1.9.0'},
+    ]
 }
 
 DOCUMENTATION = r'''
@@ -111,62 +121,16 @@ options:
     default: the number of CPUs on the system
     type: int
 
-  build_manpages:
-    description: Generate the man pages.
-    default: true
-    type: bool
-
-  build_userspace:
-    description: Build userspace programs and libraries.
-    default: true
-    type: bool
-
-  build_module:
-    description: Build the OpenAFS kernel module.
-    default: true
-    type: bool
-
-  build_terminal_programs:
-    description: Build curses-based terminal programs.
-    default: true
-    type: bool
-
-  build_bindings:
-    description: Build program language bindings with swig.
-    default: true
-    type: bool
-
-  build_fuse_client:
-    description: Build fuse client.
-    default: true
-    type: bool
-
-  with_version:
+  as_version:
     description:
       - Version string to embed in program files.
       - The I(version) will be written to the C(.version) file, overwritting
         the current contents, if any.
     type: str
 
-  with_transarc_paths:
-    description: Build binaries which use the legacy Transarc-style paths.
-    default: false
-    type: bool
-
-  with_debug_symbols:
-    description: Include debug symbols and disable optimizations.
-    default: true
-    type: bool
-
-  with_rxgk:
-    description: Include rxgk support.
-    default: false
-    type: bool
-
   configure_options:
     description:
-      - The explicit C(configure) command arguments. When present, this option
-        overrides the C(build_*) and C(with_*) options.
+      - The C(configure) command arguments.
       - May be specified as a string, list of strings, or a dictionary.
       - When specified as a dictionary, the values of the keys
         C(enabled), C(disabled), C(with), and C(without) may be lists.
@@ -203,7 +167,9 @@ EXAMPLES = r'''
   openafs_contrib.openafs.openafs_build:
     srcdir: ~/src/openafs
     clean: yes
-    with_transarc_paths: yes
+    configure_options:
+      enable:
+        - transarc-paths
 
 - name: Build OpenAFS server binaries with custom install paths.
   openafs_contrib.openafs.openafs_build:
@@ -294,16 +260,16 @@ from ansible_collections.openafs_contrib.openafs.plugins.module_utils.o2a \
 module_name = os.path.basename(__file__).replace('.py', '')
 log = Logger(module_name)
 
-MAKEFILE_DIRS = r"""
+MAKEFILE_DIRS = """
 include ./src/config/Makefile.config
 
 all:
-	@echo afsbosconfigdir=$(afsbosconfigdir)
-	@echo afsconfdir=$(afsconfdir)
-	@echo afsdbdir=$(afsdbdir)
-	@echo afslocaldir=$(afslocaldir)
-	@echo afslogsdir=$(afslogsdir)
-	@echo viceetcdir=$(viceetcdir)
+\t@echo afsbosconfigdir=$(afsbosconfigdir)
+\t@echo afsconfdir=$(afsconfdir)
+\t@echo afsdbdir=$(afsdbdir)
+\t@echo afslocaldir=$(afslocaldir)
+\t@echo afslogsdir=$(afslogsdir)
+\t@echo viceetcdir=$(viceetcdir)
 """  # noqa: W191,E101
 
 
@@ -489,7 +455,7 @@ class Builder(object):
 
     def build_version(self):
         """
-        Create the .version file if the with_version parameter was set.
+        Create the .version file if the as_version parameter was set.
         Run git-version to get the version string.
         """
         if self._stage != 'clean':
@@ -498,13 +464,13 @@ class Builder(object):
 
         # Optionally write a .version file. This will overwrite the current
         # .version file if one was is already present.
-        with_version = self.module.params['with_version']
-        if with_version:
+        as_version = self.module.params['as_version']
+        if as_version:
             version_file = os.path.join(self.srcdir, '.version')
             self.log('Writing version %s to file %s' %
-                     (with_version, version_file))
+                     (as_version, version_file))
             with open(version_file, 'w') as f:
-                f.write(with_version)
+                f.write(as_version)
 
         # Report the version string. This is read from the .version file if
         # present, otherwise it is generated from `git describe`.
@@ -687,18 +653,24 @@ class Builder(object):
         if rc != 0:
             self.fail('%s command failed; see "%s".' % (name, logfile))
 
+    def get_deprecated_option(self, name):
+        self.log("WARNING: %s option is deprecated.", name)
+        return self.module.params[name]
+
     def get_configure_options(self):
         """
         Determine configure options based on parameters.
         """
-        build_userspace = self.module.params['build_userspace']
-        build_module = self.module.params['build_module']
-        build_terminal_programs = self.module.params['build_terminal_programs']
-        build_bindings = self.module.params['build_bindings']
-        build_fuse_client = self.module.params['build_fuse_client']
-        with_transarc_paths = self.module.params['with_transarc_paths']
-        with_debug_symbols = self.module.params['with_debug_symbols']
-        with_rxgk = self.module.params['with_rxgk']
+
+        # DEPRECATED! Use configure_options instead.
+        build_userspace = self.get_deprecated_option('build_userspace')
+        build_module = self.get_deprecated_option('build_module')
+        build_terminal_programs = self.get_deprecated_option('build_terminal_programs')  # noqa: E501
+        build_bindings = self.get_deprecated_option('build_bindings')
+        build_fuse_client = self.get_deprecated_option('build_fuse_client')
+        with_transarc_paths = self.get_deprecated_option('with_transarc_paths')
+        with_debug_symbols = self.get_deprecated_option('with_debug_symbols')
+        with_rxgk = self.get_deprecated_option('with_rxgk')
 
         if not (build_userspace or build_module):
             self.fail("specify build_userspace and/or build_module")
@@ -974,15 +946,18 @@ def main():
             make=dict(type='path'),
             clean=dict(type='bool', default=False),
             jobs=dict(type='int', fallback=(cpu_count, [])),
+            as_version=dict(type='str', default=None,
+                            aliases=['version', 'with_version']),
 
-            # Build options.
-            with_version=dict(type='str', default=None, aliases=['version']),
+            # Configure and target options.
+            configure_options=dict(type='raw', default=None),
+            configure_environment=dict(type='dict', default=None),
+
+            # DEPRECATED! Use configure_options.
             with_transarc_paths=dict(type='bool', default=False,
                                      aliases=['transarc_paths']),
             with_debug_symbols=dict(type='bool', default=True),
             with_rxgk=dict(type='bool', defaults=False),
-
-            # What to build.
             build_manpages=dict(type='bool', default=True,
                                 aliases=['manpages']),
             build_userspace=dict(type='bool', default=True),
@@ -991,9 +966,6 @@ def main():
             build_fuse_client=dict(type='bool', default=True),
             build_bindings=dict(type='bool', default=True),
 
-            # Explicit configure and target options.
-            configure_options=dict(type='raw', default=None),
-            configure_environment=dict(type='dict', default=None),
             target=dict(type='str', default=None),
         ),
         supports_check_mode=False,
