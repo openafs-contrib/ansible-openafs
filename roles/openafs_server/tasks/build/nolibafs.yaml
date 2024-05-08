@@ -17,7 +17,6 @@
     build_module: no
     srcdir: "{{ afs_topdir }}"
     destdir: "{{ afs_topdir }}/packages/install_root"
-    transarc_paths: "{{ afs_transarc_build }}"
     configure_options: "{{ afs_nolibafs_configure_options | d(afs_configure_options) | d(omit) }}"
     configure_environment: "{{ afs_nolibafs_configure_environment | d(afs_configure_environment) | d(omit) }}"
     fakeroot: "{{ afs_fakeroot | d(omit) }}"

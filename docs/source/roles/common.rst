@@ -143,11 +143,3 @@ afs_clean_build
   faster when rebuilding the same branch as the previous build.
 
   Default: yes
-
-afs_transarc_build
-  When the ``afs_install_method`` is ``sdist`` or ``source``, build and install
-  the OpenAFS binaries with the legacy Transarc style installation paths, e.g,
-  ``/usr/afs/bin``, ``/usr/afs/etc``. This option will add ``--enable-transarc-paths``
-  to the ``configure`` options.
-
-  Default: no

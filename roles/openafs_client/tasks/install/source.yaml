@@ -76,7 +76,6 @@
         srcdir: "{{ afs_topdir }}"
         destdir: "{{ afs_topdir }}/packages/install_root"
         build_module: yes
-        transarc_paths: "{{ afs_transarc_build }}"
         configure_options: "{{ afs_configure_options | default(omit) }}"
         configure_environment: "{{ afs_configure_environment | default(omit) }}"
       register: build_results
