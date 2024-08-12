@@ -65,7 +65,8 @@ afs_install_method
 
 afs_checkout_method
   The method used to checkout source code when the ``afs_install_method`` is
-  ``source``.  Must be one of: ``git``, ``sdist_upload``, ``gerrit``.
+  ``source``.  Must be one of: ``none``, ``git``, ``sdist_upload``, ``gerrit``
+  Specify ``none`` to skip the checkout during the Ansible play.
 
   Default: ``git``
 

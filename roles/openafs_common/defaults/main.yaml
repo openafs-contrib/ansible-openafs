@@ -60,7 +60,7 @@ afs_topdir: ~/openafs
 # Installation method; managed, package, bdist, sdist, source, none
 # afs_install_method: (default is platform dependent)
 
-# Source checkout method; one of 'git', 'sdist_upload', 'gerrit'
+# Source checkout method; one of 'git', 'sdist_upload', 'gerrit', or 'none'
 afs_checkout_method: git
 
 # Package repository url or path for 'managed' installs.

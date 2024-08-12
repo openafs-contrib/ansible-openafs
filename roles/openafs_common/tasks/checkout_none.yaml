@@ -1,0 +1,10 @@
+---
+- name: "Checkout info."
+  debug:
+    msg: "Skipping checkout: afs_checkout_method is none"
+
+# Set the checkout results to force a rebuild.
+- name: "Mock checkout results"
+  set_fact:
+    checkout_results:
+      changed: True
