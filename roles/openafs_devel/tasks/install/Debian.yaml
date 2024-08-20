@@ -27,4 +27,5 @@
       - fakeroot
       - devscripts
       - lintian
+      - libpod-parser-perl
   tags: root
