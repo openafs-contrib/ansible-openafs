@@ -20,7 +20,7 @@
   when: ansible_pkg_mgr == 'pkgng'
 
 - debug:
-    msg: "Installing {{ afs_install_archive }}"
+    msg: "Release tarball is {{ afs_install_archive }}"
 
 - name: Create directories
   file:
@@ -32,10 +32,11 @@
     - "{{ afs_tmpdir }}/install"
     - "{{ afs_topdir }}"
 
-- name: Upload source distribution
+- name: Unarchive source distribution
   unarchive:
     src: "{{ afs_install_archive }}"
     dest: "{{ afs_tmpdir }}/install/"
+    remote_src: "{{ afs_install_archive_remote_src | d(True) }}"
   register: upload_results
 
 - debug:

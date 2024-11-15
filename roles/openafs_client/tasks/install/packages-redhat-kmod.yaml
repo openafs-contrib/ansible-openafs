@@ -31,17 +31,18 @@
   when: ansible_pkg_mgr in ('yum', 'dnf')
 
 - debug:
-    msg: "Installing {{ afs_install_archive }}"
+    msg: "Release tarball is {{ afs_install_archive }}"
 
 - name: Create directory
   file:
     state: directory
     path: "{{ afs_tmpdir }}/install"
 
-- name: Upload rpm package files
+- name: Unarchive rpm package files
   unarchive:
     src: "{{ afs_install_archive }}"
     dest: "{{ afs_tmpdir }}/install/"
+    remote_src: "{{ afs_install_archive_remote_src | d(True) }}"
 
 # Find the userspace rpm filenames for the client. We assume
 # all of the rpms in the staging directory belong to the same

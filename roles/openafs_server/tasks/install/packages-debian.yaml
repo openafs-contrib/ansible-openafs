@@ -11,7 +11,7 @@
       - afs_install_archive != ''
 
 - debug:
-    msg: "Installing {{ afs_install_archive }}"
+    msg: "Release tarball is {{ afs_install_archive }}"
 
 - name: Create directory
   file:
@@ -22,6 +22,7 @@
   unarchive:
     src: "{{ afs_install_archive }}"
     dest: "{{ afs_tmpdir }}/install/"
+    remote_src: "{{ afs_install_archive_remote_src | d(True) }}"
 
 - name: Find package filenames
   find:

@@ -76,8 +76,20 @@ afs_yum_repo
   Default: ``https://download.sinenomine.net/openafs/rpms/el$releasever/$basearch``
 
 afs_install_archive
-  Path to the compressed archive containing the installation files
+  Path or URL to the compressed archive containing the packages or binary files
   when the ``afs_install_method`` is ``packages``, ``bdist``, or ``sdist``.
+
+  The tarball will be downloaded to the remote node automatically when
+  ``afs_install_archive`` startes with ``http://``.  Otherwise, the path is to a
+  file already existing on the remote node.
+
+  Set ``afs_install_archive_remote_src`` to ``false`` to indicate the file should
+  be uploaded from the controller to the target machine.
+
+afs_install_archive_remote_src
+  When set to ``false``, the path indicated in ``afs_install_archive`` is a
+  local path (on the controller) and the archive will be uploaded from the controller
+  to the remote node. It can be an absolute or relative path.
 
 afs_git_repo
   The git repository URL when the ``afs_install_method`` is ``source``.
