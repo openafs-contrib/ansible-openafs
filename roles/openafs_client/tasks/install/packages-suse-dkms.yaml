@@ -120,7 +120,7 @@
 - name: Set client startup options
   become: yes
   lineinfile:
-    path: "/etc/sysconfig//{{ ansible_local.openafs.client_service_name }}"
+    path: "/etc/sysconfig/{{ ansible_local.openafs.client_service_name }}"
     regexp: "^AFSD_ARGS="
     line: 'AFSD_ARGS="{{ afs_afsd_opts }}"'
     state: present
@@ -133,7 +133,7 @@
   vars:
     crypt: "{{ afs_crypt | d('off') }}"
   lineinfile:
-    path: "/etc/sysconfig//{{ ansible_local.openafs.client_service_name }}"
+    path: "/etc/sysconfig/{{ ansible_local.openafs.client_service_name }}"
     regexp: "^CRYPT="
     line: 'CRYPT="{{ crypt }}"'
     state: present
