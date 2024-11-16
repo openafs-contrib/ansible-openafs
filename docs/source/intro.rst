@@ -16,13 +16,13 @@ Platforms supported
 -------------------
 
 * AlmaLinux 8, 9
-* CentOS 6, 7, 8
+* CentOS 7, 8
 * Debian 10, 11, 12
-* Fedora 36, 37
+* Fedora 39, 40
 * FreeBSD 12, 13
 * openSUSE 15
 * OracleLinux 8, 9
 * Red Hat Entrerprise Linux 7, 8, 9
 * Rocky 8, 9
 * Solaris 11.4
-* Ubuntu 20, 22
+* Ubuntu 20, 22, 24
