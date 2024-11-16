@@ -8,9 +8,15 @@ OpenAFS may be installed from pre-built packages or installed from source code.
 Ansible modules are provided to create OpenAFS volumes and users after the
 servers and at least one client has been installed.
 
-Since OpenAFS requires Kerberos for authentication, roles are provided to
-deploy a Kerberos 5 realm with MIT Kerberos. Alternatively, an existing realm
-can be used for authentication.
+The fileserver and client disk partitions should be created and mounted before
+importing the server and client roles. This should be done with however the
+disks are managed in your environment.
+
+Since OpenAFS requires Kerberos for authentication, roles are also provided to
+deploy a Kerberos realm with some basic setup.  Alternatively, an existing
+realm can be used for authentication, or other roles can be used to setup your
+Kerberos KDC and clients.
+
 
 Platforms supported
 -------------------
