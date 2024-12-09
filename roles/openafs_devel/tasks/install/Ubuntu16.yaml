@@ -1,5 +1,5 @@
 ---
-- name: "Ubuntu: Install development packages"
+- name: "Ubuntu16: Install development packages"
   become: yes
   apt:
     state: present
@@ -18,7 +18,6 @@
       - libkrb5-dev
       - libncurses5-dev
       - libperl-dev
-      - libpod-parser-perl
       - libssl-dev
       - libtool
       - make
