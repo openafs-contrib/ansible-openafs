@@ -23,4 +23,9 @@
       - make
       - swig
       - wget
+      # Required for docs
+      - dblatex
+      - docbook-xsl
+      - libxml2-utils
+      - xsltproc
   tags: root
