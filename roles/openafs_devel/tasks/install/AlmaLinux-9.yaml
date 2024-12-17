@@ -18,7 +18,7 @@
       - bison
       - elfutils-devel
       - flex
-      - fuse-devel
+      #- fuse-devel
       - gcc
       - git
       - glibc-devel
