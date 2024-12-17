@@ -31,6 +31,7 @@
       - pam-devel
       - perl-devel
       - perl-ExtUtils-Embed
+      - perl-Test-Simple
       - redhat-rpm-config
       - rpm-build
       - swig

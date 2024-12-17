@@ -32,6 +32,9 @@
       - pam-devel
       - perl-devel
       - perl-ExtUtils-Embed
+      - perl-FindBin
+      - perl-Sys-Hostname
+      - perl-Test-Simple
       - redhat-rpm-config
       - rpm-build
       - swig
