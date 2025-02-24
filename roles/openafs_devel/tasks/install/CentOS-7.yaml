@@ -28,6 +28,7 @@
       - ncurses-devel
       - openssl-devel
       - pam-devel
+      - perl-core
       - perl-devel
       - perl-ExtUtils-Embed
       - redhat-rpm-config
