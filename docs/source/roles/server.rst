@@ -50,6 +50,12 @@ afs_is_dbserver
 
   default: check ``afs_databases`` group
 
+afs_server_change_etc_hosts
+  Automatically replace the hostname to loopback entry in the ``/etc/hosts`` file
+  on Debian machines.  Set this to false to avoid this workaround.
+
+  default: ``true``
+
 afs_fileserver_type
   Determines the fileserver type the node is a fileserver.
   Valid values are ``fs`` (legacy File Server) or ``dafs`` (modern

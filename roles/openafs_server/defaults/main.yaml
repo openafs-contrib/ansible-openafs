@@ -13,6 +13,10 @@ afs_is_fileserver: "{{ 'afs_fileservers' in group_names }}"
 # Is this host a database server?
 afs_is_dbserver: "{{ 'afs_databases' in group_names }}"
 
+# Automatically replace the hostname to loopback entry in the /etc/hosts file
+# on Debian machines.  Set this to false to avoid this workaround.
+afs_server_change_etc_hosts: true
+
 # Fileserver cold start.
 # Set to 'yes' to defer fileserver startup until database quorum is detected.
 # Set to 'no' to skip cold start tasks.

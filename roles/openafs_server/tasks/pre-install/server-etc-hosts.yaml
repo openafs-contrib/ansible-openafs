@@ -12,11 +12,13 @@
 
 - name: Avoid mapping the hostname to a loopback address on Debian.
   become: yes
-  when: ansible_os_family == 'Debian'
+  when:
+    - ansible_os_family == 'Debian'
+    - afs_server_change_etc_hosts | bool
   replace:
     path: /etc/hosts
-    regexp: '^(127.0.1.1\s+.*)$'
-    replace: '# \1'
+    regexp: '^127.0.1.1'
+    replace: "{{ ansible_default_ipv4.address }} {{ ansible_hostname }}"
 
 - name: Check hostname resolution.
   command:
