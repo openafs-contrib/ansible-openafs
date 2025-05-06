@@ -1,5 +1,5 @@
 openafs_devel_kernel - OpenAFS Kernel Development Role
-===============================================
+======================================================
 
 Description
 -----------
