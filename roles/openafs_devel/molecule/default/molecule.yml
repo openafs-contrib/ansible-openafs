@@ -13,9 +13,6 @@ platforms:
   - name: m-role-devel${AFS_TESTID}
 provisioner:
   name: ansible
-  env:
-    ANSIBLE_PIPELINING: "True"
-    ANSIBLE_STDOUT_CALLBACK: "yaml"
 verifier:
   name: ansible
 scenario:
