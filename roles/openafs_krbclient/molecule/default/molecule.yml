@@ -1,9 +1,16 @@
 ---
 dependency:
   name: galaxy
+driver:
+  name: molecule-proxmox
+  options:
+    node: "${PROXMOX_NODE}"
+    proxmox_secrets: "${PROXMOX_SECRETS_FILE}"
+    ssh_user: "${PROXMOX_SSH_USER}"
+    ssh_identity_file: "${PROXMOX_SSH_IDENTITY_FILE}"
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
 platforms:
   - name: m-role-krbclient${AFS_TESTID}
-    box: "${AFS_IMAGE:-generic/centos7}"
 provisioner:
   name: ansible
   env:
