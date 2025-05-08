@@ -1,6 +1,0 @@
-skip_list:
-  - unnamed-task
-  - risky-file-permissions
-  - no-handler  # Tasks that run when changed should likely be handlers
-  - deprecated-bare-vars  # Using bare variables is deprecated; Task: Ensure admin is a superuser
-  - fqcn-builtins

@@ -1,4 +1,0 @@
-skip_list:
-  - unnamed-task
-  - no-handler  # Tasks that run when changed should likely be handlers
-  - fqcn-builtins
