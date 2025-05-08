@@ -1,5 +1,48 @@
 OpenAFS Ansible Collection
 
+April 2, 2025 - version 1.9.4
+
+* server role: Add `afs_server_change_etc_hosts` to remove the loopback
+  workaround in `/etc/hosts` files on Debian machines.
+
+* devel role: Install the `perl-core` package on RedHat family distros in order
+  to run OpenAFS unit tests.
+
+December 23, 2024 - version 1.9.3
+
+* devel role: Add AlmaLinux 10 support
+
+* devel role: Do not install fuse-devel on AlmaLinux 9 to work around
+  development tool installation issues.
+
+* devel role: Install perl modules AlmaLinux in order to run OpenAFS unit
+  tests.
+
+December 15, 2024 - version 1.9.2
+
+* devel role: Install dblatex and other packages needed to generate the openafs
+  documents during a build on debian machines.
+
+* devel role: Install libpod-parser-perl on Ubuntu machines.
+
+November 16, 2024 - version 1.9.1
+
+* Properly log the vos commands executed in the `openafs_volume` module.
+
+* Add `afs_checkout_method` "none" value support.
+
+* Add dynamic `afs_cachedir` default value.
+
+* Add `remote_src` to unarchive tasks.
+
+* Remove the `afs_transarc_build` role variable.
+
+* Change the default DESTDIR to `packages/install_root`
+
+May 31, 2023 - version 1.9.0
+
+* Add Debian 12 support
+
 December 13, 2022 - version 1.8.0
 
 * Add support for Solaris IPS packages. A private IPS package repository is
