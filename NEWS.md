@@ -1,5 +1,20 @@
 OpenAFS Ansible Collection
 
+May 11, 2025 - version 1.10.0
+
+* Add "local" playbooks for developers to install tools and install kerberos
+  and OpenAFS on a local machine.
+
+* Add "deploy" playbooks to deploy a Kerberos realm and an OpenAFS cell on one
+  or more ansible managed nodes.
+
+* Add the `openafs_robotserver` role and `deploy_robotserver` playbook to
+  deploy the Robotframework remote server on test nodes. Limited to AlmaLinux
+  at this time.
+
+* The collection development environment has been converted to tox and unit
+  tests have been cleaned up.
+
 April 2, 2025 - version 1.9.4
 
 * server role: Add `afs_server_change_etc_hosts` to remove the loopback
