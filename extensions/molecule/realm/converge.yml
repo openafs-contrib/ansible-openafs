@@ -1,3 +1,0 @@
----
-- import_playbook: ../__playbooks__/preamble.yaml
-- import_playbook: ../../../../playbooks/realm.yaml

@@ -1,58 +1,84 @@
 ---
 dependency:
   name: galaxy
+
+driver:
+  name: molecule-proxmox
+  options:
+    node: "${PROXMOX_NODE}"
+    proxmox_secrets: "${PROXMOX_SECRETS_FILE}"
+    ssh_user: "${PROXMOX_SSH_USER}"
+    ssh_identity_file: "${PROXMOX_SSH_IDENTITY_FILE}"
+
 platforms:
-  - name: m-playbook-cluster-01${AFS_TESTID}
-    box: "${AFS_IMAGE:-generic/centos7}"
+  - name: db1
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
+    groups:
+      - afs_kdcs
+      - afs_databases
+
+  - name: db2
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_databases
-      - afs_kdcs
-  - name: m-playbook-cluster-02${AFS_TESTID}
-    box: "${AFS_IMAGE:-generic/centos7}"
+
+  - name: db3
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
+    groups:
+      - afs_databases
+
+  - name: fs1
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_fileservers
-  - name: m-playbook-cluster-03${AFS_TESTID}
-    box: "${AFS_IMAGE:-generic/centos7}"
+
+  - name: fs2
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_fileservers
-  - name: m-playbook-cluster-04${AFS_TESTID}
-    box: "${AFS_IMAGE:-generic/centos7}"
+
+  - name: fs3
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
+    groups:
+      - afs_fileservers
+
+  - name: ws1
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_admin_client
       - afs_clients
-  - name: m-playbook-cluster-05${AFS_TESTID}
-    box: "${AFS_IMAGE:-generic/centos7}"
+
+  - name: ws2
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_clients
-  - name: m-playbook-cluster-06${AFS_TESTID}
-    box: "${AFS_IMAGE:-generic/centos7}"
+
+  - name: ws3
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_clients
+
 provisioner:
   name: ansible
-  env:
-    ANSIBLE_PIPELINING: "True"
-    ANSIBLE_STDOUT_CALLBACK: "yaml"
+  playbooks:
+    converge: ../resources/playbooks/converge_cell.yml
+    verify: ../resources/playbooks/verify_cell.yml
   inventory:
     group_vars:
       all:
-        afs_realm: "${AFS_REALM:-EXAMPLE.COM}"
-        afs_cell: "${AFS_CELL:-example.com}"
-        afs_builds: "${AFS_BUILDS:-~/.cache/ansible-openafs/builds}"
-        afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"
-        afs_git_version: "${AFS_GIT_VERSION:-master}"
-        afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
-        afs_install_method: "${AFS_INSTALL_METHOD}"
-        afs_module_install_method: "${AFS_MODULE_INSTALL_METHOD:-dkms}"
-        afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
-        afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
+        afs_install_method: "managed"
+        afs_module_install_method: "kmod"
+        afs_realm: "EXAMPLE.COM"
+        afs_cell: "example.com"
+        afs_admin: "admin"
+        afs_user: "alice"
+        afs_user_id: 2000
         afs_pseudo_partitions: ['a', 'b']
-        afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"
-        afs_git_version: "${AFS_GIT_VERSION:-master}"
-        afs_always_build: "${AFS_ALWAYS_BUILD:-no}"
-        afs_clean_build: "${AFS_CLEAN_BUILD:-yes}"
+        afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
+
 verifier:
   name: ansible
+
 scenario:
   create_sequence:
     - create

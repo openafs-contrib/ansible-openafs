@@ -1,0 +1,58 @@
+---
+- name: Prepare test instances.
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update /etc/hosts file.
+      ansible.builtin.copy:
+        backup: yes
+        dest: "{{ (ansible_system == 'SunOS') | ternary('/etc/inet/hosts', '/etc/hosts') }}"
+        content: |
+          127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+          ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+          {% for name in hostvars | sort %}
+          {% if name != 'localhost' %}
+          {{ hostvars[name]['ansible_default_ipv4']['address'] }}    {{ hostvars[name]['ansible_hostname'] }}
+          {% endif %}
+          {% endfor %}
+
+    - name: Disable selinux enforcing mode.
+      ansible.posix.selinux:
+        policy: targeted
+        state: permissive
+      when: ansible_selinux.status | d('permissive') != 'permissive'
+
+    - name: Check if firewalld is running.
+      ansible.builtin.service_facts:
+
+    - ansible.builtin.debug:
+        var: ansible_facts['services']['firewalld.service']
+
+    - name: Disable and stop firewalld service.
+      ansible.builtin.service:
+        name: firewalld
+        state: stopped
+        enabled: false
+      when: ansible_facts['services']['firewalld.service']['state'] | d('not-found') == 'running'
+
+    - name: Collect cell database server addresses.
+      vars:
+        _ip: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+        _name: "{{ hostvars[item]['inventory_hostname'] }}"
+        _clone: "{{ hostvars[item]['afs_db_clone'] | d('false') | bool }}"
+      set_fact:
+        _hosts: "{{ _hosts | d([]) + [{'ip': _ip, 'name': _name, 'clone': _clone}] }}"
+      loop: "{{ groups['afs_databases'] | d([]) }}"
+      when: afs_csdb is undefined and afs_csdb_file is undefined
+
+    - name: Set afs_csdb.
+      ansible.builtin.set_fact:
+        afs_csdb:
+          cell: "{{ afs_cell }}"
+          desc: "Test cell"
+          hosts: "{{ _hosts }}"
+      when: afs_csdb is undefined and afs_csdb_file is undefined
+
+    - name: Dump afs_csdb
+      ansible.builtin.debug:
+        var: afs_csdb

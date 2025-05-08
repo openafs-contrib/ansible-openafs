@@ -1,0 +1,5 @@
+- name: Verify kdc
+  hosts: afs_kdcs
+  tasks:
+    - debug:
+        msg: todo

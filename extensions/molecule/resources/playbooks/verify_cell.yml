@@ -1,0 +1,112 @@
+- name: Verify databases
+  hosts: afs_databases
+  tasks:
+    - name: Read bosserver rxbind address file.
+      become: true
+      ansible.builtin.slurp:
+        path: "{{ ansible_local.openafs.dirs.afslocaldir }}/bosserver.rxbind"
+      changed_when: false
+      failed_when: false
+      register: bosserver_rxbind
+
+    - name: Get bosserver address.
+      vars:
+        _rxbind: "{{ bosserver_rxbind['content'] | d('') | b64decode | trim }}"
+      ansible.builtin.set_fact:
+        bosserver_address: "{{ _rxbind | d('localhost', True) }}"
+
+    - name: Run bos status.
+      vars:
+        bos: "{{ ansible_local.openafs.bins.bos }}"
+      ansible.builtin.command:
+        cmd: "{{ bos }} status {{ bosserver_address }}"
+      changed_when: false
+      register: bos_status
+
+    - name: Assert ptserver is running.
+      ansible.builtin.assert:
+        that:
+          - bos_status.rc == 0
+          - "'Instance ptserver, currently running normally.' in bos_status.stdout"
+        success_msg: "ptserver is running."
+        fail_msg: "ptserver is not running."
+
+    - name: Assert vlserver is running.
+      ansible.builtin.assert:
+        that:
+          - bos_status.rc == 0
+          - "'Instance vlserver, currently running normally.' in bos_status.stdout"
+        success_msg: "vlserver is running."
+        fail_msg: "vlserver is not running."
+
+
+- name: Verify fileservers
+  hosts: afs_fileservers
+  tasks:
+    - name: Read bosserver rxbind address file.
+      become: true
+      ansible.builtin.slurp:
+        path: "{{ ansible_local.openafs.dirs.afslocaldir }}/bosserver.rxbind"
+      changed_when: false
+      failed_when: false
+      register: bosserver_rxbind
+
+    - name: Get bosserver address.
+      vars:
+        _rxbind: "{{ bosserver_rxbind['content'] | d('') | b64decode | trim }}"
+      ansible.builtin.set_fact:
+        bosserver_address: "{{ _rxbind | d('localhost', True) }}"
+
+    - name: Run bos status.
+      vars:
+        bos: "{{ ansible_local.openafs.bins.bos }}"
+      ansible.builtin.command:
+        cmd: "{{ bos }} status {{ bosserver_address }}"
+      changed_when: false
+      register: bos_status
+
+    - name: Assert file server is running.
+      ansible.builtin.assert:
+        that:
+          - bos_status.rc == 0
+          - "'Instance dafs, currently running normally.' in bos_status.stdout"
+        success_msg: "file server is running."
+        fail_msg: "file server is not running."
+
+
+- name: Verify clients
+  hosts: afs_admin_client:afs_clients
+  vars:
+    mount:  "{{ afs_mountpoint | d('/afs') }}"
+    topdir: "{{ afs_mountpoint | d('/afs') }}/{{ afs_cell | d('example.com') }}"
+  tasks:
+    - name: Collect mounted afs filesystem facts.
+      ansible.builtin.mount_facts:
+        fstypes:
+          - afs
+
+    - name: Assert AFS is mounted.
+      ansible.builtin.assert:
+        that: ansible_facts.mount_points[mount] is defined
+        success_msg: "AFS is mounted on {{ mount }}"
+        fail_msg: "AFS is not mounted."
+
+    - name: Stat cell directory.
+      ansible.builtin.stat:
+        path: "{{ topdir }}"
+        get_attributes: false
+        get_mime: false
+        get_checksum: false
+      register: p
+
+    - name: Assert cell path exists.
+      ansible.builtin.assert:
+        that: p.stat.isdir is defined
+        success_msg: "Path {{ topdir }} exists."
+        fail_msg: "Path {{ topdir }} does not exist."
+
+    - name: Assert cell path is a directory
+      ansible.builtin.assert:
+        that: p.stat.isdir
+        success_msg: "Path {{ topdir }} is a directory."
+        fail_msg: "Path {{ topdir }} is not a directory."
