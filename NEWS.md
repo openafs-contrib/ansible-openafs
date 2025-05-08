@@ -1,5 +1,16 @@
 OpenAFS Ansible Collection
 
+May 8, 2025 - version 1.10.0
+
+* playbooks: Add "local" playbooks for developers to install tools and install
+  kerberos and OpenAFS on a local machine.
+
+* playbooks: Add "deploy" playbooks to deploy a Kerberos realm and an OpenAFS
+  cell on one or more ansible managed nodes.
+
+* The collection development environment has been converted to tox and unit
+  tests have been cleaned up.
+
 April 2, 2025 - version 1.9.4
 
 * server role: Add `afs_server_change_etc_hosts` to remove the loopback
