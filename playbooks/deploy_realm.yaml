@@ -1,0 +1,153 @@
+# Copyright (c) 2025, Sine Nomine Associates
+#
+# Deploy a Kerberos realm for OpenAFS.
+#
+# * Install and configure the Kerberos KDC (primary KDC only)
+# * Create the database
+# * Create the AFS service key principal and keytab
+# * Create an admin principal and keytab
+# * Create a regular user principal and keytab
+# * Download the keytab files for distribution
+#
+# Limitations
+# -----------
+#
+# * Only a primary KDC is supported.
+# * Database propagation (e.g., kprop) is not supported at this time.
+#
+# Groups
+# ------
+#
+# * afs_kdcs        The target node should be in the afs_kdcs group.
+#
+# Important Variables
+# -------------------
+#
+# * afs_realm       Name of the Kerberos realm to be created
+# * afs_cell        Name of the OpenAFS cell for the service key
+# * afs_user        Name of a regular user
+# * afs_cell_files  Path to save keytabs on the controller
+#
+# Override variables with inventory host/group variables or --extra (-e)
+# ansible-playbook options.  See the vars section for playbook variables and
+# the krbserver role documentation for role variables.
+#
+# Checkpoints
+# -----------
+#
+# * checkpoint 1   Kerberos KDC deployed
+# * checkpoint 2   Keytabs created and downloaded
+#
+# The checkpoint is saved in the checkpoint local fact file on the remote
+# node to avoid unneccessarily running tasks when the playbook is run within an
+# hour.  Remove the checkpoint file or run ansible-playbook with -e
+# checkpoint=0 to override.
+#
+- name: Create a Kerberos realm and initial principals.
+  hosts: afs_kdcs
+  vars:
+     checkpoint_file: /etc/ansible/facts.d/deploy_realm.fact
+     _seconds_per_hour: 3600
+  tasks:
+    - name: Stat the checkpoint file.
+      ansible.builtin.stat:
+        path: "{{ checkpoint_file }}"
+      register: deploy_realm_facts
+
+    - name: Remove checkpoint files older than an hour.
+      when:
+        - deploy_realm_facts.stat.exists
+        - (deploy_realm_facts.stat.mtime | int) < ((ansible_date_time.epoch | int) - _seconds_per_hour)
+      block:
+        - name: Remove the checkpoint file.
+          become: true
+          ansible.builtin.file:
+            path: "{{ checkpoint_file }}"
+            state: absent
+
+        - name: Update Ansible local facts
+          ansible.builtin.setup:
+            gather_subset: "!all"
+            filter: ansible_local
+
+    - name: Deploy Kerberos realm.
+      when: (ansible_local.deploy_realm.checkpoint | d(0) | int) < 1
+      block:
+        - name: Deploy Kerbose KDC
+          ansible.builtin.include_role:
+            name: openafs_contrib.openafs.openafs_krbserver
+
+        - name: Save checkpoint 1
+          become: true
+          ansible.builtin.copy:
+            content: '{"checkpoint": 1}'
+            dest: "{{ checkpoint_file }}"
+            owner: root
+            group: root
+            mode: "0644"
+
+        # Note: Must be last in the block.
+        - name: Update Ansible local facts
+          ansible.builtin.setup:
+            gather_subset: "!all"
+            filter: ansible_local
+
+    - name: Create keytabs
+      when: (ansible_local.deploy_realm.checkpoint | d(0) | int) < 2
+      block:
+        - name: Create the AFS service key.
+          become: true
+          openafs_contrib.openafs.openafs_principal:
+            state: present
+            principal: "afs/{{ afs_cell }}"
+            encryption_types:
+              - aes128-cts:normal
+              - aes256-cts:normal
+            kadmin: "{{ afs_kadmin_local | d(omit) }}"
+          register: service_key_results
+
+        - name: Create the admin principal.
+          become: true
+          openafs_contrib.openafs.openafs_principal:
+            state: present
+            principal: "{{ afs_admin | replace('.', '/') }}"
+            acl: "*"
+            kadmin: "{{ afs_kadmin_local | d(omit) }}"
+          register: admin_princ_results
+
+        - name: Create a user principal.
+          become: true
+          openafs_contrib.openafs.openafs_principal:
+            state: present
+            principal: "{{ afs_user }}"
+            kadmin: "{{ afs_kadmin_local | d(omit) }}"
+          register: user_princ_results
+
+        - name: Download keytabs.
+          become: true
+          when: afs_cell_files is defined
+          ansible.builtin.fetch:
+            flat: true
+            src: "{{ item }}"
+            dest: "{{ afs_cell_files }}/"
+          loop:
+            - "{{ service_key_results.keytab }}"
+            - "{{ admin_princ_results.keytab }}"
+            - "{{ user_princ_results.keytab }}"
+          loop_control:
+            label: "{{ item }} to {{ afs_cell_files }}/"
+
+        - name: Save checkpoint 2
+          become: true
+          ansible.builtin.copy:
+            content: '{"checkpoint": 2}'
+            dest: "{{ checkpoint_file }}"
+            owner: root
+            group: root
+            mode: "0644"
+
+        # Note: Must be last in the block.
+        - name: Update Ansible local facts
+          ansible.builtin.setup:
+            gather_subset: "!all"
+            filter: ansible_local

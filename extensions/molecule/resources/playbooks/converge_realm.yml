@@ -1,0 +1,6 @@
+---
+- name: Prepare test instances.
+  ansible.builtin.import_playbook: prep_machines.yml
+
+- name: Run our deploy realm playbook.
+  ansible.builtin.import_playbook: openafs_contrib.openafs.deploy_realm

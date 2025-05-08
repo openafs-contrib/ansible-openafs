@@ -1,0 +1,11 @@
+# Copyright (c) 2025, Sine Nomine Associates
+#
+# This playbook installs development packages needed to build OpenAFS on the
+# local system.  See the top level README for the list of platforms supported.
+#
+- name: "Install OpenAFS development packages."
+  hosts: localhost
+  connection: local
+  roles:
+    - openafs_contrib.openafs.openafs_devel
+    - openafs_contrib.openafs.openafs_devel_kernel

@@ -1,33 +1,45 @@
 ---
 dependency:
   name: galaxy
+
+driver:
+  name: molecule-proxmox
+  options:
+    node: "${PROXMOX_NODE}"
+    proxmox_secrets: "${PROXMOX_SECRETS_FILE}"
+    ssh_user: "${PROXMOX_SSH_USER}"
+    ssh_identity_file: "${PROXMOX_SSH_IDENTITY_FILE}"
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
+
 platforms:
-  - name: m-playbook-realm${AFS_TESTID}
-    box: "${AFS_IMAGE:-generic/centos7}"
+  - name: openafs-default
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
+      - afs_admin_client
+      - afs_clients
+      - afs_databases
+      - afs_fileservers
       - afs_kdcs
+
 provisioner:
   name: ansible
-  env:
-    ANSIBLE_PIPELINING: "True"
-    ANSIBLE_STDOUT_CALLBACK: "yaml"
+  playbooks:
+    converge: ../resources/playbooks/converge_realm.yml
+    verify: ../resources/playbooks/verify_realm.yml
   inventory:
     group_vars:
       all:
+        afs_install_method: "managed"
         afs_realm: "EXAMPLE.COM"
         afs_cell: "example.com"
+        afs_admin: "admin"
+        afs_user: "alice"
+        afs_user_id: 2000
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
-        afs_builds: "${AFS_BUILDS:-~/.cache/ansible-openafs/builds}"
-        afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
-        afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"
-        afs_git_version: "${AFS_GIT_VERSION:-master}"
-        afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
-        afs_install_method: "managed"
-        afs_module_install_method: "dkms"
-        afs_pseudo_partitions: ['a', 'b']
-        #afs_service_keytab: "../__files__/example-aes.keytab"
+
 verifier:
   name: ansible
+
 scenario:
   create_sequence:
     - create

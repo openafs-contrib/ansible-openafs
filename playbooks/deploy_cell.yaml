@@ -1,0 +1,258 @@
+# Copyright (c) 2025, Sine Nomine Associates
+#
+# Deploy an OpenAFS cell.
+#
+# * Installs the OpenAFS database servers.
+# * Installs the OpenAFS fileservers.
+# * Installs the OpenAFS clients, including the OpenAFS kernel module.
+# * Sets up the server configuration
+# * Creates an admin and a regular OpenAFS user.
+# * Creates the top-level root.afs and root.cell volumes.
+# * Creates a top-level test volume.
+#
+# Prerequisites
+# -------------
+#
+# A working Kerberos realm is required before running this playbook.
+# Principals for the AFS service key, and admin user, and a regular user, and
+# the keytabs for these are required.  See the deploy_realm.yaml playbook for a
+# basic realm deployment.
+#
+# At least one /vicepX partition must be mounted on each file server before
+# running this playbook.
+#
+# Host Groups
+# -----------
+#
+# * afs_databases      The OpenAFS database servers
+# * afs_fileservers    The OpenAFS file servers
+# * afs_admin_client   The first OpenAFS client. This is used to setup the cell volumes
+# * afs_clients        Additional OpenAFS clients
+#
+# A given node can be in more than one group.
+#
+# Important Variables
+# -------------------
+#
+# * afs_install_method         How to install OpenAFS. The default is to use the
+#                              system's package manager.
+#
+# * afs_module_install_method  How to install the OpenAFS kernel module on
+#                              client nodes. The default is to use DMKS, which
+#                              compiles the kernel module for the Linux kernel
+#                              version running on the node.
+#
+# * afs_cell                   Name of the cell to be created.
+#
+# * afs_realm                  Name of the kerberos realm to be used.
+#
+# * afs_csdb                   The cell database servers information. This is
+#                              a dictionary to generate the CellServDB file on
+#                              servers and clients. It must contain the IP addresses
+#                              of the database servers in the afs_databases group.
+#
+# * afs_admin                  Name of the admin user (for setup)
+#
+# * afs_user                   Name of a regular user (for testing)
+#
+# See the OpenAFS Collection role documentation for more information.
+#
+# Checkpoints
+# -----------
+#
+# * checkpoint 1   Servers deployed
+# * checkpoint 2   Admin client deployed
+# * checkpoint 3   Top level cell volumes created
+# * checkpoint 4   Additional clients deployed
+#
+# The checkpoint is saved in the checkpoint local fact file on the remote
+# nodesj to avoid unneccessarily running tasks when the playbook is run within
+# an hour.  Remove the checkpoint file or run ansible-playbook with -e
+# checkpoint=0 to override.
+
+- name: Install servers
+  hosts: afs_fileservers:afs_databases
+  vars:
+     checkpoint_file: /etc/ansible/facts.d/deploy_cell.fact
+     _seconds_per_hour: 3600
+  tasks:
+    - name: Stat the checkpoint file.
+      stat:
+        path: "{{ checkpoint_file }}"
+      register: deploy_cell_fact
+
+    - name: Remove checkpoint files older than an hour.
+      when:
+        - deploy_cell_fact.stat.exists
+        - (deploy_cell_fact.stat.mtime | int) < ((ansible_date_time.epoch | int) - _seconds_per_hour)
+      block:
+        - name: Remove the checkpoint file.
+          become: true
+          ansible.builtin.file:
+            path: "{{ checkpoint_file }}"
+            state: absent
+
+        - name: Update Ansible local facts
+          ansible.builtin.setup:
+            gather_subset: "!all"
+            filter: ansible_local
+
+    - ansible.builtin.debug:
+       var: deploy_cell.checkpoint
+
+    - name: "Deploy OpenAFS servers."
+      when: (ansible_local.deploy_cell.checkpoint | d(0) | int) < 1
+      block:
+        - name: "Install OpenAFS servers."
+          ansible.builtin.include_role:
+            name: openafs_contrib.openafs.openafs_server
+
+        - name: Save checkpoint 1
+          become: true
+          ansible.builtin.copy:
+            content: '{"checkpoint": 1}'
+            dest: "{{ checkpoint_file }}"
+            owner: root
+            group: root
+            mode: "0644"
+
+        # Note: Must be last in the block.
+        - name: Update Ansible local facts
+          ansible.builtin.setup:
+            gather_subset: "!all"
+            filter: ansible_local
+
+- name: Create volumes and users.
+  hosts: afs_admin_client
+  vars:
+     checkpoint_file: /etc/ansible/facts.d/deploy_cell.fact
+  tasks:
+    - name: "Deploy client."
+      when: (ansible_local.deploy_cell.checkpoint | d(0) | int) < 2
+      block:
+        - name: "Install kerberos client."
+          ansible.builtin.include_role:
+            name: openafs_contrib.openafs.openafs_krbclient
+
+        - name: "Install OpenAFS client."
+          ansible.builtin.include_role:
+            name: openafs_contrib.openafs.openafs_client
+
+        - name: "Upload kerberos keytabs."
+          ansible.builtin.copy:
+            src: "{{ afs_cell_files }}/{{ item }}.keytab"
+            dest: "{{ item }}.keytab"
+            mode: "400"
+          with_items:
+            - "{{ afs_admin }}"
+            - "{{ afs_user }}"
+
+        - name: "Store cell facts."
+          become: true
+          openafs_contrib.openafs.openafs_store_facts:
+            state: update
+            facts:
+              cell:
+                realm: "{{ afs_realm }}"
+                cell: "{{ afs_cell }}"
+                user: "{{ afs_user }}"
+                admin: "{{ afs_admin }}"
+
+        - name: Save checkpoint 2
+          become: true
+          ansible.builtin.copy:
+            content: '{"checkpoint": 2}'
+            dest: "{{ checkpoint_file }}"
+            owner: root
+            group: root
+            mode: "0644"
+
+        # Note: Must be last in the block.
+        - name: Update Ansible local facts
+          ansible.builtin.setup:
+            gather_subset: "!all"
+            filter: ansible_local
+
+    - name: Create the top-level cell volumes and some initial users.
+      when: (ansible_local.deploy_cell.checkpoint | d(0) | int) < 3
+      block:
+        - name: "Import OpenAFS common tasks."
+          ansible.builtin.include_role:
+            name: openafs_contrib.openafs.openafs_common
+
+        - name: "Create top-level volumes."
+          openafs_contrib.openafs.openafs_volume:
+            state: present
+            name: "{{ item.name }}"
+            mount: "{{ item.mount }}"
+            acl: "{{ item.acl }}"
+            auth_user: "{{ afs_admin | replace('.', '/') }}"
+            auth_keytab: "{{ afs_admin }}.keytab"
+            replicas: 3
+          with_items:
+            - name: root.afs
+              mount: /afs
+              acl: "system:anyuser read"
+            - name: root.cell
+              mount: /afs/{{ afs_cell }}
+              acl: "system:anyuser read"
+            - name: test
+              mount: /afs/{{ afs_cell }}/test
+              acl:
+                - "system:anyuser read"
+                - "system:authuser write"
+
+        - name: "Create test user."
+          openafs_contrib.openafs.openafs_user:
+            name: "{{ afs_user }}"
+            id: "{{ afs_user_id | int }}"
+            group: tester
+            auth_user: "{{ afs_admin | replace('.', '/') }}"
+            auth_keytab: "{{ afs_admin }}.keytab"
+
+        - name: Save checkpoint 3
+          become: true
+          ansible.builtin.copy:
+            content: '{"checkpoint": 3}'
+            dest: "{{ checkpoint_file }}"
+            owner: root
+            group: root
+            mode: "0644"
+
+        # Note: Must be last in the block.
+        - name: Update Ansible local facts
+          ansible.builtin.setup:
+            gather_subset: "!all"
+            filter: ansible_local
+
+
+- name: Additional clients
+  hosts: afs_clients,!afs_admin_client
+  vars:
+     checkpoint_file: /etc/ansible/facts.d/deploy_cell.fact
+  tasks:
+    - name: "Deploy client."
+      when: (ansible_local.deploy_cell.checkpoint | d(0) | int) < 4
+      block:
+        - name: "Install kerberos clients."
+          ansible.builtin.include_role:
+            name: openafs_contrib.openafs.openafs_krbclient
+
+        - name: "Install OpenAFS clients."
+          ansible.builtin.include_role:
+            name: openafs_contrib.openafs.openafs_client
+
+        - name: Save checkpoint 4
+          become: true
+          ansible.builtin.copy:
+            content: '{"checkpoint": 4}'
+            dest: "{{ checkpoint_file }}"
+            owner: root
+            group: root
+            mode: "0644"
+
+        # Note: Must be last in the block.
+        - name: Update Ansible local facts
+          ansible.builtin.setup:
+            gather_subset: "!all"
+            filter: ansible_local
