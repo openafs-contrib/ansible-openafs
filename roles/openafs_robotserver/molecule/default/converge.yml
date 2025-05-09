@@ -1,0 +1,6 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - ansible.builtin.import_role:
+        name: openafs_contrib.openafs.openafs_robotserver
