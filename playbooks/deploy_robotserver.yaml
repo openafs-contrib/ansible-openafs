@@ -1,0 +1,56 @@
+# Copyright (c) 2025, Sine Nomine Associates
+#
+# Deploy the Robotframework remote server for OpenAFS testing.
+#
+# * Optionally upload the OpenAFS keyword library (e.g., wheel)
+# * Create the "robot" user and group
+# * Create a virtualenv
+# * Install robot remote server and keyword library
+# * Create systemd service file
+# * Ensure service is running
+#
+# Host Groups
+# -----------
+#
+# * afs_test_nodes      Target instances
+#
+# Important Variables
+# -------------------
+#
+# deploy_robotserver_library_file
+#
+#   (Optional) This variable allows you to deploy a specific Robot Server library
+#   file directly from the Ansible controller to the remote nodes.  If this
+#   variable is set, the playbook will first copy the file located at the specified
+#   path on the Ansible controller to a temporary location on the remote nodes and
+#   will use pip to install the library from this local file.  This is useful when
+#   you have a custom build, an internal distribution, or need to ensure a specific
+#   version that might not be readily available on PyPI.
+#
+#   When this variable is not defined, the playbook will install the package
+#   specified by `afs_robotserver_library`. This will be installed from the
+#   Python Package Index (PyPI).
+#
+#  afs_robotserver_library
+#
+#    (Optional) This variable specifies the pip package name and version specification
+#    of the library package to be installed when `deploy_robotserver_libraray_file`
+#    is not defined.
+#
+- name: Install robot remote server for OpenAFS
+  hosts: "{{ afs_test_nodes | d('all') }}"
+  tasks:
+    - name: Copy robot keyword library file.
+      when: deploy_robotserver_library_file is defined
+      ansible.builtin.copy:
+        src: "{{ deploy_robotserver_library_file }}"
+        dest: "/tmp/{{ deploy_robotserver_library_file | basename }}"
+
+    - name: Set library file path.
+      when: deploy_robotserver_library_file is defined
+      ansible.builtin.set_fact:
+        afs_robotserver_library: "file:///tmp/{{ deploy_robotserver_library_file | basename }}"
+
+    - name: Install robot remote server.
+      ansible.builtin.import_role:
+        name: openafs_contrib.openafs.openafs_robotserver

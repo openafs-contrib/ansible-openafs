@@ -1,0 +1,59 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: molecule-proxmox
+  options:
+    node: "${PROXMOX_NODE}"
+    proxmox_secrets: "${PROXMOX_SECRETS_FILE}"
+    ssh_user: "${PROXMOX_SSH_USER}"
+    ssh_identity_file: "${PROXMOX_SSH_IDENTITY_FILE}"
+
+platforms:
+  - name: openafs-test-node-1
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
+    groups:
+      - afs_test_nodes
+
+provisioner:
+  name: ansible
+  playbooks:
+    converge: ../resources/playbooks/converge_robotserver.yml
+    verify: ../resources/playbooks/verify_robotserver.yml
+  inventory:
+    group_vars:
+      afs_test_nodes:
+        # deploy_robotserver_library_file: "${HOME}/src/robotframework-openafslibrary/dist/robotframework_openafslibrary-1.0.1-py3-none-any.whl"
+
+verifier:
+  name: ansible
+
+scenario:
+  create_sequence:
+    - create
+    - prepare
+  check_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - check
+    - destroy
+  converge_sequence:
+    - create
+    - prepare
+    - converge
+  destroy_sequence:
+    - cleanup
+    - destroy
+  test_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - cleanup
+    - destroy

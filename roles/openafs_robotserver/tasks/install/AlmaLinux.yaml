@@ -1,0 +1,52 @@
+---
+- name: Install required python packages for ansible pip module.
+  become: true
+  ansible.builtin.yum:
+    state: present
+    name:
+      - python3-packaging
+      - python3-setuptools
+
+- name: Install robot server libraries.
+  become: true
+  ansible.builtin.pip:
+    state: present
+    virtualenv: "{{ afs_robotserver_virtualenv }}"
+    virtualenv_command: /usr/bin/python3 -m venv
+    name:
+      - robotremoteserver
+      - robotframework
+      - "{{ afs_robotserver_library }}"
+  notify:
+    - Restart robot server service.
+
+- name: Install robot server command.
+  become: true
+  ansible.builtin.template:
+    src: robotserver-openafs.py.j2
+    dest: "{{ afs_robotserver_virtualenv }}/bin/robotserver-openafs"
+    owner: root
+    group: root
+    mode: '0755'
+  notify:
+    - Restart robot server service.
+
+- name: Create robot server systemd service file.
+  become: true
+  ansible.builtin.template:
+    src: robotserver-openafs.service.j2
+    dest: /etc/systemd/system/robotserver.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Reload systemd.
+    - Restart robot server service.
+
+- name: Enable robot server service.
+  become: true
+  ansible.builtin.systemd:
+    name: robotserver.service
+    enabled: true
+  notify:
+    - Restart robot server service.

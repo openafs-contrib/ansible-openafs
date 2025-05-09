@@ -1,0 +1,19 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Query robot server.
+      ansible.builtin.command:
+        cmd: "libdoc Remote::{{ ansible_host }}:8270 list"
+      changed_when: false
+      delegate_to: localhost
+      register: libdoc_list
+
+    #- debug:
+    #    var: libdoc_list
+
+    - name: Assert keywords found.
+      ansible.builtin.assert:
+        that: '"Create Volume" in libdoc_list.stdout_lines'
+        success_msg: Create Volume keyword found.
+        fail_msg: Create Volume keyword not found.

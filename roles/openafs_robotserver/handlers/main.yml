@@ -1,0 +1,12 @@
+---
+- name: Reload systemd.
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Restart robot server service.
+  become: true
+  ansible.builtin.systemd:
+    name: robotserver.service
+    # start the first time, restart if changed.
+    state: restarted

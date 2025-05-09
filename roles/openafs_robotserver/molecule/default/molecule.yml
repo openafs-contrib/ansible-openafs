@@ -1,0 +1,45 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: molecule-proxmox
+  options:
+    node: "${PROXMOX_NODE}"
+    proxmox_secrets: "${PROXMOX_SECRETS_FILE}"
+    ssh_user: "${PROXMOX_SSH_USER}"
+    ssh_identity_file: "${PROXMOX_SSH_IDENTITY_FILE}"
+platforms:
+  - name: m-role-robotserver
+    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
+provisioner:
+  name: ansible
+verifier:
+  name: ansible
+scenario:
+  create_sequence:
+    - create
+    - prepare
+  check_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - check
+    - destroy
+  converge_sequence:
+    - create
+    - prepare
+    - converge
+  destroy_sequence:
+    - cleanup
+    - destroy
+  test_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - cleanup
+    - destroy

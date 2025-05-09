@@ -1,0 +1,18 @@
+#!{{ afs_robotserver_virtualenv }}/bin/python3
+
+from robotremoteserver import RobotRemoteServer
+from robot.libraries.OperatingSystem import OperatingSystem
+from robot.libraries.String import String
+from OpenAFSLibrary import OpenAFSLibrary
+
+
+class LibraryMixin(OperatingSystem, String, OpenAFSLibrary):
+    pass
+
+
+def main():
+    RobotRemoteServer(LibraryMixin(), host="0.0.0.0")
+
+
+if __name__ == "__main__":
+    main()

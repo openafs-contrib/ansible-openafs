@@ -14,3 +14,14 @@ def test_deploy_cell_on_single_machine(molecule_test, os_name):
 def test_deploy_cell_on_cluster(molecule_test, os_name):
     rc = molecule_test(scenario="cluster", os_name=os_name)
     assert rc == 0
+
+
+@pytest.mark.parametrize(
+    "os_name",
+    [
+        "alma9",
+    ],
+)
+def test_deploy_robotserver(molecule_test, os_name):
+    rc = molecule_test(scenario="robotserver", os_name=os_name)
+    assert rc == 0

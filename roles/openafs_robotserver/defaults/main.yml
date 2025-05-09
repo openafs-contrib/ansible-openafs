@@ -1,0 +1,5 @@
+---
+afs_robotserver_virtualenv: /opt/robotserver
+afs_robotserver_user: robot
+afs_robotserver_group: robot
+afs_robotserver_library: robotframework_openafslibrary

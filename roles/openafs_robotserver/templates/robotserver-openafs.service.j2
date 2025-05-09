@@ -1,0 +1,13 @@
+[Unit]
+Description=Robot Remote Server for OpenAFS
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+User={{ afs_robotserver_user }}
+Group={{ afs_robotserver_group }}
+ExecStart={{ afs_robotserver_virtualenv }}/bin/robotserver-openafs
+
+[Install]
+WantedBy=multi-user.target

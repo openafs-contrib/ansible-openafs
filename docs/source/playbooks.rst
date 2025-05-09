@@ -24,10 +24,10 @@ Development Playbooks
 These playbooks are designed to be run on the directly on the local machine.
 They are generally used for development and testing.
 
-``local_devel.yaml``
+``openafs_contrib.openafs.local_devel``
    Install development tools on the local machine.
 
-``local_cell.yaml``
+``openafs_contrib.openafs.local_cell``
    Install and setup Kerberos and OpenAFS clients and servers on the local
    machine to create a simple test realm and cell. This sets up a fully functional
    but non-distributed OpenAFS environment for local testing.
@@ -38,17 +38,20 @@ Deployment Playbooks
 These playbooks require an inventory file specifying the target systems to be
 managed by Ansible.
 
-``deploy_realm.yaml``
+``openafs_contrib.openafs.deploy_realm``
    Deploy a Kerberos server on a managed node defined in your inventory.
    This playbook also creates principals and keytabs for the AFS service,
    an admin user, and a regular user.
 
-``deploy_cell.yaml``
+``openafs_contrib.openafs.deploy_cell``
    Deploy OpenAFS clients and servers on one or more managed nodes and ensure
    the cell has been created. This includes configuring the clients and servers
    and creating the top level volumes. This playbook assumes the Kerberos realm
    is already present and keytabs are available for the AFS service key, an admin
    user, and one regular user.
+
+``openafs_contrib.openafs.deploy_robotserver``
+   Deploy the Robotframework Remote Server on test nodes for distributed testing.
 
 Example Inventory
 -----------------

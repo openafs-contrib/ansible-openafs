@@ -1,0 +1,35 @@
+---
+- name: Create robot system group.
+  become: true
+  ansible.builtin.group:
+    name: "{{ afs_robotserver_group }}"
+    state: present
+
+- name: Create robot user.
+  become: true
+  ansible.builtin.user:
+    name: "{{ afs_robotserver_user }}"
+    group: "{{ afs_robotserver_group }}"
+
+- name: Grant sudo privileges to robot user.
+  become: true
+  community.general.sudoers:
+    name: robot-sudo
+    state: present
+    user: "{{ afs_robotserver_user }}"
+    commands: ALL   # This should be limited.
+    nopassword: true
+
+- name: Install remote server.
+  vars:
+    _path: "{{ role_path }}/tasks/install"
+  include_tasks: "{{ afs_remoteserver_item }}"
+  loop_control:
+    loop_var: afs_remoteserver_item
+  with_first_found:
+    - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
+    - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
+    - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}.yaml"
+    - "{{ _path }}/{{ ansible_os_family | replace(' ', '_') }}.yaml"
+    - "{{ _path }}/{{ ansible_system | replace(' ', '_') }}.yaml"
+    - "{{ _paht }}/unknown.yaml"
