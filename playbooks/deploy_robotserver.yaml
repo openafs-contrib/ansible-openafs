@@ -1,0 +1,9 @@
+# Copyright (c) 2025, Sine Nomine Associates
+#
+# Deploy the Robotframework remote server for OpenAFS testing.
+#
+- name: Install robot remote server for OpenAFS
+  hosts: "{{ afs_test_nodes | d('all') }}"
+  tasks:
+    - ansible.builtin.import_role:
+        name: openafs_contrib.openafs.openafs_robotserver
