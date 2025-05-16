@@ -70,6 +70,42 @@
 # an hour.  Remove the checkpoint file or run ansible-playbook with -e
 # checkpoint=0 to override.
 
+# Sanity check the clocks on the database servers before proceeding. The clocks
+# must be in sync within 10 seconds for the quorum to succeed.
+- name: Clock skew check
+  hosts: afs_databases
+  gather_facts: false
+  tasks:
+    - name: Get clock timestamps.
+      ansible.builtin.command:
+        cmd: date +%s
+      changed_when: false
+      register: clock_timestamp
+
+    - name: Clock skew check.
+      run_once: true  # noqa run-once[task]
+      delegate_to: localhost
+      block:
+        - name: Collect clock timestamps.
+          ansible.builtin.set_fact:
+            clock_timestamps: "{{ ((clock_timestamps | d([])) + [hostvars[item].clock_timestamp.stdout | int]) | sort }}"
+          loop: "{{ play_hosts }}"
+
+        - name: Calculate clock skew.
+          ansible.builtin.set_fact:
+            clock_skew: "{{ clock_timestamps[-1] - clock_timestamps[0] }}"
+
+        - name: Print clock_skew
+          ansible.builtin.debug:
+            var: clock_skew
+
+        - name: Check clock skew
+          ansible.builtin.assert:
+            that: "{{ (clock_skew | int) < 10 }}"
+            success_msg: "Server clocks are ok."
+            fail_msg: "Server clocks are out of sync. Max clock skew is {{ clock_skew }}."
+
+
 - name: Install servers
   hosts: afs_fileservers:afs_databases
   vars:
