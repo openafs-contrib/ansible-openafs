@@ -855,7 +855,7 @@ class LinuxBuilder(Builder):
         modloads = []
         for kmod in self.kmods:
             pattern = \
-                r'/MODLOAD-%s-[A-Z]*/(lib|open)afs\.ko$' % platform.release()
+                r'/MODLOAD-%s(-[A-Z]*)?/(lib|open)afs\.ko$' % platform.release()
             m = re.search(pattern, kmod)
             if m:
                 modloads.append(kmod)
