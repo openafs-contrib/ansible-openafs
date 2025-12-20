@@ -1,10 +1,22 @@
 ---
-- name: "RedHat: Add EPEL repository"
+- name: "RedHat: Enable CodeReady Builder repository"
   become: yes
-  yum:
+  vars:
+    release: "{{ ansible_distribution_major_version }}"
+    arch: "{{ ansible_architecture }}"
+  community.general.rhsm_repository:
+    state: enabled
+    name: "codeready-builder-for-rhel-{{ release }}-{{ arch }}-rpms"
+  tags: root
+
+- name: "RedHat: Install EPEL release package"
+  become: yes
+  vars:
+    release: "{{ ansible_distribution_major_version }}"
+  ansible.builtin.dnf:
     state: present
-    name: epel-release
-    update_cache: yes
+    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ release }}.noarch.rpm"
+    disable_gpg_check: yes
   tags: root
 
 - name: "RedHat: Install development packages"
