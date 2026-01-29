@@ -1,0 +1,97 @@
+---
+#
+# Prepare a RedHat 10 system to build OpenAFS
+#
+# The CRB and EPEL repositories are required. These RedHat 10
+# specific tasks should be moved to the OpenAFS collection.
+#
+# The OpenAFS client role installs the kernel-devel package and the other
+# needed packages to build and install the OpenAFS DKMS kernel module.
+#
+# Workaounds:
+#
+# 1. Check the repolist to avoid the rhsm_repository task when
+#    the CRB repo is already enabled to avoid a long delay contacting
+#    the RedHat servers.  Newer versions of Ansible may fix this.
+#
+# 2. Download the EPEL release RPM package and use dnf to install
+#    it to work around an error which seems to be due to old
+#    versions of Ansible we still support.
+#
+#    An unknown error occurred: 'CustomHTTPSConnection' object has no attribute 'cert_file'
+#
+
+- name: "RedHat-10: Check if the Code Ready Builder (CRB) is already enabled"
+  ansible.builtin.command: "dnf repolist --enabled"
+  register: enabled_repos_results
+  changed_when: false
+
+- name: "RedHat-10: Enable the CodeReady Builder (CRB) repository"
+  become: yes
+  vars:
+    arch: "{{ ansible_architecture }}"
+    crb_repo_id: "codeready-builder-for-rhel-10-{{ arch }}-rpms"
+  community.general.rhsm_repository:
+    name: "{{ crb_repo_id }}"
+    state: enabled
+  when: crb_repo_id not in enabled_repos_results.stdout
+
+- name: "RedHat-10: Check if epel-release is already enabled"
+  ansible.builtin.command: "rpm -q epel-release"
+  register: epel_query_results
+  failed_when: false
+  changed_when: false
+
+- debug: var=epel_query_results
+
+- name: "RedHat-10: Download and install EPEL"
+  vars:
+    epel_not_installed: "package epel-release is not installed"
+    epel_rpm: "epel-release-latest-10.noarch.rpm"
+  when: epel_not_installed in epel_query_results.stdout
+  block:
+    - name: "RedHat-10: Download EPEL 10 RPM"
+      ansible.builtin.command:
+        cmd: "curl -L -o /tmp/{{ epel_rpm }} https://dl.fedoraproject.org/pub/epel/{{ epel_rpm }}"
+        creates: "/tmp/{{ epel_rpm }}"
+
+    - name: "RedHat-10: Install EPEL release package"
+      become: yes
+      ansible.builtin.dnf:
+        name: "/tmp/{{ epel_rpm }}"
+        state: present
+        disable_gpg_check: true
+
+    - name: "RedHat-10: Ensure DNF cache is refreshed"
+      ansible.builtin.dnf:
+        update_cache: true
+
+- name: "RedHat-10: Install development packages"
+  become: yes
+  ansible.builtin.dnf:
+    state: present
+    name:
+      - autoconf
+      - automake
+      - bison
+      - elfutils-devel
+      - flex
+      - fuse-devel
+      - gcc
+      - git
+      - glibc-devel
+      - jansson-devel
+      - krb5-devel
+      - libevent-devel
+      - libtool
+      - make
+      - ncurses-devel
+      - openssl-devel
+      - pam-devel
+      - perl-core
+      - perl-devel
+      - perl-ExtUtils-Embed
+      - redhat-rpm-config
+      - rpm-build
+      - swig
+      - wget
