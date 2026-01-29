@@ -1,0 +1,4 @@
+---
+- name: "Windows: Skipping development tool installation."
+  ansible.builtin.debug:
+    msg: "Development tools must be installed manually on Windows."
