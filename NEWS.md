@@ -1,5 +1,11 @@
 OpenAFS Ansible Collection
 
+January 30, 2026 - version 1.10.2
+
+* Add support to install devel tools on RedHat-10.
+
+* Skip devel tools install on Windows.
+
 December 20, 2025 - version 1.10.1
 
 * Add a clock-skew check on the servers before installing OpenAFS to avoid
