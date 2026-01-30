@@ -1,5 +1,18 @@
 OpenAFS Ansible Collection
 
+December 20, 2025 - version 1.10.1
+
+* Add a clock-skew check on the servers before installing OpenAFS to avoid
+  quorum issues.
+
+* Fix the check for the OpenAFS kernel module in the `openafs_build` module.
+  Recent versions of OpenAFS changed the path during compilation.
+
+* Install perl-core on RedHat 9 and later in `openafs_devel` role. This
+  is needed to run the OpenAFS unit tests.
+
+* Fix CodeReady Build (CRB) and EPEL install in `openafs_devel` on RedHat.
+
 May 11, 2025 - version 1.10.0
 
 * Add "local" playbooks for developers to install tools and install kerberos
