@@ -105,3 +105,6 @@ afs_clean_build: yes
 
 # root group name. May be root or wheel depending on the OS.
 afs_root_group: "{{ _afs_root_group | d('root') }}"
+
+# Firewall rules will be updated by default. Set this variable to false to skip.
+afs_update_firewall_rules: True

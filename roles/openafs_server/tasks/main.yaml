@@ -19,6 +19,7 @@
 - import_tasks: "pre-install/server-etc-hosts.yaml"
 - import_tasks: "pre-install/server-partitions.yaml"
 - include_tasks: "pre-install/firewall-{{ afs_firewall | default('none') }}.yaml"
+  when: afs_update_firewall_rules
 - include_tasks: "pre-install/security-policies-{{ afs_security_model }}.yaml"
 
 - name: Install server

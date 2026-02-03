@@ -16,7 +16,9 @@
     - "{{ role_path }}/vars/defaults.yaml"
 
 - include_tasks: "system-{{ afs_firewall }}.yaml"
-  when: afs_firewall is defined
+  when:
+    - afs_update_firewall_rules
+    - afs_firewall is defined
 
 - name: Install packages
   include_tasks: "{{ afs_krbserver_install_item }}"

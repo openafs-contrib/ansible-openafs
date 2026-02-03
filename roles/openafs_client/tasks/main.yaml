@@ -17,6 +17,7 @@
 
 - import_tasks: "pre-install/check-variables.yaml"
 - include_tasks: "pre-install/firewall-{{ afs_firewall | default('none') }}.yaml"
+  when: afs_update_firewall_rules
 
 - name: Install client
   include_tasks: "{{ afs_client_install_item }}"
