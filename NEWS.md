@@ -1,5 +1,9 @@
 OpenAFS Ansible Collection
 
+February 3, 2026 - version 1.10.3
+
+* Add `afs_update_filewall_rules` variable to skip firewalld tasks.
+
 January 30, 2026 - version 1.10.2
 
 * Add support to install devel tools on RedHat-10.
