@@ -706,6 +706,13 @@ class OpensuseLeapMITKerberosAdmin(MITKerberosAdmin):
     extra_path = ['/usr/lib/mit/sbin']
 
 
+class SlesMITKerberosAdmin(MITKerberosAdmin):
+    platform = 'Linux'
+    distribution = 'Sles'
+    kadm5_acl = '/var/lib/kerberos/krb5kdc/kadm5.acl'
+    extra_path = ['/usr/lib/mit/sbin']
+
+
 class DebianMITKerberosAdmin(MITKerberosAdmin):
     platform = 'Linux'
     distribution = 'Debian'
