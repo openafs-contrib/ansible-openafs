@@ -1,5 +1,11 @@
 OpenAFS Ansible Collection
 
+March 20, 2026 - version 1.10.4
+
+* Add SLES support to the `openafs_pricipal` module.
+
+* Add SLES 15 support to the `openafs_kernel_devel` role.
+
 February 3, 2026 - version 1.10.3
 
 * Add `afs_update_filewall_rules` variable to skip firewalld tasks.
