@@ -44,7 +44,8 @@ which ones are run by default.
 Requirements
 ~~~~~~~~~~~~
 
-* `tox`_ 4.0 or later
+* `tox`_ 4.36 or later (older versions of tox will install the required
+  version automatically)
 * Python 3; install each of the Python versions in the ``py`` test
   environments shown by ``tox list`` to run all of the unit tests
 * `podman`_, to run the role and playbook tests
@@ -60,7 +61,13 @@ Run ``tox`` without arguments to run the default test environments:
 
    tox
 
+The lint checks are run first. If the lint checks fail, the remaining test
+environments are skipped, so fix the lint errors first.
+
 The test environments are named as follows:
+
+``lint``
+   Check the roles and playbooks with ``ansible-lint``.
 
 ``pyXY``
    Run the plugin unit tests with Python X.Y, using the latest version of
@@ -72,9 +79,6 @@ The test environments are named as follows:
    ``ansible-core`` 2.19. There is an environment for each supported
    ``ansible-core`` version, from the minimum version given in
    ``meta/runtime.yml``.
-
-``lint``
-   Check the roles and playbooks with ``ansible-lint``.
 
 To run a single test environment, use the ``-e`` option:
 
