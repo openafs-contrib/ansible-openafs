@@ -74,7 +74,7 @@ The test environments are named as follows:
    ``ansible-core`` available for that Python version.
 
 ``ansible-coreXYZ``
-   Run the unit tests and a syntax check of the playbooks with
+   Run a syntax check of the playbooks and the unit tests with
    ``ansible-core`` version X.YZ. For example, ``ansible-core219`` tests with
    ``ansible-core`` 2.19. There is an environment for each supported
    ``ansible-core`` version, from the minimum version given in
