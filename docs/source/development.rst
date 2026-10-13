@@ -111,14 +111,15 @@ and playbook tests, with the latest versions of Python, Ansible, and Molecule:
 Running all of the tests takes a long time, since the role and playbook tests
 are run for each of the operating systems listed in the test files. Arguments
 after ``--`` are passed to ``pytest``. Use the ``-k`` option to select the
-tests to run, and the ``-x`` option to stop on the first failure. For example:
+tests to run. Use the ``-s`` option to show the full output, and the ``-x``
+option to stop on the first failure. For example:
 
 .. code-block:: bash
 
-   tox -e latest -- -k roles                       # role tests
-   tox -e latest -- -k playbooks                   # playbook tests
-   tox -e latest -- -k alma9                       # tests on one operating system
-   tox -e latest -- -k "openafs_server and alma9" -x
+   tox -e latest -- -k roles
+   tox -e latest -- -k playbooks
+   tox -e latest -- -s -x -k alma9
+   tox -e latest -- -s -x -k "openafs_server and alma9"
 
 The ``sdist`` and ``packages`` scenarios install the OpenAFS release given in
 ``tests/integration/openafs.yml``. The release source files are downloaded from

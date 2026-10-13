@@ -65,15 +65,23 @@ def os_name(request):
     return request.param
 
 
-def run_and_log(cmd, cwd, env, logfile):
-    """Run a command, writing the output to the terminal and to a log file."""
+def show_output(config):
+    """Show the command output on the terminal only when the pytest output
+    capture is disabled (-s), since the output is saved in the log files."""
+    return config.getoption("capture") == "no"
+
+
+def run_and_log(cmd, cwd, env, logfile, echo=False):
+    """Run a command, writing the output to a log file, and to the terminal
+    if echo is true."""
     logfile.parent.mkdir(parents=True, exist_ok=True)
     with open(logfile, "w") as log:
         log.write(f"Running: {' '.join(cmd)} in {cwd}\n")
         proc = subprocess.Popen(cmd, cwd=cwd, env=env, text=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in proc.stdout:
-            sys.stdout.write(line)
+            if echo:
+                sys.stdout.write(line)
             log.write(line)
         return proc.wait()
 
@@ -92,7 +100,7 @@ def release_files():
 
 
 @pytest.fixture(scope="session")
-def bdist_builder(release_files):
+def bdist_builder(pytestconfig, release_files):
     """Build a binary distribution with the openafs_devel bdist scenario, once
     for each platform and git ref."""
     built = {}
@@ -106,7 +114,8 @@ def bdist_builder(release_files):
             cmd = ["molecule", "test", "-s", "bdist"]
             logfile = LOG_PATH / f"openafs_devel-bdist-{os_name}.log"
             print(f"\nBuilding bdist for {os_name} from {git_ref}; log: {logfile}")
-            rc = run_and_log(cmd, ROOT_PATH / "roles" / "openafs_devel", env, logfile)
+            rc = run_and_log(cmd, ROOT_PATH / "roles" / "openafs_devel", env, logfile,
+                             echo=show_output(pytestconfig))
             if rc != 0:
                 pytest.fail(f"Failed to build bdist for {os_name}; see {logfile}")
             archive = release_files.find(os_name, "bdist")
@@ -161,7 +170,7 @@ def molecule_test(request, release_files, bdist_builder):
         request.node.user_properties.append(("log", str(logfile)))
         print(f"\nRunning: {' '.join(cmd)} [{os_name}] in {path}")
         print(f"Log: {logfile}")
-        rc = run_and_log(cmd, path, env, logfile)
+        rc = run_and_log(cmd, path, env, logfile, echo=show_output(request.config))
         return rc
 
     return _run
