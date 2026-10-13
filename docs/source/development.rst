@@ -69,8 +69,9 @@ The test environments are named as follows:
 ``ansible-coreXYZ``
    Run the unit tests and a syntax check of the playbooks with
    ``ansible-core`` version X.YZ. For example, ``ansible-core219`` tests with
-   ``ansible-core`` 2.19. Environments for some older versions are defined,
-   but are not run by default.
+   ``ansible-core`` 2.19. There is an environment for each supported
+   ``ansible-core`` version, from the minimum version given in
+   ``meta/runtime.yml``.
 
 ``lint``
    Check the roles and playbooks with ``ansible-lint``.
