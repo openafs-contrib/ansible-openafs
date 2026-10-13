@@ -1,0 +1,4 @@
+---
+# Collections required to run the tests.
+collections:
+  - name: community.general
