@@ -96,26 +96,24 @@ a development machine without any other test infrastructure.
 
 .. _`Molecule`: https://docs.ansible.com/projects/molecule/
 
-Run the role tests:
+The ``latest`` test environment runs all of the tests, including the role
+and playbook tests, with the latest versions of Python, Ansible, and Molecule:
 
 .. code-block:: bash
 
-   tox -e roles
+   tox -e latest
 
-Run the playbook tests:
-
-.. code-block:: bash
-
-   tox -e playbooks
-
-The tests are run for each of the operating systems listed in the test files.
-Arguments after ``--`` are passed to ``pytest``. Use the ``-k`` option to
-select tests by name and operating system, and the ``-x`` option to stop on
-the first failure:
+Running all of the tests takes a long time, since the role and playbook tests
+are run for each of the operating systems listed in the test files. Arguments
+after ``--`` are passed to ``pytest``. Use the ``-k`` option to select the
+tests to run, and the ``-x`` option to stop on the first failure. For example:
 
 .. code-block:: bash
 
-   tox -e roles -- -k "openafs_devel and alma9" -x
+   tox -e latest -- -k roles                       # role tests
+   tox -e latest -- -k playbooks                   # playbook tests
+   tox -e latest -- -k alma9                       # tests on one operating system
+   tox -e latest -- -k "openafs_server and alma9" -x
 
 The ``sdist`` and ``packages`` scenarios install the OpenAFS release given in
 ``tests/integration/openafs.yml``. The release source files are downloaded from
@@ -133,10 +131,10 @@ build OpenAFS and run these scenarios:
 
 .. code-block:: bash
 
-   tox -e roles -- --build openafs-stable-1_8_16_1 -k "openafs_server and alma9"
+   tox -e latest -- --build openafs-stable-1_8_16_1 -k "openafs_server and alma9"
 
 The output of each test is saved to a log file in the ``.tox/<env>/test-logs``
-directory (for example, ``.tox/roles/test-logs``), along with a summary of the
+directory (for example, ``.tox/latest/test-logs``), along with a summary of the
 test results in ``summary.txt`` and a JUnit XML report in ``junit.xml``.
 
 .. note::
