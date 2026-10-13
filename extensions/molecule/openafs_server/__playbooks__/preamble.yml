@@ -9,7 +9,7 @@
     # This is a workaround for test systems without a proper nameserver.
     - name: Rewrite hosts file
       become: yes
-      when: afs_prep_rewrite_hosts
+      when: afs_prep_rewrite_hosts | bool
       copy:
         backup: yes
         dest: "{{ afs_hosts_file }}"

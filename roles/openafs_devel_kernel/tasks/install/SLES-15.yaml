@@ -72,7 +72,7 @@
         msg:
           - Refusing to update kernel and reboot.
           - Manually update your kernel version or set 'afs_devel_allow_kernel_update' to 'yes' and retry.
-      when: not afs_devel_allow_kernel_update
+      when: not (afs_devel_allow_kernel_update | bool)
 
     - name: "Update kernel."
       become: yes

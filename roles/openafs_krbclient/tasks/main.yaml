@@ -17,7 +17,7 @@
 
 - include_tasks: "system-{{ afs_firewall }}.yaml"
   when:
-    - afs_update_firewall_rules
+    - afs_update_firewall_rules | bool
     - afs_firewall is defined
 
 

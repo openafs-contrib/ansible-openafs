@@ -3,7 +3,7 @@
 
 - name: Verify node is a client
   assert:
-    that: afs_is_client
+    that: afs_is_client | bool
 
 - name: Enforce server install before client
   assert:
@@ -11,7 +11,7 @@
       - ansible_local.openafs.server_installed is defined
       - ansible_local.openafs.server_installed == True
   when:
-    - afs_is_server
+    - afs_is_server | bool
 
 - name: Verify install method
   assert:
