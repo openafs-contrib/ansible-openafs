@@ -42,7 +42,8 @@
   failed_when: false
   changed_when: false
 
-- debug: var=epel_query_results
+- debug:
+    var: epel_query_results
 
 - name: "RedHat-10: Download and install EPEL"
   vars:

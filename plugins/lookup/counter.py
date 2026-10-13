@@ -111,7 +111,7 @@ class LookupModule(LookupBase):
 
     def init_paths(self):
         directory = os.path.expanduser(os.getenv(
-                      'ANISIBLE_OPENAFS_COUNTER_DIR', '~/.ansible'))
+                      'ANSIBLE_OPENAFS_COUNTER_DIR', '~/.ansible'))
         if not os.path.exists(directory):
             os.makedirs(directory)
         self.lockfile = os.path.join(directory, 'counter.lock')

@@ -11,7 +11,7 @@
 # Preliminary tasks.
 #
 - name: Clients should already be installed on server nodes.
-  when: afs_is_server
+  when: afs_is_server | bool
   assert:
     that:
       - ansible_local.openafs.build_completed is defined
@@ -42,7 +42,7 @@
 # Checkout source code.
 #
 - name: Checkout
-  when: not afs_is_server
+  when: not afs_is_server | bool
   block:
     - include_role:
         name: openafs_contrib.openafs.openafs_common
@@ -58,7 +58,7 @@
         facts:
           build_completed: false
       when: >
-        afs_always_build  or
+        (afs_always_build | bool) or
         checkout_results.changed or
         ansible_local.openafs.build_completed is undefined
 

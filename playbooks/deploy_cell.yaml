@@ -101,7 +101,7 @@
 
         - name: Check clock skew
           ansible.builtin.assert:
-            that: "{{ (clock_skew | int) < 10 }}"
+            that: (clock_skew | int) < 10
             success_msg: "Server clocks are ok."
             fail_msg: "Server clocks are out of sync. Max clock skew is {{ clock_skew }}."
 

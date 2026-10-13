@@ -20,7 +20,9 @@
       ansible.posix.selinux:
         policy: targeted
         state: permissive
-      when: ansible_selinux.status | d('permissive') != 'permissive'
+      when:
+        - ansible_selinux.status | d('disabled') == 'enabled'
+        - ansible_selinux.mode | d('') != 'permissive'
 
     - name: Check if firewalld is running.
       ansible.builtin.service_facts:

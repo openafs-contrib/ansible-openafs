@@ -1,3 +1,6 @@
+exclude_paths:
+  - .ansible/
+
 skip_list:
   - command-instead-of-module
   - deprecated-bare-vars

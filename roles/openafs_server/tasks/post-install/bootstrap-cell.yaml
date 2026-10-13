@@ -15,15 +15,15 @@
     sleep: 10
     timeout: 600
   when:
-    - afs_is_dbserver
+    - afs_is_dbserver | bool
 
 - name: "Fileserver cold start"
   become: yes
   command:
     cmd: "{{ afs_bos }} start -server localhost -instance {{ afs_fileserver_type }} -localauth"
   when:
-    - afs_is_fileserver
-    - afs_server_cold_start
+    - afs_is_fileserver | bool
+    - afs_server_cold_start | bool
   changed_when: True
 
 - name: Wait for fileserver registration
@@ -33,7 +33,7 @@
     timeout: 600
     signal: "{{ afs_registration_retry_signal | d('no') | bool }}"
   when:
-    - afs_is_fileserver
+    - afs_is_fileserver | bool
 
 - name: Bootstrap cell
   become: yes
@@ -49,7 +49,7 @@
       with_items: "{{ ((afs_admin | type_debug) == 'list') | ternary(afs_admin, [afs_admin]) }}"
 
     - name: Ensure root volumes exist
-      when: afs_create_root
+      when: afs_create_root | bool
       openafs_contrib.openafs.openafs_volume:
         state: present
         volume: "{{ item }}"
