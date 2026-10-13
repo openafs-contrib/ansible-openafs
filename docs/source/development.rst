@@ -5,32 +5,20 @@ Source
 ------
 
 The source code for the **OpenAFS Ansible Collection** is available on
-`GitHub`_. Ansible requires collections to be located in a directory named
-``ansible_collections/<namespace>/<name>``, so clone the repository into an
-``ansible_collections/openafs_contrib/openafs`` directory:
+`GitHub`_.
 
 .. _`GitHub`: https://github.com/openafs-contrib/ansible-openafs
 
 .. code-block:: bash
 
-   mkdir -p collections/ansible_collections/openafs_contrib
-   cd collections/ansible_collections/openafs_contrib
-   git clone https://github.com/openafs-contrib/ansible-openafs openafs
-   cd openafs
+   git clone https://github.com/openafs-contrib/ansible-openafs
+   cd ansible-openafs
 
-To build and install the collection from the source code:
+To install the collection from the source tree, run the command:
 
 .. code-block:: bash
 
    tox -e install
-
-To use the collection directly from the source tree instead of installing
-it, set the ``ANSIBLE_COLLECTIONS_PATH`` environment variable to the
-top-level ``collections`` directory:
-
-.. code-block:: bash
-
-   export ANSIBLE_COLLECTIONS_PATH=/path/to/collections
 
 Testing
 -------
