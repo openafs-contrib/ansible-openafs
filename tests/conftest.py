@@ -9,9 +9,14 @@ from release_files import ReleaseFiles
 
 ROOT_PATH = pathlib.Path(__file__).parent.parent
 PODMAN_PATH = ROOT_PATH / "extensions" / "molecule" / "resources" / "podman"
+CACHE_PATH = pathlib.Path.home() / ".cache" / "ansible-openafs"
 
 # Directory for the molecule output log files and the test summary.
 LOG_PATH = pathlib.Path(os.environ.get("AFS_TEST_LOGDIR", ROOT_PATH / ".cache" / "test-logs"))
+
+# Ansible home directory for the molecule tests. Molecule installs the
+# collection under test into this directory.
+ANSIBLE_HOME_PATH = pathlib.Path(os.environ.get("AFS_TEST_ANSIBLE_HOME", CACHE_PATH / "ansible-home"))
 
 # Scenarios which can not be run in containers, since they load the openafs
 # kernel module or install kernel packages. (A role name of None is a
@@ -95,6 +100,7 @@ def molecule_env(os_name):
     # tree.
     env.pop("ANSIBLE_COLLECTIONS_PATH", None)
     env.pop("ANSIBLE_COLLECTIONS_PATHS", None)
+    env["ANSIBLE_HOME"] = str(ANSIBLE_HOME_PATH)
     if os_name:
         env["AFS_TEST_OS"] = os_name
     return env
