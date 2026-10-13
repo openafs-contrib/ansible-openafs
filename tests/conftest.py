@@ -2,10 +2,14 @@ import os
 import pytest
 import subprocess
 import pathlib
+import sys
 import yaml
 
 ROOT_PATH = pathlib.Path(__file__).parent.parent
 PODMAN_PATH = ROOT_PATH / "extensions" / "molecule" / "resources" / "podman"
+
+# Directory for the molecule output log files and the test summary.
+LOG_PATH = pathlib.Path(os.environ.get("AFS_TEST_LOGDIR", ROOT_PATH / ".cache" / "test-logs"))
 
 # Scenarios which can not be run in containers, since they load the openafs
 # kernel module or install kernel packages. (A role name of None is a
@@ -51,8 +55,21 @@ def os_name(request):
     return request.param
 
 
+def run_and_log(cmd, cwd, env, logfile):
+    """Run a command, writing the output to the terminal and to a log file."""
+    logfile.parent.mkdir(parents=True, exist_ok=True)
+    with open(logfile, "w") as log:
+        log.write(f"Running: {' '.join(cmd)} in {cwd}\n")
+        proc = subprocess.Popen(cmd, cwd=cwd, env=env, text=True,
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        for line in proc.stdout:
+            sys.stdout.write(line)
+            log.write(line)
+        return proc.wait()
+
+
 @pytest.fixture
-def molecule_test():
+def molecule_test(request):
 
     def _run(role=None, scenario="default", os_name=None):
 
@@ -72,8 +89,45 @@ def molecule_test():
             env["AFS_TEST_OS"] = os_name
 
         cmd = ["molecule", "test", "-s", scenario]
+        logfile = LOG_PATH / f"{role or 'playbooks'}-{scenario}-{os_name or 'default'}.log"
+        request.node.user_properties.append(("log", str(logfile)))
         print(f"\nRunning: {' '.join(cmd)} [{os_name}] in {path}")
-        rc = subprocess.call(cmd, cwd=path, env=env)
+        print(f"Log: {logfile}")
+        rc = run_and_log(cmd, path, env, logfile)
         return rc
 
     return _run
+
+
+# Write a summary of the test results to a file, since the summary printed
+# by pytest is easy to lose in the output of a long test run.
+
+_results = []
+
+
+def pytest_runtest_logreport(report):
+    if "integration/" not in report.nodeid:
+        return
+    if report.when == "call" or (report.when == "setup" and not report.passed):
+        log = dict(report.user_properties).get("log", "")
+        if report.skipped and isinstance(report.longrepr, tuple):
+            detail = report.longrepr[2].removeprefix("Skipped: ")
+        elif report.failed:
+            detail = log
+        else:
+            detail = ""
+        outcome = "ERROR" if report.failed and report.when == "setup" else report.outcome.upper()
+        nodeid = report.nodeid[report.nodeid.find("tests/integration/"):]
+        _results.append((outcome, nodeid, detail))
+
+
+def pytest_sessionfinish(session):
+    if not _results:
+        return
+    LOG_PATH.mkdir(parents=True, exist_ok=True)
+    counts = {}
+    with open(LOG_PATH / "summary.txt", "w") as f:
+        for outcome, nodeid, detail in _results:
+            counts[outcome] = counts.get(outcome, 0) + 1
+            f.write(f"{outcome:8} {nodeid}" + (f"  ({detail})" if detail else "") + "\n")
+        f.write("\n" + ", ".join(f"{n} {o.lower()}" for o, n in sorted(counts.items())) + "\n")

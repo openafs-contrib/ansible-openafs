@@ -117,6 +117,10 @@ the first failure:
 
    tox -e roles -- -k "openafs_devel and alma9" -x
 
+The output of each test is saved to a log file in the ``.tox/<env>/test-logs``
+directory (for example, ``.tox/roles/test-logs``), along with a summary of the
+test results in ``summary.txt`` and a JUnit XML report in ``junit.xml``.
+
 .. note::
 
    The OpenAFS kernel module can not be loaded in a container, so the
