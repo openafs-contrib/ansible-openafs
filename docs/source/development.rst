@@ -141,7 +141,9 @@ build OpenAFS and run these scenarios:
 
 The output of each test is saved to a log file in the ``.tox/<env>/test-logs``
 directory (for example, ``.tox/latest/test-logs``), along with a summary of the
-test results in ``summary.txt`` and a JUnit XML report in ``junit.xml``.
+test results in ``summary.txt`` and a JUnit XML report in ``junit.xml``. When
+``pytest`` is run without ``tox``, the log files are saved in the
+``~/.cache/ansible-openafs/test-logs`` directory.
 
 .. note::
 

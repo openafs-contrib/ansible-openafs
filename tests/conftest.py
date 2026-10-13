@@ -12,7 +12,7 @@ PODMAN_PATH = ROOT_PATH / "extensions" / "molecule" / "resources" / "podman"
 CACHE_PATH = pathlib.Path.home() / ".cache" / "ansible-openafs"
 
 # Directory for the molecule output log files and the test summary.
-LOG_PATH = pathlib.Path(os.environ.get("AFS_TEST_LOGDIR", ROOT_PATH / ".cache" / "test-logs"))
+LOG_PATH = pathlib.Path(os.environ.get("AFS_TEST_LOGDIR", CACHE_PATH / "test-logs"))
 
 # Ansible home directory for the molecule tests. Molecule installs the
 # collection under test into this directory.
