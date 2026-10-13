@@ -3,22 +3,21 @@ dependency:
   name: galaxy
 
 driver:
-  name: molecule-proxmox
+  name: default
   options:
-    node: "${PROXMOX_NODE}"
-    proxmox_secrets: "${PROXMOX_SECRETS_FILE}"
-    ssh_user: "${PROXMOX_SSH_USER}"
-    ssh_identity_file: "${PROXMOX_SSH_IDENTITY_FILE}"
+    managed: true
+    login_cmd_template: "podman exec -it {instance} /bin/bash"
 
 platforms:
   - name: openafs-test-node-1
-    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_test_nodes
 
 provisioner:
   name: ansible
   playbooks:
+    create: ../resources/podman/create.yml
+    destroy: ../resources/podman/destroy.yml
     converge: ../resources/playbooks/converge_robotserver.yml
     verify: ../resources/playbooks/verify_robotserver.yml
   inventory:

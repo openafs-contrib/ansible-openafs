@@ -1,0 +1,24 @@
+---
+# Base container images for each operating system to test. The test image
+# is built from the base image by adding python, sudo, and systemd.
+afs_podman_base_images:
+  alma8: docker.io/library/almalinux:8
+  alma9: docker.io/library/almalinux:9
+  alma10: docker.io/library/almalinux:10
+  centos9: quay.io/centos/centos:stream9
+  centos10: quay.io/centos/centos:stream10
+  debian12: docker.io/library/debian:12
+  debian13: docker.io/library/debian:13
+  fedora43: registry.fedoraproject.org/fedora:43
+  fedora44: registry.fedoraproject.org/fedora:44
+  opensuse15: registry.opensuse.org/opensuse/leap:15.6
+  opensuse16: registry.opensuse.org/opensuse/leap:16.0
+  oracle8: docker.io/library/oraclelinux:8
+  oracle9: docker.io/library/oraclelinux:9
+  oracle10: docker.io/library/oraclelinux:10
+  rocky8: docker.io/rockylinux/rockylinux:8
+  rocky9: docker.io/rockylinux/rockylinux:9
+  rocky10: docker.io/rockylinux/rockylinux:10
+  ubuntu22: docker.io/library/ubuntu:22.04
+  ubuntu24: docker.io/library/ubuntu:24.04
+  ubuntu26: docker.io/library/ubuntu:26.04

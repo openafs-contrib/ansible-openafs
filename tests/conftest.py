@@ -2,6 +2,25 @@ import os
 import pytest
 import subprocess
 import pathlib
+import yaml
+
+ROOT_PATH = pathlib.Path(__file__).parent.parent
+PODMAN_PATH = ROOT_PATH / "extensions" / "molecule" / "resources" / "podman"
+
+# Scenarios which can not be run in containers, since they load the openafs
+# kernel module or install kernel packages. (A role name of None is a
+# playbook scenario.)
+PODMAN_UNSUPPORTED = [
+    ("openafs_client", "*"),
+    ("openafs_devel_kernel", "*"),
+    (None, "default"),
+    (None, "cluster"),
+]
+
+
+def podman_images():
+    with open(PODMAN_PATH / "images.yml") as f:
+        return yaml.safe_load(f)["afs_podman_base_images"]
 
 
 @pytest.fixture(
@@ -37,19 +56,24 @@ def molecule_test():
 
     def _run(role=None, scenario="default", os_name=None):
 
-        root_path = pathlib.Path(__file__).parent.parent
         if role:
-            path = root_path / "roles" / role
+            path = ROOT_PATH / "roles" / role
         else:
-            path = root_path / "extensions"
+            path = ROOT_PATH / "extensions"
+
+        if (role, "*") in PODMAN_UNSUPPORTED or (role, scenario) in PODMAN_UNSUPPORTED:
+            pytest.skip(f"scenario {role or 'playbooks'}/{scenario} is not supported in containers")
+        if os_name and os_name not in podman_images():
+            pytest.skip(f"no container image for {os_name}")
 
         env = os.environ.copy()
-        env["ANSIBLE_COLLECTIONS_PATH"] = root_path.parent.parent.absolute()
+        env["ANSIBLE_COLLECTIONS_PATH"] = str(ROOT_PATH.parent.parent.absolute())
         if os_name:
-            env["PROXMOX_TEMPLATE_NAME"] = os_name
+            env["AFS_TEST_OS"] = os_name
 
-        print(f"\nRunning: molecule test -s {scenario} [{os_name}] in {path}")
-        rc = subprocess.call(["molecule", "test", "-s", scenario], cwd=path, env=env)
+        cmd = ["molecule", "test", "-s", scenario]
+        print(f"\nRunning: {' '.join(cmd)} [{os_name}] in {path}")
+        rc = subprocess.call(cmd, cwd=path, env=env)
         return rc
 
     return _run
