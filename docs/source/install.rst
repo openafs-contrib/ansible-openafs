@@ -4,12 +4,12 @@ Installation
 Requirements
 ------------
 
-This collection requires Ansible 2.10 or later. Ansible may be installed with
-your package manager or with Python ``pip``. A Python virtualenv is
-recommended if you are installing packages with ``pip``.
+This collection requires Ansible (``ansible-core``) 2.15 or later (included in
+the ``ansible`` package version 8 and later).
 
 The target machines to be managed must be reachable via ``ssh`` and must have
-Python already installed. Ansible is not required on the target machines.
+a Python version supported by your version of ``ansible-core`` already
+installed. Ansible is not required on the target machines.
 
 Galaxy
 ------
