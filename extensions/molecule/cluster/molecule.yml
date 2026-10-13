@@ -3,64 +3,55 @@ dependency:
   name: galaxy
 
 driver:
-  name: molecule-proxmox
+  name: default
   options:
-    node: "${PROXMOX_NODE}"
-    proxmox_secrets: "${PROXMOX_SECRETS_FILE}"
-    ssh_user: "${PROXMOX_SSH_USER}"
-    ssh_identity_file: "${PROXMOX_SSH_IDENTITY_FILE}"
+    managed: true
+    login_cmd_template: "podman exec -it {instance} /bin/bash"
 
 platforms:
   - name: db1
-    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_kdcs
       - afs_databases
 
   - name: db2
-    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_databases
 
   - name: db3
-    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_databases
 
   - name: fs1
-    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_fileservers
 
   - name: fs2
-    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_fileservers
 
   - name: fs3
-    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_fileservers
 
   - name: ws1
-    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_admin_client
       - afs_clients
 
   - name: ws2
-    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_clients
 
   - name: ws3
-    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
     groups:
       - afs_clients
 
 provisioner:
   name: ansible
   playbooks:
+    create: ../resources/podman/create.yml
+    destroy: ../resources/podman/destroy.yml
     converge: ../resources/playbooks/converge_cell.yml
     verify: ../resources/playbooks/verify_cell.yml
   inventory:

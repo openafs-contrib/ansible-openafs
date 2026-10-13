@@ -2,11 +2,12 @@
 - name: Verify
   hosts: all
   tasks:
+    # Run libdoc on the instance, since the instance name may not be
+    # resolvable on the controller.
     - name: Query robot server.
       ansible.builtin.command:
-        cmd: "libdoc Remote::{{ ansible_host }}:8270 list"
+        cmd: "{{ afs_robotserver_virtualenv | d('/opt/robotserver') }}/bin/libdoc Remote::localhost:8270 list"
       changed_when: false
-      delegate_to: localhost
       register: libdoc_list
 
     #- debug:

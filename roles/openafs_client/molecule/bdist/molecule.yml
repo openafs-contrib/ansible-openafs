@@ -2,19 +2,19 @@
 dependency:
   name: galaxy
 driver:
-  name: molecule-proxmox
+  name: default
   options:
-    node: "${PROXMOX_NODE}"
-    proxmox_secrets: "${PROXMOX_SECRETS_FILE}"
-    ssh_user: "${PROXMOX_SSH_USER}"
-    ssh_identity_file: "${PROXMOX_SSH_IDENTITY_FILE}"
-    template_name: "${PROXMOX_TEMPLATE_NAME:-alma9}"
+    managed: true
+    login_cmd_template: "podman exec -it {instance} /bin/bash"
 platforms:
   - name: m-role-client${AFS_TESTID}
     groups:
       - afs_clients
 provisioner:
   name: ansible
+  playbooks:
+    create: ../../../../extensions/molecule/resources/podman/create.yml
+    destroy: ../../../../extensions/molecule/resources/podman/destroy.yml
   inventory:
     group_vars:
       all:
@@ -23,6 +23,7 @@ provisioner:
         afs_csdb_file: ""
         afs_install_method: "bdist"
         afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
+        afs_install_archive_remote_src: false
 verifier:
   name: ansible
 scenario:

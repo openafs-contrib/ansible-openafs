@@ -1,0 +1,52 @@
+---
+#
+# OpenAFS release used by the tests which install OpenAFS from a source
+# distribution (sdist) or from packages. The release files are downloaded
+# once and saved in the builds directory.
+#
+openafs_version: "1.8.16.1"
+
+# Directory to save the downloaded and built release files. The molecule
+# scenarios look for the release files in this directory by default.
+builds_dir: "~/.cache/ansible-openafs/builds"
+
+# Source distribution files.
+sdist_url: "https://www.openafs.org/dl/openafs/{version}"
+sdist_files:
+  - "openafs-{version}-src.tar.gz"
+  - "openafs-{version}-doc.tar.gz"
+
+# RPM packages.
+rpms_url: "https://download.sinenomine.net/openafs/rpms/{repo}/{arch}"
+rpms:
+  - "openafs-{version}-1.{dist}.{arch}.rpm"
+  - "openafs-client-{version}-1.{dist}.{arch}.rpm"
+  - "openafs-docs-{version}-1.{dist}.{arch}.rpm"
+  - "openafs-krb5-{version}-1.{dist}.{arch}.rpm"
+  - "openafs-server-{version}-1.{dist}.{arch}.rpm"
+
+# Test operating systems. The osdist is the name used in the release file
+# names, which is the lower case ansible distribution name and major version.
+# The repo and dist are the RPM repository directory and RPM dist tag of the
+# packages, for operating systems with RPM packages available.
+platforms:
+  alma8: {osdist: almalinux8, repo: almalinux8, dist: el8}
+  alma9: {osdist: almalinux9, repo: almalinux9, dist: el9}
+  alma10: {osdist: almalinux10, repo: almalinux10, dist: el10}
+  centos9: {osdist: centos9, repo: el-stream9, dist: el9}
+  centos10: {osdist: centos10, repo: el-stream10, dist: el10}
+  debian12: {osdist: debian12}
+  debian13: {osdist: debian13}
+  fedora43: {osdist: fedora43}
+  fedora44: {osdist: fedora44}
+  opensuse15: {osdist: opensuse_leap15}
+  opensuse16: {osdist: opensuse_leap16}
+  oracle8: {osdist: oraclelinux8, repo: ol8, dist: el8}
+  oracle9: {osdist: oraclelinux9, repo: ol9, dist: el9}
+  oracle10: {osdist: oraclelinux10, repo: ol10, dist: el10}
+  rocky8: {osdist: rocky8, repo: rocky8, dist: el8}
+  rocky9: {osdist: rocky9, repo: rocky9, dist: el9}
+  rocky10: {osdist: rocky10, repo: rocky10, dist: el10}
+  ubuntu22: {osdist: ubuntu22}
+  ubuntu24: {osdist: ubuntu24}
+  ubuntu26: {osdist: ubuntu26}
