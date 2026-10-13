@@ -1,0 +1,92 @@
+---
+dependency:
+  name: galaxy
+
+platforms:
+  - name: db1
+    groups:
+      - afs_kdcs
+      - afs_databases
+
+  - name: db2
+    groups:
+      - afs_databases
+
+  - name: db3
+    groups:
+      - afs_databases
+
+  - name: fs1
+    groups:
+      - afs_fileservers
+
+  - name: fs2
+    groups:
+      - afs_fileservers
+
+  - name: fs3
+    groups:
+      - afs_fileservers
+
+  - name: ws1
+    groups:
+      - afs_admin_client
+      - afs_clients
+
+  - name: ws2
+    groups:
+      - afs_clients
+
+  - name: ws3
+    groups:
+      - afs_clients
+
+provisioner:
+  name: ansible
+  playbooks:
+    converge: ../../resources/playbooks/converge_cell.yml
+    verify: ../../resources/playbooks/verify_cell.yml
+  inventory:
+    group_vars:
+      all:
+        afs_install_method: "managed"
+        afs_module_install_method: "kmod"
+        afs_realm: "EXAMPLE.COM"
+        afs_cell: "example.com"
+        afs_admin: "admin"
+        afs_user: "alice"
+        afs_user_id: 2000
+        afs_pseudo_partitions: ['a', 'b']
+        afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
+
+verifier:
+  name: ansible
+
+scenario:
+  create_sequence:
+    - create
+    - prepare
+  check_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - check
+    - destroy
+  converge_sequence:
+    - create
+    - prepare
+    - converge
+  destroy_sequence:
+    - cleanup
+    - destroy
+  test_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - cleanup
+    - destroy

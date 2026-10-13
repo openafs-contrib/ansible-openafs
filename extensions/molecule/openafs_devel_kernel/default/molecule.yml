@@ -1,0 +1,41 @@
+---
+dependency:
+  name: galaxy
+platforms:
+  - name: m-role-devel-kernel${AFS_TESTID}
+provisioner:
+  name: ansible
+  inventory:
+    group_vars:
+      all:
+        afs_devel_allow_kernel_update: yes
+verifier:
+  name: ansible
+scenario:
+  create_sequence:
+    - create
+    - prepare
+  check_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - check
+    - destroy
+  converge_sequence:
+    - create
+    - prepare
+    - converge
+  destroy_sequence:
+    - cleanup
+    - destroy
+  test_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - cleanup
+    - destroy

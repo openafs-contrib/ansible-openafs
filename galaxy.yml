@@ -18,7 +18,6 @@ build_ignore:
   - 'builds'
   - 'docs'
   - 'extensions'
-  - 'roles/*/molecule'
   - 'tests'
   - 'tox.ini'
   - '.ansible'

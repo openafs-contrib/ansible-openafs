@@ -1,0 +1,51 @@
+---
+dependency:
+  name: galaxy
+platforms:
+  - name: m-role-client${AFS_TESTID}
+    groups:
+      - afs_clients
+provisioner:
+  name: ansible
+  inventory:
+    group_vars:
+      all:
+        afs_cell: "example.com"
+        afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
+        afs_module_install_method: "kmod"
+        afs_csdb_file: ""
+        afs_client_netinfo: 0.0.0.0
+        afs_client_netrestrict:
+          - 1.1.1.1
+          - 2.2.2.2
+        # afs_afsd_opts: "-dynroot -fakestat -afsdb"
+verifier:
+  name: ansible
+scenario:
+  create_sequence:
+    - create
+    - prepare
+  check_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - check
+    - destroy
+  converge_sequence:
+    - create
+    - prepare
+    - converge
+  destroy_sequence:
+    - cleanup
+    - destroy
+  test_sequence:
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - cleanup
+    - destroy
