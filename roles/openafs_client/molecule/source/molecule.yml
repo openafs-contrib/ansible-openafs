@@ -17,7 +17,6 @@ provisioner:
     destroy: ../../../../extensions/molecule/resources/podman/destroy.yml
   env:
     ANSIBLE_PIPELINING: "True"
-    ANSIBLE_STDOUT_CALLBACK: "yaml"
   inventory:
     group_vars:
       all:
