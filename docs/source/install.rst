@@ -4,8 +4,8 @@ Installation
 Requirements
 ------------
 
-This collection requires Ansible (``ansible-core``) 2.15 or later (included in
-the ``ansible`` package version 8 and later).
+This collection requires Ansible (``ansible-core``) 2.16 or later (included in
+the ``ansible`` package version 9 and later).
 
 The target machines to be managed must be reachable via ``ssh`` and must have
 a Python version supported by your version of ``ansible-core`` already
