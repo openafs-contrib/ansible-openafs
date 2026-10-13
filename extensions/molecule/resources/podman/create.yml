@@ -45,12 +45,26 @@
       loop: "{{ molecule_platforms }}"
       loop_control:
         label: "{{ item.name }}"
+      register: afs_podman_containerfiles
 
-    # The images are tagged with the operating system name and are reused
-    # by later runs. Remove the image to rebuild it.
+    # The images are named for the operating system and tagged with the
+    # checksum of the Containerfile, so the image is rebuilt when the
+    # Containerfile is changed. The images are reused by later runs; remove
+    # the image to rebuild it.
+    - name: Set image names
+      ansible.builtin.set_fact:
+        afs_podman_images: >-
+          {{ afs_podman_images | default({}) | combine({item.item.name:
+             'localhost/molecule-openafs-'
+             ~ (item.item.image | default(afs_test_os) | regex_replace('[^A-Za-z0-9_.-]', '-'))
+             ~ ':' ~ item.checksum[:12]}) }}
+      loop: "{{ afs_podman_containerfiles.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+
     - name: Build images
       containers.podman.podman_image:
-        name: "localhost/molecule-openafs-{{ item.image | default(afs_test_os) | regex_replace('[^A-Za-z0-9_.-]', '-') }}"
+        name: "{{ afs_podman_images[item.name] }}"
         path: "{{ molecule_ephemeral_directory }}/podman"
         build:
           file: "{{ molecule_ephemeral_directory }}/podman/Containerfile.{{ item.name }}"
@@ -62,7 +76,7 @@
       containers.podman.podman_container:
         name: "{{ item.name }}"
         hostname: "{{ item.name }}"
-        image: "localhost/molecule-openafs-{{ item.image | default(afs_test_os) | regex_replace('[^A-Za-z0-9_.-]', '-') }}"
+        image: "{{ afs_podman_images[item.name] }}"
         network: "{{ afs_podman_network }}"
         systemd: always
         state: started

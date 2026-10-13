@@ -172,12 +172,16 @@ Container images
 A test image is built for each operating system the first time it is tested,
 by installing Python, ``sudo``, and ``systemd`` in the base image. The test
 images are named ``localhost/molecule-openafs-<os>`` and are reused by later
-test runs. Remove a test image to rebuild it with the latest packages:
+test runs. The images are tagged with a checksum of the generated
+``Containerfile``, so a new image is built automatically when the
+``Containerfile.j2`` template is changed.
+
+Remove a test image to rebuild it with the latest packages:
 
 .. code-block:: bash
 
    podman images 'localhost/molecule-openafs-*'
-   podman rmi localhost/molecule-openafs-alma9
+   podman rmi localhost/molecule-openafs-alma9:<tag>
 
 Documentation
 -------------
