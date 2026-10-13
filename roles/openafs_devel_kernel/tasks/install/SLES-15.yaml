@@ -51,8 +51,8 @@
   - name: "Verify kernel-devel version."
     assert:
       that:
-        - kernel_version in "{{ rpm_query_devel.stdout_lines }}"
-        - kernel_version in "{{ rpm_query_flavor.stdout_lines }}"
+        - kernel_version in rpm_query_devel.stdout
+        - kernel_version in rpm_query_flavor.stdout
       success_msg: "kernel-[{{ kernel_flavor }}]-devel-{{ kernel_version }} is/are installed."
       fail_msg: "kernel-[{{ kernel_flavor }}]-devel-{{ kernel_version }} is/are not installed. Will attempt to install."
 
