@@ -9,9 +9,14 @@ from release_files import ReleaseFiles
 
 ROOT_PATH = pathlib.Path(__file__).parent.parent
 PODMAN_PATH = ROOT_PATH / "extensions" / "molecule" / "resources" / "podman"
+CACHE_PATH = pathlib.Path.home() / ".cache" / "ansible-openafs"
 
 # Directory for the molecule output log files and the test summary.
-LOG_PATH = pathlib.Path(os.environ.get("AFS_TEST_LOGDIR", ROOT_PATH / ".cache" / "test-logs"))
+LOG_PATH = pathlib.Path(os.environ.get("AFS_TEST_LOGDIR", CACHE_PATH / "test-logs"))
+
+# Ansible home directory for the molecule tests. Molecule installs the
+# collection under test into this directory.
+ANSIBLE_HOME_PATH = pathlib.Path(os.environ.get("AFS_TEST_ANSIBLE_HOME", CACHE_PATH / "ansible-home"))
 
 # Scenarios which can not be run in containers, since they load the openafs
 # kernel module or install kernel packages. (A role name of None is a
@@ -88,7 +93,14 @@ def run_and_log(cmd, cwd, env, logfile, echo=False):
 
 def molecule_env(os_name):
     env = os.environ.copy()
-    env["ANSIBLE_COLLECTIONS_PATH"] = str(ROOT_PATH.parent.parent.absolute())
+    # Molecule installs the collection under test into its own cache
+    # directory. Do not give molecule a collections path which contains this
+    # source tree, since some versions of molecule install the collection
+    # under test into the first collections path, which removes the source
+    # tree.
+    env.pop("ANSIBLE_COLLECTIONS_PATH", None)
+    env.pop("ANSIBLE_COLLECTIONS_PATHS", None)
+    env["ANSIBLE_HOME"] = str(ANSIBLE_HOME_PATH)
     if os_name:
         env["AFS_TEST_OS"] = os_name
     return env
@@ -111,11 +123,10 @@ def bdist_builder(pytestconfig, release_files):
             env["AFS_GIT_VERSION"] = git_ref
             env["AFS_BUILDS"] = str(release_files.builds)
             env["AFS_BUILD_MODULE"] = "no"  # The kernel module can not be built in a container.
-            cmd = ["molecule", "test", "-s", "bdist"]
+            cmd = ["molecule", "test", "-s", "openafs_devel/bdist"]
             logfile = LOG_PATH / f"openafs_devel-bdist-{os_name}.log"
             print(f"\nBuilding bdist for {os_name} from {git_ref}; log: {logfile}")
-            rc = run_and_log(cmd, ROOT_PATH / "roles" / "openafs_devel", env, logfile,
-                             echo=show_output(pytestconfig))
+            rc = run_and_log(cmd, ROOT_PATH, env, logfile, echo=show_output(pytestconfig))
             if rc != 0:
                 pytest.fail(f"Failed to build bdist for {os_name}; see {logfile}")
             archive = release_files.find(os_name, "bdist")
@@ -131,11 +142,6 @@ def bdist_builder(pytestconfig, release_files):
 def molecule_test(request, release_files, bdist_builder):
 
     def _run(role=None, scenario="default", os_name=None):
-
-        if role:
-            path = ROOT_PATH / "roles" / role
-        else:
-            path = ROOT_PATH / "extensions"
 
         if (role, "*") in PODMAN_UNSUPPORTED or (role, scenario) in PODMAN_UNSUPPORTED:
             pytest.skip(f"scenario {role or 'playbooks'}/{scenario} is not supported in containers")
@@ -165,12 +171,15 @@ def molecule_test(request, release_files, bdist_builder):
             if archive:
                 env["AFS_INSTALL_ARCHIVE"] = str(archive)
 
-        cmd = ["molecule", "test", "-s", scenario]
+        # The scenarios are located in extensions/molecule/<role>/<scenario>
+        # and extensions/molecule/playbooks/<scenario>. Molecule is run from
+        # the collection root directory.
+        cmd = ["molecule", "test", "-s", f"{role or 'playbooks'}/{scenario}"]
         logfile = LOG_PATH / f"{role or 'playbooks'}-{scenario}-{os_name or 'default'}.log"
         request.node.user_properties.append(("log", str(logfile)))
-        print(f"\nRunning: {' '.join(cmd)} [{os_name}] in {path}")
+        print(f"\nRunning: {' '.join(cmd)} [{os_name}]")
         print(f"Log: {logfile}")
-        rc = run_and_log(cmd, path, env, logfile, echo=show_output(request.config))
+        rc = run_and_log(cmd, ROOT_PATH, env, logfile, echo=show_output(request.config))
         return rc
 
     return _run

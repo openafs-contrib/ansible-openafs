@@ -141,7 +141,9 @@ build OpenAFS and run these scenarios:
 
 The output of each test is saved to a log file in the ``.tox/<env>/test-logs``
 directory (for example, ``.tox/latest/test-logs``), along with a summary of the
-test results in ``summary.txt`` and a JUnit XML report in ``junit.xml``.
+test results in ``summary.txt`` and a JUnit XML report in ``junit.xml``. When
+``pytest`` is run without ``tox``, the log files are saved in the
+``~/.cache/ansible-openafs/test-logs`` directory.
 
 .. note::
 
@@ -152,27 +154,38 @@ test results in ``summary.txt`` and a JUnit XML report in ``junit.xml``.
 Running Molecule directly
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Molecule scenarios are located in the ``molecule`` directory of each role
-and in the ``extensions/molecule`` directory for the playbooks. Use
-``tox -e dev`` to create a virtualenv with Molecule and the other test
-requirements installed, then run ``molecule`` in the role directory (or the
-``extensions`` directory for the playbook scenarios):
+The Molecule scenarios are located in the ``extensions/molecule`` directory,
+in ``extensions/molecule/<role>/<scenario>`` for the roles and in
+``extensions/molecule/playbooks/<scenario>`` for the playbooks. The settings
+shared by all of the scenarios are in ``extensions/molecule/config.yml``.
+
+Use ``tox -e dev`` to create a virtualenv with Molecule and the other test
+requirements installed, then run ``molecule`` in the collection root
+directory:
 
 .. code-block:: bash
 
    tox -e dev
    source .tox/dev/bin/activate
-   export ANSIBLE_COLLECTIONS_PATH=/path/to/collections
-   cd roles/openafs_server
-   molecule test -s default
+   molecule test -s openafs_server/default
+   molecule test -s playbooks/realm
+
+Molecule installs the collection under test into its own cache directory.
+
+.. warning::
+
+   Do not set ``ANSIBLE_COLLECTIONS_PATH`` to a directory which contains
+   your source tree when running Molecule. Some versions of Molecule install
+   the collection under test into the first collections path, which removes
+   your source tree.
 
 To keep the test instance for debugging, run the scenario in steps:
 
 .. code-block:: bash
 
-   molecule converge -s default
-   molecule login -s default
-   molecule destroy -s default
+   molecule converge -s openafs_server/default
+   molecule login -s openafs_server/default
+   molecule destroy -s openafs_server/default
 
 Operating systems
 ~~~~~~~~~~~~~~~~~
@@ -182,7 +195,7 @@ tested when running ``molecule`` directly. The default is ``alma9``.
 
 .. code-block:: bash
 
-   AFS_TEST_OS=debian13 molecule test -s default
+   AFS_TEST_OS=debian13 molecule test -s openafs_server/default
 
 The available operating systems and their base container images are listed
 in ``extensions/molecule/resources/podman/images.yml``. To test another
