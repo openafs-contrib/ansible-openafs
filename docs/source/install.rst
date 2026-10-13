@@ -29,13 +29,5 @@ upgrade if you already have an older version of the collection installed.
 Source
 ------
 
-Install the **OpenAFS Ansible Collection** from source code with the
-following commands:
-
-.. code-block:: bash
-
-   mkdir -p collections/ansible_collections/openafs_contrib
-   cd collections/ansible_collections/openafs_contrib
-   git clone https://github.com/openafs-contrib/ansible-openafs openafs
-   cd openafs
-   tox -e install
+See :doc:`development` to install the **OpenAFS Ansible Collection** from
+source code.

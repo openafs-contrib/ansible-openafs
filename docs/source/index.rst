@@ -19,4 +19,5 @@ configure OpenAFS clients and servers.
    modules
    plugins
    platforms
+   development
    license
