@@ -78,6 +78,9 @@
         hostname: "{{ item.name }}"
         image: "{{ afs_podman_images[item.name] }}"
         network: "{{ afs_podman_network }}"
+        # Use the /etc/hosts file from the image, instead of a bind mounted
+        # file, so the playbooks can update /etc/hosts as on a regular system.
+        no_hosts: true
         systemd: always
         state: started
       loop: "{{ molecule_platforms }}"
@@ -90,6 +93,19 @@
         cmd: "podman exec {{ item.name }} systemctl is-system-running --wait"
       changed_when: false
       failed_when: false
+      loop: "{{ molecule_platforms }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # Some base images, such as debian and ubuntu, have an empty /etc/hosts
+    # file, since it is normally provided by the container runtime.
+    - name: Add localhost to /etc/hosts
+      ansible.builtin.command:
+        cmd: >-
+          podman exec {{ item.name }} sh -c
+          "grep -q localhost /etc/hosts ||
+          printf '127.0.0.1\tlocalhost\n::1\tlocalhost ip6-localhost ip6-loopback\n' >> /etc/hosts"
+      changed_when: false
       loop: "{{ molecule_platforms }}"
       loop_control:
         label: "{{ item.name }}"
