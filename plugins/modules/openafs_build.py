@@ -654,7 +654,7 @@ class Builder(object):
             self.fail('%s command failed; see "%s".' % (name, logfile))
 
     def get_deprecated_option(self, name):
-        self.log("WARNING: %s option is deprecated.", name)
+        self.log("WARNING: %s option is deprecated." % name)
         return self.module.params[name]
 
     def get_configure_options(self):
