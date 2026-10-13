@@ -5,6 +5,8 @@ import pathlib
 import sys
 import yaml
 
+from release_files import ReleaseFiles
+
 ROOT_PATH = pathlib.Path(__file__).parent.parent
 PODMAN_PATH = ROOT_PATH / "extensions" / "molecule" / "resources" / "podman"
 
@@ -25,6 +27,14 @@ PODMAN_UNSUPPORTED = [
 def podman_images():
     with open(PODMAN_PATH / "images.yml") as f:
         return yaml.safe_load(f)["afs_podman_base_images"]
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--build", metavar="GIT_REF", default=None,
+        help="Build OpenAFS from the given git tag or branch to run the "
+             "bdist and source scenarios. These scenarios are skipped "
+             "unless this option is given.")
 
 
 @pytest.fixture(
@@ -68,8 +78,48 @@ def run_and_log(cmd, cwd, env, logfile):
         return proc.wait()
 
 
+def molecule_env(os_name):
+    env = os.environ.copy()
+    env["ANSIBLE_COLLECTIONS_PATH"] = str(ROOT_PATH.parent.parent.absolute())
+    if os_name:
+        env["AFS_TEST_OS"] = os_name
+    return env
+
+
+@pytest.fixture(scope="session")
+def release_files():
+    return ReleaseFiles()
+
+
+@pytest.fixture(scope="session")
+def bdist_builder(release_files):
+    """Build a binary distribution with the openafs_devel bdist scenario, once
+    for each platform and git ref."""
+    built = {}
+
+    def _build(os_name, git_ref):
+        if (os_name, git_ref) not in built:
+            env = molecule_env(os_name)
+            env["AFS_GIT_VERSION"] = git_ref
+            env["AFS_BUILDS"] = str(release_files.builds)
+            env["AFS_BUILD_MODULE"] = "no"  # The kernel module can not be built in a container.
+            cmd = ["molecule", "test", "-s", "bdist"]
+            logfile = LOG_PATH / f"openafs_devel-bdist-{os_name}.log"
+            print(f"\nBuilding bdist for {os_name} from {git_ref}; log: {logfile}")
+            rc = run_and_log(cmd, ROOT_PATH / "roles" / "openafs_devel", env, logfile)
+            if rc != 0:
+                pytest.fail(f"Failed to build bdist for {os_name}; see {logfile}")
+            archive = release_files.find(os_name, "bdist")
+            if not archive:
+                pytest.fail(f"bdist archive for {os_name} not found in {release_files.builds}")
+            built[(os_name, git_ref)] = archive
+        return built[(os_name, git_ref)]
+
+    return _build
+
+
 @pytest.fixture
-def molecule_test(request):
+def molecule_test(request, release_files, bdist_builder):
 
     def _run(role=None, scenario="default", os_name=None):
 
@@ -83,10 +133,28 @@ def molecule_test(request):
         if os_name and os_name not in podman_images():
             pytest.skip(f"no container image for {os_name}")
 
-        env = os.environ.copy()
-        env["ANSIBLE_COLLECTIONS_PATH"] = str(ROOT_PATH.parent.parent.absolute())
-        if os_name:
-            env["AFS_TEST_OS"] = os_name
+        env = molecule_env(os_name)
+
+        # The client and server install scenarios need the OpenAFS release
+        # files. The sdist and packages files are downloaded, the bdist is
+        # built (which is slow), and the source scenario builds from git.
+        if role in ("openafs_client", "openafs_server"):
+            git_ref = request.config.getoption("--build")
+            archive = None
+            if scenario in ("bdist", "source") and not git_ref:
+                pytest.skip(f"scenario {role}/{scenario} requires the --build option")
+            if scenario == "source":
+                env["AFS_GIT_VERSION"] = git_ref
+            elif scenario == "sdist":
+                archive = release_files.sdist()
+            elif scenario == "packages":
+                archive = release_files.rpms(os_name) or release_files.find(os_name, "debs")
+                if not archive:
+                    pytest.skip(f"no packages available for {os_name}")
+            elif scenario == "bdist":
+                archive = bdist_builder(os_name, git_ref)
+            if archive:
+                env["AFS_INSTALL_ARCHIVE"] = str(archive)
 
         cmd = ["molecule", "test", "-s", scenario]
         logfile = LOG_PATH / f"{role or 'playbooks'}-{scenario}-{os_name or 'default'}.log"

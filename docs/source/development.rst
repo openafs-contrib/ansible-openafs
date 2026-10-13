@@ -117,6 +117,24 @@ the first failure:
 
    tox -e roles -- -k "openafs_devel and alma9" -x
 
+The ``sdist`` and ``packages`` scenarios install the OpenAFS release given in
+``tests/integration/openafs.yml``. The release source files are downloaded from
+`openafs.org`_ and the RPM packages are downloaded from `Sine Nomine`_ the
+first time they are needed, and are saved in the
+``~/.cache/ansible-openafs/builds`` directory. The ``packages`` scenarios are
+skipped for platforms without packages available.
+
+.. _`openafs.org`: https://www.openafs.org
+.. _`Sine Nomine`: https://download.sinenomine.net/openafs/
+
+The ``bdist`` and ``source`` scenarios build OpenAFS from a git tag or branch,
+which is slow, so they are skipped by default. Use the ``--build`` option to
+build OpenAFS and run these scenarios:
+
+.. code-block:: bash
+
+   tox -e roles -- --build openafs-stable-1_8_16_1 -k "openafs_server and alma9"
+
 The output of each test is saved to a log file in the ``.tox/<env>/test-logs``
 directory (for example, ``.tox/roles/test-logs``), along with a summary of the
 test results in ``summary.txt`` and a JUnit XML report in ``junit.xml``.

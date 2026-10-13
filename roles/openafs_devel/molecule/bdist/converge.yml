@@ -4,6 +4,7 @@
   tasks:
     - import_role:
         name: openafs_devel_kernel
+      when: afs_build_module | bool
 
     - import_role:
         name: openafs_devel
@@ -21,7 +22,7 @@
         projectdir: "~/openafs"
         destdir: "~/openafs/packages/install_root"
         build_userspace: yes
-        build_module: yes
+        build_module: "{{ afs_build_module | bool }}"
         with_transarc_paths: yes
       register: build_results
 
@@ -46,7 +47,7 @@
       fetch:
         flat: yes
         src: "{{ tarball }}"
-        dest: "~/.cache/ansible-openafs/builds/"
+        dest: "{{ afs_builds }}/"
       register: fetch_results
 
     - name: Downloaded

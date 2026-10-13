@@ -23,6 +23,7 @@ provisioner:
         afs_csdb_file: ""
         afs_install_method: "bdist"
         afs_install_archive: "${AFS_INSTALL_ARCHIVE}"
+        afs_install_archive_remote_src: false
 verifier:
   name: ansible
 scenario:
