@@ -24,6 +24,7 @@ provisioner:
     group_vars:
       all:
         ansible_user: root
+        ansible_pipelining: true
         afs_cell: "example.com"
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
         afs_csdb_file: ""

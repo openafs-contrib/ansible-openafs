@@ -70,6 +70,7 @@ provisioner:
     group_vars:
       all:
         ansible_user: root
+        ansible_pipelining: true
         afs_install_method: "managed"
         afs_module_install_method: "kmod"
         afs_realm: "EXAMPLE.COM"

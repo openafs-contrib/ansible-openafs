@@ -27,6 +27,7 @@ provisioner:
     group_vars:
       all:
         ansible_user: root
+        ansible_pipelining: true
       afs_test_nodes:
         # deploy_robotserver_library_file: "${HOME}/src/robotframework-openafslibrary/dist/robotframework_openafslibrary-1.0.1-py3-none-any.whl"
 

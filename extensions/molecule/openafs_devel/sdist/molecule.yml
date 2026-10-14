@@ -20,6 +20,7 @@ provisioner:
     group_vars:
       all:
         ansible_user: root
+        ansible_pipelining: true
         afs_cell: "example.com"
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
         afs_git_repo: "${AFS_GIT_REPO:-git://git.openafs.org/openafs.git}"

@@ -20,6 +20,7 @@ provisioner:
     group_vars:
       all:
         ansible_user: root
+        ansible_pipelining: true
         afs_devel_allow_kernel_update: yes
 verifier:
   name: ansible
