@@ -1,0 +1,10 @@
+---
+all:
+  hosts:
+    localhost:
+  children:
+    afs_kdcs:
+    afs_databases:
+    afs_fileservers:
+    afs_clients:
+    afs_admin_client:
