@@ -164,8 +164,11 @@ Running Molecule directly
 
 The Molecule scenarios are located in the ``extensions/molecule`` directory,
 in ``extensions/molecule/<role>/<scenario>`` for the roles and in
-``extensions/molecule/playbooks/<scenario>`` for the playbooks. The settings
-shared by all of the scenarios are in ``extensions/molecule/config.yml``.
+``extensions/molecule/playbooks/<scenario>`` for the playbooks. The scenarios
+use the Molecule ``podman`` driver from the `molecule-plugins`_ package to
+create the test instances from the test images.
+
+.. _`molecule-plugins`: https://github.com/ansible-community/molecule-plugins
 
 Use ``tox -e dev`` to create a virtualenv with Molecule and the other test
 requirements installed, then run ``molecule`` in the collection root

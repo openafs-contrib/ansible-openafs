@@ -2,8 +2,18 @@
 dependency:
   name: galaxy
 
+driver:
+  name: podman
+
 platforms:
   - name: openafs-default
+    image: localhost/ansible-openafs-${AFS_TEST_OS:-alma9}
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: molecule
+    extra_opts:
+      - --no-hosts
     groups:
       - afs_admin_client
       - afs_clients
@@ -14,11 +24,13 @@ platforms:
 provisioner:
   name: ansible
   playbooks:
+    prepare: ../../resources/playbooks/prepare.yml
     converge: ../../resources/playbooks/converge_cell.yml
     verify: ../../resources/playbooks/verify_cell.yml
   inventory:
     group_vars:
       all:
+        ansible_user: root
         afs_install_method: "managed"
         afs_module_install_method: "kmod"
         afs_realm: "EXAMPLE.COM"

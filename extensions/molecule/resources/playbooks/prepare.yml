@@ -1,0 +1,15 @@
+---
+#
+# Wait for systemd to finish starting in the test containers, before the
+# converge playbook is run. The system state may be 'degraded' in a
+# container, so ignore the exit code.
+#
+- name: Prepare
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Wait for systemd to finish starting
+      ansible.builtin.command:
+        cmd: systemctl is-system-running --wait
+      changed_when: false
+      failed_when: false
