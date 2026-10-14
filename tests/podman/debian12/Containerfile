@@ -1,0 +1,16 @@
+FROM docker.io/library/debian:12
+
+# Install python, sudo, and systemd.
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        python3 python3-apt sudo systemd systemd-sysv dbus iproute2 procps ca-certificates && \
+    apt-get clean
+
+# Add an /etc/hosts file, which is not included in the base image since it is
+# normally provided by the container runtime. The test containers use the
+# /etc/hosts file from the image, so the tests can update it as on a regular
+# system.
+RUN printf '127.0.0.1\tlocalhost\n::1\tlocalhost ip6-localhost ip6-loopback\n' > /etc/hosts
+
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]

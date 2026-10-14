@@ -1,0 +1,12 @@
+FROM docker.io/rockylinux/rockylinux:9
+
+# Install documentation files (man pages), which are excluded by the base
+# image, so packages are installed as on a regular system.
+RUN sed -i '/^tsflags=nodocs/d' /etc/dnf/dnf.conf
+
+# Install python, sudo, and systemd.
+RUN dnf install -y python3 sudo systemd iproute procps-ng hostname && \
+    dnf clean all
+
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]

@@ -13,8 +13,6 @@
         name: "{{ item.name }}"
         state: absent
       loop: "{{ molecule_yml.platforms }}"
-      loop_control:
-        label: "{{ item.name }}"
 
     - name: Remove instance config
       ansible.builtin.copy:

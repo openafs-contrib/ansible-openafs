@@ -2,90 +2,50 @@
 #
 # Create podman containers for the molecule instances.
 #
-# The operating system is selected with the AFS_TEST_OS environment variable,
-# or with the 'image' key of the platform to use a specific base image.
+# The operating system is selected with the AFS_TEST_OS environment variable.
+# The containers are created from the test image for the operating system,
+# which must be built first with tests/build-images.sh.
 #
 - name: Create
   hosts: localhost
   connection: local
   gather_facts: false
-  vars_files:
-    - images.yml
   vars:
     afs_test_os: "{{ lookup('ansible.builtin.env', 'AFS_TEST_OS') | default('alma9', true) }}"
-    afs_podman_network: "{{ lookup('ansible.builtin.env', 'AFS_PODMAN_NETWORK') | default('molecule', true) }}"
-    molecule_platforms: "{{ molecule_yml.platforms }}"
+    afs_test_image: "localhost/ansible-openafs-{{ afs_test_os }}"
   tasks:
-    - name: Verify the operating system is available
+    - name: Lookup the test image
+      containers.podman.podman_image_info:
+        name: "{{ afs_test_image }}"
+      register: afs_test_image_info
+
+    - name: Verify the test image is available
       ansible.builtin.assert:
         that:
-          - afs_test_os in afs_podman_base_images
+          - afs_test_image_info.images | length > 0
         fail_msg: >-
-          No container image for '{{ afs_test_os }}'. Available:
-          {{ afs_podman_base_images.keys() | sort | join(', ') }}
+          The test image {{ afs_test_image }} was not found. Build it with:
+          tests/build-images.sh {{ afs_test_os }}
 
+    # The containers are connected to a podman network, so the containers can
+    # find each other by name.
     - name: Create container network
       containers.podman.podman_network:
-        name: "{{ afs_podman_network }}"
+        name: molecule
         state: present
-
-    - name: Create image build directory
-      ansible.builtin.file:
-        path: "{{ molecule_ephemeral_directory }}/podman"
-        state: directory
-        mode: "0755"
-
-    - name: Create Containerfiles
-      vars:
-        afs_podman_base_image: "{{ item.image | default(afs_podman_base_images[afs_test_os]) }}"
-      ansible.builtin.template:
-        src: Containerfile.j2
-        dest: "{{ molecule_ephemeral_directory }}/podman/Containerfile.{{ item.name }}"
-        mode: "0644"
-      loop: "{{ molecule_platforms }}"
-      loop_control:
-        label: "{{ item.name }}"
-      register: afs_podman_containerfiles
-
-    # The images are named for the operating system and tagged with the
-    # checksum of the Containerfile, so the image is rebuilt when the
-    # Containerfile is changed. The images are reused by later runs; remove
-    # the image to rebuild it.
-    - name: Set image names
-      ansible.builtin.set_fact:
-        afs_podman_images: >-
-          {{ afs_podman_images | default({}) | combine({item.item.name:
-             'localhost/molecule-openafs-'
-             ~ (item.item.image | default(afs_test_os) | regex_replace('[^A-Za-z0-9_.-]', '-'))
-             ~ ':' ~ item.checksum[:12]}) }}
-      loop: "{{ afs_podman_containerfiles.results }}"
-      loop_control:
-        label: "{{ item.item.name }}"
-
-    - name: Build images
-      containers.podman.podman_image:
-        name: "{{ afs_podman_images[item.name] }}"
-        path: "{{ molecule_ephemeral_directory }}/podman"
-        build:
-          file: "{{ molecule_ephemeral_directory }}/podman/Containerfile.{{ item.name }}"
-      loop: "{{ molecule_platforms }}"
-      loop_control:
-        label: "{{ item.name }}"
 
     - name: Create containers
       containers.podman.podman_container:
         name: "{{ item.name }}"
         hostname: "{{ item.name }}"
-        image: "{{ afs_podman_images[item.name] }}"
-        network: "{{ afs_podman_network }}"
+        image: "{{ afs_test_image }}"
+        network: molecule
         # Use the /etc/hosts file from the image, instead of a bind mounted
         # file, so the playbooks can update /etc/hosts as on a regular system.
         no_hosts: true
         systemd: always
         state: started
-      loop: "{{ molecule_platforms }}"
-      loop_control:
-        label: "{{ item.name }}"
+      loop: "{{ molecule_yml.platforms }}"
 
     # The system state may be 'degraded' in a container, so ignore the exit code.
     - name: Wait for systemd to finish starting
@@ -93,28 +53,13 @@
         cmd: "podman exec {{ item.name }} systemctl is-system-running --wait"
       changed_when: false
       failed_when: false
-      loop: "{{ molecule_platforms }}"
-      loop_control:
-        label: "{{ item.name }}"
-
-    # Some base images, such as debian and ubuntu, have an empty /etc/hosts
-    # file, since it is normally provided by the container runtime.
-    - name: Add localhost to /etc/hosts
-      ansible.builtin.command:
-        cmd: >-
-          podman exec {{ item.name }} sh -c
-          "grep -q localhost /etc/hosts ||
-          printf '127.0.0.1\tlocalhost\n::1\tlocalhost ip6-localhost ip6-loopback\n' >> /etc/hosts"
-      changed_when: false
-      loop: "{{ molecule_platforms }}"
-      loop_control:
-        label: "{{ item.name }}"
+      loop: "{{ molecule_yml.platforms }}"
 
     - name: Write instance config
       ansible.builtin.copy:
         content: |
           # Molecule managed
-          {% for item in molecule_platforms %}
+          {% for item in molecule_yml.platforms %}
           - instance: {{ item.name }}
             address: {{ item.name }}
             user: root

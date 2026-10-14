@@ -40,6 +40,26 @@ Requirements
 
 .. _`podman`: https://podman.io
 
+Test images
+~~~~~~~~~~~
+
+The role and playbook tests run in `podman`_ containers created from a test
+image for each operating system. Build the test images before running the
+role and playbook tests.
+
+.. code-block:: bash
+
+   tests/build-images.sh
+
+The test images are named ``localhost/ansible-openafs-<os>``. Run
+``build-images.sh`` again to rebuild an image after changing its
+``Containerfile``. Use the ``--update`` option to update the base images and
+rebuild the test images with the latest packages:
+
+.. code-block:: bash
+
+   tests/build-images.sh --update
+
 Unit tests, compatibility tests, and lint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -184,27 +204,6 @@ tested when running ``molecule`` directly. The default is ``alma9``.
 .. code-block:: bash
 
    AFS_TEST_OS=debian13 molecule test -s openafs_server/default
-
-The available operating systems and their base container images are listed
-in ``extensions/molecule/resources/podman/images.yml``. To test another
-operating system, add the base image for the operating system to that file.
-
-Container images
-~~~~~~~~~~~~~~~~
-
-A test image is built for each operating system the first time it is tested,
-by installing Python, ``sudo``, and ``systemd`` in the base image. The test
-images are named ``localhost/molecule-openafs-<os>`` and are reused by later
-test runs. The images are tagged with a checksum of the generated
-``Containerfile``, so a new image is built automatically when the
-``Containerfile.j2`` template is changed.
-
-Remove a test image to rebuild it with the latest packages:
-
-.. code-block:: bash
-
-   podman images 'localhost/molecule-openafs-*'
-   podman rmi localhost/molecule-openafs-alma9:<tag>
 
 Documentation
 -------------
