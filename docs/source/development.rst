@@ -27,21 +27,14 @@ The tests are run with `tox`_. The test environments are defined in the
 ``tox.ini`` file. Run ``tox list`` to show the test environments, including
 which ones are run by default.
 
-.. _`tox`: https://tox.wiki
-
 Requirements
 ~~~~~~~~~~~~
 
-* `tox`_ 4.36 or later (older versions of tox will install the required
-  version automatically)
-* Python 3; install each of the Python versions in the ``py`` test
-  environments shown by ``tox list`` to run all of the unit tests
-* `podman`_, to run the role and playbook tests
+* Python 3.x (see ``tox.ini`` for versions)
+* `tox`_ 4.x
+* `podman`_
 
-.. _`podman`: https://podman.io
-
-Test images
-~~~~~~~~~~~
+Other packages will be installed in tox test environments as needed.
 
 The role and playbook tests run in `podman`_ containers created from a test
 image for each operating system. Build the test images before running the
@@ -60,8 +53,8 @@ rebuild the test images with the latest packages:
 
    tests/build-images.sh --update
 
-Unit tests, compatibility tests, and lint
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Running tests
+~~~~~~~~~~~~~
 
 Run ``tox`` without arguments to run the default test environments:
 
@@ -94,21 +87,6 @@ To run a single test environment, use the ``-e`` option:
 
    tox -e ansible-core219
 
-Run the test environments in parallel with the ``-p`` option:
-
-.. code-block:: bash
-
-   tox -p auto
-
-Role and playbook tests
-~~~~~~~~~~~~~~~~~~~~~~~
-
-The roles and playbooks are tested with `Molecule`_. The test instances are
-created as `podman`_ containers running systemd, so the tests can be run on
-a development machine without any other test infrastructure.
-
-.. _`Molecule`: https://docs.ansible.com/projects/molecule/
-
 The ``latest`` test environment runs all of the tests, including the role
 and playbook tests, with the latest versions of Python, Ansible, and Molecule:
 
@@ -116,11 +94,11 @@ and playbook tests, with the latest versions of Python, Ansible, and Molecule:
 
    tox -e latest
 
-Running all of the tests takes a long time, since the role and playbook tests
-are run for each of the operating systems listed in the test files. Arguments
-after ``--`` are passed to ``pytest``. Use the ``-k`` option to select the
-tests to run. Use the ``-s`` option to show the full output, and the ``-x``
-option to stop on the first failure. For example:
+Running all of the tests takes a long, long, long time, since the role and
+playbook tests are run for each of the operating systems listed in the test
+files. Arguments after ``--`` are passed to ``pytest``. Use the ``-k`` option
+to select the tests to run. Use the ``-s`` option to show the full output, and
+the ``-x`` option to stop on the first failure. For example:
 
 .. code-block:: bash
 
@@ -161,6 +139,8 @@ test results in ``summary.txt`` and a JUnit XML report in ``junit.xml``. When
 
 Running Molecule directly
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is possible to run Molecule directly, which can be helpful when debugging.
 
 The Molecule scenarios are located in the ``extensions/molecule`` directory,
 in ``extensions/molecule/<role>/<scenario>`` for the roles and in
@@ -220,3 +200,7 @@ The documentation is built with `Sphinx`_. Build the documentation with:
    tox -e docs
 
 The HTML pages are written to the ``docs/build/html`` directory.
+
+
+.. _`tox`: https://tox.wiki
+.. _`podman`: https://podman.io
