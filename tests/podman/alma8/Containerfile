@@ -1,0 +1,13 @@
+FROM docker.io/library/almalinux:8
+
+# Install documentation files (man pages), which are excluded by the base
+# image, so packages are installed as on a regular system.
+RUN sed -i '/^tsflags=nodocs/d' /etc/dnf/dnf.conf
+
+# Install python, sudo, and systemd. Install python 3.12, since current
+# versions of ansible-core do not support the default python 3.6.
+RUN dnf install -y python3.12 sudo systemd iproute procps-ng hostname && \
+    dnf clean all
+
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]

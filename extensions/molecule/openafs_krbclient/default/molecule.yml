@@ -1,15 +1,27 @@
 ---
 dependency:
   name: galaxy
+driver:
+  name: podman
 platforms:
   - name: m-role-krbclient${AFS_TESTID}
+    image: localhost/ansible-openafs-${AFS_TEST_OS:-alma9}
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: molecule
+    extra_opts:
+      - --no-hosts
 provisioner:
   name: ansible
+  playbooks:
+    prepare: ../../resources/playbooks/prepare.yml
   env:
     ANSIBLE_PIPELINING: "True"
   inventory:
     group_vars:
       all:
+        ansible_user: root
         afs_cell: "example.com"
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
 verifier:

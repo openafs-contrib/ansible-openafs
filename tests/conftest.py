@@ -3,12 +3,11 @@ import pytest
 import subprocess
 import pathlib
 import sys
-import yaml
 
 from release_files import ReleaseFiles
 
 ROOT_PATH = pathlib.Path(__file__).parent.parent
-PODMAN_PATH = ROOT_PATH / "extensions" / "molecule" / "resources" / "podman"
+PODMAN_PATH = ROOT_PATH / "tests" / "podman"
 CACHE_PATH = pathlib.Path.home() / ".cache" / "ansible-openafs"
 
 # Directory for the molecule output log files and the test summary.
@@ -30,8 +29,12 @@ PODMAN_UNSUPPORTED = [
 
 
 def podman_images():
-    with open(PODMAN_PATH / "images.yml") as f:
-        return yaml.safe_load(f)["afs_podman_base_images"]
+    return sorted(p.parent.name for p in PODMAN_PATH.glob("*/Containerfile"))
+
+
+def podman_image_exists(os_name):
+    cmd = ["podman", "image", "exists", f"localhost/ansible-openafs-{os_name}"]
+    return subprocess.run(cmd).returncode == 0
 
 
 def pytest_addoption(parser):
@@ -149,6 +152,12 @@ def molecule_test(request, release_files, bdist_builder):
             pytest.skip(f"no container image for {os_name}")
 
         env = molecule_env(os_name)
+
+        # The default operating system is the same as in the create playbook.
+        test_os = env.get("AFS_TEST_OS") or "alma9"
+        if not podman_image_exists(test_os):
+            pytest.fail(f"test image localhost/ansible-openafs-{test_os} not found; "
+                        f"build it with tests/build-images.sh {test_os}")
 
         # The client and server install scenarios need the OpenAFS release
         # files. The sdist and packages files are downloaded, the bdist is

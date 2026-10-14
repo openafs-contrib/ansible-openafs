@@ -2,18 +2,31 @@
 dependency:
   name: galaxy
 
+driver:
+  name: podman
+
 platforms:
   - name: openafs-test-node-1
+    image: localhost/ansible-openafs-${AFS_TEST_OS:-alma9}
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: molecule
+    extra_opts:
+      - --no-hosts
     groups:
       - afs_test_nodes
 
 provisioner:
   name: ansible
   playbooks:
+    prepare: ../../resources/playbooks/prepare.yml
     converge: ../../resources/playbooks/converge_robotserver.yml
     verify: ../../resources/playbooks/verify_robotserver.yml
   inventory:
     group_vars:
+      all:
+        ansible_user: root
       afs_test_nodes:
         # deploy_robotserver_library_file: "${HOME}/src/robotframework-openafslibrary/dist/robotframework_openafslibrary-1.0.1-py3-none-any.whl"
 

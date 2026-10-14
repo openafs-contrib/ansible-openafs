@@ -27,21 +27,34 @@ The tests are run with `tox`_. The test environments are defined in the
 ``tox.ini`` file. Run ``tox list`` to show the test environments, including
 which ones are run by default.
 
-.. _`tox`: https://tox.wiki
-
 Requirements
 ~~~~~~~~~~~~
 
-* `tox`_ 4.36 or later (older versions of tox will install the required
-  version automatically)
-* Python 3; install each of the Python versions in the ``py`` test
-  environments shown by ``tox list`` to run all of the unit tests
-* `podman`_, to run the role and playbook tests
+* Python 3.x (see ``tox.ini`` for versions)
+* `tox`_ 4.x
+* `podman`_
 
-.. _`podman`: https://podman.io
+Other packages will be installed in tox test environments as needed.
 
-Unit tests, compatibility tests, and lint
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The role and playbook tests run in `podman`_ containers created from a test
+image for each operating system. Build the test images before running the
+role and playbook tests.
+
+.. code-block:: bash
+
+   tests/build-images.sh
+
+The test images are named ``localhost/ansible-openafs-<os>``. Run
+``build-images.sh`` again to rebuild an image after changing its
+``Containerfile``. Use the ``--update`` option to update the base images and
+rebuild the test images with the latest packages:
+
+.. code-block:: bash
+
+   tests/build-images.sh --update
+
+Running tests
+~~~~~~~~~~~~~
 
 Run ``tox`` without arguments to run the default test environments:
 
@@ -74,21 +87,6 @@ To run a single test environment, use the ``-e`` option:
 
    tox -e ansible-core219
 
-Run the test environments in parallel with the ``-p`` option:
-
-.. code-block:: bash
-
-   tox -p auto
-
-Role and playbook tests
-~~~~~~~~~~~~~~~~~~~~~~~
-
-The roles and playbooks are tested with `Molecule`_. The test instances are
-created as `podman`_ containers running systemd, so the tests can be run on
-a development machine without any other test infrastructure.
-
-.. _`Molecule`: https://docs.ansible.com/projects/molecule/
-
 The ``latest`` test environment runs all of the tests, including the role
 and playbook tests, with the latest versions of Python, Ansible, and Molecule:
 
@@ -96,11 +94,11 @@ and playbook tests, with the latest versions of Python, Ansible, and Molecule:
 
    tox -e latest
 
-Running all of the tests takes a long time, since the role and playbook tests
-are run for each of the operating systems listed in the test files. Arguments
-after ``--`` are passed to ``pytest``. Use the ``-k`` option to select the
-tests to run. Use the ``-s`` option to show the full output, and the ``-x``
-option to stop on the first failure. For example:
+Running all of the tests takes a long, long, long time, since the role and
+playbook tests are run for each of the operating systems listed in the test
+files. Arguments after ``--`` are passed to ``pytest``. Use the ``-k`` option
+to select the tests to run. Use the ``-s`` option to show the full output, and
+the ``-x`` option to stop on the first failure. For example:
 
 .. code-block:: bash
 
@@ -142,10 +140,15 @@ test results in ``summary.txt`` and a JUnit XML report in ``junit.xml``. When
 Running Molecule directly
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+It is possible to run Molecule directly, which can be helpful when debugging.
+
 The Molecule scenarios are located in the ``extensions/molecule`` directory,
 in ``extensions/molecule/<role>/<scenario>`` for the roles and in
-``extensions/molecule/playbooks/<scenario>`` for the playbooks. The settings
-shared by all of the scenarios are in ``extensions/molecule/config.yml``.
+``extensions/molecule/playbooks/<scenario>`` for the playbooks. The scenarios
+use the Molecule ``podman`` driver from the `molecule-plugins`_ package to
+create the test instances from the test images.
+
+.. _`molecule-plugins`: https://github.com/ansible-community/molecule-plugins
 
 Use ``tox -e dev`` to create a virtualenv with Molecule and the other test
 requirements installed, then run ``molecule`` in the collection root
@@ -185,27 +188,6 @@ tested when running ``molecule`` directly. The default is ``alma9``.
 
    AFS_TEST_OS=debian13 molecule test -s openafs_server/default
 
-The available operating systems and their base container images are listed
-in ``extensions/molecule/resources/podman/images.yml``. To test another
-operating system, add the base image for the operating system to that file.
-
-Container images
-~~~~~~~~~~~~~~~~
-
-A test image is built for each operating system the first time it is tested,
-by installing Python, ``sudo``, and ``systemd`` in the base image. The test
-images are named ``localhost/molecule-openafs-<os>`` and are reused by later
-test runs. The images are tagged with a checksum of the generated
-``Containerfile``, so a new image is built automatically when the
-``Containerfile.j2`` template is changed.
-
-Remove a test image to rebuild it with the latest packages:
-
-.. code-block:: bash
-
-   podman images 'localhost/molecule-openafs-*'
-   podman rmi localhost/molecule-openafs-alma9:<tag>
-
 Documentation
 -------------
 
@@ -218,3 +200,7 @@ The documentation is built with `Sphinx`_. Build the documentation with:
    tox -e docs
 
 The HTML pages are written to the ``docs/build/html`` directory.
+
+
+.. _`tox`: https://tox.wiki
+.. _`podman`: https://podman.io

@@ -1,0 +1,12 @@
+FROM registry.opensuse.org/opensuse/leap:16.0
+
+# Install documentation files (man pages), which are excluded by the base
+# image, so packages are installed as on a regular system.
+RUN sed -i 's/^rpm.install.excludedocs.*/rpm.install.excludedocs = no/' /etc/zypp/zypp.conf
+
+# Install python, sudo, and systemd.
+RUN zypper --non-interactive install python3 sudo systemd iproute2 procps hostname && \
+    zypper clean --all
+
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]

@@ -1,16 +1,28 @@
 ---
 dependency:
   name: galaxy
+driver:
+  name: podman
 platforms:
   - name: m-role-server${AFS_TESTID}
+    image: localhost/ansible-openafs-${AFS_TEST_OS:-alma9}
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: molecule
+    extra_opts:
+      - --no-hosts
     groups:
       - afs_databases
       - afs_fileservers
 provisioner:
   name: ansible
+  playbooks:
+    prepare: ../../resources/playbooks/prepare.yml
   inventory:
     group_vars:
       all:
+        ansible_user: root
         afs_cell: "example.com"
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
         afs_install_method: "packages"

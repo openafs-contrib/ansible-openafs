@@ -2,53 +2,74 @@
 dependency:
   name: galaxy
 
+driver:
+  name: podman
+
 platforms:
-  - name: db1
+  - &platform
+    name: db1
+    image: localhost/ansible-openafs-${AFS_TEST_OS:-alma9}
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: molecule
+    extra_opts:
+      - --no-hosts
     groups:
       - afs_kdcs
       - afs_databases
 
-  - name: db2
+  - <<: *platform
+    name: db2
     groups:
       - afs_databases
 
-  - name: db3
+  - <<: *platform
+    name: db3
     groups:
       - afs_databases
 
-  - name: fs1
+  - <<: *platform
+    name: fs1
     groups:
       - afs_fileservers
 
-  - name: fs2
+  - <<: *platform
+    name: fs2
     groups:
       - afs_fileservers
 
-  - name: fs3
+  - <<: *platform
+    name: fs3
     groups:
       - afs_fileservers
 
-  - name: ws1
+  - <<: *platform
+    name: ws1
     groups:
       - afs_admin_client
       - afs_clients
 
-  - name: ws2
+  - <<: *platform
+    name: ws2
     groups:
       - afs_clients
 
-  - name: ws3
+  - <<: *platform
+    name: ws3
     groups:
       - afs_clients
 
 provisioner:
   name: ansible
   playbooks:
+    prepare: ../../resources/playbooks/prepare.yml
     converge: ../../resources/playbooks/converge_cell.yml
     verify: ../../resources/playbooks/verify_cell.yml
   inventory:
     group_vars:
       all:
+        ansible_user: root
         afs_install_method: "managed"
         afs_module_install_method: "kmod"
         afs_realm: "EXAMPLE.COM"
