@@ -4,7 +4,6 @@ exclude_paths:
 skip_list:
   - command-instead-of-module
   - deprecated-bare-vars
-  - deprecated-local-action
   - fqcn[action]
   - fqcn[action-core]
   - name[casing]

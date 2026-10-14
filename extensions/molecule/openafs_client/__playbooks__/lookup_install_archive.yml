@@ -33,10 +33,10 @@
             var: pattern
 
         - name: Lookup install tarballs
-          local_action:
-            module: find
+          find:
             path: "{{ afs_builds | d('~/.cache/ansible-openafs/builds') }}"
             pattern: "{{ pattern }}"
+          delegate_to: localhost
           register: find_results
 
         - set_fact:
