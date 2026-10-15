@@ -104,7 +104,7 @@ class Keytab:
             numc -= 1
         realm = self._read_string(f)
         components = []
-        for _ in range(0, numc):
+        for _ in range(0, numc):  # pylint: disable=disallowed-name
             components.append(self._read_string(f))
         if version != KEYTAB_MAGIC_OLD:
             self._read_data(f, "!L")  # read past name_type

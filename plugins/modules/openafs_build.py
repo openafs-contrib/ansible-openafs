@@ -250,7 +250,6 @@ import subprocess  # noqa: E402
 from multiprocessing import cpu_count  # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
-from ansible.module_utils.six import string_types  # noqa: E402
 
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import (
     Logger,
@@ -521,7 +520,7 @@ class Builder(object):
             args = options
         elif isinstance(options, tuple):
             args = list(options)
-        elif isinstance(options, string_types):
+        elif isinstance(options, str):
             args = shlex.split(options)
         else:
             self.fail("Invalid configure options type")

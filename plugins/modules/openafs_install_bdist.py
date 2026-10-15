@@ -322,7 +322,7 @@ class BinaryDistInstaller(object):
         """Find a list of files by filename suffix."""
         found = []
         for f in files:
-            filename, _ = f
+            filename, _ = f  # pylint: disable=disallowed-name
             if filename.endswith(suffix):
                 found.append(filename)
         return found

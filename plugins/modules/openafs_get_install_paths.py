@@ -364,7 +364,7 @@ class DebianInstallationFactCollector(InstallationFactCollector):
             self.module.fail_json(msg="dpkg-query failed", rc=rc, err=err)
         packages = set()
         for line in out.splitlines():
-            package, _, _, status = line.rstrip().split()
+            package, _, _, status = line.rstrip().split()  # pylint: disable=disallowed-name
             if status == "installed":
                 packages.add(package)
         return packages
