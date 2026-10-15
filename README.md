@@ -7,7 +7,7 @@ Documentation: [https://openafs-ansible-collection.readthedocs.io][2]
 
 ## Requirements
 
-* Ansible (ansible-core) 2.16+
+* Ansible (ansible-core) 2.19+
 * OpenAFS 1.6.5+, 1.8.x, 1.9.x source or packages
 
 ## Platforms supported
