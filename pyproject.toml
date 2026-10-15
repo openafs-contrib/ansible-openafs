@@ -1,0 +1,9 @@
+[tool.tox]
+requires = ["tox>=4.36.0", "tox-ansible"]
+
+[tool.tox-ansible]
+coverage = true
+skip = [
+    "devel",
+    "milestone",
+]
