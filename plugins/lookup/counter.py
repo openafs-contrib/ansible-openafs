@@ -1,4 +1,5 @@
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = """
@@ -66,19 +67,19 @@ RETURN = """
     elements: int
 """
 
-import contextlib     # noqa: E402
-import errno          # noqa: E402
-import fcntl          # noqa: E402
-import json           # noqa: E402
-import os             # noqa: E402
+import contextlib  # noqa: E402
+import errno  # noqa: E402
+import fcntl  # noqa: E402
+import json  # noqa: E402
+import os  # noqa: E402
 
 from ansible.plugins.lookup import LookupBase  # noqa: E402
-from ansible.errors import AnsibleError        # noqa: E402
+from ansible.errors import AnsibleError  # noqa: E402
 
 
 @contextlib.contextmanager
 def lock(filename):
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         fcntl.flock(f, fcntl.LOCK_EX)
         yield f
         fcntl.flock(f, fcntl.LOCK_UN)
@@ -91,35 +92,34 @@ class LookupModule(LookupBase):
         try:
             self.init_paths()
             for term in terms:
-                if ',' in term:
-                    name, op = term.split(',', 1)
+                if "," in term:
+                    name, op = term.split(",", 1)
                 else:
-                    name, op = term, 'next'
+                    name, op = term, "next"
                 with lock(self.lockfile):
-                    if op == 'next':
+                    if op == "next":
                         value = self.get_next(name)
-                    elif op == 'current':
+                    elif op == "current":
                         value = self.get_current(name)
-                    elif op == 'reset':
+                    elif op == "reset":
                         value = self.reset(name)
                     else:
-                        raise ValueError('Invalid operation: %s' % (op))
+                        raise ValueError("Invalid operation: %s" % (op))
                     ret.append(value)
         except Exception as e:
             raise AnsibleError(e)
         return ret
 
     def init_paths(self):
-        directory = os.path.expanduser(os.getenv(
-                      'ANSIBLE_OPENAFS_COUNTER_DIR', '~/.ansible'))
+        directory = os.path.expanduser(os.getenv("ANSIBLE_OPENAFS_COUNTER_DIR", "~/.ansible"))
         if not os.path.exists(directory):
             os.makedirs(directory)
-        self.lockfile = os.path.join(directory, 'counter.lock')
-        self.filename = os.path.join(directory, 'counter.json')
+        self.lockfile = os.path.join(directory, "counter.lock")
+        self.filename = os.path.join(directory, "counter.json")
 
     def load(self):
         try:
-            with open(self.filename, 'r') as f:
+            with open(self.filename, "r") as f:
                 self.counters = json.load(f)
         except IOError as e:
             if e.errno == errno.ENOENT:
@@ -129,7 +129,7 @@ class LookupModule(LookupBase):
         return self.counters
 
     def store(self):
-        with open(self.filename, 'w') as f:
+        with open(self.filename, "w") as f:
             json.dump(self.counters, f, indent=4)
         return 0
 

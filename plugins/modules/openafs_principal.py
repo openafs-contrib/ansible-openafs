@@ -3,12 +3,12 @@
 # BSD 2-Clause License
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.1.',
-    'status': ['preview'],
-    'supported_by': 'community',
+    "metadata_version": "1.1.",
+    "status": ["preview"],
+    "supported_by": "community",
 }
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: openafs_principal
 
@@ -93,9 +93,9 @@ options:
 
 author:
   - Michael Meffie
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create an AFS service key
   become: yes
   openafs_contrib.openafs.openafs_principal:
@@ -131,9 +131,9 @@ EXAMPLES = r'''
     - alice
     - bob
     - charlie
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 attributes:
   description: Principal attributes from C(get_principal)
   type: list
@@ -167,21 +167,25 @@ realm:
   type: str
   return: when present in the principal parameter
 #  sample: EXAMPLE.COM
-'''
+"""
 
-import os        # noqa: E402
-import re        # noqa: E402
+import os  # noqa: E402
+import re  # noqa: E402
 import platform  # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule   # noqa: E402
-from ansible.module_utils.common.sys_info import (     # noqa: E402
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
+from ansible.module_utils.common.sys_info import (  # noqa: E402
     get_distribution,
     get_platform_subclass,
 )
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.kerberos import Keytab  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import (
+    Logger,
+)  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.kerberos import (
+    Keytab,
+)  # noqa: E402, E501
 
-module_name = os.path.basename(__file__).replace('.py', '')
+module_name = os.path.basename(__file__).replace(".py", "")
 log = Logger(module_name)
 
 
@@ -194,21 +198,23 @@ class KerberosAdmin(object):
 
     def __init__(self, module):
         self.module = module
-        self.kadmin = module.params['kadmin']
-        self.realm = module.params['realm']
-        self.keytabs = module.params['keytabs']
+        self.kadmin = module.params["kadmin"]
+        self.realm = module.params["realm"]
+        self.keytabs = module.params["keytabs"]
         self.changed = False
         self.debug = []
 
     def _not_implemented(self):
         myname = self.__class__.__name__
-        if myname != 'KerberosAdmin':
-            raise NotImplementedError('class %s' % myname)
+        if myname != "KerberosAdmin":
+            raise NotImplementedError("class %s" % myname)
         else:
-            self.module.fail_json(msg='Unknown platform.',
-                                  module=module_name,
-                                  platform=platform.system(),
-                                  distribution=get_distribution())
+            self.module.fail_json(
+                msg="Unknown platform.",
+                module=module_name,
+                platform=platform.system(),
+                distribution=get_distribution(),
+            )
 
     # -------------------------------------------------------------------------
     # Abstract methods: Must be implemented by subclasses.
@@ -242,9 +248,9 @@ class KerberosAdmin(object):
         Ensure the principal exists and return the attributes.
         Create a keytab if a password was not specfied.
         """
-        principal = self.normalize(self.module.params['principal'])
-        password = self.module.params['password']
-        acl = self.module.params['acl']
+        principal = self.normalize(self.module.params["principal"])
+        password = self.module.params["password"]
+        acl = self.module.params["acl"]
         keytab = None
 
         attributes = self.get_principal(principal)
@@ -254,8 +260,8 @@ class KerberosAdmin(object):
             if not attributes:
                 self.fail('Failed to add principal "%s".' % principal)
 
-        principal = attributes['principal']  # fully qualified
-        kvno = attributes['kvno']
+        principal = attributes["principal"]  # fully qualified
+        kvno = attributes["kvno"]
 
         if not password:
             keytab = self.ensure_present_keytab(principal, kvno)
@@ -264,13 +270,13 @@ class KerberosAdmin(object):
             self.update_acl(principal, acl)
 
         results = {
-            'changed': self.changed,
-            'attributes': attributes,
-            'kvno': kvno,
-            'debug': self.debug,
+            "changed": self.changed,
+            "attributes": attributes,
+            "kvno": kvno,
+            "debug": self.debug,
         }
         if keytab:
-            results['keytab'] = keytab
+            results["keytab"] = keytab
         return results
 
     def ensure_present_keytab(self, principal, kvno):
@@ -281,17 +287,22 @@ class KerberosAdmin(object):
         if os.path.exists(keytab):
             if self.is_keytab_current(keytab, principal, kvno):
                 self.debug.append(
-                    dict(msg='Existing keytab is current.',
-                         keytab=keytab, kvno=kvno, principal=principal))
+                    dict(
+                        msg="Existing keytab is current.",
+                        keytab=keytab,
+                        kvno=kvno,
+                        principal=principal,
+                    )
+                )
                 return keytab
             # Remove old version.
-            self.debug.append(dict(cmd='rm %s' % keytab))
+            self.debug.append(dict(cmd="rm %s" % keytab))
             os.remove(keytab)
             self.changed = True
 
         keytab_dir = os.path.dirname(keytab)
         if not os.path.exists(keytab_dir):
-            self.debug.append(dict(cmd='mkdir -p %s' % keytab_dir))
+            self.debug.append(dict(cmd="mkdir -p %s" % keytab_dir))
             os.makedirs(keytab_dir)
             self.changed = True
 
@@ -302,7 +313,7 @@ class KerberosAdmin(object):
         """
         Ensure the principal and keytab does not exist.
         """
-        principal = self.normalize(self.module.params['principal'])
+        principal = self.normalize(self.module.params["principal"])
 
         if self.get_principal(principal):
             self.delete_principal(principal)
@@ -315,19 +326,20 @@ class KerberosAdmin(object):
         if os.path.exists(keytab):
             os.remove(keytab)
             self.changed = True
-            self.debug.append(dict(cmd='rm %s' % keytab))
+            self.debug.append(dict(cmd="rm %s" % keytab))
 
         results = {
-            'changed': self.changed,
-            'debug': self.debug,
+            "changed": self.changed,
+            "debug": self.debug,
         }
         return results
 
     def run(self, command, check_rc=True):
         args = self.kadmin_args(command)
         rc, out, err = self.module.run_command(args, check_rc)
-        self.debug.append(dict(cmd=' '.join(args), rc=rc,
-                          out=out.splitlines(), err=err.splitlines()))
+        self.debug.append(
+            dict(cmd=" ".join(args), rc=rc, out=out.splitlines(), err=err.splitlines())
+        )
         return out, err
 
     def fail(self, msg):
@@ -342,32 +354,32 @@ class KerberosAdmin(object):
         Convert k4 formatted principals to k5 format.
         k4 format is still used for AFS identities.
         """
-        if re.search(r'[^a-zA-Z0-9_\-\./@]', principal):
+        if re.search(r"[^a-zA-Z0-9_\-\./@]", principal):
             self.fail('Illegal character found in principal "%s".' % principal)
         primary, instance, realm = self.get_principal_components(principal)
         tokens = [primary]
         if instance:
-            tokens.append('/')
+            tokens.append("/")
             tokens.append(instance)
         if realm:
-            tokens.append('@')
+            tokens.append("@")
             tokens.append(realm)
-        return ''.join(tokens)
+        return "".join(tokens)
 
     def get_principal_components(self, principal):
         """
         Split the principal names into components.
         """
-        if '@' in principal:
-            name, realm = principal.split('@', 1)
+        if "@" in principal:
+            name, realm = principal.split("@", 1)
         else:
             name = principal
             realm = None
 
-        if '/' not in name and '.' in name:  # k4 style separator
-            primary, instance = name.split('.', 1)
-        elif '/' in name:  # k5 style separator
-            primary, instance = name.split('/', 1)
+        if "/" not in name and "." in name:  # k4 style separator
+            primary, instance = name.split(".", 1)
+        elif "/" in name:  # k5 style separator
+            primary, instance = name.split("/", 1)
         else:
             primary = name
             instance = None
@@ -377,7 +389,7 @@ class KerberosAdmin(object):
         """
         Determine the keytab file name from the principal name.
         """
-        keytab_name = self.module.params['keytab_name']
+        keytab_name = self.module.params["keytab_name"]
         if not keytab_name:
             # Format a file name in the form "<primary>[.<instance>].keytab".
             # The realm name is not included to retain compatibility with older
@@ -385,10 +397,10 @@ class KerberosAdmin(object):
             primary, instance, realm = self.get_principal_components(principal)
             tokens = [primary]
             if instance:
-                tokens.append('.')
+                tokens.append(".")
                 tokens.append(instance)
-            tokens.append('.keytab')
-            keytab_name = ''.join(tokens)
+            tokens.append(".keytab")
+            keytab_name = "".join(tokens)
         return os.path.join(self.keytabs, keytab_name)
 
     def is_keytab_current(self, keytab, principal, kvno):
@@ -398,14 +410,21 @@ class KerberosAdmin(object):
         """
         kt = Keytab(keytab)
         kt_kvno = kt.get_kvno(principal)
-        self.debug.append(dict(msg='checking keytab', principal=principal,
-                          keytab=keytab, kvno=kvno, kt_kvno=kt_kvno))
+        self.debug.append(
+            dict(
+                msg="checking keytab",
+                principal=principal,
+                keytab=keytab,
+                kvno=kvno,
+                kt_kvno=kt_kvno,
+            )
+        )
         if kt_kvno is None:
-            log.error('Unable to get keytab %s kvno.' % keytab)
+            log.error("Unable to get keytab %s kvno." % keytab)
         elif kvno is None:
-            log.error('Unable to get principal %s kvno.' % principal)
+            log.error("Unable to get principal %s kvno." % principal)
         elif kt_kvno == kvno:
-            return True   # Valid
+            return True  # Valid
         return False
 
 
@@ -415,12 +434,13 @@ class MITKerberosAdmin(KerberosAdmin):
 
     def __init__(self, module):
         super(MITKerberosAdmin, self).__init__(module)
-        self.enctypes = module.params['enctypes']
+        self.enctypes = module.params["enctypes"]
         if not self.kadmin:
-            self.kadmin = module.get_bin_path('kadmin.local', required=True,
-                                              opt_dirs=self.extra_path)
+            self.kadmin = module.get_bin_path(
+                "kadmin.local", required=True, opt_dirs=self.extra_path
+            )
         if not self.keytabs:
-            self.keytabs = '/var/lib/ansible-openafs/keytabs'  # use kdb dir?
+            self.keytabs = "/var/lib/ansible-openafs/keytabs"  # use kdb dir?
 
     def kadmin_args(self, command):
         """
@@ -428,9 +448,9 @@ class MITKerberosAdmin(KerberosAdmin):
         """
         args = [self.kadmin]
         if self.realm:
-            args.extend(['-r', self.realm])
-        query = ' '.join(command)
-        args.extend(['-q', query])
+            args.extend(["-r", self.realm])
+        query = " ".join(command)
+        args.extend(["-q", query])
         return args
 
     def get_principal(self, principal):
@@ -438,42 +458,42 @@ class MITKerberosAdmin(KerberosAdmin):
         Lookup a principal in the kerberos database and return the attributes
         as a dict.
         """
-        out, err = self.run(['get_principal', principal])
-        if 'Principal does not exist' in err:
+        out, err = self.run(["get_principal", principal])
+        if "Principal does not exist" in err:
             return None
         attributes = {}
         keys = []
         kvnos = set()
         for line in out.splitlines():
-            if ':' not in line:
-                continue   # Skip info lines
-            name, value = line.split(':', 1)
-            name = name.strip().replace(' ', '_').lower()
+            if ":" not in line:
+                continue  # Skip info lines
+            name, value = line.split(":", 1)
+            name = name.strip().replace(" ", "_").lower()
             value = value.strip()
-            if value in ('[never]', '[none]'):
+            if value in ("[never]", "[none]"):
                 value = None
-            if name == 'key':
+            if name == "key":
                 keys.append(value)
-                m = re.search(r'vno (\d+)', value)
+                m = re.search(r"vno (\d+)", value)
                 if m:
                     kvnos.add(int(m.group(1)))
             else:
                 attributes[name] = value
-        attributes['keys'] = keys
-        attributes['kvno'] = max(kvnos)
+        attributes["keys"] = keys
+        attributes["kvno"] = max(kvnos)
         return attributes
 
     def add_principal(self, principal, password=None):
         """
         Add a principal to the kerberos database.
         """
-        command = ['add_principal']
+        command = ["add_principal"]
         if password:
-            command.extend(['-pw', password])
+            command.extend(["-pw", password])
         else:
-            command.append('-randkey')
+            command.append("-randkey")
         if self.enctypes:
-            command.extend(['-e', '"%s"' % ','.join(self.enctypes)])
+            command.extend(["-e", '"%s"' % ",".join(self.enctypes)])
         command.append(principal)
         self.run(command)
         self.changed = True
@@ -482,20 +502,20 @@ class MITKerberosAdmin(KerberosAdmin):
         """
         Delete a principal in the kerberos database.
         """
-        self.run(['delete_principal', '-force', principal])
+        self.run(["delete_principal", "-force", principal])
         self.changed = True
 
     def write_keytab(self, keytab, principal):
         """
         Write the principal's keys to a keytab file.
         """
-        command = ['ktadd', '-keytab', keytab]
+        command = ["ktadd", "-keytab", keytab]
         if self.enctypes:
-            command.extend(['-e', '"%s"' % ','.join(self.enctypes)])
+            command.extend(["-e", '"%s"' % ",".join(self.enctypes)])
         command.append(principal)
         self.run(command)
         if not os.path.exists(keytab):
-            self.fail('Failed to create keytab; file not found.')
+            self.fail("Failed to create keytab; file not found.")
         self.changed = True
 
     def update_acl(self, principal, acl):
@@ -505,31 +525,34 @@ class MITKerberosAdmin(KerberosAdmin):
         found = False
         output = []
         for line in self.read_acl_file():
-            m = re.match(r'^\s*#', line)
+            m = re.match(r"^\s*#", line)
             if m:
                 output.append(line)
                 continue
-            m = re.match(r'^\s*$', line)
+            m = re.match(r"^\s*$", line)
             if m:
                 output.append(line)
                 continue
-            m = re.match(r'^\s*(\S+)\s+(\S+)', line)
+            m = re.match(r"^\s*(\S+)\s+(\S+)", line)
             if m:
                 # Wildcard matching is not supported to keep this simple.
                 if m.group(1) == principal and m.group(2) == acl:
-                    log.debug("Permissions '%s' for principal '%s' already "
-                              "present in acl file.", acl, principal)
+                    log.debug(
+                        "Permissions '%s' for principal '%s' already present in acl file.",
+                        acl,
+                        principal,
+                    )
                     return
                 if m.group(1) == principal:
                     # Update in place.
                     found = True
-                    line = '%s %s\n' % (principal, acl)
+                    line = "%s %s\n" % (principal, acl)
                     log.info("Updating line in acl file: '%s'" % (line))
                     output.append(line)
                     continue
             output.append(line)
         if not found:
-            line = '%s %s\n' % (principal, acl)
+            line = "%s %s\n" % (principal, acl)
             log.info("Adding line to acl file: '%s'" % (line))
             output.append(line)
         self.write_acl_file(output)
@@ -541,18 +564,18 @@ class MITKerberosAdmin(KerberosAdmin):
         found = False
         output = []
         for line in self.read_acl_file():
-            m = re.match(r'^\s*#', line)
+            m = re.match(r"^\s*#", line)
             if m:
                 output.append(line)
                 continue
-            m = re.match(r'^\s*$', line)
+            m = re.match(r"^\s*$", line)
             if m:
                 output.append(line)
                 continue
-            m = re.match(r'^\s*(\S+)\s+(\S+)', line)
+            m = re.match(r"^\s*(\S+)\s+(\S+)", line)
             if m:
                 if m.group(1) == principal:
-                    found = True   # remove this line
+                    found = True  # remove this line
                     log.info("Removing line from acl file: '%s'" % (line))
                     continue
             output.append(line)
@@ -563,14 +586,14 @@ class MITKerberosAdmin(KerberosAdmin):
         """
         Slurp acl file into a list of lines.
         """
-        log.info('Reading %s', self.kadm5_acl)
+        log.info("Reading %s", self.kadm5_acl)
         with open(self.kadm5_acl) as fh:
             lines = fh.readlines()
         return lines
 
     def write_acl_file(self, lines):
-        log.info('Updating %s', self.kadm5_acl)
-        with open(self.kadm5_acl, 'w') as fh:
+        log.info("Updating %s", self.kadm5_acl)
+        with open(self.kadm5_acl, "w") as fh:
             for line in lines:
                 fh.write(line)
                 self.changed = True
@@ -582,20 +605,19 @@ class HeimdalKerberosAdmin(KerberosAdmin):
 
     def __init__(self, module):
         super(HeimdalKerberosAdmin, self).__init__(module)
-        self.enctypes = module.params['enctypes']
+        self.enctypes = module.params["enctypes"]
         if not self.kadmin:
-            self.kadmin = module.get_bin_path('kadmin', required=True,
-                                              opt_dirs=self.extra_path)
+            self.kadmin = module.get_bin_path("kadmin", required=True, opt_dirs=self.extra_path)
         if not self.keytabs:
-            self.keytabs = '/var/lib/ansible-openafs/keytabs'  # use kdb dir?
+            self.keytabs = "/var/lib/ansible-openafs/keytabs"  # use kdb dir?
 
     def kadmin_args(self, command):
         """
         Assemble kadmin command arguments.
         """
-        args = [self.kadmin, '--local']
+        args = [self.kadmin, "--local"]
         if self.realm:
-            args.extend(['-r', self.realm])
+            args.extend(["-r", self.realm])
         args.extend(command)
         return args
 
@@ -604,19 +626,19 @@ class HeimdalKerberosAdmin(KerberosAdmin):
         Lookup a principal in the kerberos database and return the attributes
         as a dict.
         """
-        out, err = self.run(['get_entry', principal], check_rc=False)
-        if 'Principal does not exist' in err:
+        out, err = self.run(["get_entry", principal], check_rc=False)
+        if "Principal does not exist" in err:
             return None
         attributes = {}
         for line in out.splitlines():
-            if ':' not in line:
-                continue   # Skip info lines
-            name, value = line.split(':', 1)
-            name = name.strip().replace(' ', '_').lower()
+            if ":" not in line:
+                continue  # Skip info lines
+            name, value = line.split(":", 1)
+            name = name.strip().replace(" ", "_").lower()
             value = value.strip()
-            if value in ('[never]', '[none]'):
+            if value in ("[never]", "[none]"):
                 value = None
-            if name == 'kvno':
+            if name == "kvno":
                 value = int(value)
             attributes[name] = value
         return attributes
@@ -625,27 +647,27 @@ class HeimdalKerberosAdmin(KerberosAdmin):
         """
         Add a principal to the kerberos database.
         """
-        command = ['add']
+        command = ["add"]
         if password:
-            command.extend(['-p', password])
+            command.extend(["-p", password])
         else:
-            command.append('--random-password')
-        command.append('--use-default')
+            command.append("--random-password")
+        command.append("--use-default")
         command.append(principal)
         self.run(command)
         self.changed = True
 
     def delete_principal(self, principal):
-        self.run(['delete', principal])
+        self.run(["delete", principal])
         self.changed = True
 
     def write_keytab(self, keytab, principal):
         """
         Write the principal's keys to a keytab file.
         """
-        self.run(['ext_keytab', '-k', keytab, principal])
+        self.run(["ext_keytab", "-k", keytab, principal])
         if not os.path.exists(keytab):
-            self.fail('Failed to create keytab; file not found.')
+            self.fail("Failed to create keytab; file not found.")
         self.changed = True
         return keytab
 
@@ -657,115 +679,113 @@ class HeimdalKerberosAdmin(KerberosAdmin):
 
 
 class RedHatMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'Linux'
-    distribution = 'Redhat'
-    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+    platform = "Linux"
+    distribution = "Redhat"
+    kadm5_acl = "/var/kerberos/krb5kdc/kadm5.acl"
 
 
 class CentOSMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'Linux'
-    distribution = 'Centos'
-    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+    platform = "Linux"
+    distribution = "Centos"
+    kadm5_acl = "/var/kerberos/krb5kdc/kadm5.acl"
 
 
 class FedoraMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'Linux'
-    distribution = 'Fedora'
-    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+    platform = "Linux"
+    distribution = "Fedora"
+    kadm5_acl = "/var/kerberos/krb5kdc/kadm5.acl"
 
 
 class AlmaMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'Linux'
-    distribution = 'Almalinux'
-    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+    platform = "Linux"
+    distribution = "Almalinux"
+    kadm5_acl = "/var/kerberos/krb5kdc/kadm5.acl"
 
 
 class RockyMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'Linux'
-    distribution = 'Rocky'
-    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+    platform = "Linux"
+    distribution = "Rocky"
+    kadm5_acl = "/var/kerberos/krb5kdc/kadm5.acl"
 
 
 class OracleMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'Linux'
-    distribution = 'Oracle'
-    kadm5_acl = '/var/kerberos/krb5kdc/kadm5.acl'
+    platform = "Linux"
+    distribution = "Oracle"
+    kadm5_acl = "/var/kerberos/krb5kdc/kadm5.acl"
 
 
 class OpensuseMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'Linux'
-    distribution = 'Opensuse'
-    kadm5_acl = '/var/lib/kerberos/krb5kdc/kadm5.acl'
-    extra_path = ['/usr/lib/mit/sbin']
+    platform = "Linux"
+    distribution = "Opensuse"
+    kadm5_acl = "/var/lib/kerberos/krb5kdc/kadm5.acl"
+    extra_path = ["/usr/lib/mit/sbin"]
 
 
 class OpensuseLeapMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'Linux'
-    distribution = 'Opensuse-leap'
-    kadm5_acl = '/var/lib/kerberos/krb5kdc/kadm5.acl'
-    extra_path = ['/usr/lib/mit/sbin']
+    platform = "Linux"
+    distribution = "Opensuse-leap"
+    kadm5_acl = "/var/lib/kerberos/krb5kdc/kadm5.acl"
+    extra_path = ["/usr/lib/mit/sbin"]
 
 
 class SlesMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'Linux'
-    distribution = 'Sles'
-    kadm5_acl = '/var/lib/kerberos/krb5kdc/kadm5.acl'
-    extra_path = ['/usr/lib/mit/sbin']
+    platform = "Linux"
+    distribution = "Sles"
+    kadm5_acl = "/var/lib/kerberos/krb5kdc/kadm5.acl"
+    extra_path = ["/usr/lib/mit/sbin"]
 
 
 class DebianMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'Linux'
-    distribution = 'Debian'
-    kadm5_acl = '/etc/krb5kdc/kadm5.acl'
+    platform = "Linux"
+    distribution = "Debian"
+    kadm5_acl = "/etc/krb5kdc/kadm5.acl"
 
 
 class UbuntuMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'Linux'
-    distribution = 'Ubuntu'
-    kadm5_acl = '/etc/krb5kdc/kadm5.acl'
+    platform = "Linux"
+    distribution = "Ubuntu"
+    kadm5_acl = "/etc/krb5kdc/kadm5.acl"
 
 
 class SolarisMITKerberosAdmin(MITKerberosAdmin):
-    platform = 'SunOS'
-    kadm5_acl = '/etc/krb5/kadm5.acl'
+    platform = "SunOS"
+    kadm5_acl = "/etc/krb5/kadm5.acl"
 
 
 class FreeBSDHeimdalKerberosAdmin(HeimdalKerberosAdmin):
-    platform = 'FreeBSD'
-    distribution = 'Freebsd'
+    platform = "FreeBSD"
+    distribution = "Freebsd"
 
 
 def main():
     module = AnsibleModule(
-            argument_spec=dict(
-                state=dict(type='str',
-                           choices=['present', 'absent'],
-                           default='present'),
-                principal=dict(type='str', required=True),
-                realm=dict(type='str'),
-                password=dict(type='str', no_log=True),
-                enctypes=dict(type='list',
-                              aliases=['enctype', 'encryption_type',
-                                       'encryption_types', 'keysalts']),
-                acl=dict(type='str'),
-                keytab_name=dict(type='str'),
-                keytabs=dict(type='path'),
-                kadmin=dict(type='path'),
+        argument_spec=dict(
+            state=dict(type="str", choices=["present", "absent"], default="present"),
+            principal=dict(type="str", required=True),
+            realm=dict(type="str"),
+            password=dict(type="str", no_log=True),
+            enctypes=dict(
+                type="list", aliases=["enctype", "encryption_type", "encryption_types", "keysalts"]
             ),
-            supports_check_mode=False,
+            acl=dict(type="str"),
+            keytab_name=dict(type="str"),
+            keytabs=dict(type="path"),
+            kadmin=dict(type="path"),
+        ),
+        supports_check_mode=False,
     )
-    log.info('Starting %s', module_name)
+    log.info("Starting %s", module_name)
 
     kadmin = KerberosAdmin(module)
-    state = module.params['state']
-    if state == 'present':
+    state = module.params["state"]
+    if state == "present":
         results = kadmin.ensure_present()
-    elif state == 'absent':
+    elif state == "absent":
         results = kadmin.ensure_absent()
     else:
-        raise ValueError('Invalid state %s ' % state)
+        raise ValueError("Invalid state %s " % state)
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

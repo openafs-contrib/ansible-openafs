@@ -3,13 +3,13 @@
 # BSD 2-Clause License
 
 
-import contextlib               # noqa: E402
-import errno                    # noqa: E402
-import json                     # noqa: E402
-import os                       # noqa: E402
-import shutil                   # noqa: E402
-import syslog                   # noqa: E402
-import tempfile                 # noqa: E402
+import contextlib  # noqa: E402
+import errno  # noqa: E402
+import json  # noqa: E402
+import os  # noqa: E402
+import shutil  # noqa: E402
+import syslog  # noqa: E402
+import tempfile  # noqa: E402
 
 
 class Logger:
@@ -67,7 +67,7 @@ def lookup_facts():
     Return the local facts as a dict.
     """
     try:
-        with open('/etc/ansible/facts.d/openafs.fact') as f:
+        with open("/etc/ansible/facts.d/openafs.fact") as f:
             facts = json.load(f)
     except IOError as e:
         if e.errno == errno.ENOENT:

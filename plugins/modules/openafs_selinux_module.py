@@ -3,9 +3,9 @@
 # BSD 2-Clause License
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.1.',
-    'status': ['preview'],
-    'supported_by': 'community',
+    "metadata_version": "1.1.",
+    "status": ["preview"],
+    "supported_by": "community",
 }
 
 DOCUMENTATION = r"""
@@ -65,14 +65,16 @@ version:
   type: str
 """
 
-import os                       # noqa: E402
-import pprint                   # noqa: E402
-import re                       # noqa: E402
+import os  # noqa: E402
+import pprint  # noqa: E402
+import re  # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule   # noqa: E402
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import (
+    Logger,
+)  # noqa: E402, E501
 
-module_name = os.path.basename(__file__).replace('.py', '')
+module_name = os.path.basename(__file__).replace(".py", "")
 
 
 def main():
@@ -80,18 +82,18 @@ def main():
         changed=False,
     )
     module = AnsibleModule(
-            argument_spec=dict(
-                state=dict(type='str', choices=['present'], default='present'),
-                name=dict(type='str', default='openafs'),
-                path=dict(type='path', default='/var/lib/ansible-openafs'),
-            ),
-            supports_check_mode=False,
+        argument_spec=dict(
+            state=dict(type="str", choices=["present"], default="present"),
+            name=dict(type="str", default="openafs"),
+            path=dict(type="path", default="/var/lib/ansible-openafs"),
+        ),
+        supports_check_mode=False,
     )
     log = Logger(module_name)
-    log.info('Starting %s', module_name)
+    log.info("Starting %s", module_name)
 
-    name = module.params['name']
-    path = module.params['path']
+    name = module.params["name"]
+    path = module.params["path"]
 
     def die(msg):
         log.error(msg)
@@ -99,7 +101,7 @@ def main():
 
     def run_command(cmd, *args):
         cmdargs = [module.get_bin_path(cmd, required=True)] + list(args)
-        cmdline = ' '.join(cmdargs)
+        cmdline = " ".join(cmdargs)
         log.info("Running: %s", cmdline)
         rc, out, err = module.run_command(cmdargs)
         if rc != 0:
@@ -107,19 +109,19 @@ def main():
         return out
 
     def checkmodule(*args):
-        return run_command('checkmodule', *args)
+        return run_command("checkmodule", *args)
 
     def semodule_package(*args):
-        return run_command('semodule_package', *args)
+        return run_command("semodule_package", *args)
 
     def semodule(*args):
-        return run_command('semodule', *args)
+        return run_command("semodule", *args)
 
     if not name:
         die("Module name is required.")
 
-    te = os.path.join(path, '%s.te' % name)
-    fc = os.path.join(path, '%s.fc' % name)
+    te = os.path.join(path, "%s.te" % name)
+    fc = os.path.join(path, "%s.fc" % name)
     for f in (te, fc):
         if not os.path.exists(f):
             die("Input file '%s' not found." % f)
@@ -127,9 +129,9 @@ def main():
     current_version = None
     target_version = None
 
-    out = semodule('-lstandard')
+    out = semodule("-lstandard")
     for line in out.splitlines():
-        m = re.match(r'\s*(\S+)\s+(\S+)\s*', line)
+        m = re.match(r"\s*(\S+)\s+(\S+)\s*", line)
         if m and m.group(1) == name:
             current_version = m.group(2)
             break
@@ -141,7 +143,7 @@ def main():
         try:
             with open(te) as f:
                 for line in f.readlines():
-                    m = re.match(r'\s*module\s+(\S+)\s+(\S+)\s*;', line)
+                    m = re.match(r"\s*module\s+(\S+)\s+(\S+)\s*;", line)
                     if m and m.group(1) == name:
                         target_version = m.group(2)
                         break
@@ -152,16 +154,16 @@ def main():
         log.info("%s module target version is '%s'.", name, target_version)
 
     if not current_version or (current_version != target_version):
-        mod = os.path.join(path, '%s.mod' % name)
-        pp = os.path.join(path, '%s.pp' % name)
-        checkmodule('-M', '-m', '-o', mod, te)
-        semodule_package('-o', pp, '-m', mod, '-f', fc)
-        semodule('-i', pp)
-        results['changed'] = True
+        mod = os.path.join(path, "%s.mod" % name)
+        pp = os.path.join(path, "%s.pp" % name)
+        checkmodule("-M", "-m", "-o", mod, te)
+        semodule_package("-o", pp, "-m", mod, "-f", fc)
+        semodule("-i", pp)
+        results["changed"] = True
 
-    log.info('Results: %s', pprint.pformat(results))
+    log.info("Results: %s", pprint.pformat(results))
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

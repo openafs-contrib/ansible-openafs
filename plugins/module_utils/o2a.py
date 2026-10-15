@@ -8,7 +8,7 @@ def _od2a(options, prefix=None):
     for k, v in options.items():
         if prefix:
             args.append(_o2a(k, v, prefix=prefix))
-        elif k in ('enable', 'disable', 'with', 'without'):
+        elif k in ("enable", "disable", "with", "without"):
             if isinstance(v, dict):
                 args.extend(_od2a(v, prefix=k))
             elif isinstance(v, list):
@@ -32,20 +32,20 @@ def _ol2a(options, prefix=None):
 
 def _o2a(name, value=None, prefix=None):
     if prefix:
-        name = '%s-%s' % (prefix, name)
+        name = "%s-%s" % (prefix, name)
     if not value:
-        arg = '--%s' % name
+        arg = "--%s" % name
     elif isinstance(value, (dict, list)):
-        raise ValueError('Unexpected dict or list: %s' % name)
+        raise ValueError("Unexpected dict or list: %s" % name)
     elif value is True:
-        arg = '--%s' % (name)
+        arg = "--%s" % (name)
     else:
-        arg = '--%s=%s' % (name, value)
+        arg = "--%s=%s" % (name, value)
     return arg
 
 
 def options_to_args(options):
-    """ Convert option dictionary to a list of command line arguments.
+    """Convert option dictionary to a list of command line arguments.
 
     Special handling for the enable, disable, with, without keys. Treat
     these keys (at just the top-level) as a tree of options so we can make

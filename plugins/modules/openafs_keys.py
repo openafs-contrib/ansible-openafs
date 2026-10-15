@@ -3,12 +3,12 @@
 # BSD 2-Clause License
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.1.',
-    'status': ['preview'],
-    'supported_by': 'community',
+    "metadata_version": "1.1.",
+    "status": ["preview"],
+    "supported_by": "community",
 }
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: openafs_keys
 
@@ -59,9 +59,9 @@ options:
 
 author:
   - Michael Meffie
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Upload service keytab
   become: yes
   copy:
@@ -77,9 +77,9 @@ EXAMPLES = r'''
     state: present
     keytab: /usr/afs/etc/rxkad.keytab
     cell: example.com
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 asetkey:
   description: asetkey path found
   type: path
@@ -127,19 +127,25 @@ service_principal:
   type: str
   returned: success
 #  sample: "afs/example.com@EXAMPLE.COM"
-'''
+"""
 
-import json                     # noqa: E402
-import os                       # noqa: E402
-import pprint                   # noqa: E402
-import re                       # noqa: E402
+import json  # noqa: E402
+import os  # noqa: E402
+import pprint  # noqa: E402
+import re  # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.kerberos import Keytab  # noqa: E402, E501
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.kerberos import DES_ENCTYPES  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import (
+    Logger,
+)  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.kerberos import (
+    Keytab,
+)  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.kerberos import (
+    DES_ENCTYPES,
+)  # noqa: E402, E501
 
-module_name = os.path.basename(__file__).replace('.py', '')
+module_name = os.path.basename(__file__).replace(".py", "")
 log = Logger(module_name)
 
 
@@ -150,117 +156,108 @@ def main():
         imported=[],
     )
     module = AnsibleModule(
-            argument_spec=dict(
-                state=dict(type='str', choices=['present'], default='present'),
-                keytab=dict(type='path', required=True),
-                cell=dict(type='str', required=True),
-                realm=dict(type='str', default=None),
-            ),
-            supports_check_mode=False,
+        argument_spec=dict(
+            state=dict(type="str", choices=["present"], default="present"),
+            keytab=dict(type="path", required=True),
+            cell=dict(type="str", required=True),
+            realm=dict(type="str", default=None),
+        ),
+        supports_check_mode=False,
     )
-    log.info('Starting %s', module_name)
+    log.info("Starting %s", module_name)
 
-    keytab = module.params['keytab']
-    cell = module.params['cell']
-    realm = module.params['realm']
+    keytab = module.params["keytab"]
+    cell = module.params["cell"]
+    realm = module.params["realm"]
     if not realm:
         realm = cell.upper()
 
     def lookup_command(name):
         try:
-            with open('/etc/ansible/facts.d/openafs.fact') as f:
+            with open("/etc/ansible/facts.d/openafs.fact") as f:
                 facts = json.load(f)
-            cmd = facts['bins'][name]
+            cmd = facts["bins"][name]
         except Exception:
             cmd = module.get_bin_path(name)
         if not cmd:
-            module.fail_json(msg='Unable to locate %s command.' % name)
+            module.fail_json(msg="Unable to locate %s command." % name)
         return cmd
 
-    asetkey = lookup_command('asetkey')
-    log.debug('asetkey=%s', asetkey)
+    asetkey = lookup_command("asetkey")
+    log.debug("asetkey=%s", asetkey)
 
     # Decode the keytab to find the kvnos, enctypes, and principals.
     keytab = Keytab(keytab)
-    service_principal = 'afs/%s@%s' % (cell, realm)
+    service_principal = "afs/%s@%s" % (cell, realm)
     keys = keytab.find(service_principal)
     if not keys:
         # Try old service principal format.
-        service_principal = '%s@%s' % (cell, realm)
+        service_principal = "%s@%s" % (cell, realm)
         keys = keytab.find(service_principal)
     if not keys:
-        msg = "Keys not found in keytab %s for cell '%s', realm '%s'." % \
-              (keytab.name, cell, realm)
+        msg = "Keys not found in keytab %s for cell '%s', realm '%s'." % (keytab.name, cell, realm)
         log.error(msg)
         module.fail_json(msg=msg, keys=keytab.entries)
 
-    results['service_principal'] = service_principal
-    results['keys'] = keys
+    results["service_principal"] = service_principal
+    results["keys"] = keys
 
     # Check asetkey usage to determine how to add keys.
     rc, out, err = module.run_command([asetkey])
     usage = err.splitlines()
-    if len(usage) == 0 or 'usage' not in usage[0]:
-        log.error("Failed to get asetkey usage; rc=%d, out=%s, err=%s",
-                  rc, out, err)
-        module.fail_json(msg="Failed to get asetkey usage.",
-                         asetkey=asetkey, rc=rc, out=out, err=err)
+    if len(usage) == 0 or "usage" not in usage[0]:
+        log.error("Failed to get asetkey usage; rc=%d, out=%s, err=%s", rc, out, err)
+        module.fail_json(
+            msg="Failed to get asetkey usage.", asetkey=asetkey, rc=rc, out=out, err=err
+        )
     have_extended_keys = False
     for line in usage:
         if "add <type> <kvno> <subtype> <keyfile> <princ>" in line:
             have_extended_keys = True
-    log.debug("have_extended_keys=%s",
-              "True" if have_extended_keys else "False")
-    results['have_extended_keys'] = have_extended_keys
+    log.debug("have_extended_keys=%s", "True" if have_extended_keys else "False")
+    results["have_extended_keys"] = have_extended_keys
 
     # Retrieve the current keys to check for changes.
-    rc, before, err = module.run_command([asetkey, 'list'])
+    rc, before, err = module.run_command([asetkey, "list"])
     if rc != 0:
         log.error("Failed to list keys; rc=%d, out=%s, err=%s", rc, out, err)
-        module.fail_json(msg="Failed to list keys.",
-                         asetkey=asetkey, rc=rc, out=out, err=err)
+        module.fail_json(msg="Failed to list keys.", asetkey=asetkey, rc=rc, out=out, err=err)
 
     # Add the keys.
     for e in keys:
-        kvno = str(e['kvno'])
-        eno = str(e['eno'])
+        kvno = str(e["kvno"])
+        eno = str(e["eno"])
         if have_extended_keys:
-            args = [asetkey, 'add', 'rxkad_krb5', kvno, eno, keytab.name,
-                    service_principal]
+            args = [asetkey, "add", "rxkad_krb5", kvno, eno, keytab.name, service_principal]
         else:
             # Old versions only support DES. OpenAFS 1.6.5 up to 1.8.0 will
             # read non-DES keys from rxkad.keytab directly, so we just ignore
             # them here and hope for the best.
             if eno not in DES_ENCTYPES:
                 continue
-            args = [asetkey, 'add', kvno, keytab.name, service_principal]
+            args = [asetkey, "add", kvno, keytab.name, service_principal]
         rc, out, err = module.run_command(args)
-        results['debug'].append(dict(cmd=' '.join(args),
-                                rc=rc, out=out, err=err))
+        results["debug"].append(dict(cmd=" ".join(args), rc=rc, out=out, err=err))
         if rc != 0:
-            log.error("Failed asetkey add; rc=%d, out=%s, err=%s",
-                      rc, out, err)
-            module.fail_json(msg="Failed asetkey add",
-                             rc=rc, out=out, err=err, keys=keys)
+            log.error("Failed asetkey add; rc=%d, out=%s, err=%s", rc, out, err)
+            module.fail_json(msg="Failed asetkey add", rc=rc, out=out, err=err, keys=keys)
 
     # Check for changes and return list of key version numbers. Avoid returning
     # the key values!
-    rc, after, err = module.run_command([asetkey, 'list'])
+    rc, after, err = module.run_command([asetkey, "list"])
     if rc != 0:
         log.error("Failed to list keys; rc=%d, out=%s, err=%s", rc, out, err)
-        module.fail_json(msg="Failed to list keys.",
-                         asetkey=asetkey, rc=rc, out=out, err=err)
+        module.fail_json(msg="Failed to list keys.", asetkey=asetkey, rc=rc, out=out, err=err)
     if before != after:
-        results['changed'] = True
+        results["changed"] = True
     for line in after.splitlines():
-        m = re.match(r'^(\w+)+\s+kvno\s+(\d+)\s+enctype\s+(\d+)', line)
+        m = re.match(r"^(\w+)+\s+kvno\s+(\d+)\s+enctype\s+(\d+)", line)
         if m:
-            results['imported'].append(dict(type=m.group(1), kvno=m.group(2),
-                                            eno=m.group(3)))
+            results["imported"].append(dict(type=m.group(1), kvno=m.group(2), eno=m.group(3)))
 
-    log.info('Results: %s', pprint.pformat(results))
+    log.info("Results: %s", pprint.pformat(results))
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

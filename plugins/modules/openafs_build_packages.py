@@ -3,12 +3,12 @@
 # BSD 2-Clause License
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.1.',
-    'status': ['preview'],
-    'supported_by': 'community',
+    "metadata_version": "1.1.",
+    "status": ["preview"],
+    "supported_by": "community",
 }
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: openafs_build_packages
 
@@ -145,9 +145,9 @@ options:
 
 author:
   - Michael Meffie
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: "Checkout OpenAFS source code."
   git:
     repo: "git@openafs.org/openafs.git"
@@ -164,9 +164,9 @@ EXAMPLES = r'''
     build: all
     sdist: openafs/packages
   register: build_results
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 version:
   description: OpenAFS and package versions extracted from the source archive.
   returned: always
@@ -181,25 +181,29 @@ packages:
   description: The list of package files created on the remote node.
   returned: always
   type: list
-'''
+"""
 
-import glob             # noqa: E402
-import os               # noqa: E402
-import platform         # noqa: E402
-import re               # noqa: E402
-import shlex            # noqa: E402
-import shutil           # noqa: E402
-import subprocess       # noqa: E402
+import glob  # noqa: E402
+import os  # noqa: E402
+import platform  # noqa: E402
+import re  # noqa: E402
+import shlex  # noqa: E402
+import shutil  # noqa: E402
+import subprocess  # noqa: E402
 
 from ansible.module_utils.basic import get_distribution  # noqa: E402
-from ansible.module_utils.basic import AnsibleModule     # noqa: E402
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible.module_utils.common.sys_info import get_platform_subclass  # noqa: E402, E501
 
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import tmpdir  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import (
+    Logger,
+)  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import (
+    tmpdir,
+)  # noqa: E402, E501
 
 # Globals
-module_name = os.path.basename(__file__).replace('.py', '')
+module_name = os.path.basename(__file__).replace(".py", "")
 log = Logger(module_name)
 
 
@@ -217,6 +221,7 @@ class PackageBuilder(object):
     This class is created on platforms we do not support packaging building
     yet, and so the module will fail on those platforms.
     """
+
     def __new__(cls, *args, **kwargs):
         new_cls = get_platform_subclass(PackageBuilder)
         return super(cls, new_cls).__new__(new_cls)
@@ -233,7 +238,7 @@ class PackageBuilder(object):
 
     def create_workspace(self):
         self.module.fail_json(
-            msg='Unsupported platform.',
+            msg="Unsupported platform.",
             module=module_name,
             platform=platform.system(),
             distribution=get_distribution(),
@@ -241,7 +246,7 @@ class PackageBuilder(object):
 
     def build(self):
         self.module.fail_json(
-            msg='Unsupported platform.',
+            msg="Unsupported platform.",
             module=module_name,
             platform=platform.system(),
             distribution=get_distribution(),
@@ -252,10 +257,9 @@ class PackageBuilder(object):
         Copy a file.
         """
         if not os.path.exists(src):
-            self.module.fail_json(msg='Source file not found.', src=src)
+            self.module.fail_json(msg="Source file not found.", src=src)
         if src == dst:
-            self.module.fail_json(
-                msg='Source name is same as destination.', src=src)
+            self.module.fail_json(msg="Source name is same as destination.", src=src)
         log.info('Copying "%s" to "%s".' % (src, dst))
         shutil.copy(src, dst)
 
@@ -264,40 +268,38 @@ class PackageBuilder(object):
         Uncompress a tar archive in the current directory.
         """
         log.info('Unpacking archive "%s".' % archive)
-        tar = self.module.params['tar']
-        tar_extra_options = \
-            shlex.split(self.module.params['tar_extra_options'])
+        tar = self.module.params["tar"]
+        tar_extra_options = shlex.split(self.module.params["tar_extra_options"])
         if not tar:
-            tar = self.module.get_bin_path('tar', required=True)
-        if archive.endswith('.gz'):
-            uncompress = 'z'
-        elif archive.endswith('.bz2'):
-            uncompress = 'j'
+            tar = self.module.get_bin_path("tar", required=True)
+        if archive.endswith(".gz"):
+            uncompress = "z"
+        elif archive.endswith(".bz2"):
+            uncompress = "j"
         else:
-            raise ValueError('Unsupported compression type: %s' % archive)
-        options = ''.join(['x', uncompress, 'f'])
+            raise ValueError("Unsupported compression type: %s" % archive)
+        options = "".join(["x", uncompress, "f"])
         args = [tar, options] + tar_extra_options + [archive]
         rc, out, err = self.module.run_command(args, check_rc=True)
-        log.info('untar: rc=%d out=%s err=%s', rc, out, err)
+        log.info("untar: rc=%d out=%s err=%s", rc, out, err)
 
     def unpack_source(self, sdist):
         """
         Unpack the source archive file and return the version info.
         """
-        g = glob.glob('%s/openafs-*-src.tar.bz2' % sdist)
+        g = glob.glob("%s/openafs-*-src.tar.bz2" % sdist)
         if len(g) == 0:
             raise ValueError('Source archive not found in path "%s".' % sdist)
         if len(g) > 1:
-            raise ValueError(
-                'More than one source archive found in path "%s".' % sdist)
+            raise ValueError('More than one source archive found in path "%s".' % sdist)
         archive = g[0]
         self.untar(archive)
-        roots = glob.glob('openafs*')
+        roots = glob.glob("openafs*")
         if len(roots) != 1:
-            raise ValueError('One root directory expected source archive.')
+            raise ValueError("One root directory expected source archive.")
         os.chdir(roots[0])
         version = self.extract_version_info()
-        self.results['version'] = version
+        self.results["version"] = version
         return version
 
 
@@ -305,19 +307,20 @@ class RedHatRpmBuilder(PackageBuilder):
     """
     Package builder for RedHat family distributions.
     """
-    platform = 'Linux'
-    distribution = 'Redhat'
+
+    platform = "Linux"
+    distribution = "Redhat"
 
     def __init__(self, module):
         super(RedHatRpmBuilder, self).__init__(module)
-        self.topdir = expand_path(module.params['topdir'])
-        self.logdir = expand_path(module.params['logdir'])
+        self.topdir = expand_path(module.params["topdir"])
+        self.logdir = expand_path(module.params["logdir"])
         # Set up logging.
         if not self.logdir:
-            self.logdir = os.path.join(self.topdir, 'BUILD')
+            self.logdir = os.path.join(self.topdir, "BUILD")
         if not os.path.isdir(self.logdir):
             os.makedirs(self.logdir)
-            self.results['changed'] = True
+            self.results["changed"] = True
 
     def create_workspace(self):
         """
@@ -328,14 +331,14 @@ class RedHatRpmBuilder(PackageBuilder):
         preparation for building the source and binary RPM files.
         """
 
-        sdist = expand_path(self.module.params['sdist'])
-        spec = expand_path(self.module.params['spec'])
-        relnotes = expand_path(self.module.params['relnotes'])
-        changelog = expand_path(self.module.params['changelog'])
-        csdb = expand_path(self.module.params['csdb'])
-        patchdir = expand_path(self.module.params['patchdir'])
+        sdist = expand_path(self.module.params["sdist"])
+        spec = expand_path(self.module.params["spec"])
+        relnotes = expand_path(self.module.params["relnotes"])
+        changelog = expand_path(self.module.params["changelog"])
+        csdb = expand_path(self.module.params["csdb"])
+        patchdir = expand_path(self.module.params["patchdir"])
 
-        for name in ('SOURCES', 'SPECS'):
+        for name in ("SOURCES", "SPECS"):
             directory = os.path.join(self.topdir, name)
             if not os.path.exists(directory):
                 os.makedirs(directory)
@@ -343,45 +346,47 @@ class RedHatRpmBuilder(PackageBuilder):
         with tmpdir():
             version = self.unpack_source(sdist)
             if spec:
-                if spec.endswith('.in'):
+                if spec.endswith(".in"):
                     self.prepare_spec(spec, version)
                 else:
-                    self.copy(spec, os.path.join(self.topdir, 'SPECS', 'openafs.spec'))  # noqa: E501
+                    self.copy(
+                        spec, os.path.join(self.topdir, "SPECS", "openafs.spec")
+                    )  # noqa: E501
             else:
-                self.prepare_spec('src/packaging/RedHat/openafs.spec.in', version)   # noqa: E501
+                self.prepare_spec("src/packaging/RedHat/openafs.spec.in", version)  # noqa: E501
             for source in self.list_sources(version):
-                dest = os.path.join(self.topdir, 'SOURCES', source)
-                if '-src.tar.' in source:
+                dest = os.path.join(self.topdir, "SOURCES", source)
+                if "-src.tar." in source:
                     self.copy(os.path.join(sdist, source), dest)
-                elif '-doc.tar.' in source:
+                elif "-doc.tar." in source:
                     self.copy(os.path.join(sdist, source), dest)
-                elif 'RELNOTES' in source:
+                elif "RELNOTES" in source:
                     if not relnotes:
                         relnotes = os.path.join(sdist, source)
                     if os.path.exists(relnotes):
                         self.copy(relnotes, dest)
                     else:
-                        with open(dest, 'w') as f:
-                            f.write('No release notes provided.\n')
-                elif 'ChangeLog' in source:
+                        with open(dest, "w") as f:
+                            f.write("No release notes provided.\n")
+                elif "ChangeLog" in source:
                     if not changelog:
-                        changelog = os.path.join(sdist, 'ChangeLog')
+                        changelog = os.path.join(sdist, "ChangeLog")
                     if os.path.exists(changelog):
                         self.copy(changelog, dest)
                     else:
-                        with open(dest, 'w') as f:
-                            f.write('No change log provided.\n')
-                elif 'CellServDB' in source:
+                        with open(dest, "w") as f:
+                            f.write("No change log provided.\n")
+                elif "CellServDB" in source:
                     if not csdb:
-                        csdb = os.path.join(sdist, 'CellServDB')
+                        csdb = os.path.join(sdist, "CellServDB")
                         if not os.path.exists(csdb):
-                            csdb = 'src/afsd/CellServDB'
+                            csdb = "src/afsd/CellServDB"
                     self.copy(csdb, dest)
                 else:
-                    self.copy(os.path.join('src/packaging/RedHat', source), dest)   # noqa: E501
+                    self.copy(os.path.join("src/packaging/RedHat", source), dest)  # noqa: E501
 
             for patch in self.list_patches(version):
-                dest = os.path.join(self.topdir, 'SOURCES', patch)
+                dest = os.path.join(self.topdir, "SOURCES", patch)
                 if patchdir:
                     self.copy(os.path.join(patchdir, patch), dest)
                 else:
@@ -391,78 +396,78 @@ class RedHatRpmBuilder(PackageBuilder):
         """
         Run rpmbuild to build the source and/or binary rpms.
         """
-        build = self.module.params['build'] or 'all'
-        kernvers = self.module.params['kernvers']
+        build = self.module.params["build"] or "all"
+        kernvers = self.module.params["kernvers"]
 
-        rpmbuild = self.module.get_bin_path('rpmbuild', required=True)
-        args = [rpmbuild, '--define', '_topdir %s' % self.topdir]
-        if build == 'source':
-            args.append('-bs')
-        elif build == 'all':
-            args.append('-ba')
-        elif build == 'userspace':
-            args.append('-ba')
-            args.extend(['--define', 'build_userspace 1'])
-            args.extend(['--define', 'build_modules 0'])
-        elif build == 'module':
-            args.append('-ba')
-            args.extend(['--define', 'build_userspace 0'])
-            args.extend(['--define', 'build_modules 0'])
-        if build != 'source' and kernvers:
-            args.extend(['--define', 'kernvers %s' % kernvers])
-        args.append(os.path.join(self.topdir, 'SPECS', 'openafs.spec'))
-        logfile = os.path.join(self.logdir, 'rpmbuild.log')
-        self.results['logfiles'].append(logfile)
-        with open(logfile, 'w') as f:
-            log.info('Running: %s > %s' % (' '.join(args), logfile))
+        rpmbuild = self.module.get_bin_path("rpmbuild", required=True)
+        args = [rpmbuild, "--define", "_topdir %s" % self.topdir]
+        if build == "source":
+            args.append("-bs")
+        elif build == "all":
+            args.append("-ba")
+        elif build == "userspace":
+            args.append("-ba")
+            args.extend(["--define", "build_userspace 1"])
+            args.extend(["--define", "build_modules 0"])
+        elif build == "module":
+            args.append("-ba")
+            args.extend(["--define", "build_userspace 0"])
+            args.extend(["--define", "build_modules 0"])
+        if build != "source" and kernvers:
+            args.extend(["--define", "kernvers %s" % kernvers])
+        args.append(os.path.join(self.topdir, "SPECS", "openafs.spec"))
+        logfile = os.path.join(self.logdir, "rpmbuild.log")
+        self.results["logfiles"].append(logfile)
+        with open(logfile, "w") as f:
+            log.info("Running: %s > %s" % (" ".join(args), logfile))
             proc = subprocess.Popen(args, stdout=f.fileno(), stderr=f.fileno())
             rc = proc.wait()
-        log.info('rpmbuild rc=%d', rc)
+        log.info("rpmbuild rc=%d", rc)
         if rc != 0:
-            self.module.fail_json(msg='rpmbuild failed', logfile=logfile)
+            self.module.fail_json(msg="rpmbuild failed", logfile=logfile)
         packages = []
-        with open(logfile, 'r') as f:
+        with open(logfile, "r") as f:
             for line in f.readlines():
-                m = re.match(r'Wrote: (.*)', line)
+                m = re.match(r"Wrote: (.*)", line)
                 if m:
                     packages.append(m.group(1).rstrip())
-        self.results['package_type'] = 'rpm'
-        self.results['packages'] = packages
-        self.results['changed'] = True
+        self.results["package_type"] = "rpm"
+        self.results["packages"] = packages
+        self.results["changed"] = True
 
     def extract_version_info(self):
         """
         Extract the version information from the .version file.
         """
         version = None
-        if os.path.exists('.version'):
-            with open('.version') as f:
+        if os.path.exists(".version"):
+            with open(".version") as f:
                 line = f.read().rstrip()
             log.info('.version contains "%s"', line)
-            if line.startswith('openafs-'):
+            if line.startswith("openafs-"):
                 # Extract version from the git tag name.
-                version = re.sub('openafs-[^-]*-', '', line).replace('_', '.')
-            elif line.startswith('BP-'):
+                version = re.sub("openafs-[^-]*-", "", line).replace("_", ".")
+            elif line.startswith("BP-"):
                 # Branch point tags do not contain the version number.
-                log.info('.version file has old branch point tag name.')
+                log.info(".version file has old branch point tag name.")
             else:
                 # Use the given version string.
                 version = line
         if not version:
             # Unable to lookup version from the .version file, try to extract
             # the version from the source directory name.
-            root = os.path.basename(os.path.abspath('.'))
-            m = re.match(r'openafs-(.*)', root)
+            root = os.path.basename(os.path.abspath("."))
+            m = re.match(r"openafs-(.*)", root)
             if m:
                 version = m.group(1)
         if not version:
-            self.module.fail_json(msg='Unable to determine version.')
+            self.module.fail_json(msg="Unable to determine version.")
 
         # Determine package version and release from the OpenAFS version.
-        m1 = re.match(r'(.*)(pre[0-9]+)', version)              # prerelease
-        m2 = re.match(r'(.*)dev', version)                      # development
-        m3 = re.match(r'(.*)-([0-9]+)-(g[a-f0-9]+)$', version)  # development
-        m4 = re.match(r'(.*)-([a-z]+)([0-9]+)', version)        # custom
+        m1 = re.match(r"(.*)(pre[0-9]+)", version)  # prerelease
+        m2 = re.match(r"(.*)dev", version)  # development
+        m3 = re.match(r"(.*)-([0-9]+)-(g[a-f0-9]+)$", version)  # development
+        m4 = re.match(r"(.*)-([a-z]+)([0-9]+)", version)  # custom
         if m1:
             v = m1.group(1)
             r = "0.{0}".format(m1.group(2))
@@ -473,18 +478,18 @@ class RedHatRpmBuilder(PackageBuilder):
             v = m3.group(1)
             r = "{0}.{1}".format(m3.group(2), m3.group(3))
         elif m4:
-            v = m4.group(1).replace('-', '')
+            v = m4.group(1).replace("-", "")
             r = "1.2.{0}.{1}".format(m4.group(3), m4.group(2))
         else:
             v = version  # standard release
-            r = "1"      # increment when repackaging this version
+            r = "1"  # increment when repackaging this version
         # '-' are used as delimiters by rpm.
-        v = v.replace('-', '_')
-        r = r.replace('-', '_')
+        v = v.replace("-", "_")
+        r = r.replace("-", "_")
         package_version = {
-            'openafs_version': version,
-            'package_version': v,
-            'package_release': r,
+            "openafs_version": version,
+            "package_version": v,
+            "package_release": r,
         }
         return package_version
 
@@ -497,16 +502,15 @@ class RedHatRpmBuilder(PackageBuilder):
         use a provided file or one from the tree if not provided.
         """
         v = version
-        with open(template, 'r') as fin:
-            spec = os.path.join(self.topdir, 'SPECS/openafs.spec')
-            with open(spec, 'w') as fout:
+        with open(template, "r") as fin:
+            spec = os.path.join(self.topdir, "SPECS/openafs.spec")
+            with open(spec, "w") as fout:
                 for line in fin.readlines():
-                    line = line.replace('@VERSION@', v['openafs_version'])
-                    line = line.replace('@PACKAGE_VERSION@', v['openafs_version'])  # noqa: E501
-                    line = line.replace('@LINUX_PKGVER@', v['package_version'])
-                    line = line.replace('@LINUX_PKGREL@', v['package_release'])
-                    line = re.sub(r'^Source([\d]+): .*CellServDB.*',
-                                  r'Source\1: CellServDB', line)
+                    line = line.replace("@VERSION@", v["openafs_version"])
+                    line = line.replace("@PACKAGE_VERSION@", v["openafs_version"])  # noqa: E501
+                    line = line.replace("@LINUX_PKGVER@", v["package_version"])
+                    line = line.replace("@LINUX_PKGREL@", v["package_release"])
+                    line = re.sub(r"^Source([\d]+): .*CellServDB.*", r"Source\1: CellServDB", line)
                     fout.write(line)
 
     def list_sources(self, version):
@@ -514,15 +518,13 @@ class RedHatRpmBuilder(PackageBuilder):
         Extract the source filenames from the spec file.
         """
         sources = []
-        spec = os.path.join(self.topdir, 'SPECS', 'openafs.spec')
-        with open(spec, 'r') as f:
+        spec = os.path.join(self.topdir, "SPECS", "openafs.spec")
+        with open(spec, "r") as f:
             for line in f.readlines():
                 line = line.rstrip()
-                m = re.match(r'Source[\d]+: (.*)', line)
+                m = re.match(r"Source[\d]+: (.*)", line)
                 if m:
-                    source = m.group(1).replace(
-                        r'%{afsvers}',
-                        version['openafs_version'])
+                    source = m.group(1).replace(r"%{afsvers}", version["openafs_version"])
                     sources.append(os.path.basename(source))
         return sources
 
@@ -531,63 +533,61 @@ class RedHatRpmBuilder(PackageBuilder):
         Extract the patch filenames from the spec file.
         """
         patches = []
-        spec = os.path.join(self.topdir, 'SPECS', 'openafs.spec')
-        with open(spec, 'r') as f:
+        spec = os.path.join(self.topdir, "SPECS", "openafs.spec")
+        with open(spec, "r") as f:
             for line in f.readlines():
                 line = line.rstrip()
-                m = re.match(r'Patch[\d]+: (.*)', line)
+                m = re.match(r"Patch[\d]+: (.*)", line)
                 if m:
-                    patch = m.group(1).replace(r'%{afsvers}',
-                                               version['openafs_version'])
+                    patch = m.group(1).replace(r"%{afsvers}", version["openafs_version"])
                     patches.append(os.path.basename(patch))
         return patches
 
 
 class CentOSRpmBuilder(RedHatRpmBuilder):
-    platform = 'Linux'
-    distribution = 'Centos'
+    platform = "Linux"
+    distribution = "Centos"
 
 
 class FedoraRpmBuilder(RedHatRpmBuilder):
-    platform = 'Linux'
-    distribution = 'Fedora'
+    platform = "Linux"
+    distribution = "Fedora"
 
 
 class AlmaRpmBuilder(RedHatRpmBuilder):
-    platform = 'Linux'
-    distribution = 'Almalinux'
+    platform = "Linux"
+    distribution = "Almalinux"
 
 
 class RockyRpmBuilder(RedHatRpmBuilder):
-    platform = 'Linux'
-    distribution = 'Rocky'
+    platform = "Linux"
+    distribution = "Rocky"
 
 
 class OracleRpmBuilder(RedHatRpmBuilder):
-    platform = 'Linux'
-    distribution = 'Oracle'
+    platform = "Linux"
+    distribution = "Oracle"
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            build=dict(choices=['all', 'source', 'userspace', 'modules'],
-                       default='all'),
-            sdist=dict(type='path', required=True),
-            spec=dict(type='str', default=None),
-            relnotes=dict(type='str', default=None),
-            changelog=dict(type='str', default=None),
-            csdb=dict(type='path', default=None),
-            patchdir=dict(type='path', default=None),
+            build=dict(choices=["all", "source", "userspace", "modules"], default="all"),
+            sdist=dict(type="path", required=True),
+            spec=dict(type="str", default=None),
+            relnotes=dict(type="str", default=None),
+            changelog=dict(type="str", default=None),
+            csdb=dict(type="path", default=None),
+            patchdir=dict(type="path", default=None),
             kernvers=dict(default=None),
-            topdir=dict(type='path', default='~/rpmbuild'),
-            logdir=dict(type='path', default=None),
-            tar=dict(type='path', default=None),
-            tar_extra_options=dict(type='str', default=''),
+            topdir=dict(type="path", default="~/rpmbuild"),
+            logdir=dict(type="path", default=None),
+            tar=dict(type="path", default=None),
+            tar_extra_options=dict(type="str", default=""),
         ),
         supports_check_mode=False,
     )
-    log.info('Starting %s', module_name)
+    log.info("Starting %s", module_name)
 
     builder = PackageBuilder(module)
     builder.create_workspace()
@@ -597,5 +597,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
