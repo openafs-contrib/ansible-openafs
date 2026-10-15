@@ -7,3 +7,12 @@ skip = [
     "devel",
     "milestone",
 ]
+
+[tool.tox.env.format]
+description = "Format the python code with black"
+skip_install = true
+deps = ["black"]
+commands = [["black", "plugins", "tests"]]
+
+[tool.black]
+line-length = 100
