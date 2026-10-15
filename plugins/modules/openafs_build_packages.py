@@ -68,7 +68,7 @@ options:
     - The path on the remote node to a custom C(openafs.spec) file to be used
       to build the rpm files. The C(openafs.spec) file will be extracted from
       the source archive file when the I(spec) option is not provided.
-    type: str
+    type: path
     default: None
 
   relnotes:
@@ -79,7 +79,7 @@ options:
       the I(relnotes) option is not specified. The C(NEWS) file will be
       extracted from the source archive if the C(RELNOTES-<version>) file is
       not found in the I(sdist) directory.
-    type: str
+    type: path
     default: None
 
   changelog:
@@ -89,7 +89,7 @@ options:
     - The C(ChangeLog) in the I(sdist) directory will be used when the
       C(changelog) option is not specified.  An empty C(ChangeLog) file will be
       created if the  C(ChangeLog) is not found in the I(sdist) directory,
-    type: str
+    type: path
     default: None
 
   csdb:
@@ -209,7 +209,7 @@ log = Logger(module_name)
 
 def expand_path(path):
     if path:
-        path = os.path.abspath(os.path.expanduser(path))
+        path = os.path.abspath(path)
     return path
 
 
@@ -574,9 +574,9 @@ def main():
         argument_spec=dict(
             build=dict(choices=["all", "source", "userspace", "modules"], default="all"),
             sdist=dict(type="path", required=True),
-            spec=dict(type="str", default=None),
-            relnotes=dict(type="str", default=None),
-            changelog=dict(type="str", default=None),
+            spec=dict(type="path", default=None),
+            relnotes=dict(type="path", default=None),
+            changelog=dict(type="path", default=None),
             csdb=dict(type="path", default=None),
             patchdir=dict(type="path", default=None),
             kernvers=dict(default=None),
