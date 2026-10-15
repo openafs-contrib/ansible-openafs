@@ -14,6 +14,9 @@ tags:
   - openafs
   - system
   - development
+dependencies:
+  ansible.posix: '>=1.0.0'
+  community.general: '>=4.3.0'
 build_ignore:
   - '*/.ansible'
   - '.ansible'
@@ -27,6 +30,7 @@ build_ignore:
   - '.venv'
   - '.vscode'
   - 'builds'
+  - 'collections'
   - 'docs'
   - 'legacy'
 repository: 'https://github.com/openafs-contrib/ansible-openafs'
