@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2020, Sine Nomine Associates
 # BSD 2-Clause License
 
