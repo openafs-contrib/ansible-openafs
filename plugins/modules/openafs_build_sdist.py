@@ -220,7 +220,7 @@ class SourceDistBuilder(object):
         """
         path = self.module.params[name]
         if path:
-            path = os.path.abspath(os.path.expanduser(path))
+            path = os.path.abspath(path)
         return path
 
     def get_bin_path(self, name, required=False):
