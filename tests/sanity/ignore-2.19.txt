@@ -1,0 +1,4 @@
+roles/openafs_client/templates/openafs-client.method.j2 shebang
+roles/openafs_client/templates/openafs-client.upstart.j2 shebang
+roles/openafs_robotserver/templates/robotserver-openafs.py.j2 shebang
+roles/openafs_server/templates/openafs-server.upstart.j2 shebang
