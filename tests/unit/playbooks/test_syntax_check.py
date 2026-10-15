@@ -36,7 +36,8 @@ def test_syntax_check(tmp_path, playbook):
     cmd = [
         "ansible-playbook",
         "--syntax-check",
-        "-i", inventory,
+        "-i",
+        inventory,
         PLAYBOOKS_PATH / f"{playbook}.yaml",
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True)

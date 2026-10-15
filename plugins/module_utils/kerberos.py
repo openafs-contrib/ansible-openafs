@@ -9,26 +9,26 @@ KEYTAB_MAGIC_OLD = 0x0501
 
 # See https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml       # noqa: E501
 ENCTYPES = {
-    1: 'des-cbc-crc',
-    2: 'des-cbc-md4',
-    3: 'des-cbc-md5',
-    5: 'des3-cbc-md5',
-    7: 'des3-cbc-sha1',
-    9: 'dsaWithSHA1-CmsOID',
-    10: 'md5WithRSAEncryption-CmsOID',
-    11: 'sha1WithRSAEncryption-CmsOID',
-    12: 'rc2CBC-EnvOID',
-    13: 'rsaEncryption-EnvOID',
-    14: 'rsaES-OAEP-ENV-OID',
-    15: 'des-ede3-cbc-Env-OID',
-    16: 'des3-cbc-sha1-kd',
-    17: 'aes128-cts-hmac-sha1-96',
-    18: 'aes256-cts-hmac-sha1-96',
-    23: 'rc4-hmac',
-    24: 'rc4-hmac-exp',
-    25: 'camellia128-cts-cmac',
-    26: 'camellia256-cts-cmac',
-    65: 'subkey-keymaterial',
+    1: "des-cbc-crc",
+    2: "des-cbc-md4",
+    3: "des-cbc-md5",
+    5: "des3-cbc-md5",
+    7: "des3-cbc-sha1",
+    9: "dsaWithSHA1-CmsOID",
+    10: "md5WithRSAEncryption-CmsOID",
+    11: "sha1WithRSAEncryption-CmsOID",
+    12: "rc2CBC-EnvOID",
+    13: "rsaEncryption-EnvOID",
+    14: "rsaES-OAEP-ENV-OID",
+    15: "des-ede3-cbc-Env-OID",
+    16: "des3-cbc-sha1-kd",
+    17: "aes128-cts-hmac-sha1-96",
+    18: "aes256-cts-hmac-sha1-96",
+    23: "rc4-hmac",
+    24: "rc4-hmac-exp",
+    25: "camellia128-cts-cmac",
+    26: "camellia256-cts-cmac",
+    65: "subkey-keymaterial",
 }
 DES_ENCTYPES = (1, 2, 3, 15)
 
@@ -37,6 +37,7 @@ class Keytab:
     """
     Decode keytab files.
     """
+
     #
     # The following C-like structure definitions illustrate the MIT keytab
     # file format. All values are in network byte order. All text is ASCII.
@@ -85,20 +86,20 @@ class Keytab:
         Read a byte string.
         """
         length = self._read_data(f, "!H")
-        bytes_, = self._read_data(f, "%ds" % length)
+        (bytes_,) = self._read_data(f, "%ds" % length)
         return bytes_
 
     def _read_string(self, f):
         """
         Read an ascii text string.
         """
-        return self._read_bytes(f).decode('ascii')
+        return self._read_bytes(f).decode("ascii")
 
     def _read_entry(self, f, version):
         """
         Read a keytab entry.
         """
-        numc, = self._read_data(f, "!h")
+        (numc,) = self._read_data(f, "!h")
         if version == KEYTAB_MAGIC_OLD:
             numc -= 1
         realm = self._read_string(f)
@@ -109,15 +110,15 @@ class Keytab:
             self._read_data(f, "!L")  # read past name_type
         timestamp, vno8, eno = self._read_data(f, "!LBH")
         self._read_bytes(f)  # read past key
-        principal = "%s@%s" % ('/'.join(components), realm)
+        principal = "%s@%s" % ("/".join(components), realm)
         entry = {
-            'realm': realm,
-            'components': components,
-            'principal': principal,
-            'timestamp': timestamp,
-            'kvno': vno8,
-            'eno': eno,
-            'enctype': ENCTYPES.get(eno, 'unknown'),
+            "realm": realm,
+            "components": components,
+            "principal": principal,
+            "timestamp": timestamp,
+            "kvno": vno8,
+            "eno": eno,
+            "enctype": ENCTYPES.get(eno, "unknown"),
         }
         return entry
 
@@ -128,10 +129,10 @@ class Keytab:
         self.filename = path
         stat = os.stat(path)
         file_size = stat.st_size
-        with open(path, 'rb') as f:
+        with open(path, "rb") as f:
             offset = struct.calcsize("!h")
             try:
-                version, = self._read_data(f, "!h")
+                (version,) = self._read_data(f, "!h")
             except IOError:
                 version = 0
             if not (version == KEYTAB_MAGIC or version == KEYTAB_MAGIC_OLD):
@@ -139,7 +140,7 @@ class Keytab:
             while offset < file_size:
                 f.seek(offset)
                 # record size, not including this field
-                size, = self._read_data(f, "!l")
+                (size,) = self._read_data(f, "!l")
                 entry = self._read_entry(f, version)
                 self.entries.append(entry)
                 # Calculate next record location.
@@ -153,7 +154,7 @@ class Keytab:
         """
         entries = []
         for e in self.entries:
-            if e['principal'] == principal:
+            if e["principal"] == principal:
                 entries.append(e)
         return entries
 
@@ -169,7 +170,7 @@ class Keytab:
                 return None
         entries = []
         for e in self.entries:
-            if e['principal'] == principal and e['kvno'] == kvno:
+            if e["principal"] == principal and e["kvno"] == kvno:
                 entries.append(e)
         return entries
 
@@ -180,7 +181,7 @@ class Keytab:
         """
         kvno = None
         for e in self.entries:
-            if e['principal'] == principal:
-                if kvno is None or e['kvno'] > kvno:
-                    kvno = e['kvno']
+            if e["principal"] == principal:
+                if kvno is None or e["kvno"] > kvno:
+                    kvno = e["kvno"]
         return kvno

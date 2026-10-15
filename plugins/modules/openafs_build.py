@@ -3,22 +3,22 @@
 # BSD 2-Clause License
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.1.',
-    'status': ['preview'],
-    'supported_by': 'community',
-    'deprecate_parameters': [
-        {'name': 'with_transarc_paths', 'since': '1.9.0'},
-        {'name': 'with_debug_symbols', 'since': '1.9.0'},
-        {'name': 'build_manpages', 'since': '1.9.0'},
-        {'name': 'build_userspace', 'since': '1.9.0'},
-        {'name': 'build_module', 'since': '1.9.0'},
-        {'name': 'build_terminal_programs', 'since': '1.9.0'},
-        {'name': 'build_fuse_client', 'since': '1.9.0'},
-        {'name': 'build_bindings', 'since': '1.9.0'},
-    ]
+    "metadata_version": "1.1.",
+    "status": ["preview"],
+    "supported_by": "community",
+    "deprecate_parameters": [
+        {"name": "with_transarc_paths", "since": "1.9.0"},
+        {"name": "with_debug_symbols", "since": "1.9.0"},
+        {"name": "build_manpages", "since": "1.9.0"},
+        {"name": "build_userspace", "since": "1.9.0"},
+        {"name": "build_module", "since": "1.9.0"},
+        {"name": "build_terminal_programs", "since": "1.9.0"},
+        {"name": "build_fuse_client", "since": "1.9.0"},
+        {"name": "build_bindings", "since": "1.9.0"},
+    ],
 }
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: openafs_build
 
@@ -151,9 +151,9 @@ options:
 
 author:
   - Michael Meffie
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Build OpenAFS from source
   openafs_contrib.openafs.openafs_build:
     srcdir: ~/src/openafs
@@ -193,9 +193,9 @@ EXAMPLES = r'''
         - krb5: /path/to/krb5.lib
       with_linux_kernel_packaging: true
       with_swig: true
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 srcdir:
   description: Absolute path to the project directory.
   returned: always
@@ -236,15 +236,15 @@ kmods:
   type: list
   sample:
     - /home/tycobb/projects/myproject/src/libafs/MODLOAD-5.1.0-SP/openafs.ko
-'''
+"""
 
-import glob        # noqa: E402
-import json        # noqa: E402
-import os          # noqa: E402
-import platform    # noqa: E402
-import re          # noqa: E402
-import shlex       # noqa: E402
-import shutil      # noqa: E402
+import glob  # noqa: E402
+import json  # noqa: E402
+import os  # noqa: E402
+import platform  # noqa: E402
+import re  # noqa: E402
+import shlex  # noqa: E402
+import shutil  # noqa: E402
 import subprocess  # noqa: E402
 
 from multiprocessing import cpu_count  # noqa: E402
@@ -252,12 +252,16 @@ from multiprocessing import cpu_count  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible.module_utils.six import string_types  # noqa: E402
 
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common \
-    import Logger, chdir, lookup_fact  # noqa: E402
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.o2a \
-    import options_to_args  # noqa: E402
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import (
+    Logger,
+    chdir,
+    lookup_fact,
+)  # noqa: E402
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.o2a import (
+    options_to_args,
+)  # noqa: E402
 
-module_name = os.path.basename(__file__).replace('.py', '')
+module_name = os.path.basename(__file__).replace(".py", "")
 log = Logger(module_name)
 
 MAKEFILE_DIRS = """
@@ -312,7 +316,7 @@ def get_platform_subclass(cls):
     for subcls in cls.__subclasses__():
         if platform.system() == subcls.platform:
             return subcls
-    raise ValueError('Unknown platform: {0}'.format(platform.system()))
+    raise ValueError("Unknown platform: {0}".format(platform.system()))
 
 
 class Builder(object):
@@ -322,7 +326,7 @@ class Builder(object):
         return super(cls, new_cls).__new__(new_cls)
 
     def __init__(self, module):
-        self._stage = 'init'
+        self._stage = "init"
         self.module = module
         self.logdir = None
         self.logfiles = set()
@@ -342,43 +346,43 @@ class Builder(object):
         self.install_dirs = {}
 
         # Verify srcdir exists.
-        self.srcdir = os.path.abspath(self.module.params['srcdir'])
+        self.srcdir = os.path.abspath(self.module.params["srcdir"])
         if not os.path.exists(self.srcdir):
-            self.fail('srcdir directory not found: %s' % self.srcdir)
+            self.fail("srcdir directory not found: %s" % self.srcdir)
         if not os.path.isdir(self.srcdir):
-            self.fail('srcdir is not a directory: %s' % self.srcdir)
+            self.fail("srcdir is not a directory: %s" % self.srcdir)
 
         # Set builddir paths for out of tree builds.
-        self.builddir = self.module.params['builddir']
+        self.builddir = self.module.params["builddir"]
         if self.builddir:
             self.builddir = self.abspath(self.srcdir, self.builddir)
         else:
             self.builddir = self.srcdir
 
         # Set build logging path.
-        self.logdir = self.module.params['logdir']
+        self.logdir = self.module.params["logdir"]
         if not self.logdir:
-            self.logdir = os.path.join(self.builddir, '.ansible')
+            self.logdir = os.path.join(self.builddir, ".ansible")
 
         # Is the srcdir a git repo?
-        self.gitdir = os.path.abspath(os.path.join(self.srcdir, '.git'))
+        self.gitdir = os.path.abspath(os.path.join(self.srcdir, ".git"))
         if not (os.path.exists(self.gitdir) and os.path.isdir(self.gitdir)):
             self.gitdir = None
 
         # Do we have git clean --exclude option? (It is not available on
         # very old git versions, notably on it is not available on RHEL6.)
-        self.git = self.module.get_bin_path('git')
+        self.git = self.module.get_bin_path("git")
         self.have_git_clean_exclude = False
         if self.git:
-            args = [self.git, 'clean', '-h']
+            args = [self.git, "clean", "-h"]
             rc, out, err = self.module.run_command(args)
-            if '--exclude' in out:
+            if "--exclude" in out:
                 self.have_git_clean_exclude = True
 
         # Find make if not specified.
-        self.make = self.module.params['make']
+        self.make = self.module.params["make"]
         if not self.make:
-            self.make = self.module.get_bin_path('make', required=True)
+            self.make = self.module.get_bin_path("make", required=True)
 
         # Setup environment variables.
         self.set_environment_variables()
@@ -392,65 +396,68 @@ class Builder(object):
         self.build_regen()
         self.build_configure()
         self.build_make()
-        self.log('Build completed.')
+        self.log("Build completed.")
         results = {
-            'changed': self.changed,
-            'logdir': self.logdir,
-            'logfiles': sorted(list(self.logfiles)),
-            'srcdir': self.srcdir,
-            'builddir': self.builddir,
-            'configure': ' '.join(self.configure_args),
-            'make': ' '.join(self.make_args),
-            'kmods': self.kmods,
-            'install_dirs': self.install_dirs,
+            "changed": self.changed,
+            "logdir": self.logdir,
+            "logfiles": sorted(list(self.logfiles)),
+            "srcdir": self.srcdir,
+            "builddir": self.builddir,
+            "configure": " ".join(self.configure_args),
+            "make": " ".join(self.make_args),
+            "kmods": self.kmods,
+            "install_dirs": self.install_dirs,
         }
         if self.gitdir:
-            results['gitdir'] = self.gitdir
+            results["gitdir"] = self.gitdir
         if self.destdir:
-            results['destdir'] = self.destdir
+            results["destdir"] = self.destdir
         if self.sysname:
-            results['sysname'] = self.sysname
+            results["sysname"] = self.sysname
         if self.version:
-            results['version'] = self.version
+            results["version"] = self.version
         if self.target:
-            results['target'] = self.target
+            results["target"] = self.target
         return results
 
     def build_clean(self):
         """
         Clean intermediates from the previous build.
         """
-        if self._stage != 'init':
-            raise AssertionError('sequence error: %s' % self._stage)
-        self._stage = 'clean'
+        if self._stage != "init":
+            raise AssertionError("sequence error: %s" % self._stage)
+        self._stage = "clean"
 
-        clean = self.module.params['clean']
+        clean = self.module.params["clean"]
         if not clean:
-            return   # Skip clean
+            return  # Skip clean
 
         if self.builddir == self.srcdir:
             # In-tree build; do our best to clean intermediates.
             if self.gitdir and self.have_git_clean_exclude:
-                self.run('clean', [self.git, 'clean', '-f', '-d', '-x',
-                         '--exclude=.ansible'], self.srcdir)
+                self.run(
+                    "clean",
+                    [self.git, "clean", "-f", "-d", "-x", "--exclude=.ansible"],
+                    self.srcdir,
+                )
             else:
-                makefile = os.path.join(self.srcdir, 'Makefile')
+                makefile = os.path.join(self.srcdir, "Makefile")
                 if os.path.exists(makefile):
-                    self.run('clean', [self.make, 'clean'], self.srcdir)
+                    self.run("clean", [self.make, "clean"], self.srcdir)
         else:
             # Out-of-tree build.
             if os.path.exists(self.builddir):
-                makefile = os.path.join(self.builddir, 'Makefile')
+                makefile = os.path.join(self.builddir, "Makefile")
                 if os.path.exists(makefile):
-                    self.run('clean', [self.make, 'clean'], self.builddir)
+                    self.run("clean", [self.make, "clean"], self.builddir)
                 else:
-                    if self.builddir == '/':
+                    if self.builddir == "/":
                         self.fail('Refusing to remove "/" builddir!')
-                    self.log('Removing old build directory %s' % self.builddir)
+                    self.log("Removing old build directory %s" % self.builddir)
                     shutil.rmtree(self.builddir)
             # Setup build directory. This must be done after running clean!
             if not os.path.isdir(self.builddir):
-                self.log('Creating build directory %s' % self.builddir)
+                self.log("Creating build directory %s" % self.builddir)
                 os.makedirs(self.builddir)
 
     def build_version(self):
@@ -458,23 +465,22 @@ class Builder(object):
         Create the .version file if the as_version parameter was set.
         Run git-version to get the version string.
         """
-        if self._stage != 'clean':
-            raise AssertionError('sequence error: %s' % self._stage)
-        self._stage = 'version'
+        if self._stage != "clean":
+            raise AssertionError("sequence error: %s" % self._stage)
+        self._stage = "version"
 
         # Optionally write a .version file. This will overwrite the current
         # .version file if one was is already present.
-        as_version = self.module.params['as_version']
+        as_version = self.module.params["as_version"]
         if as_version:
-            version_file = os.path.join(self.srcdir, '.version')
-            self.log('Writing version %s to file %s' %
-                     (as_version, version_file))
-            with open(version_file, 'w') as f:
+            version_file = os.path.join(self.srcdir, ".version")
+            self.log("Writing version %s to file %s" % (as_version, version_file))
+            with open(version_file, "w") as f:
                 f.write(as_version)
 
         # Report the version string. This is read from the .version file if
         # present, otherwise it is generated from `git describe`.
-        git_version = os.path.join(self.srcdir, 'build-tools', 'git-version')
+        git_version = os.path.join(self.srcdir, "build-tools", "git-version")
         output = self.shell([git_version, self.srcdir])
         self.version = output.rstrip()
 
@@ -482,27 +488,27 @@ class Builder(object):
         """
         Run regen.sh to generate configure.
         """
-        if self._stage != 'version':
-            raise AssertionError('sequence error: %s' % self._stage)
-        self._stage = 'regen'
+        if self._stage != "version":
+            raise AssertionError("sequence error: %s" % self._stage)
+        self._stage = "regen"
 
-        if os.path.exists(os.path.join(self.srcdir, 'configure')):
-            self.log('Skipping regen.sh: configure already exists.')
+        if os.path.exists(os.path.join(self.srcdir, "configure")):
+            self.log("Skipping regen.sh: configure already exists.")
             return
-        regen = [os.path.join(self.srcdir, 'regen.sh')]
-        if not self.module.params['build_manpages']:
-            regen.append('-q')
-        self.run('regen', regen, self.srcdir)
+        regen = [os.path.join(self.srcdir, "regen.sh")]
+        if not self.module.params["build_manpages"]:
+            regen.append("-q")
+        self.run("regen", regen, self.srcdir)
 
     def build_configure(self):
         """
         Run configure to configure the build tree.
         """
-        if self._stage != 'regen':
-            raise AssertionError('sequence error: %s' % self._stage)
-        self._stage = 'configure'
+        if self._stage != "regen":
+            raise AssertionError("sequence error: %s" % self._stage)
+        self._stage = "configure"
 
-        options = self.module.params['configure_options']
+        options = self.module.params["configure_options"]
         if options is None:
             options = self.get_configure_options()
 
@@ -520,14 +526,13 @@ class Builder(object):
         else:
             self.fail("Invalid configure options type")
 
-        command = [os.path.join(self.srcdir, 'configure')]
+        command = [os.path.join(self.srcdir, "configure")]
         command.extend(args)
         self.configure_args = command
-        self.transarc_paths = '--enable-transarc-paths' in command
+        self.transarc_paths = "--enable-transarc-paths" in command
 
-        configure_environment = self.module.params['configure_environment']
-        self.run('configure', self.configure_args, self.builddir,
-                 extra_env=configure_environment)
+        configure_environment = self.module.params["configure_environment"]
+        self.run("configure", self.configure_args, self.builddir, extra_env=configure_environment)
 
         # Extract info from the configured build tree.
         self.collect_sysname()
@@ -537,28 +542,28 @@ class Builder(object):
         """
         Run make to perform the build.
         """
-        if self._stage != 'configure':
-            raise AssertionError('sequence error: %s' % self._stage)
-        self._stage = 'make'
+        if self._stage != "configure":
+            raise AssertionError("sequence error: %s" % self._stage)
+        self._stage = "make"
 
         make = [self.make]
-        fakeroot = self.module.params['fakeroot']
+        fakeroot = self.module.params["fakeroot"]
         if fakeroot:
             make.insert(0, fakeroot)
-        jobs = self.module.params['jobs']
+        jobs = self.module.params["jobs"]
         if jobs > 0:
-            make.extend(['-j', '%d' % jobs])
+            make.extend(["-j", "%d" % jobs])
         self.target = self.get_target()
         if self.target:
             make.append(self.target)
-        path = self.module.params['destdir']
+        path = self.module.params["destdir"]
         if path:
             self.destdir = self.abspath(self.builddir, path)
-            if not self.target.startswith('dest'):
-                make.append('DESTDIR=%s' % self.destdir)
+            if not self.target.startswith("dest"):
+                make.append("DESTDIR=%s" % self.destdir)
 
         self.make_args = make
-        self.run('make', make, self.builddir)
+        self.run("make", make, self.builddir)
         self.changed = True
 
         # make may silently fail to build a kernel module for the running
@@ -573,13 +578,13 @@ class Builder(object):
 
         # Save configured build paths in a meta-data file.
         build_info = {
-            'dirs': self.install_dirs,
-            'configure': self.configure_args,
-            'make': self.make_args,
+            "dirs": self.install_dirs,
+            "configure": self.configure_args,
+            "make": self.make_args,
         }
-        filename = os.path.join(self.destdir, '.build-info.json')
-        self.log('Writing %s' % filename)
-        with open(filename, 'w') as f:
+        filename = os.path.join(self.destdir, ".build-info.json")
+        self.log("Writing %s" % filename)
+        with open(filename, "w") as f:
             f.write(json.dumps(build_info, indent=4))
 
     def log(self, msg):
@@ -590,9 +595,9 @@ class Builder(object):
         if not os.path.isdir(self.logdir):
             os.makedirs(self.logdir)
             self.changed = True
-        build_log = os.path.join(self.logdir, 'build.log')
-        with open(build_log, 'a') as f:
-            f.write('%s\n' % msg)
+        build_log = os.path.join(self.logdir, "build.log")
+        with open(build_log, "a") as f:
+            f.write("%s\n" % msg)
         self.logfiles.add(build_log)
 
     def abspath(self, base, rel):
@@ -617,9 +622,9 @@ class Builder(object):
         Run a command and return the stdout as a string.
         """
         if cwd:
-            msg = '[%s] %s' % (cwd, ' '.join(args))
+            msg = "[%s] %s" % (cwd, " ".join(args))
         else:
-            msg = '%s' % ' '.join(args)
+            msg = "%s" % " ".join(args)
         self.log(msg)
         rc, out, err = self.module.run_command(args, check_rc=True, cwd=cwd)
         if err:
@@ -642,13 +647,12 @@ class Builder(object):
             os.makedirs(self.logdir)
             self.changed = True
 
-        self.log('Running [%s] %s' % (cwd, ' '.join(command)))
-        logfile = os.path.join(self.logdir, '%s.log' % name)
+        self.log("Running [%s] %s" % (cwd, " ".join(command)))
+        logfile = os.path.join(self.logdir, "%s.log" % name)
         self.logfiles.add(logfile)
-        with open(logfile, 'w') as f:
+        with open(logfile, "w") as f:
             with chdir(cwd):
-                proc = subprocess.Popen(command, env=env, stdout=f.fileno(),
-                                        stderr=f.fileno())
+                proc = subprocess.Popen(command, env=env, stdout=f.fileno(), stderr=f.fileno())
                 rc = proc.wait()
         if rc != 0:
             self.fail('%s command failed; see "%s".' % (name, logfile))
@@ -663,40 +667,42 @@ class Builder(object):
         """
 
         # DEPRECATED! Use configure_options instead.
-        build_userspace = self.get_deprecated_option('build_userspace')
-        build_module = self.get_deprecated_option('build_module')
-        build_terminal_programs = self.get_deprecated_option('build_terminal_programs')  # noqa: E501
-        build_bindings = self.get_deprecated_option('build_bindings')
-        build_fuse_client = self.get_deprecated_option('build_fuse_client')
-        with_transarc_paths = self.get_deprecated_option('with_transarc_paths')
-        with_debug_symbols = self.get_deprecated_option('with_debug_symbols')
-        with_rxgk = self.get_deprecated_option('with_rxgk')
+        build_userspace = self.get_deprecated_option("build_userspace")
+        build_module = self.get_deprecated_option("build_module")
+        build_terminal_programs = self.get_deprecated_option(
+            "build_terminal_programs"
+        )  # noqa: E501
+        build_bindings = self.get_deprecated_option("build_bindings")
+        build_fuse_client = self.get_deprecated_option("build_fuse_client")
+        with_transarc_paths = self.get_deprecated_option("with_transarc_paths")
+        with_debug_symbols = self.get_deprecated_option("with_debug_symbols")
+        with_rxgk = self.get_deprecated_option("with_rxgk")
 
         if not (build_userspace or build_module):
             self.fail("specify build_userspace and/or build_module")
 
-        options = {'enable': [], 'disable': [], 'with': [], 'without': []}
+        options = {"enable": [], "disable": [], "with": [], "without": []}
         if build_module:
-            options['enable'].append('kernel-module')
+            options["enable"].append("kernel-module")
             self.kernel_module_configure_options(options)
         else:
-            options['disable'].append('kernel-module')
+            options["disable"].append("kernel-module")
         if not build_terminal_programs:
-            options['disable'].append('gtx')
+            options["disable"].append("gtx")
         if not build_bindings:
-            options['without'].append('swig')
+            options["without"].append("swig")
         if not build_fuse_client:
-            options['disable'].append('fuse-client')
+            options["disable"].append("fuse-client")
         if with_debug_symbols:
-            options['enable'].append('debug')
-            options['disable'].extend(['optimize', 'strip-binaries'])
+            options["enable"].append("debug")
+            options["disable"].extend(["optimize", "strip-binaries"])
             if build_module:
-                options['enable'].append('debug-kernel')
-                options['disable'].append('optimize-kernel')
+                options["enable"].append("debug-kernel")
+                options["disable"].append("optimize-kernel")
         if with_transarc_paths:
-            options['enable'].append('transarc-paths')
+            options["enable"].append("transarc-paths")
         if with_rxgk:
-            options['enable'].append('rxgk')
+            options["enable"].append("rxgk")
         return options
 
     def get_target(self):
@@ -718,24 +724,24 @@ class Builder(object):
         based on the configure options.  The caller my specify a explicit
         target (even an empty one) to override.
         """
-        target = self.module.params['target']
+        target = self.module.params["target"]
         if target is not None:
             return target
 
         if self.configure_args is None:
-            raise AssertionError('sequence error: configure_args not found')
+            raise AssertionError("sequence error: configure_args not found")
 
-        build_userspace = self.module.params['build_userspace']
-        build_module = self.module.params['build_module']
+        build_userspace = self.module.params["build_userspace"]
+        build_module = self.module.params["build_module"]
         if self.transarc_paths:
-            target = 'dest'
+            target = "dest"
         else:
-            target = 'install'
+            target = "install"
 
-        if '--disable-kernel-module' in self.configure_args:
-            target += '_nolibafs'
+        if "--disable-kernel-module" in self.configure_args:
+            target += "_nolibafs"
         elif build_module and not build_userspace:
-            target += '_only_libafs'
+            target += "_only_libafs"
 
         return target
 
@@ -743,7 +749,7 @@ class Builder(object):
         """
         Get the afs sysname from the results of configure.
         """
-        config_log = os.path.join(self.builddir, 'config.log')
+        config_log = os.path.join(self.builddir, "config.log")
         try:
             with open(config_log) as f:
                 for line in f.readlines():
@@ -760,21 +766,20 @@ class Builder(object):
 
         Create and run a dummy make file to export the configured symbols.
         """
-        makefile_dirs = os.path.join(self.logdir, 'Makefile.dirs')
-        with open(makefile_dirs, 'w') as f:
+        makefile_dirs = os.path.join(self.logdir, "Makefile.dirs")
+        with open(makefile_dirs, "w") as f:
             f.write(MAKEFILE_DIRS)
-        output = self.shell([self.make, '-f', makefile_dirs],
-                            cwd=self.builddir)
-        self.log('Makefile.dirs output')
+        output = self.shell([self.make, "-f", makefile_dirs], cwd=self.builddir)
+        self.log("Makefile.dirs output")
         for line in output.splitlines():
             line = line.rstrip()
             self.log(line)
-            if '=' not in line:
+            if "=" not in line:
                 continue
-            name, value = line.split('=', 1)
-            value = value.rstrip('/')
-            if value.startswith('//'):
-                value = value.replace('/', '', 1)
+            name, value = line.split("=", 1)
+            value = value.rstrip("/")
+            if value.startswith("//"):
+                value = value.replace("/", "", 1)
             self.install_dirs[name] = value
 
     def transarc_post_build(self):
@@ -785,27 +790,25 @@ class Builder(object):
         # Copy the transarc-style distribution tree into a DESTDIR file tree
         # for installation.
         #
-        if self.target in ('dest', 'dest_nolibafs', 'dest_only_libafs'):
-            self.log('Copying transarc-style distribution files to %s' %
-                     self.destdir)
+        if self.target in ("dest", "dest_nolibafs", "dest_only_libafs"):
+            self.log("Copying transarc-style distribution files to %s" % self.destdir)
             sysname = self.sysname
             if not sysname:
-                self.fail('Unable to get destdir; sysname not found.')
-            dest = os.path.join(self.builddir, sysname, 'dest')
+                self.fail("Unable to get destdir; sysname not found.")
+            dest = os.path.join(self.builddir, sysname, "dest")
             if not os.path.isdir(dest):
-                self.fail('Missing dest directory: %s' % dest)
+                self.fail("Missing dest directory: %s" % dest)
             copy_tree(dest, self.destdir)
             self.changed = True
 
         #
         # Copy security key utilities to a standard location.
         #
-        if self.target in ('install', 'install_nolibafs', 'dest',
-                           'dest_nolibafs'):
-            self.log('Copying security key utilities to %s' % self.destdir)
-            for p in ('asetkey', 'akeyconvert'):
-                src = os.path.join(self.builddir, 'src', 'aklog', p)
-                dst = os.path.join(self.destdir, 'usr', 'sbin')
+        if self.target in ("install", "install_nolibafs", "dest", "dest_nolibafs"):
+            self.log("Copying security key utilities to %s" % self.destdir)
+            for p in ("asetkey", "akeyconvert"):
+                src = os.path.join(self.builddir, "src", "aklog", p)
+                dst = os.path.join(self.destdir, "usr", "sbin")
                 if os.path.isfile(src):
                     if not os.path.isdir(dst):
                         os.makedirs(dst)
@@ -815,7 +818,7 @@ class Builder(object):
 
 
 class LinuxBuilder(Builder):
-    platform = 'Linux'
+    platform = "Linux"
 
     def set_environment_variables(self):
         """
@@ -824,13 +827,13 @@ class LinuxBuilder(Builder):
         pass
 
     def kernel_module_configure_options(self, options):
-        options['with'].append('linux-kernel-packaging')
+        options["with"].append("linux-kernel-packaging")
 
     def collect_kernel_modules(self, builddir):
         """
         Search for built kernel modules on Linux.
         """
-        pattern = os.path.join(builddir, 'src/libafs/MODLOAD-*/*afs.ko')
+        pattern = os.path.join(builddir, "src/libafs/MODLOAD-*/*afs.ko")
         kmods = glob.glob(pattern)
         return kmods
 
@@ -840,43 +843,43 @@ class LinuxBuilder(Builder):
         version.
         """
 
-        if 'nolibafs' in self.target:
-            self.log('Skipping check for kernel module: target is %s' %
-                     self.target)
+        if "nolibafs" in self.target:
+            self.log("Skipping check for kernel module: target is %s" % self.target)
             return
 
-        if '--disable-kernel-module' in self.configure_args:
-            self.log('Skipping check for kernel module: configure is %s' %
-                     self.configure_args)
+        if "--disable-kernel-module" in self.configure_args:
+            self.log("Skipping check for kernel module: configure is %s" % self.configure_args)
             return
 
-        self.log('Checking for linux kernel module for linux '
-                 'kernel version %s.' % platform.release())
+        self.log(
+            "Checking for linux kernel module for linux kernel version %s." % platform.release()
+        )
         modloads = []
         for kmod in self.kmods:
-            pattern = \
-                r'/MODLOAD-%s(-[A-Z]*)?/(lib|open)afs\.ko$' % platform.release()
+            pattern = r"/MODLOAD-%s(-[A-Z]*)?/(lib|open)afs\.ko$" % platform.release()
             m = re.search(pattern, kmod)
             if m:
                 modloads.append(kmod)
-        self.log('Modules found: %s' % ' '.join(modloads))
+        self.log("Modules found: %s" % " ".join(modloads))
         if not modloads:
-            self.fail('Loadable kernel module not found for linux '
-                      'kernel version %s' % platform.release())
+            self.fail(
+                "Loadable kernel module not found for linux "
+                "kernel version %s" % platform.release()
+            )
 
 
 class SolarisBuilder(Builder):
-    platform = 'SunOS'
+    platform = "SunOS"
 
     def set_environment_variables(self):
         """
         Set environment variables needed when building on Solaris.
         """
-        solariscc = lookup_fact('solariscc')
+        solariscc = lookup_fact("solariscc")
         if solariscc:
-            os.environ['SOLARISCC'] = solariscc
-        os.environ['UT_NO_USAGE_TRACKING'] = '1'
-        os.environ['SUNW_NO_UPDATE_NOTIFY'] = '1'
+            os.environ["SOLARISCC"] = solariscc
+        os.environ["UT_NO_USAGE_TRACKING"] = "1"
+        os.environ["SUNW_NO_UPDATE_NOTIFY"] = "1"
 
     def kernel_module_configure_options(self, options):
         pass
@@ -886,8 +889,8 @@ class SolarisBuilder(Builder):
         Search for built kernel modules on Solaris.
         """
         kmods = []
-        for name in ('libafs.o', 'libafs.nonfs.o'):
-            kmod = os.path.join(builddir, 'src/libafs/MODLOAD64', name)
+        for name in ("libafs.o", "libafs.nonfs.o"):
+            kmod = os.path.join(builddir, "src/libafs/MODLOAD64", name)
             if os.path.exists(kmod):
                 kmods.append(kmod)
         return kmods
@@ -896,23 +899,21 @@ class SolarisBuilder(Builder):
         """
         Verify we built a kernel module.
         """
-        if 'nolibafs' in self.target:
-            self.log('Skipping check for kernel module: target is %s' %
-                     self.target)
+        if "nolibafs" in self.target:
+            self.log("Skipping check for kernel module: target is %s" % self.target)
             return
 
-        if '--disable-kernel-module' in self.configure_args:
-            self.log('Skipping check for kernel module: configure is %s' %
-                     self.configure_args)
+        if "--disable-kernel-module" in self.configure_args:
+            self.log("Skipping check for kernel module: configure is %s" % self.configure_args)
             return
 
-        self.log('Checking for solaris kernel modules.')
+        self.log("Checking for solaris kernel modules.")
         if not self.kmods:
-            self.fail('Kernel module not found.')
+            self.fail("Kernel module not found.")
 
 
 class FreeBSDBuilder(Builder):
-    platform = 'FreeBSD'
+    platform = "FreeBSD"
 
     def set_environment_variables(self):
         pass
@@ -924,7 +925,7 @@ class FreeBSDBuilder(Builder):
         """
         Search for built kernel module on FreeBSD.
         """
-        pattern = os.path.join(builddir, 'src/libafs/MODLOAD/libafs.ko')
+        pattern = os.path.join(builddir, "src/libafs/MODLOAD/libafs.ko")
         kmods = glob.glob(pattern)
         return kmods
 
@@ -935,38 +936,31 @@ class FreeBSDBuilder(Builder):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(type='str'),  # Not used.
-            srcdir=dict(type='path', required=True, aliases=['projectdir']),
-            builddir=dict(type='path'),
-            logdir=dict(type='path'),
-            destdir=dict(type='path'),
-
+            state=dict(type="str"),  # Not used.
+            srcdir=dict(type="path", required=True, aliases=["projectdir"]),
+            builddir=dict(type="path"),
+            logdir=dict(type="path"),
+            destdir=dict(type="path"),
             # Procesing options
-            fakeroot=dict(type='path'),
-            make=dict(type='path'),
-            clean=dict(type='bool', default=False),
-            jobs=dict(type='int', fallback=(cpu_count, [])),
-            as_version=dict(type='str', default=None,
-                            aliases=['version', 'with_version']),
-
+            fakeroot=dict(type="path"),
+            make=dict(type="path"),
+            clean=dict(type="bool", default=False),
+            jobs=dict(type="int", fallback=(cpu_count, [])),
+            as_version=dict(type="str", default=None, aliases=["version", "with_version"]),
             # Configure and target options.
-            configure_options=dict(type='raw', default=None),
-            configure_environment=dict(type='dict', default=None),
-
+            configure_options=dict(type="raw", default=None),
+            configure_environment=dict(type="dict", default=None),
             # DEPRECATED! Use configure_options.
-            with_transarc_paths=dict(type='bool', default=False,
-                                     aliases=['transarc_paths']),
-            with_debug_symbols=dict(type='bool', default=True),
-            with_rxgk=dict(type='bool', defaults=False),
-            build_manpages=dict(type='bool', default=True,
-                                aliases=['manpages']),
-            build_userspace=dict(type='bool', default=True),
-            build_module=dict(type='bool', default=True),
-            build_terminal_programs=dict(type='bool', default=True),
-            build_fuse_client=dict(type='bool', default=True),
-            build_bindings=dict(type='bool', default=True),
-
-            target=dict(type='str', default=None),
+            with_transarc_paths=dict(type="bool", default=False, aliases=["transarc_paths"]),
+            with_debug_symbols=dict(type="bool", default=True),
+            with_rxgk=dict(type="bool", defaults=False),
+            build_manpages=dict(type="bool", default=True, aliases=["manpages"]),
+            build_userspace=dict(type="bool", default=True),
+            build_module=dict(type="bool", default=True),
+            build_terminal_programs=dict(type="bool", default=True),
+            build_fuse_client=dict(type="bool", default=True),
+            build_bindings=dict(type="bool", default=True),
+            target=dict(type="str", default=None),
         ),
         supports_check_mode=False,
     )
@@ -977,5 +971,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

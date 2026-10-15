@@ -3,12 +3,12 @@
 # BSD 2-Clause License
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.1.',
-    'status': ['preview'],
-    'supported_by': 'community',
+    "metadata_version": "1.1.",
+    "status": ["preview"],
+    "supported_by": "community",
 }
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: openafs_get_install_paths
 
@@ -30,9 +30,9 @@ options:
 
 author:
   - Michael Meffie
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Get installation paths
   openafs_contrib.openafs.openafs_get_install_paths:
   register: results
@@ -41,21 +41,25 @@ EXAMPLES = r'''
     msg: >
       Bins are {{ results.bins }}
       Dirs are {{ results.dirs }}
-'''
+"""
 
-import errno                # noqa: E402
-import gzip                 # noqa: E402
-import os                   # noqa: E402
-import re                   # noqa: E402
-import stat                 # noqa: E402
+import errno  # noqa: E402
+import gzip  # noqa: E402
+import os  # noqa: E402
+import re  # noqa: E402
+import stat  # noqa: E402
 
-from ansible.module_utils.basic import AnsibleModule   # noqa: E402
-from ansible.module_utils.facts.system.distribution import DistributionFactCollector  # noqa: E402, E501
+from ansible.module_utils.basic import AnsibleModule  # noqa: E402
+from ansible.module_utils.facts.system.distribution import (
+    DistributionFactCollector,
+)  # noqa: E402, E501
 from ansible.module_utils.facts.system.pkg_mgr import PkgMgrFactCollector  # noqa: E402, E501
 
-from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import Logger  # noqa: E402, E501
+from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import (
+    Logger,
+)  # noqa: E402, E501
 
-module_name = os.path.basename(__file__).replace('.py', '')
+module_name = os.path.basename(__file__).replace(".py", "")
 log = Logger(module_name)
 
 
@@ -80,15 +84,15 @@ def get_system_pkg_mgr(module):
     os_family.
     """
     dist_collector = DistributionFactCollector()
-    dist_facts = prefix_keys('ansible_', dist_collector.collect(module))
+    dist_facts = prefix_keys("ansible_", dist_collector.collect(module))
 
     pkg_mgr_collector = PkgMgrFactCollector()
     pkg_mgr_facts = pkg_mgr_collector.collect(module, dist_facts)
-    pkg_mgr = pkg_mgr_facts.get('pkg_mgr')
+    pkg_mgr = pkg_mgr_facts.get("pkg_mgr")
     if not pkg_mgr:
-        raise ValueError('Unable to find the system package manager.')
+        raise ValueError("Unable to find the system package manager.")
 
-    log.info('pkg_mgr is %s', pkg_mgr)
+    log.info("pkg_mgr is %s", pkg_mgr)
     return pkg_mgr
 
 
@@ -98,7 +102,7 @@ def get_pkg_mgr_subclass(cls, module):
     Lookup the ansible_pkg_mgr if a package manager is not specified by as a
     module parameter.
     """
-    pkg_mgr = module.params.get('package_manager_type')
+    pkg_mgr = module.params.get("package_manager_type")
     if not pkg_mgr:
         pkg_mgr = get_system_pkg_mgr(module)
 
@@ -106,7 +110,7 @@ def get_pkg_mgr_subclass(cls, module):
         if pkg_mgr in subcls.pkg_mgrs:
             return subcls
 
-    raise NotImplementedError('Unknown package manager: {0}'.format(pkg_mgr))
+    raise NotImplementedError("Unknown package manager: {0}".format(pkg_mgr))
 
 
 class InstallationFactCollector(object):
@@ -136,12 +140,12 @@ class InstallationFactCollector(object):
         cacheinfo = self.collect_cacheinfo(dirs)
 
         facts = {
-            'packages': sorted(list(packages)),
-            'paths': sorted(list(paths)),
-            'bins': bins,
-            'manpages': manpages,
-            'dirs': dirs,
-            'cacheinfo': cacheinfo,
+            "packages": sorted(list(packages)),
+            "paths": sorted(list(paths)),
+            "bins": bins,
+            "manpages": manpages,
+            "dirs": dirs,
+            "cacheinfo": cacheinfo,
         }
         return facts
 
@@ -159,7 +163,7 @@ class InstallationFactCollector(object):
         Find the installed program files.
         """
         canonical_name = {
-            'pagsh.openafs': 'pagsh',
+            "pagsh.openafs": "pagsh",
         }
         bins = {}
         for path in paths:
@@ -175,9 +179,9 @@ class InstallationFactCollector(object):
         """
         manpages = {}
         for path in paths:
-            m = re.search(r'\.\d\.gz$', path)
+            m = re.search(r"\.\d\.gz$", path)
             if m:
-                name = re.sub(r'\.\d\.gz$', '', os.path.basename(path))
+                name = re.sub(r"\.\d\.gz$", "", os.path.basename(path))
                 manpages[name] = path
         return manpages
 
@@ -193,40 +197,40 @@ class InstallationFactCollector(object):
         """
         dirs = {}
 
-        path = manpages.get('bosserver')
+        path = manpages.get("bosserver")
         if path:
-            regex = r'create a file named (\S+)/BosConfig\.new'
-            dirs['afsbosconfigdir'] = self.search_page(path, regex)
+            regex = r"create a file named (\S+)/BosConfig\.new"
+            dirs["afsbosconfigdir"] = self.search_page(path, regex)
 
-        path = manpages.get('KeyFile')
+        path = manpages.get("KeyFile")
         if path:
-            regex = r'The file must reside in the (\S+) directory'
-            dirs['afsconfdir'] = self.search_page(path, regex)
+            regex = r"The file must reside in the (\S+) directory"
+            dirs["afsconfdir"] = self.search_page(path, regex)
 
-        path = manpages.get('vldb.DB0')
+        path = manpages.get("vldb.DB0")
         if path:
-            regex = r'reside in the (\S+) directory'
-            dirs['afsdbdir'] = self.search_page(path, regex)
+            regex = r"reside in the (\S+) directory"
+            dirs["afsdbdir"] = self.search_page(path, regex)
 
-        path = manpages.get('NetInfo')
+        path = manpages.get("NetInfo")
         if path:
-            regex = r'The server NetInfo file, if present in the (\S+) directory'  # noqa: E501
-            dirs['afslocaldir'] = self.search_page(path, regex)
+            regex = r"The server NetInfo file, if present in the (\S+) directory"  # noqa: E501
+            dirs["afslocaldir"] = self.search_page(path, regex)
 
-        path = manpages.get('FileLog')
+        path = manpages.get("FileLog")
         if path:
-            regex = r'file does not already exist in the (\S+) directory'
-            dirs['afslogsdir'] = self.search_page(path, regex)
+            regex = r"file does not already exist in the (\S+) directory"
+            dirs["afslogsdir"] = self.search_page(path, regex)
 
-        path = manpages.get('fileserver')
+        path = manpages.get("fileserver")
         if path:
-            regex = r'its binary file is located in the (\S+) directory'
-            dirs['afssrvbindir'] = self.search_page(path, regex)
+            regex = r"its binary file is located in the (\S+) directory"
+            dirs["afssrvbindir"] = self.search_page(path, regex)
 
-        path = manpages.get('cacheinfo')
+        path = manpages.get("cacheinfo")
         if path:
-            regex = r'must reside in the (\S+) directory'
-            dirs['viceetcdir'] = self.search_page(path, regex)
+            regex = r"must reside in the (\S+) directory"
+            dirs["viceetcdir"] = self.search_page(path, regex)
 
         return dirs
 
@@ -234,24 +238,20 @@ class InstallationFactCollector(object):
         """
         Find the cache manager configuration parameters.
         """
-        viceetcdir = dirs.get('viceetcdir')
+        viceetcdir = dirs.get("viceetcdir")
         if not viceetcdir:
             return None
-        ci = os.path.join(viceetcdir, 'cacheinfo')
+        ci = os.path.join(viceetcdir, "cacheinfo")
         if not os.path.exists(ci):
-            log.warning('cacheinfo file not found: %s', ci)
+            log.warning("cacheinfo file not found: %s", ci)
             return None
         with open(ci) as f:
             contents = f.read().rstrip()
         try:
-            mount, cachedir, size = contents.split(':')
-            cacheinfo = {
-                'mountpoint': mount,
-                'cachedir': cachedir,
-                'cachesize': int(size)
-            }
+            mount, cachedir, size = contents.split(":")
+            cacheinfo = {"mountpoint": mount, "cachedir": cachedir, "cachesize": int(size)}
         except ValueError as e:
-            log.error('Failed to parse cacheinfo %s file: %s', ci, e)
+            log.error("Failed to parse cacheinfo %s file: %s", ci, e)
             cacheinfo = None
         return cacheinfo
 
@@ -264,22 +264,22 @@ class InstallationFactCollector(object):
         z = gzip.open(path)
         content = z.read().decode()
         z.close()
-        content = re.sub(r'\\&', '', content)
-        content = re.sub(r'\\f.', '', content)
-        content = re.sub(r'\s+', ' ', content)
+        content = re.sub(r"\\&", "", content)
+        content = re.sub(r"\\f.", "", content)
+        content = re.sub(r"\s+", " ", content)
         m = re.search(pattern, content)
         if not m:
-            raise ValueError('Failed to find directory in %s.' % path)
+            raise ValueError("Failed to find directory in %s." % path)
         return m.group(1)
 
     def is_bin(self, path):
         """
         Return true if path is an program file.
         """
-        if re.search(r'\.so(\.\d+){0,3}$', path):
-            return False   # Skip shared object files.
+        if re.search(r"\.so(\.\d+){0,3}$", path):
+            return False  # Skip shared object files.
         if not self.is_x(path):
-            return False   # Skip non-executable files.
+            return False  # Skip non-executable files.
         return True
 
     def is_x(self, path):
@@ -301,35 +301,36 @@ class RpmInstallationFactCollector(InstallationFactCollector):
     """
     RPM package manager specific collection methods.
     """
-    pkg_mgrs = ['rpm', 'dnf', 'yum', 'zypper']
+
+    pkg_mgrs = ["rpm", "dnf", "yum", "zypper"]
 
     def __init__(self, module):
         super(RpmInstallationFactCollector, self).__init__(module)
-        self.rpm = module.get_bin_path('rpm', required=True)
+        self.rpm = module.get_bin_path("rpm", required=True)
 
     def collect_package_names(self):
         """
         Find the names of the OpenAFS packages installed on this system.
         """
-        args = [self.rpm, '--query', '--all', 'name=openafs*']
+        args = [self.rpm, "--query", "--all", "name=openafs*"]
         rc, out, err = self.module.run_command(args)
         if rc != 0:
-            log.error('rpm query failed', err)
-            self.module.fail_json(msg='rpm query failed', rc=rc, err=err)
+            log.error("rpm query failed", err)
+            self.module.fail_json(msg="rpm query failed", rc=rc, err=err)
         return set(out.splitlines())
 
     def collect_paths(self, package):
         """
         Find the paths of the files and directories installed by a package.
         """
-        args = [self.rpm, '--query', '--list', package]
+        args = [self.rpm, "--query", "--list", package]
         rc, out, err = self.module.run_command(args)
         if rc != 0:
-            log.error('rpm query failed', err)
-            self.module.fail_json(msg='rpm query failed', rc=rc, err=err)
+            log.error("rpm query failed", err)
+            self.module.fail_json(msg="rpm query failed", rc=rc, err=err)
         paths = set()
         for path in out.splitlines():
-            if '.build-id' not in path:  # Omit build meta data files.
+            if ".build-id" not in path:  # Omit build meta data files.
                 paths.add(path)
         return paths
 
@@ -338,26 +339,33 @@ class DebianInstallationFactCollector(InstallationFactCollector):
     """
     Debian package manager specific collection methods.
     """
-    pkg_mgrs = ['apt', 'apt-get', 'dpkg']
+
+    pkg_mgrs = ["apt", "apt-get", "dpkg"]
 
     def __init__(self, module):
         super(DebianInstallationFactCollector, self).__init__(module)
-        self.dpkg_query = module.get_bin_path('dpkg-query', required=True)
+        self.dpkg_query = module.get_bin_path("dpkg-query", required=True)
 
     def collect_package_names(self):
         """
         Find the names of the OpenAFS packages installed on this system.
         """
-        args = [self.dpkg_query, '--no-pager', '--show', '--showformat',
-                '${Package} ${Status}\\n', 'openafs*']
+        args = [
+            self.dpkg_query,
+            "--no-pager",
+            "--show",
+            "--showformat",
+            "${Package} ${Status}\\n",
+            "openafs*",
+        ]
         rc, out, err = self.module.run_command(args)
         if rc != 0:
-            log.error('dpkg-query failed', err)
-            self.module.fail_json(msg='dpkg-query failed', rc=rc, err=err)
+            log.error("dpkg-query failed", err)
+            self.module.fail_json(msg="dpkg-query failed", rc=rc, err=err)
         packages = set()
         for line in out.splitlines():
             package, _, _, status = line.rstrip().split()
-            if status == 'installed':
+            if status == "installed":
                 packages.add(package)
         return packages
 
@@ -365,14 +373,14 @@ class DebianInstallationFactCollector(InstallationFactCollector):
         """
         Find the paths of the files and directories installed by a package.
         """
-        args = [self.dpkg_query, '--no-pager', '--listfiles', package]
+        args = [self.dpkg_query, "--no-pager", "--listfiles", package]
         rc, out, err = self.module.run_command(args)
         if rc != 0:
-            log.error('dpkg-query failed', err)
-            self.module.fail_json(msg='dpkg-query failed', rc=rc, err=err)
+            log.error("dpkg-query failed", err)
+            self.module.fail_json(msg="dpkg-query failed", rc=rc, err=err)
         paths = set()
         for path in out.splitlines():
-            if path != '/.':      # Omit root directory
+            if path != "/.":  # Omit root directory
                 paths.add(path)
         return set(paths)
 
@@ -381,23 +389,24 @@ class SolarisInstallationFactCollector(InstallationFactCollector):
     """
     Solaris package manager specific collection methods.
     """
-    pkg_mgrs = ['pkg5']  # aka IPS
+
+    pkg_mgrs = ["pkg5"]  # aka IPS
 
     def __init__(self, module):
         super(SolarisInstallationFactCollector, self).__init__(module)
-        self.pkg = module.get_bin_path('pkg', required=True)
+        self.pkg = module.get_bin_path("pkg", required=True)
 
     def collect_package_names(self):
         """
         Find the names of the OpenAFS packages installed on this system.
         """
-        args = [self.pkg, 'list', '-H', '*openafs*']
+        args = [self.pkg, "list", "-H", "*openafs*"]
         rc, out, err = self.module.run_command(args)
         if rc != 0:
-            if 'no packages matching' in err:
+            if "no packages matching" in err:
                 return set()
-            log.error('pkg list failed', err)
-            self.module.fail_json(msg='pkg list failed', rc=rc, err=err)
+            log.error("pkg list failed", err)
+            self.module.fail_json(msg="pkg list failed", rc=rc, err=err)
         packages = set()
         for line in out.splitlines():
             words = line.rstrip().split()
@@ -409,15 +418,15 @@ class SolarisInstallationFactCollector(InstallationFactCollector):
         """
         Find the paths of the files and directories installed by a package.
         """
-        args = [self.pkg, 'contents', '-H', package]
+        args = [self.pkg, "contents", "-H", package]
         rc, out, err = self.module.run_command(args)
         if rc != 0:
-            log.error('pkg contents failed', err)
-            self.module.fail_json(msg='pkg contents failed', rc=rc, err=err)
+            log.error("pkg contents failed", err)
+            self.module.fail_json(msg="pkg contents failed", rc=rc, err=err)
         paths = set()
         for path in out.splitlines():
-            if not path.startswith('/'):
-                path = '/%s' % path
+            if not path.startswith("/"):
+                path = "/%s" % path
             paths.add(path)
         return paths
 
@@ -427,9 +436,9 @@ class SolarisInstallationFactCollector(InstallationFactCollector):
         """
         manpages = {}
         for path in paths:
-            m = re.search(r'man/man\d/.*\.\d$', path)
+            m = re.search(r"man/man\d/.*\.\d$", path)
             if m:
-                name = re.sub(r'\.\d$', '', os.path.basename(path))
+                name = re.sub(r"\.\d$", "", os.path.basename(path))
                 manpages[name] = path
         return manpages
 
@@ -439,31 +448,31 @@ class SolarisInstallationFactCollector(InstallationFactCollector):
         """
         with open(path) as f:
             content = f.read()
-        content = re.sub(r'\\&', '', content)
-        content = re.sub(r'\\f.', '', content)
-        content = re.sub(r'\s+', ' ', content)
+        content = re.sub(r"\\&", "", content)
+        content = re.sub(r"\\f.", "", content)
+        content = re.sub(r"\s+", " ", content)
         m = re.search(pattern, content)
         if not m:
-            raise ValueError('Failed to find directory in %s.' % path)
+            raise ValueError("Failed to find directory in %s." % path)
         return m.group(1)
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            package_manager_type=dict(type='str', default=None),
+            package_manager_type=dict(type="str", default=None),
         ),
         supports_check_mode=False,
     )
-    log.info('Starting %s', module_name)
+    log.info("Starting %s", module_name)
 
     collector = InstallationFactCollector(module)
     results = collector.collect()
-    results['changed'] = False
+    results["changed"] = False
 
-    log.debug('Results: %s', results)
+    log.debug("Results: %s", results)
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

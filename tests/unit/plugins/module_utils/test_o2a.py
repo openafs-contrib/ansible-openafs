@@ -2,7 +2,6 @@ import pytest
 
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils import o2a
 
-
 testcases = [
     # ('', []), ?
     ({}, []),
@@ -66,9 +65,7 @@ def test_valid_options(options, expected_args):
     assert sorted(args) == sorted(expected_args)
 
 
-@pytest.mark.parametrize(
-    "options", [{"bogus": {"x": "a"}}, {"enable": {"enable": {"bar": "baz"}}}]
-)
+@pytest.mark.parametrize("options", [{"bogus": {"x": "a"}}, {"enable": {"enable": {"bar": "baz"}}}])
 def test_invalid_options(options):
     with pytest.raises(ValueError):
         o2a.options_to_args(options)
