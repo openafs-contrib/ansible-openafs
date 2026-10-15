@@ -59,12 +59,10 @@ def flatten(prefix, value):
     """
     if isinstance(value, dict):
         for k in sorted(value.keys()):
-            for element in flatten(prefix + str(k), value[k]):
-                yield element
+            yield from flatten(prefix + str(k), value[k])
     elif isinstance(value, (list, tuple)):
         for v in sorted(value):
-            for element in flatten(prefix, v):
-                yield element
+            yield from flatten(prefix, v)
     else:
         yield prefix + str(value)
 
