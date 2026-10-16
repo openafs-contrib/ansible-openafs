@@ -36,6 +36,12 @@ options:
     type: path
     default: /etc/ansible/facts.d
 
+  facts:
+    description:
+      - The facts to be stored.
+    type: dict
+    default: {}
+
 author:
   - Michael Meffie (@meffie)
 """

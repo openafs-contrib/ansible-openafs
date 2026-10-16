@@ -18,7 +18,33 @@ description:
   - Wait until the VLDB and PRDB database elections are completed
     and a sync site is set.
 
-options: {}
+options:
+  timeout:
+    description:
+      - The maximum time in seconds to wait for quorum.
+    type: int
+    default: 600
+
+  delay:
+    description:
+      - The time in seconds to wait before the first check.
+    type: int
+    default: 0
+
+  sleep:
+    description:
+      - The time in seconds to wait between checks.
+      - Values less than 1 are changed to 1.
+    type: int
+    default: 20
+
+  fail_on_timeout:
+    description:
+      - Fail when the timeout expires.
+      - A warning is logged and the module succeeds when the timeout expires
+        and this option is false.
+    type: bool
+    default: false
 
 author:
   - Michael Meffie (@meffie)

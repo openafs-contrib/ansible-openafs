@@ -22,11 +22,12 @@ description:
   - Supports rpm and deb packaging.
 
 options:
-  package_mgr_type:
+  package_manager_type:
     description:
       - The package manager type on the node.
       - Supported values are C(rpm) and C(apt).
-    default: autodetect
+      - The package manager type is detected when this option is omitted.
+    type: str
 
 author:
   - Michael Meffie (@meffie)

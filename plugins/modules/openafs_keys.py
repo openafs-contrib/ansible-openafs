@@ -53,12 +53,6 @@ options:
     required: false
     type: str
 
-  asetkey:
-    description: asetkey program path
-    required: false
-    type: path
-    default: Search the local facts, search the path.
-
 author:
   - Michael Meffie (@meffie)
 """
@@ -82,12 +76,6 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-asetkey:
-  description: asetkey path found
-  type: path
-  returned: success
-#  sample: /usr/sbin/asetkey
-
 have_extended_keys:
   description: Indicates if extended keys are supported.
   type: bool
