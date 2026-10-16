@@ -119,6 +119,7 @@ options:
         node.
 
     type: list
+    elements: str
     default: []
     required: no
     aliases:
@@ -1181,16 +1182,16 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             state=dict(type="str", choices=["present", "absent"], default="present"),
-            volume=dict(type="str", aliases=["name"]),
+            volume=dict(type="str", required=True, aliases=["name"]),
             server=dict(type="str", default=None),
             partition=dict(type="str", default=None),
             mount=dict(type="str", default=None, aliases=["mountpoint", "mtpt"]),
-            acl=dict(type="list", default=[], aliases=["acls", "rights"]),
+            acl=dict(type="list", elements="str", default=[], aliases=["acls", "rights"]),
             quota=dict(type="int", default=0),
             replicas=dict(type="int", default=0),
             localauth=dict(type="bool", default=False),
             auth_user=dict(type="str", default="admin"),
-            auth_keytab=dict(type="str", default="admin.keytab"),
+            auth_keytab=dict(type="str", default="admin.keytab", no_log=False),
         ),
         supports_check_mode=False,
     )

@@ -10,7 +10,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = r"""
 ---
-module: openafs_service_properties
+module: openafs_service_property
 
 short_description: Manage Solaris service properties.
 

@@ -29,13 +29,13 @@ description:
     C(regen.sh), C(configure), and C(make). The source code must be already
     present in the I(srcdir) directory.
 
-  - The M(openafs_build) module will run the OpenAFS C(regen.sh) command to
-    generate the C(configure) script when the C(configure) script is not
-    already present in the I(srcdir).
+  - The M(openafs_contrib.openafs.openafs_build) module will run the OpenAFS
+    C(regen.sh) command to generate the C(configure) script when the
+    C(configure) script is not already present in the I(srcdir).
 
   - Unless the I(configure_options) option is specified, the configure command
     line arguments are determined automatically, based on the platform and
-    M(openafs_build) options.
+    M(openafs_contrib.openafs.openafs_build) options.
 
   - The C(make) program is run to build the binaries. Unless the I(target)
     options is specified, the make target is determined automatically.
@@ -55,7 +55,8 @@ description:
 
   - An installation file tree is created in the I(destdir) directory when the
     I(target) starts with C(install) or C(dest). The files in I(destdir) may
-    be installed with the M(openafs_install_bdist) module.
+    be installed with the M(openafs_contrib.openafs.openafs_install_bdist)
+    module.
 
   - See the C(openafs_devel) role for tasks to install required build tools
     and libraries on various platforms.
@@ -98,7 +99,7 @@ options:
       - The destination directory for C(install) and C(dest) targets and
         variants.
       - The tree staged in this directory may be installed with the
-        M(openafs_install_bdist) module.
+        M(openafs_contrib.openafs.openafs_install_bdist) module.
       - A relative path is relative to the I(builddir). C(DESTDIR) is not
         set when this option is omitted.
     type: path
@@ -314,7 +315,7 @@ destdir:
 
 logdir:
   description: Absolute path to the log files. May be used for
-               M(openafs_install_bdist).
+               M(openafs_contrib.openafs.openafs_install_bdist).
   returned: always
   type: str
   sample: /home/tycobb/projects/myproject/.ansible

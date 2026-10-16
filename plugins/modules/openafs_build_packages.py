@@ -24,10 +24,10 @@ description:
   directory on the remote node. The source distribution files may be created
   with the C(openafs_build_sdist) module.
 
-- The M(openafs_build_packages) module will create the rpm workspace
-  directories and populate the SPECS and SOURCES directories from the source
-  distribution files and the file options, then will build the source and
-  binary rpm files with C(rpmbuild).
+- The M(openafs_contrib.openafs.openafs_build_packages) module will create the
+  rpm workspace directories and populate the SPECS and SOURCES directories
+  from the source distribution files and the file options, then will build
+  the source and binary rpm files with C(rpmbuild).
 
 - The RPM package version and release strings are generated from the OpenAFS
   version string extracted from the C(.version) file in the source archive.
