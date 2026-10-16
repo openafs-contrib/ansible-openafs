@@ -82,10 +82,34 @@ have_extended_keys:
   returned: success
 #  sample: true
 
-keys:
-  description: keys found in the keytab file
+keytab_keys:
+  description: The keys found in the keytab file for the service principal.
   type: list
+  elements: dict
   returned: success
+  contains:
+    principal:
+      description: The principal name, including the realm.
+      type: str
+    realm:
+      description: The realm name.
+      type: str
+    components:
+      description: The components of the principal name.
+      type: list
+      elements: str
+    kvno:
+      description: The key version number.
+      type: int
+    eno:
+      description: The encryption type number.
+      type: int
+    enctype:
+      description: The encryption type name.
+      type: str
+    timestamp:
+      description: The key timestamp, in seconds since the epoch.
+      type: int
 #  sample:
 #    - enctype: aes256-cts-hmac-sha1-96
 #      eno: 18
@@ -190,7 +214,8 @@ def main():
         module.fail_json(msg=msg, keys=keytab.entries)
 
     results["service_principal"] = service_principal
-    results["keys"] = keys
+    results["keytab_keys"] = keys
+    results["keys"] = keys  # Deprecated, use keytab_keys.
 
     # Check asetkey usage to determine how to add keys.
     rc, out, err = module.run_command([asetkey])
