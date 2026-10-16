@@ -11,8 +11,8 @@ DOCUMENTATION = """
       C(ANSIBLE_OPENAFS_COUNTER_DIR) environment variable to specify an
       alternate location.
 
-    - By default, the the M(counter) lookup plugin increments then returns
-      the incremented counter value.
+    - By default, the P(openafs_contrib.openafs.counter#lookup) lookup plugin
+      increments then returns the incremented counter value.
 
     - Specify the C(,current) suffix on the counter name to retrieve the
       current counter value without incrementing the counter.

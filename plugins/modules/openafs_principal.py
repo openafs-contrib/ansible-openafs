@@ -75,6 +75,7 @@ options:
       - Kerberos encryption and salt types.
       - See C(kadmin) documenation for possible values.
     type: list
+    elements: str
     required: false
     aliases:
       - enctype
@@ -783,7 +784,9 @@ def main():
             realm=dict(type="str"),
             password=dict(type="str", no_log=True),
             enctypes=dict(
-                type="list", aliases=["enctype", "encryption_type", "encryption_types", "keysalts"]
+                type="list",
+                elements="str",
+                aliases=["enctype", "encryption_type", "encryption_types", "keysalts"],
             ),
             acl=dict(type="str"),
             keytab_name=dict(type="str"),

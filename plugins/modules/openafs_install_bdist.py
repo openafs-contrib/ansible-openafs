@@ -33,6 +33,7 @@ options:
     description: >
       List of file patterns to be excluded.
     type: list
+    elements: str
     default: []
 
   sysname:
@@ -47,6 +48,7 @@ options:
       - The components to install from a Transarc style distribution.
       - Valid values are C(common), C(client), and C(server).
     type: list
+    elements: str
     default: [common, client, server]
 
   ldconfig:
@@ -479,9 +481,9 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             path=dict(type="path", required=True, aliases=["destdir"]),
-            exclude=dict(type="list", default=[]),
+            exclude=dict(type="list", elements="str", default=[]),
             sysname=dict(type="str", default=None),
-            components=dict(type="list", default=["common", "client", "server"]),
+            components=dict(type="list", elements="str", default=["common", "client", "server"]),
             ldconfig=dict(type="path", default="/sbin/ldconfig"),
             depmod=dict(type="path", default="/sbin/depmod"),
         ),

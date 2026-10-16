@@ -54,6 +54,7 @@ options:
       - The OpenAFS group names the user is a member.
       - Non-system groups will be created.
     type: list
+    elements: str
     default: []
     required: false
     aliases:
@@ -142,12 +143,12 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             state=dict(type="str", choices=["present", "absent"], default="present"),
-            user=dict(type="str", aliases=["name"]),
+            user=dict(type="str", required=True, aliases=["name"]),
             id=dict(type="int", default=0),
-            groups=dict(type="list", default=[], aliases=["group"]),
+            groups=dict(type="list", elements="str", default=[], aliases=["group"]),
             localauth=dict(type="bool", default=False),
             auth_user=dict(type="str", default="admin"),
-            auth_keytab=dict(type="str", default="admin.keytab"),
+            auth_keytab=dict(type="str", default="admin.keytab", no_log=False),
         ),
         supports_check_mode=False,
     )

@@ -95,7 +95,7 @@ def main():
             factsdir=dict(type="path", default="/etc/ansible/facts.d"),
             facts=dict(type="dict", default={}),
         ),
-        supports_check_mode=False,
+        supports_check_mode=True,
     )
     log = Logger(module_name)
     log.info("Starting %s", module_name)
@@ -126,13 +126,14 @@ def main():
         else:
             module.fail_json(msg="Internal error: unknown state %s" % state)
 
-    if not os.path.exists(factsdir):
-        os.makedirs(factsdir)
-    with open(factsfile, "w") as fp:
-        json.dump(facts, fp, indent=2)
+    if not module.check_mode:
+        if not os.path.exists(factsdir):
+            os.makedirs(factsdir)
+        with open(factsfile, "w") as fp:
+            json.dump(facts, fp, indent=2)
 
-    with open(factsfile) as fp:
-        facts = json.load(fp)
+    # Compare the facts as they are read back from the json file.
+    facts = json.loads(json.dumps(facts))
     signature_after = signature(facts)
     if signature_before != signature_after:
         log.info("Facts file '%s' changed.", factsfile)

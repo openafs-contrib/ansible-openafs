@@ -27,12 +27,14 @@ options:
 
   name:
     description: name of the selinux module
+    type: str
     default: openafs
 
   path:
     description:
       - Path to the Type Enforcement (te) and File Context (fc) input files and
         the destination path of the output pp and mod files.
+    type: path
     default: /var/lib/ansible-openafs/selinux
 
 author:
