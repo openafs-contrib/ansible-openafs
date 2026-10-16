@@ -29,6 +29,9 @@ options:
       - C(present) create user and groups when not present
       - C(absent) remove user when not present
     type: str
+    choices:
+      - present
+      - absent
     default: present
 
   user:

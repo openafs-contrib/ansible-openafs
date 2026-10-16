@@ -42,6 +42,9 @@ options:
       - C(present) ensure the principal and keytab file exist.
       - C(absent) ensure the principal and keytab file are removed.
     type: str
+    choices:
+      - present
+      - absent
     required: false
     default: present
 

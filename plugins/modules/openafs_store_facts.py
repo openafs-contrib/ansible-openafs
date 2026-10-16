@@ -26,8 +26,13 @@ description:
 options:
   state:
     description:
-      - c(update) update the facts
+      - C(update) adds the new facts and merges the values of the existing
+        facts.
+      - C(set) adds the new facts and replaces the values of the existing
+        facts.
+    type: str
     choices:
+      - set
       - update
     default: update
 

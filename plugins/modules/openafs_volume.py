@@ -33,6 +33,9 @@ options:
       - C(present) ensure the volume is present, C(absent) ensure the volume is
         removed
     type: str
+    choices:
+      - present
+      - absent
     default: present
     required: no
 

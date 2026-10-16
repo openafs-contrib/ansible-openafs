@@ -28,6 +28,11 @@ options:
       - C(userspace) build the source RPM and the userspace RPMs
       - C(modules) build the source RPM and the kmod RPM
     type: str
+    choices:
+      - all
+      - source
+      - userspace
+      - modules
     default: all
 
   sdist:
