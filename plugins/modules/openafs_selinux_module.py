@@ -32,7 +32,7 @@ options:
     default: /var/lib/ansible-openafs/selinux
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""

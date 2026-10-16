@@ -123,7 +123,7 @@ options:
     default: None
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""

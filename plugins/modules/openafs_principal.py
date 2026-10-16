@@ -92,7 +92,7 @@ options:
     default: search PATH
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""

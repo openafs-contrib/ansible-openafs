@@ -150,7 +150,7 @@ options:
     default: detect
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""

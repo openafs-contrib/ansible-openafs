@@ -33,7 +33,7 @@ options:
     type: list
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""

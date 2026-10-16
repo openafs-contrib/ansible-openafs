@@ -84,7 +84,7 @@ options:
     default: admin.keytab
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""

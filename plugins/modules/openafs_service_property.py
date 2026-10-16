@@ -47,7 +47,7 @@ options:
     default: True
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""

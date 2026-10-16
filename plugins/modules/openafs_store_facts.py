@@ -36,7 +36,7 @@ options:
     default: /etc/ansible/facts.d
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""

@@ -68,7 +68,7 @@ options:
     default: detected
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""

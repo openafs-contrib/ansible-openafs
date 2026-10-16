@@ -31,7 +31,7 @@ DOCUMENTATION = """
           C(next), C(current), C(reset)
         - The default operation is C(next)
       required: True
-  author: Michael Meffie
+  author: Michael Meffie (@meffie)
 """
 
 EXAMPLES = """
