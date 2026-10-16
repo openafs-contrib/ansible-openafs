@@ -651,6 +651,7 @@ class Builder(object):
         self.logfiles.add(logfile)
         with open(logfile, "w") as f:
             with chdir(cwd):
+                # pylint: disable-next=ansible-bad-function
                 proc = subprocess.Popen(command, env=env, stdout=f.fileno(), stderr=f.fileno())
                 rc = proc.wait()
         if rc != 0:
