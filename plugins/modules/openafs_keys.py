@@ -58,7 +58,7 @@ options:
     default: Search the local facts, search the path.
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""

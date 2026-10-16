@@ -21,7 +21,7 @@ description:
 options: {}
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""

@@ -29,7 +29,7 @@ options:
     default: autodetect
 
 author:
-  - Michael Meffie
+  - Michael Meffie (@meffie)
 """
 
 EXAMPLES = r"""
