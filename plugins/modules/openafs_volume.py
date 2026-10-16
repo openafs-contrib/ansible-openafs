@@ -41,6 +41,8 @@ options:
       - Name of the read-write volume.
     type: str
     required: yes
+    aliases:
+      - name
 
   server:
     description:
@@ -96,6 +98,9 @@ options:
         node.
     type: str
     required: no
+    aliases:
+      - mountpoint
+      - mtpt
 
   acl:
     description:

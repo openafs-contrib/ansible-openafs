@@ -35,6 +35,8 @@ options:
     description: The OpenAFS username.
     type: str
     required: true
+    aliases:
+      - name
 
   id:
     description:
@@ -102,7 +104,8 @@ EXAMPLES = r"""
 RETURN = r"""
 user:
   description: User information.
-  type: dictionary
+  type: dict
+  returned: when state is present
 #  sample:
 #    user:
 #      id: 5

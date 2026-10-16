@@ -26,12 +26,42 @@ options:
       Absolute path to the installation file tree to be installed.
     type: path
     required: true
+    aliases:
+      - destdir
 
   exclude:
     description: >
       List of file patterns to be excluded.
     type: list
     default: []
+
+  sysname:
+    description:
+      - The OpenAFS system name, used to find a Transarc style distribution
+        in the C(<sysname>/dest) directory under the I(path).
+      - Any system name is matched when this option is omitted.
+    type: str
+
+  components:
+    description:
+      - The components to install from a Transarc style distribution.
+      - Valid values are C(common), C(client), and C(server).
+    type: list
+    default: [common, client, server]
+
+  ldconfig:
+    description:
+      - The path to the C(ldconfig) program, which is run after shared
+        libraries are installed.
+    type: path
+    default: /sbin/ldconfig
+
+  depmod:
+    description:
+      - The path to the C(depmod) program, which is run after a kernel module
+        is installed.
+    type: path
+    default: /sbin/depmod
 
 author:
   - Michael Meffie (@meffie)
@@ -55,7 +85,7 @@ RETURN = r"""
 msg:
   description: Informational message.
   returned: always
-  type: string
+  type: str
   sample: Install completed
 
 files:

@@ -54,6 +54,19 @@ options:
     type: str
     required: true
 
+  realm:
+    description:
+      - The Kerberos realm name.
+      - The default realm of the KDC is used when this option is omitted.
+    type: str
+
+  password:
+    description:
+      - The initial password of a new principal.
+      - A random key is set and a keytab file is created when this option is
+        omitted.
+    type: str
+
   enctypes:
     description:
       - Kerberos encryption and salt types.
@@ -148,13 +161,13 @@ debug:
 
 kadmin:
   description: kadmin executable path
-  type: path
+  type: str
   returned: always
 #  sample: "/sbin/kadmin.local"
 
 keytab:
   description: Path of the generated keytab on the remote node.
-  type: path
+  type: str
   returned: success
 #  sample: "/var/lib/ansible-openafs/keytabs/afs.example.com.keytab"
 
@@ -167,7 +180,7 @@ principal:
 realm:
   description: realm name
   type: str
-  return: when present in the principal parameter
+  returned: when present in the principal parameter
 #  sample: EXAMPLE.COM
 """
 

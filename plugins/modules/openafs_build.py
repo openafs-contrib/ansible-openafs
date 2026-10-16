@@ -64,12 +64,19 @@ requirements:
   - tools and libraries required to build OpenAFS
 
 options:
+  state:
+    description:
+      - This option is not used.
+    type: str
+
   srcdir:
     description:
       - Source files must have been previously checkout or copied to this
         path.
     required: true
     type: path
+    aliases:
+      - projectdir
 
   builddir:
     description:
@@ -109,6 +116,12 @@ options:
     type: bool
     default: false
 
+  fakeroot:
+    description:
+      - The path to a program to run C(make) with, such as C(fakeroot).
+      - C(make) is run directly when this option is omitted.
+    type: path
+
   make:
     description:
       - The C(make) program to be executed.
@@ -128,6 +141,9 @@ options:
       - The I(version) will be written to the C(.version) file, overwritting
         the current contents, if any.
     type: str
+    aliases:
+      - version
+      - with_version
 
   configure_options:
     description:
@@ -148,6 +164,88 @@ options:
       - The make target will be determined automatically when this option is
         omitted.
     type: str
+
+  with_transarc_paths:
+    description:
+      - Build with Transarc style paths (C(--enable-transarc-paths)).
+      - Deprecated, use I(configure_options) instead. This option is
+        ignored when I(configure_options) is set.
+    type: bool
+    default: false
+    aliases:
+      - transarc_paths
+
+  with_debug_symbols:
+    description:
+      - Build with debug symbols (C(--enable-debug),
+        C(--disable-optimize), C(--disable-strip-binaries)), and the kernel
+        module with debug symbols (C(--enable-debug-kernel),
+        C(--disable-optimize-kernel)).
+      - Deprecated, use I(configure_options) instead. This option is
+        ignored when I(configure_options) is set.
+    type: bool
+    default: true
+
+  with_rxgk:
+    description:
+      - Build with rxgk support (C(--enable-rxgk)).
+      - Deprecated, use I(configure_options) instead. This option is
+        ignored when I(configure_options) is set.
+    type: bool
+    default: false
+
+  build_userspace:
+    description:
+      - Build the userspace programs.
+      - Deprecated, use I(configure_options) instead. This option is
+        ignored when I(configure_options) is set.
+    type: bool
+    default: true
+
+  build_module:
+    description:
+      - Build the kernel module (C(--enable-kernel-module)).
+      - Deprecated, use I(configure_options) instead. This option is
+        ignored when I(configure_options) is set.
+    type: bool
+    default: true
+
+  build_terminal_programs:
+    description:
+      - Build the terminal programs. C(--disable-gtx) is
+        used when false.
+      - Deprecated, use I(configure_options) instead. This option is
+        ignored when I(configure_options) is set.
+    type: bool
+    default: true
+
+  build_fuse_client:
+    description:
+      - Build the FUSE client. C(--disable-fuse-client) is
+        used when false.
+      - Deprecated, use I(configure_options) instead. This option is
+        ignored when I(configure_options) is set.
+    type: bool
+    default: true
+
+  build_bindings:
+    description:
+      - Build the language bindings. C(--without-swig) is
+        used when false.
+      - Deprecated, use I(configure_options) instead. This option is
+        ignored when I(configure_options) is set.
+    type: bool
+    default: true
+
+  build_manpages:
+    description:
+      - Generate the man pages when running C(regen.sh). C(regen.sh) is run
+        with C(-q) when false.
+      - Deprecated.
+    type: bool
+    default: true
+    aliases:
+      - manpages
 
 author:
   - Michael Meffie (@meffie)
@@ -199,26 +297,26 @@ RETURN = r"""
 srcdir:
   description: Absolute path to the project directory.
   returned: always
-  type: string
+  type: str
   sample: /home/tycobb/projects/myproject
 
 builddir:
   description: Absolute path to the build directory
   returned: always
-  type: string
+  type: str
   sample: /home/tycobb/projects/myproject
 
 destdir:
   description: Absolute path to the installation files.
   returned: when destdir is specified
-  type: string
+  type: str
   sample: /home/tycobb/projects/myproject/packages/install_root
 
 logdir:
   description: Absolute path to the log files. May be used for
                M(openafs_install_bdist).
-  return: always
-  type: string
+  returned: always
+  type: str
   sample: /home/tycobb/projects/myproject/.ansible
 
 logfiles:
@@ -953,7 +1051,7 @@ def main():
             # DEPRECATED! Use configure_options.
             with_transarc_paths=dict(type="bool", default=False, aliases=["transarc_paths"]),
             with_debug_symbols=dict(type="bool", default=True),
-            with_rxgk=dict(type="bool", defaults=False),
+            with_rxgk=dict(type="bool", default=False),
             build_manpages=dict(type="bool", default=True, aliases=["manpages"]),
             build_userspace=dict(type="bool", default=True),
             build_module=dict(type="bool", default=True),
