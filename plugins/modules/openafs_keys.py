@@ -34,6 +34,7 @@ options:
     description: c(present) to ensure keys are present in the keyfile(s)
     required: false
     type: str
+    default: present
 
   keytab:
     description: path to the keytab file on the remote node
@@ -46,10 +47,11 @@ options:
     type: str
 
   realm:
-    description: Kerberos realm name
+    description:
+      - Kerberos realm name
+      - Defaults to the cell name in uppercase.
     required: false
     type: str
-    default: uppercase of the cell name
 
   asetkey:
     description: asetkey program path

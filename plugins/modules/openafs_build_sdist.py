@@ -40,32 +40,37 @@ options:
   topdir:
     description: git project directory on the remote node.
     type: path
-    default: C(openafs)
+    default: openafs
 
   tar:
-    description: C(tar) program path
+    description:
+      - C(tar) program path
+      - Defaults to the C(tar) program found in the C(PATH).
     type: path
-    default: detected
 
   git:
-    description: C(git) program path
+    description:
+      - C(git) program path
+      - Defaults to the C(git) program found in the C(PATH).
     type: path
-    default: detected
 
   gzip:
-    description: C(gzip) program path
+    description:
+      - C(gzip) program path
+      - Defaults to the C(gzip) program found in the C(PATH).
     type: path
-    default: detected
 
   bzip2:
-    description: C(bzip2) program path
+    description:
+      - C(bzip2) program path
+      - Defaults to the C(bzip2) program found in the C(PATH).
     type: path
-    default: detected
 
   md5sum:
-    description: C(md5sum) program path
+    description:
+      - C(md5sum) program path
+      - Defaults to the C(md5sum) program found in the C(PATH).
     type: path
-    default: detected
 
 author:
   - Michael Meffie (@meffie)

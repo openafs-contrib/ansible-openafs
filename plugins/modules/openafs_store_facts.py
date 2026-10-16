@@ -29,6 +29,7 @@ options:
       - c(update) update the facts
     choices:
       - update
+    default: update
 
   factsdir:
     description: Path to the c(openafs.fact) file

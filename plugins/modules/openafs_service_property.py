@@ -23,6 +23,7 @@ options:
     description:
       - If C(present) the C(property) will be set to the given C(value).
       - If C(absent) the C(property) will be deleted.
+    default: present
 
   service:
     description: The SMF service name.
