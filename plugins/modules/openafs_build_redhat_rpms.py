@@ -422,10 +422,10 @@ def rpmbuild(topdir, build='all', kernvers=None):
         args.append('-ba')
         args.extend(['--define', 'build_userspace 1'])
         args.extend(['--define', 'build_modules 0'])
-    elif build == 'module':
+    elif build == 'modules':
         args.append('-ba')
         args.extend(['--define', 'build_userspace 0'])
-        args.extend(['--define', 'build_modules 0'])
+        args.extend(['--define', 'build_modules 1'])
     if build != 'source' and kernvers:
         args.extend(['--define', 'kernvers %s' % kernvers])
     args.append(os.path.join(topdir, 'SPECS', 'openafs.spec'))
