@@ -34,6 +34,8 @@ options:
     description: c(present) to ensure keys are present in the keyfile(s)
     required: false
     type: str
+    choices:
+      - present
     default: present
 
   keytab:

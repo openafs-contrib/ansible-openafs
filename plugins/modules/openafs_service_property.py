@@ -23,22 +23,30 @@ options:
     description:
       - If C(present) the C(property) will be set to the given C(value).
       - If C(absent) the C(property) will be deleted.
+    type: str
+    choices:
+      - present
+      - absent
     default: present
 
   service:
     description: The SMF service name.
+    type: str
     required: True
 
   instance:
     description: The SMF service instance name.
+    type: str
     default: "default"
 
   property:
     description: The property name.
+    type: str
     required: True
 
   value:
-    description: The property value. Requiried when C(state) is C(present).
+    description: The property value. Required when C(state) is C(present).
+    type: str
 
   single:
     description:

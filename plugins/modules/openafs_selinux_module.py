@@ -20,6 +20,9 @@ options:
 
   state:
     description: c(present) is currently the only supported state.
+    type: str
+    choices:
+      - present
     default: present
 
   name:
