@@ -49,6 +49,7 @@ options:
       - The OpenAFS group names the user is a member.
       - Non-system groups will be created.
     type: list
+    default: []
     required: false
     aliases:
       - group

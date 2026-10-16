@@ -60,7 +60,6 @@ options:
       - See C(kadmin) documenation for possible values.
     type: list
     required: false
-    default: See C(kadmin)
     aliases:
       - enctype
       - encryption_type
@@ -71,25 +70,28 @@ options:
     description: Administrative permissions
     type: str
     required: false
-    default: None
 
   keytab_name:
-    description: Alternative keytab name.
+    description:
+      - Alternative keytab name.
+      - Defaults to the principal name without the realm, with C(/) replaced
+        by C(.), and with a C(.keytab) extension.
     type: str
-    requried: false
-    default: principal name with '/' characters replaced by '.' characters.
+    required: false
 
   keytabs:
-    desciption: Keytab storage directory on the KDC
+    description:
+      - Keytab storage directory on the KDC
+      - Defaults to C(/var/lib/ansible-openafs/keytabs).
     type: path
     required: false
-    default: C(/var/lib/ansible-openafs/keytabs)
 
   kadmin:
-    desciption: Path to the C(kadmin.local) command
+    description:
+      - Path to the C(kadmin.local) command
+      - Defaults to the C(kadmin.local) program found in the C(PATH).
     type: path
     required: false
-    default: search PATH
 
 author:
   - Michael Meffie (@meffie)

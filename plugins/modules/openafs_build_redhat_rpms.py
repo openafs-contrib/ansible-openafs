@@ -48,7 +48,6 @@ options:
       to build the rpm files. The C(openafs.spec) file will be extracted from
       the source archive file when the I(spec) option is not provided.
     type: path
-    default: None
 
   relnotes:
     description:
@@ -59,7 +58,6 @@ options:
       extracted from the source archive if the C(RELNOTES-<version>) file is
       not found in the I(sdist) directory.
     type: path
-    default: None
 
   changelog:
     description:
@@ -69,7 +67,6 @@ options:
       C(changelog) option is not specified.  An empty C(ChangeLog) file will be
       created if the  C(ChangeLog) is not found in the I(sdist) directory,
     type: path
-    default: None
 
   csdb:
     description:
@@ -80,7 +77,6 @@ options:
       from the source archive if the C(CellServDB) file is not found in the
       I(sdist) directory.
     type: path
-    default: None
 
   patchdir:
     description:
@@ -88,39 +84,38 @@ options:
       be applied.
     - Patch names are identified by the C(PatchXX) directives in the spec
       file.
+    - Defaults to the I(sdist) directory.
     type: path
-    default: I(sdist)
 
   kernvers:
     description:
     - The kernel version to be used when building the kernel module. By
       default, the kernel version of the running kernel will be used.
     type: str
-    default: current kernel version
 
   topdir:
     description:
       - The top level rpmbuild workspace directory on the remote node.
     type: path
-    default: C(~/rpmbuild)
+    default: ~/rpmbuild
 
   logdir:
     description:
       - The path to write build log files on the remote node.
+      - Defaults to I(topdir)/C(BUILD).
     type: path
-    default: I(topdir)/C(BUILD)
 
   tar:
     description:
       - The C(tar) program used to unpack the source archive.
+      - Defaults to the C(tar) program found in the C(PATH).
     type: path
-    default: C(tar)
 
   tar_extra_options:
     description:
       - Extra command line options to unpack the source archive.
     type: str
-    default: None
+    default: ''
 
 author:
   - Michael Meffie (@meffie)

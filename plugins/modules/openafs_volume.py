@@ -33,8 +33,8 @@ options:
       - C(present) ensure the volume is present, C(absent) ensure the volume is
         removed
     type: str
+    default: present
     required: no
-    default: <present>
 
   volume:
     description:
@@ -52,7 +52,6 @@ options:
         server.
       - This option is ignored when the state is C(absent).
     type: str
-    default: first fileserver entry found in VLDB
 
   partition:
     description:
@@ -69,7 +68,6 @@ options:
       - This option is ignored when the state is C(absent).
 
     type: str
-    default: the first partition found on the fileserver
 
   mount:
     description:
@@ -112,7 +110,8 @@ options:
       - This option may only be used if a client is installed on the remote
         node.
 
-    type: str
+    type: list
+    default: []
     required: no
     aliases:
       - acls

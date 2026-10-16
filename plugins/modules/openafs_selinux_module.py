@@ -20,6 +20,7 @@ options:
 
   state:
     description: c(present) is currently the only supported state.
+    default: present
 
   name:
     description: name of the selinux module
@@ -85,7 +86,7 @@ def main():
         argument_spec=dict(
             state=dict(type="str", choices=["present"], default="present"),
             name=dict(type="str", default="openafs"),
-            path=dict(type="path", default="/var/lib/ansible-openafs"),
+            path=dict(type="path", default="/var/lib/ansible-openafs/selinux"),
         ),
         supports_check_mode=False,
     )

@@ -74,7 +74,7 @@ options:
   builddir:
     description:
       - The path for out-of-tree builds.
-    default: <srcdir>
+      - Defaults to the I(srcdir).
     type: path
 
   logdir:
@@ -83,8 +83,8 @@ options:
       - The logdir may be a subdirectory of the C(srcdir).
       - The logdir may not be a subdirectory of the C(builddir) when doing
         an out-of-tree build.
+      - Defaults to I(builddir)/C(.ansible).
     type: path
-    default: <srcdir>/.ansible
 
   destdir:
     description:
@@ -92,7 +92,8 @@ options:
         variants.
       - The tree staged in this directory may be installed with the
         M(openafs_install_bdist) module.
-    default: <srcdir>/packages/install_root
+      - A relative path is relative to the I(builddir). C(DESTDIR) is not
+        set when this option is omitted.
     type: path
 
   clean:
@@ -111,14 +112,14 @@ options:
   make:
     description:
       - The C(make) program to be executed.
+      - Defaults to the C(make) program found in the C(PATH).
     type: path
-    default: detect
 
   jobs:
     description:
       - Number of parallel make processes.
       - Set this to 0 to disable parallel make.
-    default: the number of CPUs on the system
+      - Defaults to the number of CPUs on the system.
     type: int
 
   as_version:
@@ -147,7 +148,6 @@ options:
       - The make target will be determined automatically when this option is
         omitted.
     type: str
-    default: detect
 
 author:
   - Michael Meffie (@meffie)

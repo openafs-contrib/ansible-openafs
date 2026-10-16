@@ -31,6 +31,7 @@ options:
     description: >
       List of file patterns to be excluded.
     type: list
+    default: []
 
 author:
   - Michael Meffie (@meffie)
