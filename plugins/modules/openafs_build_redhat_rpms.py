@@ -430,6 +430,7 @@ def rpmbuild(topdir, build="all", kernvers=None):
     logfile = os.path.join(logdir, "rpmbuild.log")
     with open(logfile, "w") as f:
         log.info("Running: %s > %s" % (" ".join(args), logfile))
+        # pylint: disable-next=ansible-bad-function
         proc = subprocess.Popen(args, stdout=f.fileno(), stderr=f.fileno())
         rc = proc.wait()
     log.info("rpmbuild rc=%d", rc)
