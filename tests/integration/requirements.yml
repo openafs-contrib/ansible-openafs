@@ -1,0 +1,4 @@
+---
+# Collections required by the molecule podman driver.
+collections:
+  - name: containers.podman

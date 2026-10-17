@@ -7,6 +7,20 @@ skip = [
     "devel",
     "milestone",
 ]
+# Only the krbserver scenario is ready to run.
+molecule_commands = [
+    "python3 -m molecule test -s role_openafs_krbserver_default",
+]
+
+# Pass the variables needed to run rootless podman, and the test settings.
+[tool.tox.env_run_base]
+pass_env = [
+    "GITHUB_TOKEN",
+    "XDG_RUNTIME_DIR",
+    "DBUS_SESSION_BUS_ADDRESS",
+    "CONTAINER_HOST",
+    "AFS_*",
+]
 
 [tool.tox.env.format]
 description = "Format the python code with black"
