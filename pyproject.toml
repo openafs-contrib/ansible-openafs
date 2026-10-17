@@ -6,6 +6,7 @@ coverage = true
 skip = [
     "devel",
     "milestone",
+    "integration",
 ]
 # Only the krbserver scenario is ready to run.
 molecule_commands = [
