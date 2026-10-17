@@ -1,0 +1,50 @@
+---
+#
+# Create the source distribution archive for the sdist install method. The
+# release source files are downloaded on the instance and verified with the
+# published checksums, so nothing is saved on the controller.
+#
+# Variables:
+#
+#   test_openafs_version: the OpenAFS release version
+#   test_sdist_url: the download location of the source distribution files
+#   afs_install_archive: the archive to create on the instance
+#
+- name: Create the source distribution archive
+  hosts: all
+  tasks:
+    - name: Create the source distribution archive
+      when: afs_install_method == 'sdist'
+      vars:
+        sdist_dir: /tmp/openafs-sdist
+      block:
+        - name: Install tar
+          become: true
+          ansible.builtin.package:
+            name:
+              - tar
+              - gzip
+            state: present
+
+        - name: Create the download directory
+          ansible.builtin.file:
+            state: directory
+            path: "{{ sdist_dir }}"
+            mode: "0755"
+
+        - name: Download the source distribution files
+          vars:
+            file: "openafs-{{ test_openafs_version }}-{{ item }}.tar.gz"
+          ansible.builtin.get_url:
+            url: "{{ test_sdist_url }}/{{ file }}"
+            dest: "{{ sdist_dir }}/{{ file }}"
+            checksum: "sha256:{{ test_sdist_url }}/{{ file }}.sha256"
+            mode: "0644"
+          loop:
+            - src
+            - doc
+
+        - name: Create the source distribution archive
+          ansible.builtin.command:
+            cmd: "tar czf {{ afs_install_archive }} -C {{ sdist_dir }} ."
+            creates: "{{ afs_install_archive }}"

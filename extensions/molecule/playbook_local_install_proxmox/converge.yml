@@ -1,0 +1,6 @@
+---
+# The inventory connection variables override the playbook 'connection: local'.
+- name: Converge
+  ansible.builtin.import_playbook: openafs_contrib.openafs.local_install
+  vars:
+    afs_local_hosts: all

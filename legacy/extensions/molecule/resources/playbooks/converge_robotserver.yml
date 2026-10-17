@@ -1,3 +1,0 @@
----
-- name: Run our deploy robot server playbook.
-  ansible.builtin.import_playbook: openafs_contrib.openafs.deploy_robotserver

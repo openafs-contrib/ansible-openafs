@@ -1,0 +1,10 @@
+---
+- name: Find the kernel version
+  ansible.builtin.import_playbook: ../utils/playbooks/kernel_version.yml
+
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Install the kernel module development packages
+      ansible.builtin.import_role:
+        name: openafs_contrib.openafs.openafs_devel_kernel

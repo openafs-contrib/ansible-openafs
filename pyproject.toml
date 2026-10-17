@@ -6,6 +6,17 @@ coverage = true
 skip = [
     "devel",
     "milestone",
+    "integration",
+]
+
+# Pass the variables needed to run rootless podman, and the test settings.
+[tool.tox.env_run_base]
+pass_env = [
+    "GITHUB_TOKEN",
+    "XDG_RUNTIME_DIR",
+    "DBUS_SESSION_BUS_ADDRESS",
+    "CONTAINER_HOST",
+    "AFS_*",
 ]
 
 [tool.tox.env.format]
@@ -13,6 +24,12 @@ description = "Format the python code with black"
 skip_install = true
 deps = ["black"]
 commands = [["black", "plugins", "tests"]]
+
+[tool.tox.env.lint]
+description = "Lint the playbooks and roles with ansible-lint"
+skip_install = true
+deps = ["ansible-lint"]
+commands = [["ansible-lint", {replace = "posargs", extend = true}]]
 
 [tool.tox.env.images]
 description = "Build podman images for molecule tests"

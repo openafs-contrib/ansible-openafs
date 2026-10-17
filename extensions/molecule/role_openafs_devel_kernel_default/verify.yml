@@ -1,0 +1,16 @@
+---
+- name: Find the kernel version
+  ansible.builtin.import_playbook: ../utils/playbooks/kernel_version.yml
+
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Check the kernel headers are installed
+      ansible.builtin.stat:
+        path: "{{ test_kernel_headers_dir }}/Makefile"
+      register: makefile
+
+    - name: Verify the kernel headers are installed
+      ansible.builtin.assert:
+        that:
+          - makefile.stat.exists

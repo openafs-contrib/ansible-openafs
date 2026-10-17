@@ -1,16 +1,19 @@
 exclude_paths:
   - .ansible/
+  - legacy/
 
 skip_list:
   - command-instead-of-module
   - deprecated-bare-vars
   - fqcn[action]
   - fqcn[action-core]
+  - galaxy[no-changelog]
   - name[casing]
   - name[play]
   - no-handler
   - package-latest
   - risky-file-permissions
+  - sanity[cannot-ignore]
   - unnamed-task
   - var-naming[no-reserved]
   - var-naming[no-role-prefix]

@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Load the common definitions
+      ansible.builtin.import_role:
+        name: openafs_contrib.openafs.openafs_common

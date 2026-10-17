@@ -1,0 +1,51 @@
+---
+#
+# Create the rpm package archive for the packages install method. The release
+# rpm files are downloaded on the instance, so nothing is saved on the
+# controller.
+#
+# Variables:
+#
+#   test_openafs_version: the OpenAFS release version
+#   test_rpms_url: the download location of the rpm files
+#   test_rpms: the names of the rpm packages to download; the kmod-openafs
+#              package is downloaded for the running kernel
+#   afs_install_archive: the archive to create on the instance
+#
+- name: Create the rpm package archive
+  hosts: all
+  tasks:
+    - name: Create the rpm package archive
+      when: afs_install_method == 'packages'
+      vars:
+        rpms_dir: /tmp/openafs-rpms
+        release: "{{ test_openafs_version }}-1.el{{ ansible_facts.distribution_major_version }}.{{ ansible_facts.architecture }}"
+        kmod_release: "{{ test_openafs_version }}-1.{{ ansible_facts.kernel | replace('-', '_') }}"
+      block:
+        - name: Install tar
+          become: true
+          ansible.builtin.package:
+            name:
+              - tar
+              - gzip
+            state: present
+
+        - name: Create the rpm download directory
+          ansible.builtin.file:
+            state: directory
+            path: "{{ rpms_dir }}"
+            mode: "0755"
+
+        - name: Download the rpm files
+          vars:
+            rpm: "{{ item }}-{{ (item == 'kmod-openafs') | ternary(kmod_release, release) }}.rpm"
+          ansible.builtin.get_url:
+            url: "{{ test_rpms_url }}/{{ rpm }}"
+            dest: "{{ rpms_dir }}/{{ rpm }}"
+            mode: "0644"
+          loop: "{{ test_rpms }}"
+
+        - name: Create the rpm archive
+          ansible.builtin.command:
+            cmd: "tar czf {{ afs_install_archive }} -C {{ rpms_dir }} ."
+            creates: "{{ afs_install_archive }}"

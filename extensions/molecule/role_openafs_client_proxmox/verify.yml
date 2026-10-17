@@ -1,0 +1,39 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Verify the install method
+      ansible.builtin.assert:
+        that:
+          - ansible_local.openafs.install_method == afs_install_method
+          - ansible_local.openafs.client_installed
+
+    - name: Get the loaded kernel modules
+      ansible.builtin.command:
+        cmd: cat /proc/modules
+      changed_when: false
+      register: modules
+
+    - name: Verify the OpenAFS kernel module is loaded
+      ansible.builtin.assert:
+        that:
+          - modules.stdout is regex('^(openafs|libafs) ', multiline=True)
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Verify the OpenAFS client service is running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services[ansible_local.openafs.client_service_name ~ '.service'].state == 'running'
+
+    - name: Get the mounted filesystems
+      ansible.builtin.command:
+        cmd: cat /proc/mounts
+      changed_when: false
+      register: mounts
+
+    - name: Verify AFS is mounted
+      ansible.builtin.assert:
+        that:
+          - mounts.stdout is regex('^AFS /afs afs ', multiline=True)
