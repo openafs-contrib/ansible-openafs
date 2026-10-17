@@ -1,0 +1,35 @@
+---
+driver:
+  name: podman
+platforms:
+  - name: m-role-krbserver${AFS_TESTID}
+    image: localhost/ansible-openafs-${AFS_TEST_OS:-alma9}
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: molecule
+    extra_opts:
+      - --no-hosts
+    groups:
+      - afs_kdcs
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: ../utils/playbooks/prepare.yml
+  inventory:
+    group_vars:
+      all:
+        ansible_user: root
+        ansible_pipelining: true
+        afs_realm: "${AFS_REALM:-EXAMPLE.COM}"
+        afs_realm_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
