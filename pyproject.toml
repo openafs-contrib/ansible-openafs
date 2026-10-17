@@ -14,5 +14,32 @@ skip_install = true
 deps = ["black"]
 commands = [["black", "plugins", "tests"]]
 
+[tool.tox.env.images]
+description = "Build podman images for molecule tests"
+skip_install = true
+allowlist_externals = ["podman"]
+commands = [
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-alma8", "-f", "containers/alma8/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-alma9", "-f", "containers/alma9/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-alma10", "-f", "containers/alma10/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-centos9", "-f", "containers/centos9/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-centos10", "-f", "containers/centos10/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-debian12", "-f", "containers/debian12/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-debian13", "-f", "containers/debian13/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-fedora43", "-f", "containers/fedora43/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-fedora44", "-f", "containers/fedora44/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-opensuse15", "-f", "containers/opensuse15/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-opensuse16", "-f", "containers/opensuse16/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-oracle8", "-f", "containers/oracle8/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-oracle9", "-f", "containers/oracle9/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-oracle10", "-f", "containers/oracle10/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-rocky8", "-f", "containers/rocky8/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-rocky9", "-f", "containers/rocky9/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-rocky10", "-f", "containers/rocky10/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-ubuntu22", "-f", "containers/ubuntu22/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-ubuntu24", "-f", "containers/ubuntu24/Containerfile"],
+    ["podman", "build", "--no-hosts", "-t", "localhost/ansible-openafs-ubuntu26", "-f", "containers/ubuntu26/Containerfile"]
+]
+
 [tool.black]
 line-length = 100
