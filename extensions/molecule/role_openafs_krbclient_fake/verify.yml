@@ -1,0 +1,29 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Read the fake package log
+      ansible.builtin.slurp:
+        src: /var/log/ansible-fake-packages.log
+      register: fake_log
+
+    - name: Verify the Kerberos client package was requested
+      vars:
+        requests: "{{ (fake_log.content | b64decode).splitlines() | map('from_json') }}"
+      ansible.builtin.assert:
+        that:
+          - "'krb5-workstation' in (requests | map(attribute='name') | flatten)"
+
+    - name: Read krb5.conf
+      ansible.builtin.slurp:
+        src: /etc/krb5.conf
+      register: krb5_conf
+
+    - name: Verify krb5.conf
+      vars:
+        content: "{{ krb5_conf.content | b64decode }}"
+      ansible.builtin.assert:
+        that:
+          - "'default_realm = EXAMPLE.COM' in content"
+          - "'kdc = kdc.example.com' in content"
+          - "'admin_server = kdc.example.com' in content"
