@@ -1,0 +1,162 @@
+---
+driver:
+  name: podman
+platforms:
+  - &kdc
+    name: krbclient-alma9-kdc
+    image: localhost/ansible-openafs-alma9
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: molecule
+    extra_opts:
+      - --no-hosts
+    groups:
+      - afs_kdcs
+  - &client
+    <<: *kdc
+    name: krbclient-alma9
+    groups:
+      - afs_clients
+  - <<: *kdc
+    name: krbclient-alma10-kdc
+    image: localhost/ansible-openafs-alma10
+  - <<: *client
+    name: krbclient-alma10
+    image: localhost/ansible-openafs-alma10
+  - <<: *kdc
+    name: krbclient-alma8-kdc
+    image: localhost/ansible-openafs-alma8
+  - <<: *client
+    name: krbclient-alma8
+    image: localhost/ansible-openafs-alma8
+  - <<: *kdc
+    name: krbclient-centos10-kdc
+    image: localhost/ansible-openafs-centos10
+  - <<: *client
+    name: krbclient-centos10
+    image: localhost/ansible-openafs-centos10
+  - <<: *kdc
+    name: krbclient-centos9-kdc
+    image: localhost/ansible-openafs-centos9
+  - <<: *client
+    name: krbclient-centos9
+    image: localhost/ansible-openafs-centos9
+  - <<: *kdc
+    name: krbclient-debian12-kdc
+    image: localhost/ansible-openafs-debian12
+  - <<: *client
+    name: krbclient-debian12
+    image: localhost/ansible-openafs-debian12
+  - <<: *kdc
+    name: krbclient-debian13-kdc
+    image: localhost/ansible-openafs-debian13
+  - <<: *client
+    name: krbclient-debian13
+    image: localhost/ansible-openafs-debian13
+  - <<: *kdc
+    name: krbclient-fedora43-kdc
+    image: localhost/ansible-openafs-fedora43
+  - <<: *client
+    name: krbclient-fedora43
+    image: localhost/ansible-openafs-fedora43
+  - <<: *kdc
+    name: krbclient-fedora44-kdc
+    image: localhost/ansible-openafs-fedora44
+  - <<: *client
+    name: krbclient-fedora44
+    image: localhost/ansible-openafs-fedora44
+  - <<: *kdc
+    name: krbclient-opensuse15-kdc
+    image: localhost/ansible-openafs-opensuse15
+  - <<: *client
+    name: krbclient-opensuse15
+    image: localhost/ansible-openafs-opensuse15
+  - <<: *kdc
+    name: krbclient-opensuse16-kdc
+    image: localhost/ansible-openafs-opensuse16
+  - <<: *client
+    name: krbclient-opensuse16
+    image: localhost/ansible-openafs-opensuse16
+  - <<: *kdc
+    name: krbclient-oracle10-kdc
+    image: localhost/ansible-openafs-oracle10
+  - <<: *client
+    name: krbclient-oracle10
+    image: localhost/ansible-openafs-oracle10
+  - <<: *kdc
+    name: krbclient-oracle8-kdc
+    image: localhost/ansible-openafs-oracle8
+  - <<: *client
+    name: krbclient-oracle8
+    image: localhost/ansible-openafs-oracle8
+  - <<: *kdc
+    name: krbclient-oracle9-kdc
+    image: localhost/ansible-openafs-oracle9
+  - <<: *client
+    name: krbclient-oracle9
+    image: localhost/ansible-openafs-oracle9
+  - <<: *kdc
+    name: krbclient-rocky10-kdc
+    image: localhost/ansible-openafs-rocky10
+  - <<: *client
+    name: krbclient-rocky10
+    image: localhost/ansible-openafs-rocky10
+  - <<: *kdc
+    name: krbclient-rocky8-kdc
+    image: localhost/ansible-openafs-rocky8
+  - <<: *client
+    name: krbclient-rocky8
+    image: localhost/ansible-openafs-rocky8
+  - <<: *kdc
+    name: krbclient-rocky9-kdc
+    image: localhost/ansible-openafs-rocky9
+  - <<: *client
+    name: krbclient-rocky9
+    image: localhost/ansible-openafs-rocky9
+  - <<: *kdc
+    name: krbclient-ubuntu22-kdc
+    image: localhost/ansible-openafs-ubuntu22
+  - <<: *client
+    name: krbclient-ubuntu22
+    image: localhost/ansible-openafs-ubuntu22
+  - <<: *kdc
+    name: krbclient-ubuntu24-kdc
+    image: localhost/ansible-openafs-ubuntu24
+  - <<: *client
+    name: krbclient-ubuntu24
+    image: localhost/ansible-openafs-ubuntu24
+  - <<: *kdc
+    name: krbclient-ubuntu26-kdc
+    image: localhost/ansible-openafs-ubuntu26
+  - <<: *client
+    name: krbclient-ubuntu26
+    image: localhost/ansible-openafs-ubuntu26
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      forks: 40
+  playbooks:
+    prepare: ../utils/playbooks/prepare.yml
+  inventory:
+    group_vars:
+      all:
+        ansible_user: root
+        ansible_pipelining: true
+        afs_realm: EXAMPLE.COM
+        # Each client uses the KDC for the same operating system.
+        afs_os_name: "{{ inventory_hostname | regex_replace('-kdc$$', '') }}"
+        afs_kdc_servers: "{{ afs_os_name }}-kdc"
+        afs_kadmin_server: "{{ afs_os_name }}-kdc"
+        afs_realm_files: "${MOLECULE_EPHEMERAL_DIRECTORY}/{{ afs_os_name }}"
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
