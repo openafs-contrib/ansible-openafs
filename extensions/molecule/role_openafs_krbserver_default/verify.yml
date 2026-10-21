@@ -1,0 +1,37 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Verify the kerberos services are running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services[item ~ '.service'].state == 'running'
+      loop:
+        - "{{ ansible_local.openafs.krbserver.kdc_service }}"
+        - "{{ ansible_local.openafs.krbserver.admin_service }}"
+
+    # kadmin.local is installed in the same directory as kdb5_util.
+    - name: Get the admin principal
+      ansible.builtin.command:
+        cmd: "{{ ansible_local.openafs.bins.kdb5_util | dirname }}/kadmin.local -q 'getprinc root/admin'"
+      changed_when: false
+      register: getprinc
+
+    - name: Verify the admin principal exists
+      ansible.builtin.assert:
+        that:
+          - "('Principal: root/admin@' ~ afs_realm) in getprinc.stdout"
+
+    - name: Check the admin keytab was downloaded
+      ansible.builtin.stat:
+        path: "{{ afs_realm_files }}/root.admin.keytab"
+      delegate_to: localhost
+      register: keytab
+
+    - name: Verify the admin keytab was downloaded
+      ansible.builtin.assert:
+        that:
+          - keytab.stat.exists
