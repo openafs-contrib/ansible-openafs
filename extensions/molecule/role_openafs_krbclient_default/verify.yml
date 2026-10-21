@@ -1,0 +1,25 @@
+---
+- name: Verify
+  hosts: afs_clients
+  tasks:
+    - name: Copy the admin keytab to the client
+      ansible.builtin.copy:
+        src: "{{ afs_realm_files }}/root.admin.keytab"
+        dest: /tmp/root.admin.keytab
+        mode: "0600"
+
+    - name: Get a ticket for the admin principal from the KDC
+      ansible.builtin.command:
+        cmd: "{{ ansible_local.openafs.bins.kinit }} -k -t /tmp/root.admin.keytab root/admin"
+      changed_when: false
+
+    - name: List the principals with kadmin
+      ansible.builtin.command:
+        cmd: "{{ ansible_local.openafs.bins.kadmin }} -k -t /tmp/root.admin.keytab -p root/admin -q listprincs"
+      changed_when: false
+      register: listprincs
+
+    - name: Verify the admin principal is listed
+      ansible.builtin.assert:
+        that:
+          - "('root/admin@' ~ afs_realm) in listprincs.stdout_lines"

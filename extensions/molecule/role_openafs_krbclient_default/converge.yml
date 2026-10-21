@@ -1,0 +1,14 @@
+---
+- name: Converge the Kerberos servers
+  hosts: afs_kdcs
+  tasks:
+    - name: Install and configure the Kerberos server
+      ansible.builtin.import_role:
+        name: openafs_contrib.openafs.openafs_krbserver
+
+- name: Converge the Kerberos clients
+  hosts: afs_clients
+  tasks:
+    - name: Install and configure the Kerberos client
+      ansible.builtin.import_role:
+        name: openafs_contrib.openafs.openafs_krbclient
