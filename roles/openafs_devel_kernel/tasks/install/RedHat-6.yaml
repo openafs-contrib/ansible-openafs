@@ -30,17 +30,17 @@
 
 - name: "RedHat-6: Show query results."
   debug:
-    msg: "kernel-devel package is already installed for {{ ansible_kernel }}."
-  when: ansible_kernel in rpm_query.stdout_lines
+    msg: "kernel-devel package is already installed for {{ afs_kernel_version }}."
+  when: afs_kernel_version in rpm_query.stdout_lines
 
 - name: "RedHat-6: Install kernel headers."
-  when: ansible_kernel not in rpm_query.stdout_lines
+  when: afs_kernel_version not in rpm_query.stdout_lines
   become: yes
   block:
     - name: "RedHat-6: Install kernel-devel package."
       yum:
         state: present
-        name: "kernel-devel-uname-r == {{ ansible_kernel }}"
+        name: "kernel-devel-uname-r == {{ afs_kernel_version }}"
   rescue:
     # If we are unable to install the kernel-devel package the current
     # kernel version may be too old. When allowed, automatically update
@@ -61,7 +61,7 @@
       when: yum_update_results.changed
       block:
         - set_fact:
-            old_kernel_version: "{{ ansible_kernel }}"
+            old_kernel_version: "{{ afs_kernel_version }}"
 
         - name: "RedHat-6: Rebooting."
           reboot:
@@ -75,9 +75,9 @@
 
         - name: "RedHat-6: Show kernel versions."
           debug:
-            msg: "Updated kernel from {{ old_kernel_version }} to {{ ansible_kernel }}."
+            msg: "Updated kernel from {{ old_kernel_version }} to {{ afs_kernel_version }}."
 
         - name: "RedHat-6: Install kernel-devel package."
           yum:
             state: present
-            name: "kernel-devel-uname-r == {{ ansible_kernel }}"
+            name: "kernel-devel-uname-r == {{ afs_kernel_version }}"

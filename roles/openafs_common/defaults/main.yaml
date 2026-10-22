@@ -57,6 +57,9 @@ afs_tmpdir: /tmp/ansible-openafs
 # Project build directory on remote nodes.
 afs_topdir: ~/openafs
 
+# Kernel version to install the kernel headers for.
+afs_kernel_version: "{{ ansible_kernel }}"
+
 # Installation method; managed, packages, bdist, sdist, source, none
 # afs_install_method: (default is platform dependent)
 
