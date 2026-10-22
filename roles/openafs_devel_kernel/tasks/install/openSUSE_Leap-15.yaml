@@ -28,8 +28,8 @@
   # No ARCH and last '.N' in RELEASE of the kernel-package is skipped
   #
   - set_fact:
-      kernel_version: "{{ ansible_kernel | regex_replace('-default|-preempt|-vanilla', '') }}"
-      kernel_flavor: "{{ ansible_kernel | split('-') | last }}"
+      kernel_version: "{{ afs_kernel_version | regex_replace('-default|-preempt|-vanilla', '') }}"
+      kernel_flavor: "{{ afs_kernel_version | split('-') | last }}"
 
   - debug:
       msg:
@@ -78,7 +78,7 @@
       become: yes
       block:
       - set_fact:
-          old_kernel_version: "{{ ansible_kernel }}"
+          old_kernel_version: "{{ afs_kernel_version }}"
 
       - name: "Update kernel."
         community.general.zypper:
@@ -104,4 +104,4 @@
         setup:
 
       - debug:
-          msg: "Updated kernel from {{ old_kernel_version }} to {{ ansible_kernel }}."
+          msg: "Updated kernel from {{ old_kernel_version }} to {{ afs_kernel_version }}."
