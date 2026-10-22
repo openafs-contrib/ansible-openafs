@@ -32,4 +32,4 @@
     - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}.yaml"
     - "{{ _path }}/{{ ansible_os_family | replace(' ', '_') }}.yaml"
     - "{{ _path }}/{{ ansible_system | replace(' ', '_') }}.yaml"
-    - "{{ _paht }}/unknown.yaml"
+    - "{{ _path }}/unknown.yaml"
