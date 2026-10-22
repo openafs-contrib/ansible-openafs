@@ -8,11 +8,6 @@ skip = [
     "milestone",
     "integration",
 ]
-# Run one scenario, selected with AFS_SCENARIO (default krbserver), since not
-# all the scenarios are ready to run.
-molecule_commands = [
-    "bash -c 'python3 -m molecule test -s ${AFS_SCENARIO:-role_openafs_krbserver_default}'",
-]
 
 # Pass the variables needed to run rootless podman, and the test settings.
 [tool.tox.env_run_base]

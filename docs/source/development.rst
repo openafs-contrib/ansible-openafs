@@ -114,42 +114,26 @@ parallel. The scenarios use the Molecule ``podman`` driver from the
 
 .. _`molecule-plugins`: https://github.com/ansible-community/molecule-plugins
 
-Set ``AFS_SCENARIO`` to the scenario to be run (the default is
-``role_openafs_krbserver_default``):
+The ``molecule`` test environments run all of the scenarios, one after
+another, with ``molecule test --all``:
 
 .. code-block:: bash
 
-   AFS_SCENARIO=role_openafs_server_default tox --ansible -e molecule-py3.14-2.21
-
-To run more than one scenario, set ``AFS_SCENARIO`` to a space separated list
-of scenarios, and set ``AFS_WORKERS`` to the number of scenarios to run in
-parallel (the default is 1). The output of each scenario is written to
-``logs/<scenario>.log``, and the result of each scenario is printed when it is
-done:
-
-.. code-block:: bash
-
-   AFS_SCENARIO="role_openafs_krbserver_default playbook_deploy_realm_default" \
-   AFS_WORKERS=2 \
    tox --ansible -e molecule-py3.14-2.21
 
-The scenarios are run by ``tests/integration/run_scenarios.sh``. Each scenario
-creates its own containers and podman network, so the scenarios can be run in
-parallel. The Molecule ``--workers`` option is not used, since it runs all of
-the scenarios on the instances created by the ``default`` scenario. Do not run
-the same scenario in more than one ``tox`` environment at the same time, since
-the container names would conflict.
+Arguments after ``--`` are passed to ``molecule test``. For example, to skip a
+scenario:
 
-These scenarios are currently ready to run:
+.. code-block:: bash
 
-* ``role_openafs_common_default``
-* ``role_openafs_krbserver_default``
-* ``role_openafs_krbclient_default``
-* ``role_openafs_devel_default``
-* ``role_openafs_devel_kernel_default``
-* ``role_openafs_server_default``
-* ``role_openafs_server_source``
-* ``playbook_deploy_realm_default``
+   tox --ansible -e molecule-py3.14-2.21 -- --exclude role_openafs_server_source
+
+To run a single scenario, run Molecule directly. See `Running Molecule
+directly`_.
+
+Do not run more than one ``molecule`` test environment at the same time (for
+example with ``tox -p``). The environments use the same container names, so
+they would conflict.
 
 The ``role_openafs_server_source`` scenario builds OpenAFS from the
 ``openafs-stable-1_8_16_1`` git tag by default. Set ``AFS_GIT_VERSION`` to
@@ -157,9 +141,7 @@ build a different git tag or branch:
 
 .. code-block:: bash
 
-   AFS_GIT_VERSION=openafs-stable-1_8_x \
-   AFS_SCENARIO=role_openafs_server_source \
-   tox --ansible -e molecule-py3.14-2.21
+   AFS_GIT_VERSION=openafs-stable-1_8_x tox --ansible -e molecule-py3.14-2.21
 
 To add an operating system to a scenario, add a platform to the scenario
 ``molecule.yml`` file. The first platform is a YAML anchor with the settings
@@ -188,8 +170,8 @@ Running Molecule directly
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Running Molecule directly is faster when working on a role, and makes it
-possible to keep the test containers for debugging. Run the scenario with
-``tox`` once to create the test environment, then activate it and run
+possible to keep the test containers for debugging. Run the ``molecule``
+test environment with ``tox`` once to create it, then activate it and run
 ``molecule`` in the collection root directory:
 
 .. code-block:: bash
@@ -273,20 +255,16 @@ nightly. To set up a test machine:
       cd ansible-openafs
       tox -e images
 
-6. Run the tests. For example, to run all of the scenarios, eight at a time:
+6. Run the tests and save the output:
 
    .. code-block:: bash
 
-      AFS_SCENARIO="role_openafs_common_default role_openafs_krbserver_default
-                    role_openafs_krbclient_default role_openafs_devel_default
-                    role_openafs_devel_kernel_default role_openafs_server_default
-                    role_openafs_server_source playbook_deploy_realm_default" \
-      AFS_WORKERS=8 \
-      tox --ansible -e molecule-py3.14-2.21
+      mkdir -p logs
+      tox --ansible -e molecule-py3.14-2.21 > logs/molecule-py3.14-2.21.log 2>&1
 
-   Each scenario log in ``logs`` ends with a summary which shows which steps
-   passed and failed, and the Ansible play recap shows which platform
-   failed.
+   The output ends with a summary which shows which steps of each scenario
+   passed and failed, and the Ansible play recap of each step shows which
+   platform failed.
 
 To do
 ~~~~~
@@ -315,6 +293,9 @@ Conventions for the integration tests:
   the Python code.
 
 Scenarios to add for ``alma10``:
+
+Each scenario in ``extensions/molecule`` is run by the ``molecule`` test
+environments, so only add a scenario when it is ready to run.
 
 #. ``playbook_local_devel_default`` and ``playbook_local_install_default``:
    the ``local_devel`` and ``local_install`` playbooks.
@@ -345,11 +326,6 @@ Scenarios to add for ``alma10``:
    ``playbook_deploy_robotserver_default``: low priority, since the
    ``openafs_robotserver`` role is planned to be moved to a separate
    repository.
-
-When all of the scenarios in ``extensions/molecule`` can run, remove the
-``molecule_commands`` setting from ``pyproject.toml``, so the ``molecule``
-test environments run ``molecule test --all``, and remove the empty
-``molecule.yml`` stubs which are not used.
 
 Other operating systems and versions:
 
@@ -386,6 +362,10 @@ Other work:
   ``tox-ansible`` stops using it, remove the ``/collections/`` entry from
   ``.gitignore``.
 * Speed up the tests, for example by caching the packages in the test images.
+* Run the scenarios in parallel. Each scenario has its own containers and
+  podman network, but the Molecule ``--workers`` option runs all of the
+  scenarios on the instances of the ``default`` scenario, so it can not be
+  used with these scenarios.
 
 Code formatting
 ---------------
