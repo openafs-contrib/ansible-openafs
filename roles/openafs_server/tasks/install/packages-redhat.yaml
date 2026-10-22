@@ -18,7 +18,7 @@
       - tar
       - gzip
       - bzip2
-  when: ansible_pkg_mgr in ('yum', 'dnf')
+  when: ansible_facts.pkg_mgr in ('yum', 'dnf')
 
 - debug:
     msg: "Release tarball is {{ afs_install_archive }}"

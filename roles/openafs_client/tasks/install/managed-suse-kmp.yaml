@@ -19,8 +19,8 @@
     name: openafs_contrib.openafs.openafs_devel_kernel
 
 - set_fact:
-    kernel_version: "{{ ansible_kernel | regex_replace('-default|-preempt|-vanilla', '') }}"
-    kernel_flavor: "{{ ansible_kernel | split('-') | last }}"
+    kernel_version: "{{ ansible_facts.kernel | regex_replace('-default|-preempt|-vanilla', '') }}"
+    kernel_flavor: "{{ ansible_facts.kernel | split('-') | last }}"
 
 - name: Add OpenAFS zypper repo
   become: yes

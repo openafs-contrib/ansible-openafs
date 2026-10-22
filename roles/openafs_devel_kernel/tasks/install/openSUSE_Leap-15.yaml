@@ -24,7 +24,7 @@
       - make
 
 - block:
-  # ansible_kernel in openSuSE has a different behaviour than other Linux-distros.
+  # ansible_facts.kernel in openSuSE has a different behaviour than other Linux-distros.
   # No ARCH and last '.N' in RELEASE of the kernel-package is skipped
   #
   - set_fact:

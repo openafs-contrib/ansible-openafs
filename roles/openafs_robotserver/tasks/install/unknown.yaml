@@ -3,8 +3,8 @@
   fail:
     msg:
       - "Task files not found for this operating system:"
-      - "{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}"
-      - "{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}"
-      - "{{ ansible_distribution | replace(' ', '_') }}"
-      - "{{ ansible_os_family | replace(' ', '_') }}"
-      - "{{ ansible_system | replace(' ', '_') }}"
+      - "{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_version }}"
+      - "{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_major_version }}"
+      - "{{ ansible_facts.distribution | replace(' ', '_') }}"
+      - "{{ ansible_facts.os_family | replace(' ', '_') }}"
+      - "{{ ansible_facts.system | replace(' ', '_') }}"

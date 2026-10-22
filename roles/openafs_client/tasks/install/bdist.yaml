@@ -1,11 +1,11 @@
 ---
 - name: Verify selinux is disabled
   assert:
-    that: ansible_selinux.mode != 'enforcing'
+    that: ansible_facts.selinux.mode != 'enforcing'
   when:
-    - ansible_selinux is defined
-    - ansible_selinux | type_debug == 'dict'
-    - ansible_selinux.status == 'enabled'
+    - ansible_facts.selinux is defined
+    - ansible_facts.selinux | type_debug == 'dict'
+    - ansible_facts.selinux.status == 'enabled'
 
 - name: Verify the path to the installation tarball is specified
   assert:
@@ -21,7 +21,7 @@
       - tar
       - gzip
       - bzip2
-  when: ansible_pkg_mgr in ('yum', 'dnf')
+  when: ansible_facts.pkg_mgr in ('yum', 'dnf')
 
 - name: Ensure gtar is installed
   become: yes
@@ -31,7 +31,7 @@
       - gtar
       - gzip
       - bzip2
-  when: ansible_pkg_mgr == 'pkgng'
+  when: ansible_facts.pkg_mgr == 'pkgng'
 
 - debug:
     msg: "Release tarball is {{ afs_install_archive }}"
@@ -71,4 +71,4 @@
       dirs: "{{ install_results.dirs }}"
   when: not ansible_check_mode
 
-- include_tasks: "{{ role_path }}/tasks/service/{{ ansible_service_mgr }}.yaml"
+- include_tasks: "{{ role_path }}/tasks/service/{{ ansible_facts.service_mgr }}.yaml"

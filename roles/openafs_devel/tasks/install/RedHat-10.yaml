@@ -29,7 +29,7 @@
 - name: "RedHat-10: Enable the CodeReady Builder (CRB) repository"
   become: yes
   vars:
-    arch: "{{ ansible_architecture }}"
+    arch: "{{ ansible_facts.architecture }}"
     crb_repo_id: "codeready-builder-for-rhel-10-{{ arch }}-rpms"
   community.general.rhsm_repository:
     name: "{{ crb_repo_id }}"

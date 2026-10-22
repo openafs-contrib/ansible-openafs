@@ -8,11 +8,11 @@
   loop_control:
     loop_var: afs_client_os_item
   with_first_found:
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_system }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_major_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.os_family }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.system }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
 - import_tasks: "pre-install/check-variables.yaml"
@@ -24,15 +24,15 @@
   loop_control:
     loop_var: afs_client_install_item
   with_first_found:
-    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_distribution | replace(' ', '_') | lower }}-{{ afs_module_install_method }}.yaml"
-    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_distribution | replace(' ', '_') | lower }}.yaml"
-    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_os_family | lower }}-{{ afs_module_install_method }}.yaml"
-    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_os_family | lower }}.yaml"
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_facts.distribution | replace(' ', '_') | lower }}-{{ afs_module_install_method }}.yaml"
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_facts.distribution | replace(' ', '_') | lower }}.yaml"
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_facts.os_family | lower }}-{{ afs_module_install_method }}.yaml"
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_facts.os_family | lower }}.yaml"
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}.yaml"
     - "{{ role_path }}/tasks/install/unknown.yaml"
 
 - import_tasks: "post-install/directories.yaml"
 - import_tasks: "post-install/configure.yaml"
 - include_tasks: "post-install/preload/{{ afs_module_enable_preload | bool | ternary(_afs_module_preload, 'none') }}.yaml"
-- include_tasks: "post-install/enable-service/{{ ansible_service_mgr }}.yaml"
+- include_tasks: "post-install/enable-service/{{ ansible_facts.service_mgr }}.yaml"
 - import_tasks: "post-install/verify.yaml"

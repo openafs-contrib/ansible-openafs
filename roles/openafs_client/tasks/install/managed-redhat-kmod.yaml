@@ -56,7 +56,7 @@
       - openafs
       - openafs-client
       - openafs-krb5
-      - "kmod-openafs-{{ rpm_query.stdout }}-{{ rpm_release.stdout | regex_replace('\\.[^.]*$', '') }}.{{ ansible_kernel | regex_replace('-', '_') }}"
+      - "kmod-openafs-{{ rpm_query.stdout }}-{{ rpm_release.stdout | regex_replace('\\.[^.]*$', '') }}.{{ ansible_facts.kernel | regex_replace('-', '_') }}"
   register: yum_results
 
 - name: Get installation paths
