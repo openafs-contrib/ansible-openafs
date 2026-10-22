@@ -14,193 +14,383 @@ The source code for the **OpenAFS Ansible Collection** is available on
    git clone https://github.com/openafs-contrib/ansible-openafs
    cd ansible-openafs
 
-To install the collection from the source tree, run the command:
+To build and install the collection from the source tree, run the commands:
 
 .. code-block:: bash
 
-   tox -e install
+   ansible-galaxy collection build --output-path builds .
+   ansible-galaxy collection install --force builds/openafs_contrib-openafs-*.tar.gz
 
 Testing
 -------
 
-The tests are run with `tox`_. The test environments are defined in the
-``tox.ini`` file. Run ``tox list`` to show the test environments, including
-which ones are run by default.
+The tests are run with `tox`_ and the `tox-ansible`_ plugin. The tox
+configuration is in the ``pyproject.toml`` file. The ``tox-ansible`` plugin
+generates the test environments for the supported Python and ``ansible-core``
+versions, and tox installs the plugin automatically when it is needed.
 
 Requirements
 ~~~~~~~~~~~~
 
-* Python 3.x (see ``tox.ini`` for versions)
+* Linux
+* Python 3.11 or later, and the Python versions to be tested
 * `tox`_ 4.x
-* `podman`_
+* `podman`_, configured to run rootless containers
+* ``git``
 
-Other packages will be installed in tox test environments as needed.
+Other packages are installed in the tox test environments as needed.
 
 The role and playbook tests run in `podman`_ containers created from a test
-image for each operating system. Build the test images before running the
-role and playbook tests.
+image for each operating system. The test images are built from the
+``containers/<os>/Containerfile`` files and are named
+``localhost/ansible-openafs-<os>``. Build the test images before running the
+role and playbook tests:
 
 .. code-block:: bash
 
-   tests/build-images.sh
+   tox -e images
 
-The test images are named ``localhost/ansible-openafs-<os>``. Run
-``build-images.sh`` again to rebuild an image after changing its
-``Containerfile``. Use the ``--update`` option to update the base images and
-rebuild the test images with the latest packages:
+Run ``tox -e images`` again to rebuild the images after changing a
+``Containerfile``.
 
-.. code-block:: bash
+Test environments
+~~~~~~~~~~~~~~~~~
 
-   tests/build-images.sh --update
-
-Running tests
-~~~~~~~~~~~~~
-
-Run ``tox`` without arguments to run the default test environments:
+To list the test environments, run:
 
 .. code-block:: bash
 
-   tox
+   tox --ansible -l
 
-The lint checks are run first. If the lint checks fail, the remaining test
-environments are skipped, so fix the lint errors first.
+The test environments are named ``<type>-py<python>-<ansible-core>``, for
+example ``unit-py3.14-2.21``. The test types are:
 
-The test environments are named as follows:
+``unit``
+   Run the unit tests in ``tests/unit`` with ``pytest``. This includes a
+   syntax check of the playbooks.
 
-``lint``
-   Check the roles and playbooks with ``ansible-lint``.
+``sanity``
+   Run ``ansible-test sanity`` on the collection. The sanity test ignore files
+   are in ``tests/sanity``.
 
-``pyXY``
-   Run the plugin unit tests with Python X.Y, using the latest version of
-   ``ansible-core`` available for that Python version.
+``molecule``
+   Run a role or playbook test with Molecule. See `Role and playbook tests`_.
 
-``ansible-coreXYZ``
-   Run a syntax check of the playbooks and the unit tests with
-   ``ansible-core`` version X.YZ. For example, ``ansible-core219`` tests with
-   ``ansible-core`` 2.19. There is an environment for each supported
-   ``ansible-core`` version, from the minimum version given in
-   ``meta/runtime.yml``.
+``galaxy``
+   Check the collection with the Galaxy importer.
 
-To run a single test environment, use the ``-e`` option:
+To run a test environment, use the ``-e`` option:
 
 .. code-block:: bash
 
-   tox -e ansible-core219
+   tox --ansible -e unit-py3.14-2.21
+   tox --ansible -e sanity-py3.14-2.21
 
-The ``latest`` test environment runs all of the tests, including the role
-and playbook tests, with the latest versions of Python, Ansible, and Molecule:
-
-.. code-block:: bash
-
-   tox -e latest
-
-Running all of the tests takes a long, long, long time, since the role and
-playbook tests are run for each of the operating systems listed in the test
-files. Arguments after ``--`` are passed to ``pytest``. Use the ``-k`` option
-to select the tests to run. Use the ``-s`` option to show the full output, and
-the ``-x`` option to stop on the first failure. For example:
+Arguments after ``--`` are passed to ``pytest`` in the ``unit`` environments
+and to ``ansible-test sanity`` in the ``sanity`` environments. For example:
 
 .. code-block:: bash
 
-   tox -e latest -- -k roles
-   tox -e latest -- -k playbooks
-   tox -e latest -- -s -x -k alma9
-   tox -e latest -- -s -x -k "openafs_server and alma9"
+   tox --ansible -e unit-py3.14-2.21 -- -k test_syntax_check
+   tox --ansible -e sanity-py3.14-2.21 -- --test pep8
 
-The ``sdist`` and ``packages`` scenarios install the OpenAFS release given in
-``tests/integration/openafs.yml``. The release source files are downloaded from
-`openafs.org`_ and the RPM packages are downloaded from `Sine Nomine`_ the
-first time they are needed, and are saved in the
-``~/.cache/ansible-openafs/builds`` directory. The ``packages`` scenarios are
-skipped for platforms without packages available.
-
-.. _`openafs.org`: https://www.openafs.org
-.. _`Sine Nomine`: https://download.sinenomine.net/openafs/
-
-The ``bdist`` and ``source`` scenarios build OpenAFS from a git tag or branch,
-which is slow, so they are skipped by default. Use the ``--build`` option to
-build OpenAFS and run these scenarios:
+To run all of the unit or sanity test environments in parallel:
 
 .. code-block:: bash
 
-   tox -e latest -- --build openafs-stable-1_8_16_1 -k "openafs_server and alma9"
+   tox --ansible --matrix-scope unit -p auto
+   tox --ansible --matrix-scope sanity -p auto
 
-The output of each test is saved to a log file in the ``.tox/<env>/test-logs``
-directory (for example, ``.tox/latest/test-logs``), along with a summary of the
-test results in ``summary.txt`` and a JUnit XML report in ``junit.xml``. When
-``pytest`` is run without ``tox``, the log files are saved in the
-``~/.cache/ansible-openafs/test-logs`` directory.
+Role and playbook tests
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The role and playbook tests are Molecule scenarios in the
+``extensions/molecule`` directory. The scenarios are named
+``role_<role>_<variant>`` and ``playbook_<playbook>_<variant>``. Each scenario
+lists the operating systems to be tested as Molecule platforms, and Molecule
+creates a container for each platform, so the operating systems are tested in
+parallel. The scenarios use the Molecule ``podman`` driver from the
+`molecule-plugins`_ package.
+
+.. _`molecule-plugins`: https://github.com/ansible-community/molecule-plugins
+
+Set ``AFS_SCENARIO`` to the scenario to be run (the default is
+``role_openafs_krbserver_default``):
+
+.. code-block:: bash
+
+   AFS_SCENARIO=role_openafs_server_default tox --ansible -e molecule-py3.14-2.21
+
+These scenarios are currently ready to run:
+
+* ``role_openafs_common_default``
+* ``role_openafs_krbserver_default``
+* ``role_openafs_krbclient_default``
+* ``role_openafs_devel_default``
+* ``role_openafs_devel_kernel_default``
+* ``role_openafs_server_default``
+* ``role_openafs_server_source``
+
+The ``role_openafs_server_source`` scenario builds OpenAFS from the
+``openafs-stable-1_8_16_1`` git tag by default. Set ``AFS_GIT_VERSION`` to
+build a different git tag or branch:
+
+.. code-block:: bash
+
+   AFS_GIT_VERSION=openafs-stable-1_8_x \
+   AFS_SCENARIO=role_openafs_server_source \
+   tox --ansible -e molecule-py3.14-2.21
+
+To add an operating system to a scenario, add a platform to the scenario
+``molecule.yml`` file. The first platform is a YAML anchor with the settings
+shared by all of the platforms, so only the name and image are needed:
+
+.. code-block:: yaml
+
+   platforms:
+     - &platform
+       name: server-alma10
+       image: localhost/ansible-openafs-alma10
+       ...
+     - <<: *platform
+       name: server-debian13
+       image: localhost/ansible-openafs-debian13
 
 .. note::
 
    The OpenAFS kernel module can not be loaded in a container, so the
-   ``openafs_client`` and ``openafs_devel_kernel`` role tests and the
-   ``default`` and ``cluster`` playbook tests are skipped.
+   ``openafs_client`` role and the cell playbook can not be fully tested in
+   containers. The ``openafs_devel_kernel`` scenario installs the kernel
+   headers for the newest kernel in the package repositories, since the
+   kernel running in a container is the host kernel.
 
 Running Molecule directly
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It is possible to run Molecule directly, which can be helpful when debugging.
-
-The Molecule scenarios are located in the ``extensions/molecule`` directory,
-in ``extensions/molecule/<role>/<scenario>`` for the roles and in
-``extensions/molecule/playbooks/<scenario>`` for the playbooks. The scenarios
-use the Molecule ``podman`` driver from the `molecule-plugins`_ package to
-create the test instances from the test images.
-
-.. _`molecule-plugins`: https://github.com/ansible-community/molecule-plugins
-
-Use ``tox -e dev`` to create a virtualenv with Molecule and the other test
-requirements installed, then run ``molecule`` in the collection root
-directory:
+Running Molecule directly is faster when working on a role, and makes it
+possible to keep the test containers for debugging. Run the scenario with
+``tox`` once to create the test environment, then activate it and run
+``molecule`` in the collection root directory:
 
 .. code-block:: bash
 
-   tox -e dev
-   source .tox/dev/bin/activate
-   molecule test -s openafs_server/default
-   molecule test -s playbooks/realm
+   source .tox/molecule-py3.14-2.21/bin/activate
+   export ANSIBLE_COLLECTIONS_PATH=.
+   molecule test -s role_openafs_server_default
 
-Molecule installs the collection under test into its own cache directory.
+``ANSIBLE_COLLECTIONS_PATH=.`` is the setting used by ``tox``. It keeps
+collections installed in ``~/.ansible/collections`` from being used instead of
+the collection in the source tree.
 
-.. warning::
-
-   Do not set ``ANSIBLE_COLLECTIONS_PATH`` to a directory which contains
-   your source tree when running Molecule. Some versions of Molecule install
-   the collection under test into the first collections path, which removes
-   your source tree.
-
-To keep the test instance for debugging, run the scenario in steps:
+To test a single platform and keep the container for debugging:
 
 .. code-block:: bash
 
-   molecule converge -s openafs_server/default
-   molecule login -s openafs_server/default
-   molecule destroy -s openafs_server/default
+   molecule test -s role_openafs_server_default -p server-alma10 --destroy never
+   molecule login -s role_openafs_server_default -h server-alma10
+   molecule converge -s role_openafs_server_default -- --limit server-alma10
+   molecule destroy -s role_openafs_server_default
 
-Operating systems
-~~~~~~~~~~~~~~~~~
+Only ``molecule test`` accepts the ``-p`` option. The other ``molecule``
+commands act on all of the platforms in the scenario, but ``converge`` passes
+the arguments after ``--`` to ``ansible-playbook``, so ``--limit`` can be used
+to converge a single platform. The source tree is installed as an editable
+collection, so changes to the roles are used on the next ``converge``.
 
-Set the ``AFS_TEST_OS`` environment variable to the operating system to be
-tested when running ``molecule`` directly. The default is ``alma9``.
+Setting up a test machine
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The role and playbook tests take a long time to run on all of the operating
+systems, so it is useful to run them on a separate test machine, for example
+nightly. To set up a test machine:
+
+1. Install ``podman``, ``git``, and the Python versions to be tested, and
+   install ``tox``, for example with ``pipx install tox``.
+
+2. Check that rootless podman works for the test user. The test user needs
+   subordinate uid and gid ranges in ``/etc/subuid`` and ``/etc/subgid``:
+
+   .. code-block:: bash
+
+      podman info
+      podman run --rm registry.fedoraproject.org/fedora echo ok
+
+3. Raise the inotify instances limit. Each test container runs ``systemd``,
+   which uses several inotify instances, and the default limit of 128 per user
+   can be reached with as few as 10 containers, depending on what else the
+   user is running. When the limit is reached, the test containers exit or
+   ``systemd`` fails to start in them.
+
+   .. code-block:: bash
+
+      echo 'fs.inotify.max_user_instances = 1024' | sudo tee /etc/sysctl.d/99-inotify.conf
+      sudo sysctl --system
+
+4. To run the tests from ``cron`` or a ``systemd`` timer, enable lingering for
+   the test user, so the user ``systemd`` instance and ``XDG_RUNTIME_DIR``
+   needed by rootless podman are available without a login session:
+
+   .. code-block:: bash
+
+      sudo loginctl enable-linger $USER
+
+   The tests need ``XDG_RUNTIME_DIR`` to be set. In a ``cron`` job, set it
+   with ``export XDG_RUNTIME_DIR=/run/user/$(id -u)``.
+
+5. Clone the repository and build the test images:
+
+   .. code-block:: bash
+
+      git clone https://github.com/openafs-contrib/ansible-openafs
+      cd ansible-openafs
+      tox -e images
+
+6. Run the tests. For example, to run each of the scenarios and save the
+   output of each one:
+
+   .. code-block:: bash
+
+      mkdir -p logs
+      for s in role_openafs_common_default role_openafs_krbserver_default \
+               role_openafs_krbclient_default role_openafs_devel_default \
+               role_openafs_devel_kernel_default role_openafs_server_default \
+               role_openafs_server_source; do
+          AFS_SCENARIO=$s tox --ansible -e molecule-py3.14-2.21 > logs/$s.log 2>&1 \
+              && echo "PASS $s" || echo "FAIL $s"
+      done
+
+   Each scenario prints a summary at the end of its output, which shows which
+   steps passed and failed, and the Ansible play recap shows which platform
+   failed.
+
+To do
+~~~~~
+
+The role and playbook tests are a work in progress. The goal for the next
+prerelease is to test all of the roles and playbooks on ``alma10`` with the
+newest Python and ``ansible-core`` (``molecule-py3.14-2.21``), then to add the
+other operating systems and older versions as they pass.
+
+Conventions for the integration tests:
+
+* Use one scenario for each role and playbook variant, with one platform for
+  each operating system to be tested. Do not use environment variables to
+  select the operating system.
+* Each scenario has a ``verify.yml`` which checks the results of the role,
+  for example that the services are running. Use the facts saved by the roles
+  in ``ansible_local.openafs`` (such as the program paths in ``bins`` and the
+  service names) instead of operating system specific values.
+* Test the real installs. Do not fake package installs (an experiment with
+  fake package modules is on the ``tests-fakes`` branch).
+* Fix role bugs found by the tests in the roles, in separate commits from the
+  tests, instead of working around them in the tests.
+* Never run Molecule or ``ansible-galaxy`` with ``ANSIBLE_COLLECTIONS_PATH``
+  set to a directory which contains the source tree.
+* The sanity and unit tests must pass. Run ``tox -e format`` after changing
+  the Python code.
+
+Scenarios to add for ``alma10``:
+
+#. ``playbook_deploy_realm_default``: the ``deploy_realm`` playbook. Similar
+   to the ``role_openafs_krbserver_default`` scenario.
+#. ``playbook_local_devel_default`` and ``playbook_local_install_default``:
+   the ``local_devel`` and ``local_install`` playbooks.
+#. ``role_openafs_client_default``: the OpenAFS kernel module can not be
+   loaded in a container. Decide what can be tested, for example installing
+   the client and building (not loading) the kernel module. Building the
+   kernel module in a container needs:
+
+   * the kernel headers for a kernel version other than the running (host)
+     kernel; set ``afs_kernel_version``, as in the
+     ``role_openafs_devel_kernel_default`` scenario, and change the
+     ``openafs_client`` role to use ``afs_kernel_version`` instead of
+     ``ansible_kernel`` (it is used to select the kmod packages);
+   * ``configure`` options which point to the installed kernel headers, for
+     example ``--with-linux-kernel-headers=/usr/src/kernels/<version>``;
+   * a new option for the ``openafs_build`` module to give the kernel version,
+     since the module checks that the kernel module was built for the running
+     kernel (``verify_kernel_module`` uses ``platform.release()``).
+
+#. ``playbook_deploy_cell_default``: the ``deploy_cell`` playbook. This
+   installs the client, so it depends on the client scenario.
+#. ``role_openafs_server_packages``, ``role_openafs_server_sdist``, and
+   ``role_openafs_server_bdist``: the other server install methods. These need
+   the OpenAFS release files. See ``legacy/tests/release_files.py`` and
+   ``legacy/tests/integration/openafs.yml``, which download the source
+   distribution from openafs.org and the RPM packages from Sine Nomine.
+#. ``role_openafs_robotserver_default`` and
+   ``playbook_deploy_robotserver_default``: low priority, since the
+   ``openafs_robotserver`` role is planned to be moved to a separate
+   repository.
+
+When all of the scenarios in ``extensions/molecule`` can run, remove the
+``molecule_commands`` setting from ``pyproject.toml``, so the ``molecule``
+test environments run ``molecule test --all``, and remove the empty
+``molecule.yml`` stubs which are not used.
+
+Other operating systems and versions:
+
+#. Add the other operating systems to each scenario. The
+   ``role_openafs_krbserver_default`` and ``role_openafs_krbclient_default``
+   scenarios passed on all of the test images before they were reduced to
+   ``alma10`` (except the ``krbclient`` scenario on ``opensuse16``, which needs
+   the untested ``roles/openafs_krbclient/vars/openSUSE_Leap-16.yaml`` fix).
+#. The ``role_openafs_devel_kernel_default`` scenario finds the newest
+   ``kernel-devel`` package with ``dnf``. Add the equivalent for ``apt`` and
+   ``zypper``.
+#. Run the scenarios with the oldest supported versions, for example
+   ``molecule-py3.11-2.19``.
+
+Known bugs:
+
+* ``openafs_build_packages`` and ``openafs_build_redhat_rpms``: the ``build``
+  option checks for ``module``, but the choice is ``modules``, so
+  ``build: modules`` runs ``rpmbuild`` without a ``-b`` option. The branch
+  also sets ``build_modules 0`` instead of ``1``. Add unit tests for the
+  ``rpmbuild`` arguments.
+* ``openafs_store_facts``: ``state: update`` appends a list value to an
+  existing list as a single element, instead of extending the list.
+* ``openafs_build_redhat_rpms`` looks like an older copy of the RPM support in
+  ``openafs_build_packages``.
+
+Other work:
+
+* Write the module unit tests in ``tests/unit/plugins/modules`` (they are
+  stubs now).
+* Add a ``lint`` test environment for ``ansible-lint``.
+* Remove the ``legacy`` directory when the new tests replace it.
+* ``pytest-ansible`` is deprecated (end of life December 2026). When
+  ``tox-ansible`` stops using it, remove the ``/collections/`` entry from
+  ``.gitignore``.
+* Speed up the tests, for example by caching the packages in the test images.
+
+Code formatting
+---------------
+
+The Python code is formatted with `black`_. To format the code, run:
+
+.. _`black`: https://black.readthedocs.io
 
 .. code-block:: bash
 
-   AFS_TEST_OS=debian13 molecule test -s openafs_server/default
+   tox -e format
 
 Documentation
 -------------
 
-The documentation is built with `Sphinx`_. Build the documentation with:
+The documentation is built with `Sphinx`_. To build the documentation, run:
 
 .. _`Sphinx`: https://www.sphinx-doc.org
 
 .. code-block:: bash
 
-   tox -e docs
+   python3 -m venv .venv
+   .venv/bin/pip install -r docs/requirements.txt
+   .venv/bin/sphinx-build -M html docs/source docs/build
 
 The HTML pages are written to the ``docs/build/html`` directory.
 
 
 .. _`tox`: https://tox.wiki
+.. _`tox-ansible`: https://github.com/ansible/tox-ansible
 .. _`podman`: https://podman.io
