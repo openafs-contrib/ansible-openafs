@@ -1,0 +1,46 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Verify the build tools are installed
+      ansible.builtin.shell:
+        cmd: "command -v {{ item }}"
+      changed_when: false
+      loop:
+        - autoconf
+        - automake
+        - bison
+        - flex
+        - gcc
+        - git
+        - libtoolize
+        - make
+        - perl
+        - swig
+        - which
+
+    - name: Check the Kerberos headers are installed
+      ansible.builtin.stat:
+        path: /usr/include/krb5.h
+      register: krb5_h
+
+    - name: Verify the Kerberos headers are installed
+      ansible.builtin.assert:
+        that:
+          - krb5_h.stat.exists
+
+    - name: Get the installed kernel-devel versions
+      ansible.builtin.command:
+        cmd: rpm -q --qf '%{version}-%{release}.%{arch}\n' kernel-devel
+      changed_when: false
+      register: kernel_devel
+
+    - name: Check the kernel headers are installed
+      ansible.builtin.stat:
+        path: "/usr/src/kernels/{{ kernel_devel.stdout_lines[0] }}/Makefile"
+      register: makefile
+
+    - name: Verify the kernel headers are installed
+      ansible.builtin.assert:
+        that:
+          - makefile.stat.exists
