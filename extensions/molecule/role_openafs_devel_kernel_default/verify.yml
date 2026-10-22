@@ -1,0 +1,19 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Get the installed kernel-devel versions
+      ansible.builtin.command:
+        cmd: rpm -q --qf '%{version}-%{release}.%{arch}\n' kernel-devel
+      changed_when: false
+      register: kernel_devel
+
+    - name: Check the kernel headers are installed
+      ansible.builtin.stat:
+        path: "/usr/src/kernels/{{ kernel_devel.stdout_lines[0] }}/Makefile"
+      register: makefile
+
+    - name: Verify the kernel headers are installed
+      ansible.builtin.assert:
+        that:
+          - makefile.stat.exists

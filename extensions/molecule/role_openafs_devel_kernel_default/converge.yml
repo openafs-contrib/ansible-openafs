@@ -1,0 +1,19 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    # The running kernel is the host kernel in a container, so install the
+    # headers for the newest kernel available in the repositories.
+    - name: Find the newest kernel-devel version
+      ansible.builtin.command:
+        cmd: dnf -q repoquery --latest-limit 1 --qf '%{version}-%{release}.%{arch}' kernel-devel
+      changed_when: false
+      register: kernel_devel
+
+    - name: Set the kernel version
+      ansible.builtin.set_fact:
+        afs_kernel_version: "{{ kernel_devel.stdout | trim }}"
+
+    - name: Install the kernel module development packages
+      ansible.builtin.import_role:
+        name: openafs_contrib.openafs.openafs_devel_kernel
