@@ -3,8 +3,8 @@ driver:
   name: podman
 platforms:
   - &platform
-    name: krbserver-alma9
-    image: localhost/ansible-openafs-alma9
+    name: krbserver-alma10
+    image: localhost/ansible-openafs-alma10
     pre_build_image: true
     override_command: false
     systemd: always
@@ -13,63 +13,6 @@ platforms:
       - --no-hosts
     groups:
       - afs_kdcs
-  - <<: *platform
-    name: krbserver-alma10
-    image: localhost/ansible-openafs-alma10
-  - <<: *platform
-    name: krbserver-alma8
-    image: localhost/ansible-openafs-alma8
-  - <<: *platform
-    name: krbserver-centos10
-    image: localhost/ansible-openafs-centos10
-  - <<: *platform
-    name: krbserver-centos9
-    image: localhost/ansible-openafs-centos9
-  - <<: *platform
-    name: krbserver-debian12
-    image: localhost/ansible-openafs-debian12
-  - <<: *platform
-    name: krbserver-debian13
-    image: localhost/ansible-openafs-debian13
-  - <<: *platform
-    name: krbserver-fedora43
-    image: localhost/ansible-openafs-fedora43
-  - <<: *platform
-    name: krbserver-fedora44
-    image: localhost/ansible-openafs-fedora44
-  - <<: *platform
-    name: krbserver-opensuse15
-    image: localhost/ansible-openafs-opensuse15
-  - <<: *platform
-    name: krbserver-opensuse16
-    image: localhost/ansible-openafs-opensuse16
-  - <<: *platform
-    name: krbserver-oracle10
-    image: localhost/ansible-openafs-oracle10
-  - <<: *platform
-    name: krbserver-oracle8
-    image: localhost/ansible-openafs-oracle8
-  - <<: *platform
-    name: krbserver-oracle9
-    image: localhost/ansible-openafs-oracle9
-  - <<: *platform
-    name: krbserver-rocky10
-    image: localhost/ansible-openafs-rocky10
-  - <<: *platform
-    name: krbserver-rocky8
-    image: localhost/ansible-openafs-rocky8
-  - <<: *platform
-    name: krbserver-rocky9
-    image: localhost/ansible-openafs-rocky9
-  - <<: *platform
-    name: krbserver-ubuntu22
-    image: localhost/ansible-openafs-ubuntu22
-  - <<: *platform
-    name: krbserver-ubuntu24
-    image: localhost/ansible-openafs-ubuntu24
-  - <<: *platform
-    name: krbserver-ubuntu26
-    image: localhost/ansible-openafs-ubuntu26
 provisioner:
   name: ansible
   config_options:
