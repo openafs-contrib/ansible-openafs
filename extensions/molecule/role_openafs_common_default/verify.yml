@@ -1,0 +1,15 @@
+---
+# The openafs_common role only defines variables, so import it again to
+# check the variables it defines.
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Load the common definitions
+      ansible.builtin.import_role:
+        name: openafs_contrib.openafs.openafs_common
+
+    - name: Verify the common definitions
+      ansible.builtin.assert:
+        that:
+          - afs_install_method == 'managed'
+          - afs_yum_repo == 'https://download.sinenomine.net/openafs/rpms/almalinux$releasever/$basearch'
