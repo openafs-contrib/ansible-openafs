@@ -1,25 +1,62 @@
 ---
 - name: Verify
   hosts: afs_clients
+  vars:
+    krb5_packages:
+      Debian: krb5-user
+      RedHat: krb5-workstation
+      Suse: krb5-client
   tasks:
-    - name: Copy the admin keytab to the client
-      ansible.builtin.copy:
-        src: "{{ afs_realm_files }}/root.admin.keytab"
-        dest: /tmp/root.admin.keytab
-        mode: "0600"
+    - name: Read krb5.conf
+      ansible.builtin.slurp:
+        src: /etc/krb5.conf
+      register: krb5_conf
 
-    - name: Get a ticket for the admin principal from the KDC
-      ansible.builtin.command:
-        cmd: "{{ ansible_local.openafs.bins.kinit }} -k -t /tmp/root.admin.keytab root/admin"
-      changed_when: false
-
-    - name: List the principals with kadmin
-      ansible.builtin.command:
-        cmd: "{{ ansible_local.openafs.bins.kadmin }} -k -t /tmp/root.admin.keytab -p root/admin -q listprincs"
-      changed_when: false
-      register: listprincs
-
-    - name: Verify the admin principal is listed
+    - name: Verify krb5.conf
+      vars:
+        content: "{{ krb5_conf.content | b64decode }}"
       ansible.builtin.assert:
         that:
-          - "('root/admin@' ~ afs_realm) in listprincs.stdout_lines"
+          - "('default_realm = ' ~ afs_realm) in content"
+          - "('kdc = ' ~ afs_kdc_servers) in content"
+          - "('admin_server = ' ~ afs_kadmin_server) in content"
+
+    - name: Verify the Kerberos client package would be installed
+      when: afs_test_mode == 'fake'
+      block:
+        - name: Read the fake package log
+          ansible.builtin.slurp:
+            src: /var/log/ansible-fake-packages.log
+          register: fake_log
+
+        - name: Verify the Kerberos client package was requested
+          vars:
+            requests: "{{ (fake_log.content | b64decode).splitlines() | map('from_json') }}"
+          ansible.builtin.assert:
+            that:
+              - krb5_packages[ansible_os_family] in (requests | map(attribute='name') | flatten)
+
+    - name: Verify the Kerberos client works with the KDC
+      when: afs_test_mode == 'real'
+      block:
+        - name: Copy the admin keytab to the client
+          ansible.builtin.copy:
+            src: "{{ afs_realm_files }}/root.admin.keytab"
+            dest: /tmp/root.admin.keytab
+            mode: "0600"
+
+        - name: Get a ticket for the admin principal from the KDC
+          ansible.builtin.command:
+            cmd: "{{ ansible_local.openafs.bins.kinit }} -k -t /tmp/root.admin.keytab root/admin"
+          changed_when: false
+
+        - name: List the principals with kadmin
+          ansible.builtin.command:
+            cmd: "{{ ansible_local.openafs.bins.kadmin }} -k -t /tmp/root.admin.keytab -p root/admin -q listprincs"
+          changed_when: false
+          register: listprincs
+
+        - name: Verify the admin principal is listed
+          ansible.builtin.assert:
+            that:
+              - "('root/admin@' ~ afs_realm) in listprincs.stdout_lines"

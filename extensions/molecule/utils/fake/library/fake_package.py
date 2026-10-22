@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # WANT_JSON
 #
-# Fake package manager module for fast tests. Nothing is installed. The
-# requested packages are recorded in a log file on the target, so the
-# tests can verify which packages a role would install.
+# Fake package manager module for the fast tests (AFS_TEST_MODE=fake).
+# Nothing is installed. The requested packages are recorded in a log file
+# on the target, so the tests can verify which packages a role would install.
 
 import json
 import sys

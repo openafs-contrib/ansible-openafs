@@ -5,6 +5,7 @@
     - name: Install and configure the Kerberos server
       ansible.builtin.import_role:
         name: openafs_contrib.openafs.openafs_krbserver
+      when: afs_test_mode == 'real'
 
 - name: Converge the Kerberos clients
   hosts: afs_clients

@@ -137,6 +137,10 @@ provisioner:
   config_options:
     defaults:
       forks: 40
+  env:
+    # Use the fake modules when AFS_TEST_MODE=fake.
+    ANSIBLE_LIBRARY: "${MOLECULE_SCENARIO_DIRECTORY}/../utils/${AFS_TEST_MODE:-real}/library"
+    ANSIBLE_ACTION_PLUGINS: "${MOLECULE_SCENARIO_DIRECTORY}/../utils/${AFS_TEST_MODE:-real}/action_plugins"
   playbooks:
     prepare: ../utils/playbooks/prepare.yml
   inventory:
@@ -144,6 +148,7 @@ provisioner:
       all:
         ansible_user: root
         ansible_pipelining: true
+        afs_test_mode: "${AFS_TEST_MODE:-real}"
         afs_realm: EXAMPLE.COM
         # Each client uses the KDC for the same operating system.
         afs_os_name: "{{ inventory_hostname | regex_replace('-kdc$$', '') }}"
