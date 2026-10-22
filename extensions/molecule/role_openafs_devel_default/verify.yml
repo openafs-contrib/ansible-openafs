@@ -1,0 +1,29 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Verify the build tools are installed
+      ansible.builtin.shell:
+        cmd: "command -v {{ item }}"
+      changed_when: false
+      loop:
+        - autoconf
+        - automake
+        - bison
+        - flex
+        - gcc
+        - git
+        - libtoolize
+        - make
+        - perl
+        - swig
+
+    - name: Check the Kerberos headers are installed
+      ansible.builtin.stat:
+        path: /usr/include/krb5.h
+      register: krb5_h
+
+    - name: Verify the Kerberos headers are installed
+      ansible.builtin.assert:
+        that:
+          - krb5_h.stat.exists
