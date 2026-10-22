@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Install and start the OpenAFS client
+      ansible.builtin.import_role:
+        name: openafs_contrib.openafs.openafs_client

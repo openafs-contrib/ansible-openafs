@@ -1,1 +1,2 @@
 molecule-plugins[podman]
+molecule-proxmox

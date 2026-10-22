@@ -37,6 +37,10 @@ Requirements
 * `tox`_ 4.x
 * `podman`_, configured to run rootless containers
 * ``git``
+* A `Proxmox VE`_ server, for the scenarios which load the OpenAFS kernel
+  module. See `Proxmox scenarios`_.
+
+.. _`Proxmox VE`: https://www.proxmox.com/en/proxmox-virtual-environment
 
 Other packages are installed in the tox test environments as needed.
 
@@ -161,10 +165,65 @@ shared by all of the platforms, so only the name and image are needed:
 .. note::
 
    The OpenAFS kernel module can not be loaded in a container, so the
-   ``openafs_client`` role and the cell playbook can not be fully tested in
-   containers. The ``openafs_devel_kernel`` scenario installs the kernel
-   headers for the newest kernel in the package repositories, since the
-   kernel running in a container is the host kernel.
+   scenarios which install the OpenAFS client run on Proxmox virtual
+   machines. See `Proxmox scenarios`_. The ``openafs_devel_kernel`` scenario
+   installs the kernel headers for the newest kernel in the package
+   repositories, since the kernel running in a container is the host kernel.
+
+Proxmox scenarios
+~~~~~~~~~~~~~~~~~
+
+The scenarios named ``*_proxmox`` run on virtual machines cloned from a
+template on a `Proxmox VE`_ server, with the `molecule-proxmox`_ driver. The
+``molecule`` test environments run these scenarios with the others, so a
+Proxmox server is needed to run all of the tests. Without one, exclude the
+Proxmox scenarios:
+
+.. code-block:: bash
+
+   tox --ansible -e molecule-py3.14-2.21 -- --exclude role_openafs_client_proxmox
+
+.. _`molecule-proxmox`: https://molecule-proxmox.readthedocs.io
+
+The Proxmox API connection settings are read from a secrets file, which is
+kept outside the source tree. The default location is
+``~/.config/molecule/proxmox_secrets.yml``:
+
+.. code-block:: yaml
+
+   api_host: proxmox.example.com
+   api_user: molecule@pve
+   api_token_id: molecule
+   api_token_secret: <secret>
+
+Restrict the permissions of the secrets file with ``chmod 600``. The secrets
+file may instead be an executable which prints the settings, for example to
+read them from a password manager.
+
+The template must have the ``qemu-guest-agent`` installed and enabled, since
+the driver gets the virtual machine address from the guest agent. The template
+must allow ``ssh`` logins with a key, by a user with passwordless ``sudo``.
+Use a separate key pair for the test virtual machines, without a passphrase,
+and add the public key to the template:
+
+.. code-block:: bash
+
+   ssh-keygen -t ed25519 -N '' -C molecule-proxmox -f ~/.ssh/molecule_proxmox
+
+Set the following environment variables to override the defaults:
+
+``AFS_PROXMOX_SECRETS``
+   The secrets file. Default: ``~/.config/molecule/proxmox_secrets.yml``
+``AFS_PROXMOX_NODE``
+   The Proxmox node name. Default: ``pve``
+``AFS_PROXMOX_SSH_USER``
+   The ``ssh`` user. Default: ``molecule``
+``AFS_PROXMOX_SSH_IDENTITY_FILE``
+   The ``ssh`` private key. Default: ``~/.ssh/molecule_proxmox``
+``AFS_PROXMOX_VALIDATE_CERTS``
+   Validate the Proxmox API TLS certificate. Default: ``false``
+``AFS_PROXMOX_TEMPLATE_ALMA10``
+   The AlmaLinux 10 template name. Default: ``alma10``
 
 Running Molecule directly
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -297,13 +356,13 @@ Scenarios to add for ``alma10``:
 Each scenario in ``extensions/molecule`` is run by the ``molecule`` test
 environments, so only add a scenario when it is ready to run.
 
-#. ``playbook_local_install_default``: the ``local_install`` playbook. It
-   installs and starts the OpenAFS client, so it needs a virtual machine
-   (see ``role_openafs_client_default``).
-#. ``role_openafs_client_default``: the OpenAFS kernel module can not be
-   loaded in a container. Decide what can be tested, for example installing
-   the client and building (not loading) the kernel module. Building the
-   kernel module in a container needs:
+#. ``playbook_local_install_proxmox``: the ``local_install`` playbook. It
+   installs and starts the OpenAFS client, so it needs a virtual machine.
+#. ``role_openafs_client_proxmox``: the other client install methods
+   (packages, kmod, source).
+#. ``role_openafs_client_default``: (optional) test what can be tested in a
+   container, for example installing the client and building (not loading)
+   the kernel module. Building the kernel module in a container needs:
 
    * the kernel headers for a kernel version other than the running (host)
      kernel; set ``afs_kernel_version``, as in the

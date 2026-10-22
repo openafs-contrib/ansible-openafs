@@ -1,4 +1,5 @@
 ---
-# Collections required by the molecule podman driver.
+# Collections required by the molecule podman and proxmox drivers.
 collections:
   - name: containers.podman
+  - name: community.proxmox
