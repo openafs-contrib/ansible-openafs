@@ -121,6 +121,25 @@ Set ``AFS_SCENARIO`` to the scenario to be run (the default is
 
    AFS_SCENARIO=role_openafs_server_default tox --ansible -e molecule-py3.14-2.21
 
+To run more than one scenario, set ``AFS_SCENARIO`` to a space separated list
+of scenarios, and set ``AFS_WORKERS`` to the number of scenarios to run in
+parallel (the default is 1). The output of each scenario is written to
+``logs/<scenario>.log``, and the result of each scenario is printed when it is
+done:
+
+.. code-block:: bash
+
+   AFS_SCENARIO="role_openafs_krbserver_default playbook_deploy_realm_default" \
+   AFS_WORKERS=2 \
+   tox --ansible -e molecule-py3.14-2.21
+
+The scenarios are run by ``tests/integration/run_scenarios.sh``. Each scenario
+creates its own containers and podman network, so the scenarios can be run in
+parallel. The Molecule ``--workers`` option is not used, since it runs all of
+the scenarios on the instances created by the ``default`` scenario. Do not run
+the same scenario in more than one ``tox`` environment at the same time, since
+the container names would conflict.
+
 These scenarios are currently ready to run:
 
 * ``role_openafs_common_default``
@@ -254,22 +273,19 @@ nightly. To set up a test machine:
       cd ansible-openafs
       tox -e images
 
-6. Run the tests. For example, to run each of the scenarios and save the
-   output of each one:
+6. Run the tests. For example, to run all of the scenarios, eight at a time:
 
    .. code-block:: bash
 
-      mkdir -p logs
-      for s in role_openafs_common_default role_openafs_krbserver_default \
-               role_openafs_krbclient_default role_openafs_devel_default \
-               role_openafs_devel_kernel_default role_openafs_server_default \
-               role_openafs_server_source playbook_deploy_realm_default; do
-          AFS_SCENARIO=$s tox --ansible -e molecule-py3.14-2.21 > logs/$s.log 2>&1 \
-              && echo "PASS $s" || echo "FAIL $s"
-      done
+      AFS_SCENARIO="role_openafs_common_default role_openafs_krbserver_default
+                    role_openafs_krbclient_default role_openafs_devel_default
+                    role_openafs_devel_kernel_default role_openafs_server_default
+                    role_openafs_server_source playbook_deploy_realm_default" \
+      AFS_WORKERS=8 \
+      tox --ansible -e molecule-py3.14-2.21
 
-   Each scenario prints a summary at the end of its output, which shows which
-   steps passed and failed, and the Ansible play recap shows which platform
+   Each scenario log in ``logs`` ends with a summary which shows which steps
+   passed and failed, and the Ansible play recap shows which platform
    failed.
 
 To do
