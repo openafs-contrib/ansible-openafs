@@ -3,8 +3,10 @@
 # This playbook installs development packages needed to build OpenAFS on the
 # local system.  See the top level README for the list of platforms supported.
 #
+# Set afs_local_hosts to run the playbook on other hosts, for testing.
+#
 - name: "Install OpenAFS development packages."
-  hosts: localhost
+  hosts: "{{ afs_local_hosts | d('localhost') }}"
   connection: local
   roles:
     - openafs_contrib.openafs.openafs_devel
