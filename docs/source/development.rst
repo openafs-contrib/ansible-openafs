@@ -297,8 +297,9 @@ Scenarios to add for ``alma10``:
 Each scenario in ``extensions/molecule`` is run by the ``molecule`` test
 environments, so only add a scenario when it is ready to run.
 
-#. ``playbook_local_devel_default`` and ``playbook_local_install_default``:
-   the ``local_devel`` and ``local_install`` playbooks.
+#. ``playbook_local_install_default``: the ``local_install`` playbook. It
+   installs and starts the OpenAFS client, so it needs a virtual machine
+   (see ``role_openafs_client_default``).
 #. ``role_openafs_client_default``: the OpenAFS kernel module can not be
    loaded in a container. Decide what can be tested, for example installing
    the client and building (not loading) the kernel module. Building the

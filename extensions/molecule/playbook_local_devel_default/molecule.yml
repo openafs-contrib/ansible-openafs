@@ -1,0 +1,32 @@
+---
+driver:
+  name: podman
+platforms:
+  - &platform
+    name: local-devel-alma10
+    image: localhost/ansible-openafs-alma10
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: "molecule-${MOLECULE_SCENARIO_NAME}"
+    extra_opts:
+      - --no-hosts
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: ../utils/playbooks/prepare.yml
+  inventory:
+    group_vars:
+      all:
+        ansible_user: root
+        ansible_pipelining: true
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
