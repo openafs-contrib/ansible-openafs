@@ -8,11 +8,11 @@
   loop_control:
     loop_var: afs_server_os_item
   with_first_found:
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_system }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_major_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.os_family }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.system }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
 - import_tasks: "pre-install/check-variables.yaml"
@@ -27,12 +27,12 @@
   loop_control:
     loop_var: afs_server_install_item
   with_first_found:
-    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_os_family | lower }}.yaml"
+    - "{{ role_path }}/tasks/install/{{ afs_install_method }}-{{ ansible_facts.os_family | lower }}.yaml"
     - "{{ role_path }}/tasks/install/{{ afs_install_method }}.yaml"
     - "{{ role_path }}/tasks/install/unknown.yaml"
 
 - import_tasks: "post-install/server-config.yaml"
 - import_tasks: "post-install/server-key.yaml"
 - include_tasks: "post-install/security-contexts-{{ afs_security_model }}.yaml"
-- include_tasks: "post-install/enable-service/{{ ansible_service_mgr }}.yaml"
+- include_tasks: "post-install/enable-service/{{ ansible_facts.service_mgr }}.yaml"
 - import_tasks: "post-install/bootstrap-cell.yaml"

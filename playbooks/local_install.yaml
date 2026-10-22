@@ -82,8 +82,8 @@
       cell: "{{ afs_cell }}"
       desc: Example cell for testing
       hosts:
-        - ip: "{{ afs_server_netinfo | d(ansible_default_ipv4.address) }}"
-          name: "{{ ansible_hostname }}"
+        - ip: "{{ afs_server_netinfo | d(ansible_facts.default_ipv4.address) }}"
+          name: "{{ ansible_facts.hostname }}"
           clone: false
 
     # The following variables specify the paths for generated files.

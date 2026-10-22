@@ -1,17 +1,17 @@
 ---
 - name: "Gathering facts."
   setup:
-  when: ansible_distribution is undefined
+  when: ansible_facts.distribution is undefined
 
 - name: "Import common variables."
   import_role:
     name: openafs_contrib.openafs.openafs_common
 
-#- debug: msg="{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
-#- debug: msg="{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
-#- debug: msg="{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}.yaml"
-#- debug: msg="{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
-#- debug: msg="{{ role_path }}/vars/{{ ansible_system }}.yaml"
+#- debug: msg="{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_version }}.yaml"
+#- debug: msg="{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_major_version }}.yaml"
+#- debug: msg="{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}.yaml"
+#- debug: msg="{{ role_path }}/vars/{{ ansible_facts.os_family }}.yaml"
+#- debug: msg="{{ role_path }}/vars/{{ ansible_facts.system }}.yaml"
 #- debug: msg="{{ role_path }}/vars/defaults.yaml"
 
 - name: "Include operating system specific variables."
@@ -19,11 +19,11 @@
   loop_control:
     loop_var: afs_devel_kernel_os_item
   with_first_found:
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_system }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_major_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.os_family }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.system }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
 - name: "Install kernel module development packages."
@@ -33,9 +33,9 @@
   loop_control:
     loop_var: afs_devel_kernel_install_item
   with_first_found:
-    - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
-    - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
-    - "{{ _path }}/{{ ansible_distribution | replace(' ', '_') }}.yaml"
-    - "{{ _path }}/{{ ansible_os_family | replace(' ', '_') }}.yaml"
-    - "{{ _path }}/{{ ansible_system | replace(' ', '_') }}.yaml"
+    - "{{ _path }}/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_version }}.yaml"
+    - "{{ _path }}/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_major_version }}.yaml"
+    - "{{ _path }}/{{ ansible_facts.distribution | replace(' ', '_') }}.yaml"
+    - "{{ _path }}/{{ ansible_facts.os_family | replace(' ', '_') }}.yaml"
+    - "{{ _path }}/{{ ansible_facts.system | replace(' ', '_') }}.yaml"
     - "{{ _path }}/unknown.yaml"

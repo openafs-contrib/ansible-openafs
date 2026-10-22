@@ -11,9 +11,6 @@
 # build so we only build once on a given node.
 #
 
-- debug:
-    var: afs_configure_options
-
 - name: Build OpenAFS binaries and kernel module
   openafs_contrib.openafs.openafs_build:
     state: built-module

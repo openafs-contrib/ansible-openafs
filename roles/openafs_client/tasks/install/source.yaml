@@ -21,14 +21,14 @@
 
 - name: Check SELinux mode.
   assert:
-    that: ansible_selinux.mode != 'enforcing'
+    that: ansible_facts.selinux.mode != 'enforcing'
     fail_msg: SELinux enforcing is not supported when installing from source.
     success_msg: SELinux enforcing mode is not set.
   when:
     # Is selinux present on this node?
-    - ansible_selinux is defined
-    - (ansible_selinux | type_debug) == 'dict'
-    - ansible_selinux.status == 'enabled'
+    - ansible_facts.selinux is defined
+    - (ansible_facts.selinux | type_debug) == 'dict'
+    - ansible_facts.selinux.status == 'enabled'
 
 - name: "Install kernel module build requirements."
   import_role:
@@ -141,4 +141,4 @@
 #----------------------------------------------------------------------------
 # Setup service.
 #
-- include_tasks: "{{ role_path }}/tasks/service/{{ ansible_service_mgr }}.yaml"
+- include_tasks: "{{ role_path }}/tasks/service/{{ ansible_facts.service_mgr }}.yaml"

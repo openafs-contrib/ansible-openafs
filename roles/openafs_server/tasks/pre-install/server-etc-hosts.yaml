@@ -13,21 +13,21 @@
 - name: Avoid mapping the hostname to a loopback address on Debian.
   become: yes
   when:
-    - ansible_os_family == 'Debian'
+    - ansible_facts.os_family == 'Debian'
     - afs_server_change_etc_hosts | bool
   replace:
     path: /etc/hosts
     regexp: '^127.0.1.1'
-    replace: "{{ ansible_default_ipv4.address }} {{ ansible_hostname }}"
+    replace: "{{ ansible_facts.default_ipv4.address }} {{ ansible_facts.hostname }}"
 
 - name: Check hostname resolution.
   command:
     cmd: >
-      {{ ansible_python.executable }}
+      {{ ansible_facts.python.executable }}
       -c 'import socket; print(socket.gethostbyname(socket.gethostname()))'
   changed_when: false
   register: gethostbyname_results
-  when: ansible_python.executable is defined
+  when: ansible_facts.python.executable is defined
 
 - name: Verify hostname does not resolve to a loopback address.
   vars:

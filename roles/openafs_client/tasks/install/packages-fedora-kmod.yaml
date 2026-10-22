@@ -28,7 +28,7 @@
       - tar
       - gzip
       - bzip2
-  when: ansible_pkg_mgr in ('yum', 'dnf')
+  when: ansible_facts.pkg_mgr in ('yum', 'dnf')
 
 - debug:
     msg: "Release tarball is {{ afs_install_archive }}"
@@ -100,18 +100,18 @@
     var: rpm_query
 
 - debug:
-    var: ansible_kernel
+    var: ansible_facts.kernel
 
 # Search for kmod packages which provide the current kernel version.
 - set_fact:
     kmods: "{{ rpm_query.results
-          | selectattr('stdout', 'search', 'kernel-modules = ' + ansible_kernel)
+          | selectattr('stdout', 'search', 'kernel-modules = ' + ansible_facts.kernel)
           | map(attribute='kmod')
           | list }}"
 
 - name: Verify kmod-openafs rpm file was found
   fail:
-    msg: "kmod-openafs not found for kernel version {{ ansible_kernel }}."
+    msg: "kmod-openafs not found for kernel version {{ ansible_facts.kernel }}."
   when: kmods | count == 0
 
 # Search for a matching debuginfo rpm for the kmod.

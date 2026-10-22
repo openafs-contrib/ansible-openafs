@@ -7,7 +7,7 @@
       - tar
       - gzip
       - bzip2
-  when: ansible_pkg_mgr in ('yum', 'dnf')
+  when: ansible_facts.pkg_mgr in ('yum', 'dnf')
 
 - name: Ensure gtar is installed
   become: yes
@@ -17,7 +17,7 @@
       - gtar
       - gzip
       - bzip2
-  when: ansible_pkg_mgr == 'pkgng'
+  when: ansible_facts.pkg_mgr == 'pkgng'
 
 - debug:
     msg: "Release tarball is {{ afs_install_archive }}"

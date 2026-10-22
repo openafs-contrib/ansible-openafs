@@ -4,7 +4,7 @@
     msg:
       - "Install method {{ afs_install_method }} is not supported."
       - "File not found:"
-      - "{{ afs_install_method }}-{{ ansible_os_family | lower }}.yaml"
+      - "{{ afs_install_method }}-{{ ansible_facts.os_family | lower }}.yaml"
       - "{{ afs_install_method }}.yaml"
       - "Search path:"
       - "{{ role_path }}/tasks/install"

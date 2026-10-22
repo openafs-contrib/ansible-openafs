@@ -46,7 +46,7 @@ afs_user: "{{ ansible_user | d(lookup('env', 'USER') | d('ansible', True)) }}"
 
 # The pts id of the afs_user.
 # Default is 0 to let the ptserver select the next available id.
-afs_user_id: "{{ ansible_user_id | d(0, True) | int }}"
+afs_user_id: "{{ ansible_facts.user_id | d(0, True) | int }}"
 
 # Admin user name.
 afs_admin: "{{ afs_user + '.admin' }}"
@@ -58,7 +58,7 @@ afs_tmpdir: /tmp/ansible-openafs
 afs_topdir: ~/openafs
 
 # Kernel version to install the kernel headers for.
-afs_kernel_version: "{{ ansible_kernel }}"
+afs_kernel_version: "{{ ansible_facts.kernel }}"
 
 # Installation method; managed, packages, bdist, sdist, source, none
 # afs_install_method: (default is platform dependent)

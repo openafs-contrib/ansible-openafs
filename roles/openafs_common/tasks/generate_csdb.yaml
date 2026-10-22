@@ -31,7 +31,7 @@
           desc: {{ afs_desc | d('Cell name') }}
           hosts:
           {% for name in groups['afs_databases'] | sort %}
-            - ip: {{ hostvars[name].ansible_default_ipv4.address }}
+            - ip: {{ hostvars[name].ansible_facts.default_ipv4.address }}
               name: {{ hostvars[name].inventory_hostname }}
               clone: {{ hostvars[name].get('afs_db_clone', 'no') | bool }}
           {% endfor %}

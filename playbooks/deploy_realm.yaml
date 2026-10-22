@@ -57,7 +57,7 @@
     - name: Remove checkpoint files older than an hour.
       when:
         - deploy_realm_facts.stat.exists
-        - (deploy_realm_facts.stat.mtime | int) < ((ansible_date_time.epoch | int) - _seconds_per_hour)
+        - (deploy_realm_facts.stat.mtime | int) < ((ansible_facts.date_time.epoch | int) - _seconds_per_hour)
       block:
         - name: Remove the checkpoint file.
           become: true
