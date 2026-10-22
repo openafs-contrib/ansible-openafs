@@ -27,7 +27,7 @@ They are generally used for development and testing.
 ``openafs_contrib.openafs.local_devel``
    Install development tools on the local machine.
 
-``openafs_contrib.openafs.local_cell``
+``openafs_contrib.openafs.local_install``
    Install and setup Kerberos and OpenAFS clients and servers on the local
    machine to create a simple test realm and cell. This sets up a fully functional
    but non-distributed OpenAFS environment for local testing.

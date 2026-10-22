@@ -44,14 +44,14 @@
 # Running
 # -------
 #
-#   $ ansible-playbook openafs_contrib.openafs.local_cell
+#   $ ansible-playbook openafs_contrib.openafs.local_install
 #
 # Specify one or more --extra (-e) options to override the defaults
 # in the vars section of this playbook.
 #
 #
 - name: Create an OpenAFS sandbox cell for testing.
-  hosts: localhost
+  hosts: "{{ afs_local_hosts | d('localhost') }}"
   connection: local
   vars:
     # This local machine will be both the client and the server.
