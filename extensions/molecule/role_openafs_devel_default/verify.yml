@@ -17,6 +17,7 @@
         - make
         - perl
         - swig
+        - which
 
     - name: Check the Kerberos headers are installed
       ansible.builtin.stat:
