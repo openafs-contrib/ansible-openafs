@@ -3,6 +3,7 @@
   become: yes
   copy:
     src: "{{ afs_service_keytab }}"
+    remote_src: "{{ afs_service_keytab_remote_src | bool }}"
     dest: "{{ afs_afsconfdir }}/rxkad.keytab"
     mode: 0600
     owner: root
