@@ -1,0 +1,92 @@
+---
+- name: Verify
+  hosts: all
+  vars:
+    afs_cell: example.com
+    afs_user: "{{ ansible_facts.user_id }}"
+    keytabs: "{{ ansible_facts.user_dir }}/keytabs"
+  tasks:
+    - name: Verify the playbook checkpoint
+      ansible.builtin.assert:
+        that:
+          - ansible_local.local_install.checkpoint == 4
+
+    - name: Get the loaded kernel modules
+      ansible.builtin.command:
+        cmd: cat /proc/modules
+      changed_when: false
+      register: modules
+
+    - name: Verify the OpenAFS kernel module is loaded
+      ansible.builtin.assert:
+        that:
+          - modules.stdout is regex('^(openafs|libafs) ', multiline=True)
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Verify the services are running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services[item ~ '.service'].state == 'running'
+      loop:
+        - "{{ ansible_local.openafs.krbserver.kdc_service }}"
+        - openafs-server
+        - openafs-client
+
+    - name: Check the keytabs were created
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: keytab_files
+      loop:
+        - "{{ ansible_local.openafs.local_install.keytab_service }}"
+        - "{{ ansible_local.openafs.local_install.keytab_admin }}"
+        - "{{ keytabs }}/{{ afs_user }}.keytab"
+
+    - name: Verify the keytabs were created
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - item.stat.pw_name == afs_user
+          - item.stat.mode == '0600'
+      loop: "{{ keytab_files.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: List the volumes
+      become: true
+      ansible.builtin.command:
+        cmd: "{{ ansible_local.openafs.bins.vos }} listvldb -localauth"
+      changed_when: false
+      register: vldb
+
+    - name: Verify the volumes were created
+      ansible.builtin.assert:
+        that:
+          - vldb.stdout is regex('^' ~ item ~ '\\s*$', multiline=True)
+      loop:
+        - root.afs
+        - root.cell
+        - test
+
+    - name: Check the test volume is mounted
+      ansible.builtin.stat:
+        path: "/afs/{{ afs_cell }}/test"
+      register: test_dir
+
+    - name: Verify the test volume is mounted
+      ansible.builtin.assert:
+        that:
+          - test_dir.stat.isdir
+
+    - name: Get the AFS user
+      become: true
+      ansible.builtin.command:
+        cmd: "{{ ansible_local.openafs.bins.pts }} examine {{ afs_user }} -localauth"
+      changed_when: false
+      register: pts_user
+
+    - name: Verify the AFS user was created
+      ansible.builtin.assert:
+        that:
+          - "('Name: ' ~ afs_user ~ ', id: 1000,') in pts_user.stdout"
