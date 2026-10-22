@@ -1,0 +1,41 @@
+---
+# This scenario loads the OpenAFS kernel module, so it runs on a Proxmox VE
+# virtual machine instead of a container. See the development docs for the
+# AFS_PROXMOX_* settings.
+driver:
+  name: molecule-proxmox
+  options:
+    proxmox_secrets: "${AFS_PROXMOX_SECRETS:-~/.config/molecule/proxmox_secrets.yml}"
+    node: "${AFS_PROXMOX_NODE:-pve}"
+    ssh_user: "${AFS_PROXMOX_SSH_USER:-molecule}"
+    ssh_identity_file: "${AFS_PROXMOX_SSH_IDENTITY_FILE:-~/.ssh/molecule_proxmox}"
+    validate_certs: "${AFS_PROXMOX_VALIDATE_CERTS:-false}"
+platforms:
+  - name: client-alma10
+    template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    groups:
+      - afs_clients
+provisioner:
+  name: ansible
+  inventory:
+    group_vars:
+      all:
+        ansible_pipelining: true
+        afs_cell: example.com
+        afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
+        afs_csdb_file: ""
+        afs_install_method: managed
+        afs_module_install_method: dkms
+        # The template kernel may be older than the kernel-devel packages
+        # available in the repositories.
+        afs_devel_allow_kernel_update: true
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
