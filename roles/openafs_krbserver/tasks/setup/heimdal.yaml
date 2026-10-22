@@ -3,8 +3,8 @@
   become: yes
   vars:
     # Fallback to the raw address for now, since DNS may not be setup.
-    afs_krb_kdc: "{{ ansible_default_ipv4.address }}"
-    afs_krb_admin_server: "{{ ansible_default_ipv4.address }}"
+    afs_krb_kdc: "{{ ansible_facts.default_ipv4.address }}"
+    afs_krb_admin_server: "{{ ansible_facts.default_ipv4.address }}"
   template:
     src: krb5.conf.j2
     dest: "{{ afs_krbserver_krb5_conf }}"

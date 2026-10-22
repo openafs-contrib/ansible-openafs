@@ -4,12 +4,6 @@
 # is only a server.
 #
 
-- debug:
-    var: afs_nolibafs_configure_options
-
-- debug:
-    var: afs_configure_options
-
 - name: Build OpenAFS binaries
   openafs_contrib.openafs.openafs_build:
     state: built

@@ -2,8 +2,8 @@
 - name: "Create kerberos krb5.conf file."
   become: yes
   vars:
-    afs_krb_kdc: "{{ ansible_hostname }}"
-    afs_krb_admin_server: "{{ ansible_hostname }}"
+    afs_krb_kdc: "{{ ansible_facts.hostname }}"
+    afs_krb_admin_server: "{{ ansible_facts.hostname }}"
   template:
     src: krb5.conf.j2
     dest: "{{ afs_krbserver_krb5_conf }}"

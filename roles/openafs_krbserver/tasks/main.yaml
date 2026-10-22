@@ -8,11 +8,11 @@
   loop_control:
     loop_var: afs_krbserver_os_item
   with_first_found:
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_distribution | replace(' ', '_') }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_os_family }}.yaml"
-    - "{{ role_path }}/vars/{{ ansible_system }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_major_version }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.distribution | replace(' ', '_') }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.os_family }}.yaml"
+    - "{{ role_path }}/vars/{{ ansible_facts.system }}.yaml"
     - "{{ role_path }}/vars/defaults.yaml"
 
 - include_tasks: "system-{{ afs_firewall }}.yaml"
@@ -25,11 +25,11 @@
   loop_control:
     loop_var: afs_krbserver_install_item
   with_first_found:
-    - "{{ role_path }}/tasks/install-packages/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_version }}.yaml"
-    - "{{ role_path }}/tasks/install-packages/{{ ansible_distribution | replace(' ', '_') }}-{{ ansible_distribution_major_version }}.yaml"
-    - "{{ role_path }}/tasks/install-packages/{{ ansible_distribution | replace(' ', '_') }}.yaml"
-    - "{{ role_path }}/tasks/install-packages/{{ ansible_os_family }}.yaml"
-    - "{{ role_path }}/tasks/install-packages/{{ ansible_system }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_version }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_facts.distribution | replace(' ', '_') }}-{{ ansible_facts.distribution_major_version }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_facts.distribution | replace(' ', '_') }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_facts.os_family }}.yaml"
+    - "{{ role_path }}/tasks/install-packages/{{ ansible_facts.system }}.yaml"
     - "unknown.yaml"
 
 - name: Store installation facts
