@@ -112,6 +112,13 @@ afs_service_keytab
 
   default: <afs_cell_files>/afs.<afs_cell>.keytab
 
+afs_service_keytab_remote_src
+  Set to true when ``afs_service_keytab`` is the path of a keytab file which is
+  already on the server nodes, instead of on the controller. The keytab file is
+  copied on the server nodes to ``rxkad.keytab``.
+
+  default: false
+
 afs_service_keytab_externally_managed
   When true, the AFS service Kerberos keytab file is managed with an external
   secrets management tool.
