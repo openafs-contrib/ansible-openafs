@@ -176,18 +176,19 @@ possible to keep the test containers for debugging. Run the scenario with
 
    source .tox/molecule-py3.14-2.21/bin/activate
    export ANSIBLE_COLLECTIONS_PATH=.
-   export ANSIBLE_HOME=$VIRTUAL_ENV/.ansible
    molecule test -s role_openafs_server_default
 
-These are the settings used by ``tox``. ``ANSIBLE_COLLECTIONS_PATH=.`` keeps
+``ANSIBLE_COLLECTIONS_PATH=.`` is the setting used by ``tox``. It keeps
 collections installed in ``~/.ansible/collections`` from being used instead of
-the collection in the source tree. ``ANSIBLE_HOME`` keeps the Ansible and
-Molecule files, including the Molecule instance state, in the test environment
-instead of ``~/.ansible``.
+the collection in the source tree.
 
 The Molecule ``prerun`` is disabled in ``extensions/molecule/config.yml``,
 which is merged into each scenario ``molecule.yml``. The ``tox`` environment
-already has the collection and the test requirements installed.
+already has the collection and the test requirements installed, and the
+prerun would install another copy of the collection in
+``~/.ansible/collections``, which is shared by all of the test environments,
+so environments run in parallel would race to install it. Do not enable the
+prerun.
 
 To test a single platform and keep the container for debugging:
 
