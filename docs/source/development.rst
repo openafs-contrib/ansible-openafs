@@ -181,7 +181,9 @@ Proxmox scenarios:
 
 .. code-block:: bash
 
-   tox --ansible -e molecule-py3.14-2.21 -- --exclude role_openafs_client_proxmox
+   tox --ansible -e molecule-py3.14-2.21 -- \
+       --exclude role_openafs_client_proxmox \
+       --exclude playbook_local_install_proxmox
 
 .. _`molecule-proxmox`: https://molecule-proxmox.readthedocs.io
 
@@ -356,8 +358,6 @@ Scenarios to add for ``alma10``:
 Each scenario in ``extensions/molecule`` is run by the ``molecule`` test
 environments, so only add a scenario when it is ready to run.
 
-#. ``playbook_local_install_proxmox``: the ``local_install`` playbook. It
-   installs and starts the OpenAFS client, so it needs a virtual machine.
 #. ``role_openafs_client_proxmox``: the other client install methods
    (packages, kmod, source).
 #. ``role_openafs_client_default``: (optional) test what can be tested in a
