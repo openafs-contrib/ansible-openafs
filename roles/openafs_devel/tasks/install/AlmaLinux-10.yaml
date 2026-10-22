@@ -39,5 +39,6 @@
       - redhat-rpm-config
       - rpm-build
       - swig
+      - which
       #- wget
   tags: root
