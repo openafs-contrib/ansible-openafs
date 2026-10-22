@@ -13,3 +13,4 @@ __pycache__/
 docs/build/
 builds/
 collections/
+logs/
