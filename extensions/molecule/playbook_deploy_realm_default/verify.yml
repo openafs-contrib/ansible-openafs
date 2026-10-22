@@ -1,0 +1,74 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Verify the kerberos services are running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services[item ~ '.service'].state == 'running'
+      loop:
+        - "{{ ansible_local.openafs.krbserver.kdc_service }}"
+        - "{{ ansible_local.openafs.krbserver.admin_service }}"
+
+    - name: Verify the playbook checkpoint
+      ansible.builtin.assert:
+        that:
+          - ansible_local.deploy_realm.checkpoint == 2
+
+    # kadmin.local is installed in the same directory as kdb5_util.
+    - name: Get the principals
+      ansible.builtin.command:
+        cmd: "{{ ansible_local.openafs.bins.kdb5_util | dirname }}/kadmin.local -q 'getprinc {{ item }}'"
+      changed_when: false
+      register: getprinc
+      loop:
+        - "afs/{{ afs_cell }}"
+        - "{{ afs_user }}/admin"
+        - "{{ afs_user }}"
+
+    - name: Verify the principals exist
+      ansible.builtin.assert:
+        that:
+          - "('Principal: ' ~ item.item ~ '@' ~ afs_realm) in item.stdout"
+      loop: "{{ getprinc.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Verify the AFS service key encryption types
+      ansible.builtin.assert:
+        that:
+          - "'aes256-cts-hmac-sha1-96' in getprinc.results[0].stdout"
+          - "'aes128-cts-hmac-sha1-96' in getprinc.results[0].stdout"
+
+    - name: Read the kadmin ACL file
+      ansible.builtin.slurp:
+        src: "{{ ansible_local.openafs.krbserver.kadm5_acl }}"
+      register: kadm5_acl
+
+    - name: Verify the admin principal has all privileges
+      vars:
+        acl_pattern: "(?m)^{{ afs_user }}/admin(@{{ afs_realm }})?\\s+\\*\\s*$"
+      ansible.builtin.assert:
+        that:
+          - kadm5_acl.content | b64decode | regex_search(acl_pattern) is not none
+
+    - name: Check the keytabs were downloaded
+      ansible.builtin.stat:
+        path: "{{ afs_cell_files }}/{{ item }}"
+      delegate_to: localhost
+      register: keytabs
+      loop:
+        - "afs.{{ afs_cell }}.keytab"
+        - "{{ afs_user }}.admin.keytab"
+        - "{{ afs_user }}.keytab"
+
+    - name: Verify the keytabs were downloaded
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+      loop: "{{ keytabs.results }}"
+      loop_control:
+        label: "{{ item.item }}"

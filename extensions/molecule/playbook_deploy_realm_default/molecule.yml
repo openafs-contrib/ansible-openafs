@@ -1,0 +1,42 @@
+---
+driver:
+  name: podman
+platforms:
+  - &platform
+    name: realm-alma10
+    image: localhost/ansible-openafs-alma10
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: molecule
+    extra_opts:
+      - --no-hosts
+    groups:
+      - afs_kdcs
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      forks: 20
+  playbooks:
+    prepare: ../utils/playbooks/prepare.yml
+  inventory:
+    group_vars:
+      all:
+        ansible_user: root
+        ansible_pipelining: true
+        afs_cell: example.com
+        afs_realm: EXAMPLE.COM
+        afs_user: tester
+        afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}/{{ inventory_hostname }}/cell"
+        afs_realm_files: "${MOLECULE_EPHEMERAL_DIRECTORY}/{{ inventory_hostname }}/realm"
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
