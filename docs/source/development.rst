@@ -130,6 +130,7 @@ These scenarios are currently ready to run:
 * ``role_openafs_devel_kernel_default``
 * ``role_openafs_server_default``
 * ``role_openafs_server_source``
+* ``playbook_deploy_realm_default``
 
 The ``role_openafs_server_source`` scenario builds OpenAFS from the
 ``openafs-stable-1_8_16_1`` git tag by default. Set ``AFS_GIT_VERSION`` to
@@ -262,7 +263,7 @@ nightly. To set up a test machine:
       for s in role_openafs_common_default role_openafs_krbserver_default \
                role_openafs_krbclient_default role_openafs_devel_default \
                role_openafs_devel_kernel_default role_openafs_server_default \
-               role_openafs_server_source; do
+               role_openafs_server_source playbook_deploy_realm_default; do
           AFS_SCENARIO=$s tox --ansible -e molecule-py3.14-2.21 > logs/$s.log 2>&1 \
               && echo "PASS $s" || echo "FAIL $s"
       done
@@ -299,8 +300,6 @@ Conventions for the integration tests:
 
 Scenarios to add for ``alma10``:
 
-#. ``playbook_deploy_realm_default``: the ``deploy_realm`` playbook. Similar
-   to the ``role_openafs_krbserver_default`` scenario.
 #. ``playbook_local_devel_default`` and ``playbook_local_install_default``:
    the ``local_devel`` and ``local_install`` playbooks.
 #. ``role_openafs_client_default``: the OpenAFS kernel module can not be
