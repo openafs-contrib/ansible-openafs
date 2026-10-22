@@ -37,4 +37,5 @@
       - rpm-build
       - swig
       - wget
+      - which
   tags: root
