@@ -19,7 +19,7 @@
 
 - name: "Query linux-header package."
   command:
-    cmd: "dpkg-query --show --showformat='${Status}:${Package}\n' linux-headers-{{ ansible_kernel }}"
+    cmd: "dpkg-query --show --showformat='${Status}:${Package}\n' linux-headers-{{ afs_kernel_version }}"
   changed_when: False
   failed_when: False
   register: dpkg_query
@@ -29,17 +29,17 @@
     verbosity: 1
 
 - debug:
-    msg: "linux-headers package is already installed for {{ ansible_kernel }}."
-  when: ansible_kernel not in dpkg_query.stdout_lines
+    msg: "linux-headers package is already installed for {{ afs_kernel_version }}."
+  when: afs_kernel_version not in dpkg_query.stdout_lines
 
 - name: "Install kernel headers."
-  when: ansible_kernel not in dpkg_query.stdout_lines
+  when: afs_kernel_version not in dpkg_query.stdout_lines
   become: yes
   block:
     - name: "Install linux-headers"
       apt:
         state: present
-        name: "linux-headers-{{ ansible_kernel }}"
+        name: "linux-headers-{{ afs_kernel_version }}"
 
   rescue:
     # If we are unable to install the linux-headers package, the current
@@ -62,7 +62,7 @@
       when: apt_update_results.changed
       block:
         - set_fact:
-            old_kernel_version: "{{ ansible_kernel }}"
+            old_kernel_version: "{{ afs_kernel_version }}"
 
         - name: Rebooting
           reboot:
@@ -75,9 +75,9 @@
           setup:
 
         - debug:
-            msg: "Updated kernel from {{ old_kernel_version }} to {{ ansible_kernel }}."
+            msg: "Updated kernel from {{ old_kernel_version }} to {{ afs_kernel_version }}."
 
         - name: "Install linux-headers"
           apt:
             state: present
-            name: "linux-headers-{{ ansible_kernel }}"
+            name: "linux-headers-{{ afs_kernel_version }}"
