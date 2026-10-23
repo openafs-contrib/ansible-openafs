@@ -6,13 +6,13 @@
 #
 # Just installing the 'kmod-openafs' package will install a kernel module for
 # the most recent kernel version in the yum repository, not neccessarily the
-# version currently running on the remote node. In order to obviate the need to
-# update the kernel and endure a reboot when importing this role, we attempt to
-# install the kmod-openafs with the full version name. This is a bit tricky
-# since the full name also contains on the OpenAFS version name. First, we
-# ensure the base openafs package is installed, and then query the version
-# string from the installed base package. Then we use that version string plus
-# the running kernel version to specify the full kmod-openafs package name.
+# version currently running on the remote node, and the newest OpenAFS version
+# in the repository may not have a kernel module for the running kernel (for
+# example, kmod-openafs packages are not built for pre-releases). In
+# order to obviate the need to update the kernel and endure a reboot when
+# importing this role, we find the newest kmod-openafs package which provides
+# the kernel modules for the running kernel, and then install the OpenAFS
+# packages for the same OpenAFS version.
 #
 
 - name: Add OpenAFS yum repo
@@ -27,36 +27,34 @@
   loop_control:
     loop_var: repo
 
-- name: Install OpenAFS base package
+- name: Find kmod-openafs for the running kernel
   become: yes
-  yum:
-    state: present
-    name:
-      - openafs
-
-- name: Query OpenAFS version
-  become: yes
-  command: rpm -q --queryformat "%{VERSION}" openafs
+  command:
+    cmd: >
+      dnf repoquery --quiet --latest-limit 1
+      --queryformat '%{name} %{version} %{release}\n'
+      --whatprovides 'kernel-modules = {{ ansible_facts.kernel }}'
   changed_when: False
-  register: rpm_query
+  register: kmod_query
   check_mode: no
 
-- name: Query OpenAFS release
-  become: yes
-  command: rpm -q --queryformat "%{RELEASE}" openafs
-  changed_when: False
-  register: rpm_release
-  check_mode: no
+- set_fact:
+    kmod_openafs: "{{ kmod_query.stdout_lines | select('match', 'kmod-openafs ') | first | d('') | split }}"
+
+- name: Verify kmod-openafs was found
+  fail:
+    msg: "kmod-openafs not found for kernel version {{ ansible_facts.kernel }}."
+  when: kmod_openafs | count != 3
 
 - name: Install OpenAFS client with kmod
   become: yes
   yum:
     state: present
     name:
-      - openafs
-      - openafs-client
-      - openafs-krb5
-      - "kmod-openafs-{{ rpm_query.stdout }}-{{ rpm_release.stdout | regex_replace('\\.[^.]*$', '') }}.{{ ansible_facts.kernel | regex_replace('-', '_') }}"
+      - "openafs-{{ kmod_openafs[1] }}"
+      - "openafs-client-{{ kmod_openafs[1] }}"
+      - "openafs-krb5-{{ kmod_openafs[1] }}"
+      - "kmod-openafs-{{ kmod_openafs[1] }}-{{ kmod_openafs[2] }}"
   register: yum_results
 
 - name: Get installation paths
