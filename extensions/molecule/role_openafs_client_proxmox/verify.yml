@@ -2,6 +2,12 @@
 - name: Verify
   hosts: all
   tasks:
+    - name: Verify the install method
+      ansible.builtin.assert:
+        that:
+          - ansible_local.openafs.install_method == afs_install_method
+          - ansible_local.openafs.client_installed
+
     - name: Get the loaded kernel modules
       ansible.builtin.command:
         cmd: cat /proc/modules

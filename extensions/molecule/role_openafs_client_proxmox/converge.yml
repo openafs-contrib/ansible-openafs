@@ -1,4 +1,54 @@
 ---
+# The packages install method installs the rpm files from an archive. Download
+# the release rpm files on the instance and create the archive, so nothing is
+# saved on the controller. The kmod-openafs rpm must match the running kernel.
+- name: Create the rpm package archive
+  hosts: all
+  tasks:
+    - name: Create the rpm package archive
+      when: afs_install_method == 'packages'
+      vars:
+        rpms_dir: /tmp/openafs-rpms
+        release: "{{ test_openafs_version }}-1.el{{ ansible_facts.distribution_major_version }}.{{ ansible_facts.architecture }}"
+        kmod: "kmod-openafs-{{ test_openafs_version }}-1.{{ ansible_facts.kernel | replace('-', '_') }}"
+      block:
+        - name: Create the rpm download directory
+          ansible.builtin.file:
+            state: directory
+            path: "{{ rpms_dir }}"
+            mode: "0755"
+
+        - name: Download the rpm files
+          ansible.builtin.get_url:
+            url: "{{ test_rpms_url }}/{{ item }}.rpm"
+            dest: "{{ rpms_dir }}/{{ item }}.rpm"
+            mode: "0644"
+          loop: "{{ ['openafs-' ~ release, 'openafs-client-' ~ release, 'openafs-krb5-' ~ release]
+                    + [(afs_module_install_method == 'kmod') | ternary(kmod, 'dkms-openafs-' ~ release)] }}"
+
+        - name: Install tar
+          become: true
+          ansible.builtin.package:
+            name:
+              - tar
+              - gzip
+            state: present
+
+        - name: Create the rpm archive
+          ansible.builtin.command:
+            cmd: "tar czf {{ afs_install_archive }} -C {{ rpms_dir }} ."
+            creates: "{{ afs_install_archive }}"
+
+    # SELinux enforcing mode is not supported when installing from source.
+    - name: Set SELinux to permissive mode
+      when:
+        - afs_install_method == 'source'
+        - ansible_facts.selinux.status | d('disabled') == 'enabled'
+      become: true
+      ansible.builtin.command:
+        cmd: setenforce 0
+      changed_when: true
+
 - name: Converge
   hosts: all
   tasks:

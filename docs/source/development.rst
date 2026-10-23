@@ -363,8 +363,6 @@ Scenarios to add for ``alma10``:
 Each scenario in ``extensions/molecule`` is run by the ``molecule`` test
 environments, so only add a scenario when it is ready to run.
 
-#. ``role_openafs_client_proxmox``: the other client install methods
-   (packages, kmod, source).
 #. ``role_openafs_client_default``: (optional) test what can be tested in a
    container, for example installing the client and building (not loading)
    the kernel module. Building the kernel module in a container needs:

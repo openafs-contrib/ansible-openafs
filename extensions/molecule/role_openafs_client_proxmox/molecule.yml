@@ -1,7 +1,10 @@
 ---
-# This scenario loads the OpenAFS kernel module, so it runs on a Proxmox VE
-# virtual machine instead of a container. See the development docs for the
+# This scenario loads the OpenAFS kernel module, so it runs on Proxmox VE
+# virtual machines instead of containers. See the development docs for the
 # AFS_PROXMOX_* settings.
+#
+# Each platform tests a different client install method, which is set in the
+# host_vars.
 driver:
   name: molecule-proxmox
   options:
@@ -15,8 +18,27 @@ platforms:
     template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
     groups:
       - afs_clients
+  - name: ansible-openafs-client-kmod-alma10
+    template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    groups:
+      - afs_clients
+  - name: ansible-openafs-client-packages-alma10
+    template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    groups:
+      - afs_clients
+  - name: ansible-openafs-client-packages-kmod-alma10
+    template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    groups:
+      - afs_clients
+  - name: ansible-openafs-client-source-alma10
+    template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    groups:
+      - afs_clients
 provisioner:
   name: ansible
+  config_options:
+    defaults:
+      forks: 20
   inventory:
     group_vars:
       all:
@@ -24,11 +46,31 @@ provisioner:
         afs_cell: example.com
         afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
         afs_csdb_file: ""
-        afs_install_method: managed
-        afs_module_install_method: dkms
         # The template kernel may be older than the kernel-devel packages
         # available in the repositories.
         afs_devel_allow_kernel_update: true
+        # The OpenAFS release installed by the packages install method.
+        test_openafs_version: "1.8.16.1"
+        test_rpms_url: "https://download.sinenomine.net/openafs/rpms/almalinux{{ ansible_facts.distribution_major_version }}/{{ ansible_facts.architecture }}"
+    host_vars:
+      ansible-openafs-client-alma10:
+        afs_install_method: managed
+        afs_module_install_method: dkms
+      ansible-openafs-client-kmod-alma10:
+        afs_install_method: managed
+        afs_module_install_method: kmod
+      ansible-openafs-client-packages-alma10:
+        afs_install_method: packages
+        afs_module_install_method: dkms
+        afs_install_archive: /tmp/openafs-rpms.tar.gz
+      ansible-openafs-client-packages-kmod-alma10:
+        afs_install_method: packages
+        afs_module_install_method: kmod
+        afs_install_archive: /tmp/openafs-rpms.tar.gz
+      ansible-openafs-client-source-alma10:
+        afs_install_method: source
+        afs_git_repo: git://git.openafs.org/openafs.git
+        afs_git_version: "${AFS_GIT_VERSION:-openafs-stable-1_8_16_1}"
 verifier:
   name: ansible
 scenario:
