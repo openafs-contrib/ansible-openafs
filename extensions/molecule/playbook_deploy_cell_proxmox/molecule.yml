@@ -1,0 +1,63 @@
+---
+# The deploy_cell playbook loads the OpenAFS kernel module on the clients, so
+# it runs on Proxmox VE virtual machines instead of containers. See the
+# development docs for the AFS_PROXMOX_* settings.
+driver:
+  name: molecule-proxmox
+  options:
+    proxmox_secrets: "${AFS_PROXMOX_SECRETS:-~/.config/molecule/proxmox_secrets.yml}"
+    node: "${AFS_PROXMOX_NODE:-pve}"
+    ssh_user: "${AFS_PROXMOX_SSH_USER:-molecule}"
+    ssh_identity_file: "${AFS_PROXMOX_SSH_IDENTITY_FILE:-~/.ssh/molecule_proxmox}"
+    validate_certs: "${AFS_PROXMOX_VALIDATE_CERTS:-false}"
+platforms:
+  - name: ansible-openafs-cell-afs01
+    template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    groups:
+      - afs_kdcs
+      - afs_databases
+      - afs_fileservers
+  - name: ansible-openafs-cell-afs02
+    template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    groups:
+      - afs_databases
+      - afs_fileservers
+  - name: ansible-openafs-cell-client01
+    template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    groups:
+      - afs_admin_client
+      - afs_clients
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      forks: 20
+  inventory:
+    group_vars:
+      all:
+        ansible_pipelining: true
+        afs_cell: example.com
+        afs_realm: EXAMPLE.COM
+        afs_user: tester
+        afs_user_id: 1000
+        afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}/cell"
+        afs_realm_files: "${MOLECULE_EPHEMERAL_DIRECTORY}/realm"
+        afs_install_method: managed
+        afs_module_install_method: dkms
+        afs_pseudo_partitions: ['a', 'b']
+        # There is no DNS for the test instances, so use the KDC address.
+        afs_kdc_servers: "{{ hostvars[groups['afs_kdcs'][0]].ansible_facts.default_ipv4.address }}"
+        afs_kadmin_server: "{{ hostvars[groups['afs_kdcs'][0]].ansible_facts.default_ipv4.address }}"
+        # The template kernel may be older than the kernel-devel packages
+        # available in the repositories.
+        afs_devel_allow_kernel_update: true
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
