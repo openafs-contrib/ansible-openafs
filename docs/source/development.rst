@@ -414,6 +414,12 @@ Known bugs:
   existing list as a single element, instead of extending the list.
 * ``openafs_build_redhat_rpms`` looks like an older copy of the RPM support in
   ``openafs_build_packages``.
+* ``openafs_user``: ``pts_creategroup`` treats an "already exists" error as
+  success, even when the existing entry is a user, not a group. Users and
+  groups share the same name space, so when a group name is the name of a
+  user (for example ``name: tester`` and ``group: tester``), the following
+  ``pts adduser`` fails with "No group specified". Check that the existing
+  entry is a group (a negative id) and fail with a clear message otherwise.
 
 Other work:
 
