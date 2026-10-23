@@ -1,0 +1,97 @@
+---
+- name: Verify the servers
+  hosts: afs_databases:afs_fileservers
+  tasks:
+    - name: Verify the playbook checkpoint
+      ansible.builtin.assert:
+        that:
+          - ansible_local.deploy_cell.checkpoint == 1
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Verify the OpenAFS server is running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services['openafs-server.service'].state == 'running'
+
+    - name: Get the server processes
+      become: true
+      ansible.builtin.command:
+        cmd: "{{ ansible_local.openafs.bins.bos }} status localhost -localauth"
+      changed_when: false
+      register: bos_status
+
+    - name: Verify the server processes are running
+      ansible.builtin.assert:
+        that:
+          - "'has core file' not in bos_status.stdout"
+          - "'temporarily disabled' not in bos_status.stdout"
+
+- name: Verify the client
+  hosts: afs_admin_client
+  vars:
+    test_file: "/afs/.{{ afs_cell }}/test/{{ inventory_hostname }}.txt"
+  tasks:
+    - name: Verify the playbook checkpoint
+      ansible.builtin.assert:
+        that:
+          - ansible_local.deploy_cell.checkpoint == 3
+
+    - name: Get the loaded kernel modules
+      ansible.builtin.command:
+        cmd: cat /proc/modules
+      changed_when: false
+      register: modules
+
+    - name: Verify the OpenAFS kernel module is loaded
+      ansible.builtin.assert:
+        that:
+          - modules.stdout is regex('^(openafs|libafs) ', multiline=True)
+
+    - name: List the volumes
+      ansible.builtin.command:
+        cmd: "{{ ansible_local.openafs.bins.vos }} listvldb -noauth"
+      changed_when: false
+      register: vldb
+
+    - name: Verify the volumes were created
+      ansible.builtin.assert:
+        that:
+          - vldb.stdout is regex('^' ~ item ~ '\\s*$', multiline=True)
+      loop:
+        - root.afs
+        - root.cell
+        - test
+
+    - name: Get the AFS user
+      ansible.builtin.command:
+        cmd: "{{ ansible_local.openafs.bins.pts }} examine {{ afs_user }} -noauth"
+      changed_when: false
+      register: pts_user
+
+    - name: Verify the AFS user was created
+      ansible.builtin.assert:
+        that:
+          - "('Name: ' ~ afs_user ~ ', id: ' ~ afs_user_id ~ ',') in pts_user.stdout"
+
+    # The keytabs are uploaded to the ssh user home directory by the playbook.
+    - name: Write and read a file as the AFS user
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          export KRB5CCNAME=FILE:/tmp/krb5cc_molecule_verify
+          kinit -k -t {{ afs_user }}.keytab {{ afs_user }}@{{ afs_realm }}
+          aklog -c {{ afs_cell }}
+          echo "hello from {{ inventory_hostname }}" > {{ test_file }}
+          cat {{ test_file }}
+          rm {{ test_file }}
+          unlog
+          kdestroy
+      changed_when: false
+      register: write_test
+
+    - name: Verify the file was written
+      ansible.builtin.assert:
+        that:
+          - write_test.stdout == 'hello from ' ~ inventory_hostname

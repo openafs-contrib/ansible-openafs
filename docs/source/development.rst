@@ -183,7 +183,8 @@ Proxmox scenarios:
 
    tox --ansible -e molecule-py3.14-2.21 -- \
        --exclude role_openafs_client_proxmox \
-       --exclude playbook_local_install_proxmox
+       --exclude playbook_local_install_proxmox \
+       --exclude playbook_deploy_cell_proxmox
 
 .. _`molecule-proxmox`: https://molecule-proxmox.readthedocs.io
 
@@ -201,6 +202,10 @@ kept outside the source tree. The default location is
 Restrict the permissions of the secrets file with ``chmod 600``. The secrets
 file may instead be an executable which prints the settings, for example to
 read them from a password manager.
+
+Name the Proxmox platforms with the ``ansible-openafs-`` prefix, for example
+``ansible-openafs-client-alma10``, so the test virtual machines are easy to
+find on a shared Proxmox server.
 
 The template must have the ``qemu-guest-agent`` installed and enabled, since
 the driver gets the virtual machine address from the guest agent. The template
@@ -375,8 +380,6 @@ environments, so only add a scenario when it is ready to run.
      since the module checks that the kernel module was built for the running
      kernel (``verify_kernel_module`` uses ``platform.release()``).
 
-#. ``playbook_deploy_cell_default``: the ``deploy_cell`` playbook. This
-   installs the client, so it depends on the client scenario.
 #. ``role_openafs_server_packages``, ``role_openafs_server_sdist``, and
    ``role_openafs_server_bdist``: the other server install methods. These need
    the OpenAFS release files. See ``legacy/tests/release_files.py`` and

@@ -1,0 +1,14 @@
+---
+- name: Deploy the Kerberos realm
+  ansible.builtin.import_playbook: openafs_contrib.openafs.deploy_realm
+
+- name: Generate the cell database file
+  hosts: afs_databases
+  tasks:
+    - name: Generate csdb.yaml
+      ansible.builtin.import_role:
+        name: openafs_contrib.openafs.openafs_common
+        tasks_from: generate_csdb
+
+- name: Deploy the cell
+  ansible.builtin.import_playbook: openafs_contrib.openafs.deploy_cell

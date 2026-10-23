@@ -11,7 +11,7 @@ driver:
     ssh_identity_file: "${AFS_PROXMOX_SSH_IDENTITY_FILE:-~/.ssh/molecule_proxmox}"
     validate_certs: "${AFS_PROXMOX_VALIDATE_CERTS:-false}"
 platforms:
-  - name: local-install-alma10
+  - name: ansible-openafs-local-install-alma10
     template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
 provisioner:
   name: ansible
