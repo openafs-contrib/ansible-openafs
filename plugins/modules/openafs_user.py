@@ -98,7 +98,7 @@ EXAMPLES = r"""
 - name: Create users
   openafs_contrib.openafs.openafs_user:
      name: "{{ item }}"
-     group: tester
+     group: testers
   with_items:
     - alice
     - bob
@@ -256,7 +256,7 @@ def main():
         """
         pts_fields = {
             "name": r"Name: ([^,]+),",
-            "id": r"id: (\d+),",
+            "id": r"id: (-?\d+),",
             "owner": r"owner: ([^,]+),",
             "creator": r"creator: ([^,]+),",
             "flags": r"flags: (.....),",
@@ -328,16 +328,23 @@ def main():
         """
         Ensure a group exists.
         """
+        exists = []
 
         def is_done(rc, out, err):
             if rc == 0:
                 results["changed"] = True
                 return True
             if rc == 1 and "already exists" in err:
+                exists.append(True)
                 return True
             return False
 
         run_pts(["creategroup", "-name", name], is_done)
+
+        # Users and groups share the same name space, so the existing entry
+        # may be a user. Group ids are negative.
+        if exists and pts_examine(name)["id"] >= 0:
+            die("Unable to add user to group '%s'; '%s' is a user, not a group." % (name, name))
 
     def pts_adduser(user, group):
         """
