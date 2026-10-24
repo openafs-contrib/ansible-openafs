@@ -378,11 +378,12 @@ environments, so only add a scenario when it is ready to run.
      since the module checks that the kernel module was built for the running
      kernel (``verify_kernel_module`` uses ``platform.release()``).
 
-#. ``role_openafs_server_packages``, ``role_openafs_server_sdist``, and
-   ``role_openafs_server_bdist``: the other server install methods. These need
-   the OpenAFS release files. See ``legacy/tests/release_files.py`` and
-   ``legacy/tests/integration/openafs.yml``, which download the source
-   distribution from openafs.org and the RPM packages from Sine Nomine.
+#. ``role_openafs_server_sdist`` and ``role_openafs_server_bdist``: the other
+   server install methods. Download the release files on the instance, as
+   ``extensions/molecule/utils/playbooks/rpm_archive.yml`` does for the
+   packages install method. The source distribution files are on openafs.org
+   (see ``legacy/tests/integration/openafs.yml``). There is no published
+   binary distribution, so the bdist scenario needs to build one first.
 #. ``role_openafs_robotserver_default`` and
    ``playbook_deploy_robotserver_default``: low priority, since the
    ``openafs_robotserver`` role is planned to be moved to a separate

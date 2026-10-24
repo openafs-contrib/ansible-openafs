@@ -63,10 +63,12 @@ provisioner:
         afs_install_method: packages
         afs_module_install_method: dkms
         afs_install_archive: /tmp/openafs-rpms.tar.gz
+        test_rpms: [openafs, openafs-client, openafs-krb5, dkms-openafs]
       ansible-openafs-client-packages-kmod-alma10:
         afs_install_method: packages
         afs_module_install_method: kmod
         afs_install_archive: /tmp/openafs-rpms.tar.gz
+        test_rpms: [openafs, openafs-client, openafs-krb5, kmod-openafs]
       ansible-openafs-client-source-alma10:
         afs_install_method: source
         afs_git_repo: git://git.openafs.org/openafs.git
