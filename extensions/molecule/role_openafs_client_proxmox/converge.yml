@@ -2,18 +2,25 @@
 - name: Create the rpm package archive
   ansible.builtin.import_playbook: ../utils/playbooks/rpm_archive.yml
 
-- name: Prepare the source build
+- name: Create the source distribution archive
+  ansible.builtin.import_playbook: ../utils/playbooks/sdist_archive.yml
+
+- name: Prepare the source builds
   hosts: all
   tasks:
-    # SELinux enforcing mode is not supported when installing from source.
+    # SELinux enforcing mode is not supported when installing from source
+    # or a binary distribution.
     - name: Set SELinux to permissive mode
       when:
-        - afs_install_method == 'source'
+        - afs_install_method in ['source', 'sdist', 'bdist']
         - ansible_facts.selinux.status | d('disabled') == 'enabled'
       become: true
       ansible.builtin.command:
         cmd: setenforce 0
       changed_when: true
+
+- name: Create the binary distribution archive
+  ansible.builtin.import_playbook: ../utils/playbooks/bdist_archive.yml
 
 - name: Converge
   hosts: all

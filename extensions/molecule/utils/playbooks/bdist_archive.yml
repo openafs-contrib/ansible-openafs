@@ -3,7 +3,8 @@
 # Create the binary distribution archive for the bdist install method. There
 # are no published binary distributions, so the binaries are built on the
 # instance from a git checkout, and the archive is created from the build
-# destination directory.
+# destination directory. The kernel module is built for the running kernel
+# when the instance is a client.
 #
 # Variables:
 #
@@ -18,7 +19,13 @@
       when: afs_install_method == 'bdist'
       vars:
         build_dir: /tmp/openafs-build
+        build_module: "{{ 'afs_clients' in group_names }}"
       block:
+        - name: Install the kernel module build requirements
+          when: build_module
+          ansible.builtin.include_role:
+            name: openafs_contrib.openafs.openafs_devel_kernel
+
         - name: Install the build requirements
           ansible.builtin.include_role:
             name: openafs_contrib.openafs.openafs_devel
@@ -33,7 +40,7 @@
         - name: Build the binaries
           openafs_contrib.openafs.openafs_build:
             state: built
-            build_module: false
+            build_module: "{{ build_module }}"
             srcdir: "{{ build_dir }}"
             destdir: "{{ build_dir }}/packages/install_root"
           register: build_results

@@ -30,6 +30,14 @@ platforms:
     template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
     groups:
       - afs_clients
+  - name: ansible-openafs-client-sdist-alma10
+    template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    groups:
+      - afs_clients
+  - name: ansible-openafs-client-bdist-alma10
+    template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    groups:
+      - afs_clients
   - name: ansible-openafs-client-source-alma10
     template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
     groups:
@@ -49,9 +57,11 @@ provisioner:
         # The template kernel may be older than the kernel-devel packages
         # available in the repositories.
         afs_devel_allow_kernel_update: true
-        # The OpenAFS release installed by the packages install method.
+        # The OpenAFS release installed by the packages and sdist install
+        # methods.
         test_openafs_version: "1.8.16.1"
         test_rpms_url: "https://download.sinenomine.net/openafs/rpms/almalinux{{ ansible_facts.distribution_major_version }}/{{ ansible_facts.architecture }}"
+        test_sdist_url: "https://www.openafs.org/dl/openafs/{{ test_openafs_version }}"
     host_vars:
       ansible-openafs-client-alma10:
         afs_install_method: managed
@@ -69,6 +79,14 @@ provisioner:
         afs_module_install_method: kmod
         afs_install_archive: /tmp/openafs-rpms.tar.gz
         test_rpms: [openafs, openafs-client, openafs-krb5, kmod-openafs]
+      ansible-openafs-client-sdist-alma10:
+        afs_install_method: sdist
+        afs_install_archive: /tmp/openafs-sdist.tar.gz
+      ansible-openafs-client-bdist-alma10:
+        afs_install_method: bdist
+        afs_install_archive: /tmp/openafs-bdist.tar.gz
+        afs_git_repo: git://git.openafs.org/openafs.git
+        afs_git_version: "${AFS_GIT_VERSION:-openafs-stable-1_8_16_1}"
       ansible-openafs-client-source-alma10:
         afs_install_method: source
         afs_git_repo: git://git.openafs.org/openafs.git
