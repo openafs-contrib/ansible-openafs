@@ -2,8 +2,7 @@
 driver:
   name: podman
 platforms:
-  - &platform
-    name: server-packages-alma10
+  - name: server-packages-alma10
     image: localhost/ansible-openafs-alma10
     pre_build_image: true
     override_command: false

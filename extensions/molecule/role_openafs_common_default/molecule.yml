@@ -2,9 +2,16 @@
 driver:
   name: podman
 platforms:
-  - &platform
-    name: common-alma10
+  - name: common-alma10
     image: localhost/ansible-openafs-alma10
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: "molecule-${MOLECULE_SCENARIO_NAME}"
+    extra_opts:
+      - --no-hosts
+  - name: common-debian13
+    image: localhost/ansible-openafs-debian13
     pre_build_image: true
     override_command: false
     systemd: always

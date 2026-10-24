@@ -1,0 +1,45 @@
+---
+#
+# The running kernel is the host kernel in a container, so set the kernel
+# version to the newest kernel headers version available in the repositories.
+#
+# Facts set:
+#
+#   afs_kernel_version: the newest kernel headers version
+#   test_kernel_headers_dir: the directory of the installed kernel headers
+#
+- name: Find the newest kernel headers version
+  hosts: all
+  tasks:
+    - name: Find the newest kernel-devel version
+      when: ansible_facts.pkg_mgr == 'dnf'
+      ansible.builtin.command:
+        cmd: dnf -q repoquery --latest-limit 1 --qf '%{version}-%{release}.%{arch}' kernel-devel
+      changed_when: false
+      register: kernel_devel
+
+    - name: Find the newest linux-headers version
+      when: ansible_facts.pkg_mgr == 'apt'
+      ansible.builtin.shell:
+        cmd: >
+          set -o pipefail;
+          apt-get -qq update &&
+          apt-cache search --names-only "^linux-headers-[0-9].*-$(dpkg --print-architecture)$" |
+          awk '{print $1}' | sed 's/^linux-headers-//' | sort -V | tail -1
+        executable: /bin/bash
+      changed_when: false
+      register: linux_headers
+
+    - name: Set the kernel version
+      vars:
+        version: "{{ (kernel_devel.stdout | d('') or linux_headers.stdout | d('')) | trim }}"
+      ansible.builtin.set_fact:
+        afs_kernel_version: "{{ version }}"
+        test_kernel_headers_dir: >-
+          {{ (ansible_facts.os_family == 'Debian')
+             | ternary('/usr/src/linux-headers-' ~ version, '/usr/src/kernels/' ~ version) }}
+
+    - name: Verify the kernel version was found
+      ansible.builtin.assert:
+        that:
+          - afs_kernel_version | length > 0

@@ -148,19 +148,34 @@ build a different git tag or branch:
    AFS_GIT_VERSION=openafs-stable-1_8_x tox --ansible -e molecule-py3.14-2.21
 
 To add an operating system to a scenario, add a platform to the scenario
-``molecule.yml`` file. The first platform is a YAML anchor with the settings
-shared by all of the platforms, so only the name and image are needed:
+``molecule.yml`` file. Each platform lists all of its settings, without YAML
+anchors, so copy an existing platform and change the name and image:
 
 .. code-block:: yaml
 
    platforms:
-     - &platform
-       name: server-alma10
+     - name: server-alma10
        image: localhost/ansible-openafs-alma10
-       ...
-     - <<: *platform
-       name: server-debian13
+       pre_build_image: true
+       override_command: false
+       systemd: always
+       network: "molecule-${MOLECULE_SCENARIO_NAME}"
+       extra_opts:
+         - --no-hosts
+       groups:
+         - afs_databases
+         - afs_fileservers
+     - name: server-debian13
        image: localhost/ansible-openafs-debian13
+       pre_build_image: true
+       override_command: false
+       systemd: always
+       network: "molecule-${MOLECULE_SCENARIO_NAME}"
+       extra_opts:
+         - --no-hosts
+       groups:
+         - afs_databases
+         - afs_fileservers
 
 .. note::
 
@@ -385,14 +400,17 @@ environments, so only add a scenario when it is ready to run.
 
 Other operating systems and versions:
 
-#. Add the other operating systems to each scenario. The
+#. Add the other operating systems to each scenario. The podman scenarios run
+   on ``alma10`` and ``debian13``, except ``role_openafs_server_packages``
+   (``alma10`` only), and the Proxmox scenarios run on ``alma10``. The
    ``role_openafs_krbserver_default`` and ``role_openafs_krbclient_default``
    scenarios passed on all of the test images before they were reduced to
    ``alma10`` (except the ``krbclient`` scenario on ``opensuse16``, which needs
    the untested ``roles/openafs_krbclient/vars/openSUSE_Leap-16.yaml`` fix).
-#. The ``role_openafs_devel_kernel_default`` scenario finds the newest
-   ``kernel-devel`` package with ``dnf``. Add the equivalent for ``apt`` and
-   ``zypper``.
+#. ``extensions/molecule/utils/playbooks/kernel_version.yml`` finds the newest
+   kernel headers with ``dnf`` and ``apt``. Add the equivalent for ``zypper``.
+#. Add a ``debian13`` platform to ``role_openafs_server_packages``, which needs
+   the Debian packages install method and a source of ``.deb`` files.
 #. Run the scenarios with the oldest supported versions, for example
    ``molecule-py3.11-2.19``.
 

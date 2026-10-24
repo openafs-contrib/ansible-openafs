@@ -2,8 +2,7 @@
 driver:
   name: podman
 platforms:
-  - &kdc
-    name: krbclient-alma10-kdc
+  - name: krbclient-alma10-kdc
     image: localhost/ansible-openafs-alma10
     pre_build_image: true
     override_command: false
@@ -13,9 +12,34 @@ platforms:
       - --no-hosts
     groups:
       - afs_kdcs
-  - &client
-    <<: *kdc
-    name: krbclient-alma10
+  - name: krbclient-alma10
+    image: localhost/ansible-openafs-alma10
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: "molecule-${MOLECULE_SCENARIO_NAME}"
+    extra_opts:
+      - --no-hosts
+    groups:
+      - afs_clients
+  - name: krbclient-debian13-kdc
+    image: localhost/ansible-openafs-debian13
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: "molecule-${MOLECULE_SCENARIO_NAME}"
+    extra_opts:
+      - --no-hosts
+    groups:
+      - afs_kdcs
+  - name: krbclient-debian13
+    image: localhost/ansible-openafs-debian13
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: "molecule-${MOLECULE_SCENARIO_NAME}"
+    extra_opts:
+      - --no-hosts
     groups:
       - afs_clients
 provisioner:

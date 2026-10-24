@@ -1,18 +1,6 @@
 ---
-# The running kernel is the host kernel in a container, so set the kernel
-# version to the newest kernel-devel available in the repositories.
-- name: Prepare the kernel version
-  hosts: all
-  tasks:
-    - name: Find the newest kernel-devel version
-      ansible.builtin.command:
-        cmd: dnf -q repoquery --latest-limit 1 --qf '%{version}-%{release}.%{arch}' kernel-devel
-      changed_when: false
-      register: kernel_devel
-
-    - name: Set the kernel version
-      ansible.builtin.set_fact:
-        afs_kernel_version: "{{ kernel_devel.stdout | trim }}"
+- name: Find the kernel version
+  ansible.builtin.import_playbook: ../utils/playbooks/kernel_version.yml
 
 # The inventory connection variables override the playbook 'connection: local'.
 - name: Converge

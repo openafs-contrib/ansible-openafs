@@ -12,4 +12,9 @@
       ansible.builtin.assert:
         that:
           - afs_install_method == 'managed'
+
+    - name: Verify the yum repository
+      when: ansible_facts.distribution == 'AlmaLinux'
+      ansible.builtin.assert:
+        that:
           - afs_yum_repo == 'https://download.sinenomine.net/openafs/rpms/almalinux$releasever/$basearch'
