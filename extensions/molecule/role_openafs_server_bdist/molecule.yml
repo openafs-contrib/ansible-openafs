@@ -1,0 +1,49 @@
+---
+driver:
+  name: podman
+platforms:
+  - &platform
+    name: server-bdist-alma10
+    image: localhost/ansible-openafs-alma10
+    pre_build_image: true
+    override_command: false
+    systemd: always
+    network: "molecule-${MOLECULE_SCENARIO_NAME}"
+    extra_opts:
+      - --no-hosts
+    groups:
+      - afs_databases
+      - afs_fileservers
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: ../utils/playbooks/prepare.yml
+  inventory:
+    group_vars:
+      all:
+        ansible_user: root
+        ansible_pipelining: true
+        afs_cell: example.com
+        afs_cell_files: "${MOLECULE_EPHEMERAL_DIRECTORY}"
+        afs_csdb_file: "${MOLECULE_EPHEMERAL_DIRECTORY}/csdb.yaml"
+        afs_install_method: bdist
+        afs_install_archive: /tmp/openafs-bdist.tar.gz
+        # The source code built for the binary distribution.
+        afs_git_repo: git://git.openafs.org/openafs.git
+        afs_git_version: "${AFS_GIT_VERSION:-openafs-stable-1_8_16_1}"
+        afs_pseudo_partitions: ['a', 'b']
+        afs_service_keytab: "${MOLECULE_SCENARIO_DIRECTORY}/../utils/files/example-aes.keytab"
+        afs_server_netinfo: 0.0.0.0
+        afs_server_netrestrict:
+          - 1.1.1.1
+          - 2.2.2.2
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy

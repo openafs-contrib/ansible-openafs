@@ -1,0 +1,74 @@
+---
+- name: Verify
+  hosts: all
+  vars:
+    openafs: "{{ ansible_local.openafs }}"
+  tasks:
+    - name: Verify the install method
+      ansible.builtin.assert:
+        that:
+          - openafs.install_method == afs_install_method
+          - openafs.server_installed
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Verify the OpenAFS server service is running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services[openafs.server_service_name ~ '.service'].state == 'running'
+
+    - name: Get the server process status
+      ansible.builtin.command:
+        cmd: "{{ openafs.bins.bos }} status localhost -localauth"
+      changed_when: false
+      register: bos_status
+
+    - name: Verify the server processes are running
+      ansible.builtin.assert:
+        that:
+          - "'Instance ' ~ item ~ ', currently running normally.' in bos_status.stdout"
+      loop:
+        - ptserver
+        - vlserver
+        - dafs
+
+    - name: Get the server partitions
+      ansible.builtin.command:
+        cmd: "{{ openafs.bins.vos }} listpart localhost -localauth"
+      changed_when: false
+      register: vos_listpart
+
+    - name: Verify the server partitions are attached
+      ansible.builtin.assert:
+        that:
+          - "'/vicep' ~ item in vos_listpart.stdout"
+      loop: "{{ afs_pseudo_partitions }}"
+
+    - name: Get the volume location database entries
+      ansible.builtin.command:
+        cmd: "{{ openafs.bins.vos }} listvldb -localauth"
+      changed_when: false
+      register: vos_listvldb
+
+    - name: Verify the top level volumes exist
+      ansible.builtin.assert:
+        that:
+          - "item in vos_listvldb.stdout_lines | map('trim')"
+      loop:
+        - root.afs
+        - root.cell
+
+    - name: Read the server network files
+      ansible.builtin.slurp:
+        src: "{{ openafs.dirs.afslocaldir }}/{{ item }}"
+      register: netfiles
+      loop:
+        - NetInfo
+        - NetRestrict
+
+    - name: Verify the server network files
+      ansible.builtin.assert:
+        that:
+          - (netfiles.results[0].content | b64decode).split() == [afs_server_netinfo]
+          - (netfiles.results[1].content | b64decode).split() == afs_server_netrestrict

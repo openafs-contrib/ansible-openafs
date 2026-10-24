@@ -1,0 +1,44 @@
+---
+#
+# Create the binary distribution archive for the bdist install method. There
+# are no published binary distributions, so the binaries are built on the
+# instance from a git checkout, and the archive is created from the build
+# destination directory.
+#
+# Variables:
+#
+#   afs_git_repo: the git repository to build
+#   afs_git_version: the git tag or branch to build
+#   afs_install_archive: the archive to create on the instance
+#
+- name: Create the binary distribution archive
+  hosts: all
+  tasks:
+    - name: Create the binary distribution archive
+      when: afs_install_method == 'bdist'
+      vars:
+        build_dir: /tmp/openafs-build
+      block:
+        - name: Install the build requirements
+          ansible.builtin.include_role:
+            name: openafs_contrib.openafs.openafs_devel
+
+        - name: Checkout the source code
+          ansible.builtin.include_role:
+            name: openafs_contrib.openafs.openafs_common
+            tasks_from: checkout_git
+          vars:
+            afs_topdir: "{{ build_dir }}"
+
+        - name: Build the binaries
+          openafs_contrib.openafs.openafs_build:
+            state: built
+            build_module: false
+            srcdir: "{{ build_dir }}"
+            destdir: "{{ build_dir }}/packages/install_root"
+          register: build_results
+
+        - name: Create the binary distribution archive
+          ansible.builtin.command:
+            cmd: "tar czf {{ afs_install_archive }} -C {{ build_results.destdir }} ."
+            creates: "{{ afs_install_archive }}"
