@@ -262,7 +262,6 @@ import os  # noqa: E402
 import pprint  # noqa: E402
 import re  # noqa: E402
 import time  # noqa: E402
-import errno  # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible_collections.openafs_contrib.openafs.plugins.module_utils.common import (
@@ -373,12 +372,46 @@ class Command(object):
         aklog = self.lookup_command("aklog")
         self.run_command(aklog, "-d")
 
+    def run_command_with_retries(self, args, done, retry, retries):
+        """
+        Run a command until done, retrying while the error is transient.
+        """
+        cmdline = " ".join(args)
+        while True:
+            rc, out, err = self.module.run_command(args)
+            log.debug("command=%s, rc=%d, out=%s, err=%s", cmdline, rc, out, err)
+            if done(rc, out, err):
+                return out
+            if retries == 0 or not retry(rc, out, err):
+                self.die("Command failed: %s, rc=%d, err=%s" % (cmdline, rc, err))
+            log.warning(
+                "Failed: %s, rc=%d, err=%s; %d retr%s left.",
+                cmdline,
+                rc,
+                err,
+                retries,
+                ("ies" if retries > 1 else "y"),
+            )
+            retries -= 1
+            time.sleep(5)
+
     def fs(self, *args):
         """
-        Run the fs command and return the stdout.
+        Run the fs command with retries and return the stdout.
         """
+
+        def done(rc, out, err):
+            return rc == 0
+
+        def retry(rc, out, err):
+            if "Connection timed out" in err:
+                return True  # May occur during server startup.
+            if "server or network not responding" in err:
+                return True
+            return False
+
         fs = self.lookup_command("fs")
-        return self.run_command(fs, *args)
+        return self.run_command_with_retries([fs] + list(args), done, retry, 24)
 
     def vos(self, args, done=None, retry=None):
         """
@@ -408,25 +441,7 @@ class Command(object):
         args.insert(0, vos)
         if self.localauth:
             args.append("-localauth")
-        cmdline = " ".join(args)
-        retries = 120
-        while True:
-            rc, out, err = self.module.run_command(args)
-            log.debug("command=%s, rc=%d, out=%s, err=%s", cmdline, rc, out, err)
-            if done(rc, out, err):
-                return out
-            if retries == 0 or not retry(rc, out, err):
-                self.die("Command failed: %s, rc=%d, err=%s" % (cmdline, rc, err))
-            log.warning(
-                "Failed: %s, rc=%d, err=%s; %d retr%s left.",
-                cmdline,
-                rc,
-                err,
-                retries,
-                ("ies" if retries > 1 else "y"),
-            )
-            retries -= 1
-            time.sleep(5)
+        return self.run_command_with_retries(args, done, retry, 120)
 
     def vos_listvldb(self, name, retry_not_found=True):
         """
@@ -875,30 +890,22 @@ class Volume(object):
         """
         Returns true if the client dynroot is enabled.
 
-        Stat the root vnode of the root.cell volume of the local cell to
-        determine if dynroot mode is enabled on the cache manager.  This check
-        assumes the root.cell volume has already been created, which is
-        normally done before a client is started, since non-dynroot clients
-        will mount the root.cell volume on startup.
+        The afs root directory is in the synthetic 'dynroot' cell when dynroot
+        mode is enabled on the cache manager, otherwise it is the root
+        directory of the root.afs volume in the local cell.  This check is
+        answered by the cache manager without contacting the servers.
 
-        Accesses to /afs/.:mount/<cell>:<volume>/<path> will fail with an
-        ENODEV error when dynroot is disabled.  Note that accesses to
-        /afs/.:mount/ and /afs/.:mount/<cell>:<volume> will succeed even when
-        dynroot is disabled, so be sure to check a vnode in the volume to
-        determine when dynroot mode is on.
+        Note: Do not stat a vnode in /afs/.:mount/<cell>:<volume>/ to detect
+        dynroot, since a transient volume lookup failure also gives ENODEV.
         """
         if self._dynroot is not None:
             return self._dynroot
-        cell = self.get_cell_name()
-        path = "/afs/.:mount/{0}:root.cell/.".format(cell)
-        try:
-            os.stat(path)
-            self._dynroot = True
-        except OSError as e:
-            if e.errno == errno.ENODEV:
-                self._dynroot = False
-            else:
-                self.die(str(e))
+        afsroot = self.get_afs_root()
+        out = self.cmd.fs("whichcell", "-path", afsroot)
+        m = re.search(r"lives in cell '(.*)'", out)
+        if not m:
+            self.die("Unable to determine the cell of path '%s'." % afsroot)
+        self._dynroot = m.group(1) == "dynroot"
 
         status = "enabled" if self._dynroot else "disabled"
         log.info("dynroot is {0}".format(status))

@@ -32,6 +32,11 @@ afs_pseudo_partitions: []
 # is required for non-dynroot clients to start.)
 afs_create_root: yes
 
+# Bootstrap the cell (create the administrator user and root volumes) on just
+# one server in the play. Set to false when each host in the play is a
+# separate cell.
+afs_bootstrap_run_once: true
+
 # fileserver variation, one of: fs, dafs
 afs_fileserver_type: dafs
 

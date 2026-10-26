@@ -90,6 +90,13 @@ afs_create_root
 
   default: yes
 
+afs_bootstrap_run_once
+  Bootstrap the cell, by creating the administrator user and the root volumes,
+  on just one server in the play. Set to ``false`` when each host in the play
+  is a separate cell.
+
+  default: true
+
 afs_server_netinfo
   A single string (or list of strings) to set the contents of the server
   ``NetInfo`` configuration file. This file specifies which addresses or

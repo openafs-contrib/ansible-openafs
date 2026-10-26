@@ -37,7 +37,7 @@
 
 - name: Bootstrap cell
   become: yes
-  run_once: yes
+  run_once: "{{ afs_bootstrap_run_once | bool }}"
   block:
     - name: Ensure administrator user exists
       openafs_contrib.openafs.openafs_user:
