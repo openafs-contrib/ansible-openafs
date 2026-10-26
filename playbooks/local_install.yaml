@@ -207,6 +207,8 @@
             afs_service_keytab: "{{ keytab_service | d(ansible_local.openafs.local_install.keytab_service) }}"
             afs_service_keytab_remote_src: true
             afs_pseudo_partitions: ["a", "b", "c"]
+            # Each host is a separate cell.
+            afs_bootstrap_run_once: false
           ansible.builtin.include_role:
             name: openafs_contrib.openafs.openafs_server
 
