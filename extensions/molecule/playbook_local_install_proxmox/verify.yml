@@ -31,8 +31,8 @@
           - ansible_facts.services[item ~ '.service'].state == 'running'
       loop:
         - "{{ ansible_local.openafs.krbserver.kdc_service }}"
-        - openafs-server
-        - openafs-client
+        - "{{ ansible_local.openafs.server_service_name }}"
+        - "{{ ansible_local.openafs.client_service_name }}"
 
     - name: Check the keytabs were created
       ansible.builtin.stat:

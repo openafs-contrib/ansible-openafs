@@ -13,6 +13,8 @@ driver:
 platforms:
   - name: ansible-openafs-local-install-alma10
     template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+  - name: ansible-openafs-local-install-debian13
+    template_name: "${AFS_PROXMOX_TEMPLATE_DEBIAN13:-debian13}"
 provisioner:
   name: ansible
   inventory:

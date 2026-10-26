@@ -13,7 +13,7 @@
     - name: Verify the OpenAFS server is running
       ansible.builtin.assert:
         that:
-          - ansible_facts.services['openafs-server.service'].state == 'running'
+          - ansible_facts.services[ansible_local.openafs.server_service_name ~ '.service'].state == 'running'
 
     - name: Get the server processes
       become: true

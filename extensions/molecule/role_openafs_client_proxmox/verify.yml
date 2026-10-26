@@ -25,7 +25,7 @@
     - name: Verify the OpenAFS client service is running
       ansible.builtin.assert:
         that:
-          - ansible_facts.services['openafs-client.service'].state == 'running'
+          - ansible_facts.services[ansible_local.openafs.client_service_name ~ '.service'].state == 'running'
 
     - name: Get the mounted filesystems
       ansible.builtin.command:
