@@ -27,7 +27,9 @@ options:
   state:
     description:
       - C(update) adds the new facts and merges the values of the existing
-        facts.
+        facts. Dictionary values are updated with the new keys and values.
+        List values are extended with the new items which are not already
+        in the list.
       - C(set) adds the new facts and replaces the values of the existing
         facts.
     type: str
@@ -79,6 +81,25 @@ def flatten(prefix, value):
         yield prefix + str(value)
 
 
+def update_facts(facts, new_facts, state):
+    """
+    Add the new facts to the facts, replacing or merging the existing values.
+    """
+    for key, value in new_facts.items():
+        if state == "set":
+            facts[key] = value
+        elif key not in facts:
+            facts[key] = value
+        elif isinstance(facts[key], dict) and isinstance(value, dict):
+            facts[key].update(value)
+        elif isinstance(facts[key], list) and isinstance(value, list):
+            # Add only the new items, so updates are idempotent.
+            facts[key].extend([v for v in value if v not in facts[key]])
+        else:
+            facts[key] = value
+    return facts
+
+
 def signature(facts):
     text = "\n".join(flatten("", facts))
     return text
@@ -111,20 +132,7 @@ def main():
         facts = {}
     signature_before = signature(facts)
 
-    for key, value in module.params["facts"].items():
-        if state == "set":
-            facts[key] = value
-        elif state == "update":
-            if key not in facts:
-                facts[key] = value
-            elif isinstance(facts[key], dict) and isinstance(value, dict):
-                facts[key].update(value)
-            elif isinstance(facts[key], list) and isinstance(value, list):
-                facts[key].append(value)
-            else:
-                facts[key] = value
-        else:
-            module.fail_json(msg="Internal error: unknown state %s" % state)
+    update_facts(facts, module.params["facts"], state)
 
     if not module.check_mode:
         if not os.path.exists(factsdir):
