@@ -420,8 +420,6 @@ Other operating systems and versions:
 
 Known bugs:
 
-* ``openafs_store_facts``: ``state: update`` appends a list value to an
-  existing list as a single element, instead of extending the list.
 * ``openafs_build_redhat_rpms`` looks like an older copy of the RPM support in
   ``openafs_build_packages``.
 
