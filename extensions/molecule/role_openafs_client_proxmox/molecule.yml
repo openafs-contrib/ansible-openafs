@@ -4,7 +4,8 @@
 # AFS_PROXMOX_* settings.
 #
 # Each platform tests a different client install method, which is set in the
-# host_vars.
+# host_vars. The packages and kmod install methods are tested only on
+# AlmaLinux, since the test packages are rpms.
 driver:
   name: molecule-proxmox
   options:
@@ -40,6 +41,22 @@ platforms:
       - afs_clients
   - name: ansible-openafs-client-source-alma10
     template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    groups:
+      - afs_clients
+  - name: ansible-openafs-client-debian13
+    template_name: "${AFS_PROXMOX_TEMPLATE_DEBIAN13:-debian13}"
+    groups:
+      - afs_clients
+  - name: ansible-openafs-client-sdist-debian13
+    template_name: "${AFS_PROXMOX_TEMPLATE_DEBIAN13:-debian13}"
+    groups:
+      - afs_clients
+  - name: ansible-openafs-client-bdist-debian13
+    template_name: "${AFS_PROXMOX_TEMPLATE_DEBIAN13:-debian13}"
+    groups:
+      - afs_clients
+  - name: ansible-openafs-client-source-debian13
+    template_name: "${AFS_PROXMOX_TEMPLATE_DEBIAN13:-debian13}"
     groups:
       - afs_clients
 provisioner:
@@ -88,6 +105,21 @@ provisioner:
         afs_git_repo: git://git.openafs.org/openafs.git
         afs_git_version: "${AFS_GIT_VERSION:-openafs-stable-1_8_16_1}"
       ansible-openafs-client-source-alma10:
+        afs_install_method: source
+        afs_git_repo: git://git.openafs.org/openafs.git
+        afs_git_version: "${AFS_GIT_VERSION:-openafs-stable-1_8_16_1}"
+      ansible-openafs-client-debian13:
+        afs_install_method: managed
+        afs_module_install_method: dkms
+      ansible-openafs-client-sdist-debian13:
+        afs_install_method: sdist
+        afs_install_archive: /tmp/openafs-sdist.tar.gz
+      ansible-openafs-client-bdist-debian13:
+        afs_install_method: bdist
+        afs_install_archive: /tmp/openafs-bdist.tar.gz
+        afs_git_repo: git://git.openafs.org/openafs.git
+        afs_git_version: "${AFS_GIT_VERSION:-openafs-stable-1_8_16_1}"
+      ansible-openafs-client-source-debian13:
         afs_install_method: source
         afs_git_repo: git://git.openafs.org/openafs.git
         afs_git_version: "${AFS_GIT_VERSION:-openafs-stable-1_8_16_1}"

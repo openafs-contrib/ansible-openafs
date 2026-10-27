@@ -246,6 +246,8 @@ Set the following environment variables to override the defaults:
    Validate the Proxmox API TLS certificate. Default: ``false``
 ``AFS_PROXMOX_TEMPLATE_ALMA10``
    The AlmaLinux 10 template name. Default: ``alma10``
+``AFS_PROXMOX_TEMPLATE_DEBIAN13``
+   The Debian 13 template name. Default: ``debian13``
 
 Running Molecule directly
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -402,7 +404,9 @@ Other operating systems and versions:
 
 #. Add the other operating systems to each scenario. The podman scenarios run
    on ``alma10`` and ``debian13``, except ``role_openafs_server_packages``
-   (``alma10`` only), and the Proxmox scenarios run on ``alma10``. The
+   (``alma10`` only). The Proxmox scenarios run on ``alma10`` and
+   ``debian13``, except the client ``packages`` and ``kmod`` install methods
+   (``alma10`` only). The
    ``role_openafs_krbserver_default`` and ``role_openafs_krbclient_default``
    scenarios passed on all of the test images before they were reduced to
    ``alma10`` (except the ``krbclient`` scenario on ``opensuse16``, which needs

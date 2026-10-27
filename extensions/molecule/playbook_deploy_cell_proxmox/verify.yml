@@ -95,3 +95,36 @@
       ansible.builtin.assert:
         that:
           - write_test.stdout == 'hello from ' ~ inventory_hostname
+
+- name: Verify the other clients
+  hosts: afs_clients:!afs_admin_client
+  tasks:
+    - name: Verify the playbook checkpoint
+      ansible.builtin.assert:
+        that:
+          - ansible_local.deploy_cell.checkpoint == 4
+
+    - name: Get the loaded kernel modules
+      ansible.builtin.command:
+        cmd: cat /proc/modules
+      changed_when: false
+      register: modules
+
+    - name: Verify the OpenAFS kernel module is loaded
+      ansible.builtin.assert:
+        that:
+          - modules.stdout is regex('^(openafs|libafs) ', multiline=True)
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Verify the OpenAFS client service is running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services[ansible_local.openafs.client_service_name ~ '.service'].state == 'running'
+
+    # The test volume is readable by system:anyuser.
+    - name: List the test volume without a token
+      ansible.builtin.command:
+        cmd: "ls -d /afs/{{ afs_cell }}/test/."
+      changed_when: false

@@ -2,6 +2,8 @@
 # The deploy_cell playbook loads the OpenAFS kernel module on the clients, so
 # it runs on Proxmox VE virtual machines instead of containers. See the
 # development docs for the AFS_PROXMOX_* settings.
+#
+# The cell has a mix of AlmaLinux and Debian servers and clients.
 driver:
   name: molecule-proxmox
   options:
@@ -18,7 +20,7 @@ platforms:
       - afs_databases
       - afs_fileservers
   - name: ansible-openafs-cell-afs02
-    template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
+    template_name: "${AFS_PROXMOX_TEMPLATE_DEBIAN13:-debian13}"
     groups:
       - afs_databases
       - afs_fileservers
@@ -26,6 +28,10 @@ platforms:
     template_name: "${AFS_PROXMOX_TEMPLATE_ALMA10:-alma10}"
     groups:
       - afs_admin_client
+      - afs_clients
+  - name: ansible-openafs-cell-client02
+    template_name: "${AFS_PROXMOX_TEMPLATE_DEBIAN13:-debian13}"
+    groups:
       - afs_clients
 provisioner:
   name: ansible
