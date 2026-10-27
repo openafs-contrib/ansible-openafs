@@ -213,6 +213,29 @@ def expand_path(path):
     return path
 
 
+def rpmbuild_args(rpmbuild, topdir, build="all", kernvers=None):
+    """
+    Return the rpmbuild command line to build the source and/or binary rpms.
+    """
+    args = [rpmbuild, "--define", "_topdir %s" % topdir]
+    if build == "source":
+        args.append("-bs")
+    elif build == "all":
+        args.append("-ba")
+    elif build == "userspace":
+        args.append("-ba")
+        args.extend(["--define", "build_userspace 1"])
+        args.extend(["--define", "build_modules 0"])
+    elif build == "modules":
+        args.append("-ba")
+        args.extend(["--define", "build_userspace 0"])
+        args.extend(["--define", "build_modules 1"])
+    if build != "source" and kernvers:
+        args.extend(["--define", "kernvers %s" % kernvers])
+    args.append(os.path.join(topdir, "SPECS", "openafs.spec"))
+    return args
+
+
 class PackageBuilder(object):
     """
     Base class for package builders.  Platform specific subclasses must provide
@@ -400,22 +423,7 @@ class RedHatRpmBuilder(PackageBuilder):
         kernvers = self.module.params["kernvers"]
 
         rpmbuild = self.module.get_bin_path("rpmbuild", required=True)
-        args = [rpmbuild, "--define", "_topdir %s" % self.topdir]
-        if build == "source":
-            args.append("-bs")
-        elif build == "all":
-            args.append("-ba")
-        elif build == "userspace":
-            args.append("-ba")
-            args.extend(["--define", "build_userspace 1"])
-            args.extend(["--define", "build_modules 0"])
-        elif build == "module":
-            args.append("-ba")
-            args.extend(["--define", "build_userspace 0"])
-            args.extend(["--define", "build_modules 0"])
-        if build != "source" and kernvers:
-            args.extend(["--define", "kernvers %s" % kernvers])
-        args.append(os.path.join(self.topdir, "SPECS", "openafs.spec"))
+        args = rpmbuild_args(rpmbuild, self.topdir, build, kernvers)
         logfile = os.path.join(self.logdir, "rpmbuild.log")
         self.results["logfiles"].append(logfile)
         with open(logfile, "w") as f:
