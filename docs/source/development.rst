@@ -420,11 +420,6 @@ Other operating systems and versions:
 
 Known bugs:
 
-* ``openafs_build_packages`` and ``openafs_build_redhat_rpms``: the ``build``
-  option checks for ``module``, but the choice is ``modules``, so
-  ``build: modules`` runs ``rpmbuild`` without a ``-b`` option. The branch
-  also sets ``build_modules 0`` instead of ``1``. Add unit tests for the
-  ``rpmbuild`` arguments.
 * ``openafs_store_facts``: ``state: update`` appends a list value to an
   existing list as a single element, instead of extending the list.
 * ``openafs_build_redhat_rpms`` looks like an older copy of the RPM support in
