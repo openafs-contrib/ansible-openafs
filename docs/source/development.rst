@@ -418,11 +418,6 @@ Other operating systems and versions:
 #. Run the scenarios with the oldest supported versions, for example
    ``molecule-py3.11-2.19``.
 
-Known bugs:
-
-* ``openafs_build_redhat_rpms`` looks like an older copy of the RPM support in
-  ``openafs_build_packages``.
-
 Other work:
 
 * Write the module unit tests in ``tests/unit/plugins/modules`` (they are
