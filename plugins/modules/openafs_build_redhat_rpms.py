@@ -16,8 +16,13 @@ module: openafs_build_redhat_rpms
 short_description: This module is deprecated. Use openafs_build_packages.
 
 description:
-- This module is obsolete and will be removed in a future release. Use
+- This module is obsolete and will be removed in version 2.0.0. Use
   openafs_build_packages in new playbooks.
+
+deprecated:
+  removed_in: 2.0.0
+  why: Replaced by the openafs_build_packages module.
+  alternative: Use M(openafs_contrib.openafs.openafs_build_packages) instead.
 
 options:
   build:

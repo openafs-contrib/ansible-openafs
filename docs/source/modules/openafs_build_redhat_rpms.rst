@@ -12,7 +12,7 @@ openafs_build_redhat_rpms -- This module is deprecated. Use openafs_build_packag
 Synopsis
 --------
 
-This module is obsolete and will be removed in a future release. Use openafs_build_packages in new playbooks.
+This module is obsolete and will be removed in version 2.0.0. Use openafs_build_packages in new playbooks.
 
 
 
