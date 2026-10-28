@@ -1,5 +1,10 @@
 OpenAFS Ansible Collection
 
+Unreleased
+
+* Deprecate the `openafs_build_redhat_rpms` module, which will be removed in
+  version 2.0.0. Use the `openafs_build_packages` module instead.
+
 March 20, 2026 - version 1.10.4
 
 * Add SLES support to the `openafs_pricipal` module.
