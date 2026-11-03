@@ -373,7 +373,8 @@ Conventions for the integration tests:
 * Never run Molecule or ``ansible-galaxy`` with ``ANSIBLE_COLLECTIONS_PATH``
   set to a directory which contains the source tree.
 * The sanity and unit tests must pass. Run ``tox -e format`` after changing
-  the Python code.
+  the Python code, and ``tox -e lint`` after changing the playbooks, roles,
+  or scenarios.
 
 Scenarios to add for ``alma10``:
 
@@ -422,7 +423,6 @@ Other work:
 
 * Write the module unit tests in ``tests/unit/plugins/modules`` (they are
   stubs now).
-* Add a ``lint`` test environment for ``ansible-lint``.
 * Remove the ``legacy`` directory when the new tests replace it.
 * ``pytest-ansible`` is deprecated (end of life December 2026). When
   ``tox-ansible`` stops using it, remove the ``/collections/`` entry from
@@ -443,6 +443,29 @@ The Python code is formatted with `black`_. To format the code, run:
 .. code-block:: bash
 
    tox -e format
+
+Linting
+-------
+
+The playbooks, roles, and Molecule scenarios are checked with `ansible-lint`_.
+The settings are in the ``.ansible-lint`` file. To run ``ansible-lint``, run:
+
+.. _`ansible-lint`: https://docs.ansible.com/projects/lint/
+
+.. code-block:: bash
+
+   tox -e lint
+
+Arguments after ``--`` are passed to ``ansible-lint``, for example to check
+one file:
+
+.. code-block:: bash
+
+   tox -e lint -- roles/openafs_client/tasks/main.yaml
+
+``ansible-lint`` prints ``Ignored exception from ArgsRule.matchtasks``
+warnings for files with ``set_fact`` tasks. These warnings are caused by an
+``ansible-lint`` bug with newer ``ansible-core`` versions, and can be ignored.
 
 Documentation
 -------------

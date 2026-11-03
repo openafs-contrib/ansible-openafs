@@ -2,7 +2,7 @@
 - name: Verify
   hosts: all
   tasks:
-    - name: Verify the build tools are installed
+    - name: Verify the build tools are installed  # noqa: command-instead-of-shell
       ansible.builtin.shell:
         cmd: "command -v {{ item }}"
       changed_when: false
