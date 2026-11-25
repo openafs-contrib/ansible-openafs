@@ -18,7 +18,7 @@ To build and install the collection from the source tree, run the commands:
 
 .. code-block:: bash
 
-   ansible-galaxy collection build --output-path builds .
+   tox -e build
    ansible-galaxy collection install --force builds/openafs_contrib-openafs-*.tar.gz
 
 Testing
