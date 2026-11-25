@@ -16,6 +16,9 @@
       - autoconf
       - automake
       - bison
+      - docbook-dtds
+      - docbook-style-xsl
+      - doxygen
       - elfutils-devel
       - flex
       - fuse-devel
@@ -26,6 +29,7 @@
       - krb5-devel
       - libevent-devel
       - libtool
+      - libxslt
       - make
       - ncurses-devel
       - openssl-devel
@@ -39,6 +43,6 @@
       - redhat-rpm-config
       - rpm-build
       - swig
+      - wget
       - which
-      #- wget
   tags: root

@@ -15,6 +15,9 @@
       - autoconf
       - automake
       - bison
+      - docbook-dtds
+      - docbook-style-xsl
+      - doxygen
       - elfutils-devel
       - flex
       - fuse-devel
@@ -25,6 +28,7 @@
       - krb5-devel
       - libevent-devel
       - libtool
+      - libxslt
       - make
       - ncurses-devel
       - openssl-devel
@@ -32,6 +36,8 @@
       - perl-core
       - perl-devel
       - perl-ExtUtils-Embed
+      - perl-FindBin
+      - perl-Sys-Hostname
       - perl-Test-Simple
       - redhat-rpm-config
       - rpm-build

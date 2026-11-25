@@ -16,9 +16,11 @@
       - autoconf
       - automake
       - bison
+      - docbook-dtds
+      - docbook-style-xsl
+      - doxygen
       - elfutils-devel
       - flex
-      #- fuse-devel
       - gcc
       - git
       - glibc-devel
@@ -26,6 +28,7 @@
       - krb5-devel
       - libevent-devel
       - libtool
+      - libxslt
       - make
       - ncurses-devel
       - openssl-devel
