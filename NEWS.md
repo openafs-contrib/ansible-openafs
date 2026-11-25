@@ -1,9 +1,77 @@
 OpenAFS Ansible Collection
 
-Unreleased
+November 25, 2026 - version 1.11.0
+
+* Require ansible-core 2.19 or later.
+
+* Add the missing `ansible.posix` and `community.general` collection
+  dependencies.
+
+* Fix conditionals for ansible-core 2.19. Boolean variables given as strings,
+  such as `-e afs_foo=no`, are now handled correctly, and embedded templates
+  were removed from conditionals.
+
+* Fix the SLES and openSUSE kernel-devel version checks, which always failed
+  with ansible-core 2.19, causing the `openafs_devel_kernel` role to install
+  kernel-devel (and possibly update the kernel and reboot) even when the
+  correct kernel-devel was already installed.
+
+* Fix the dkms status check in the `openafs_client` role, which always passed
+  even when the OpenAFS kernel module was not installed.
+
+* The `openafs_client` role managed kmod install method now installs the
+  newest OpenAFS version which has a kmod-openafs package for the running
+  kernel, instead of failing when the newest version (for example, a
+  pre-release) has no kmod-openafs package.
+
+* Add the `afs_bootstrap_run_once` variable to the `openafs_server` role. Set
+  it to false to bootstrap each host when each host is a separate cell. The
+  `local_install` playbook now bootstraps a cell on every host.
+
+* Add the `afs_service_keytab_remote_src` variable to the `openafs_server`
+  role, to use a service keytab which is already on the server nodes.
+
+* Add the `afs_kernel_version` variable to select the kernel version to install
+  kernel headers for in the `openafs_devel_kernel` role.
+
+* Add the `afs_local_hosts` variable to run the `local_install` and
+  `local_devel` playbooks on hosts other than localhost.
+
+* Install `which` in the `openafs_devel` role.
+
+* The `openafs_user` module now fails with a clear message when the group name
+  is the name of an existing user.
+
+* The `openafs_volume` module now detects dynroot correctly when the root.cell
+  volume is missing, and retries `fs` commands on timeouts and server or
+  network errors.
+
+* Fix the `build: modules` option in the `openafs_build_packages` and
+  `openafs_build_redhat_rpms` modules, which did not build the kernel module.
+
+* Fix the `openafs_build` module failing with "log() takes 2 positional
+  arguments but 3 were given" when `configure_options` is not specified.
+
+* Fix finding the built `openafs.ko` on Debian kernels with a "+" in the
+  kernel version.
+
+* Fix list updates in the `openafs_store_facts` module. List values are now
+  extended with the new items instead of appended as a single element.
+
+* Rename the `keys` result of the `openafs_keys` module to `keytab_keys`. The
+  old `keys` result is deprecated, but still returned.
+
+* Fix the `ANSIBLE_OPENAFS_COUNTER_DIR` environment variable name in the
+  `counter` lookup plugin, which was ignored.
 
 * Deprecate the `openafs_build_redhat_rpms` module, which will be removed in
   version 2.0.0. Use the `openafs_build_packages` module instead.
+
+* Fix module documentation and sanity check errors.
+
+* Replace the test harness with tox-ansible and molecule. The role and playbook
+  tests now run in podman containers instead of proxmox virtual machines. See
+  the new development page in the documentation.
 
 March 20, 2026 - version 1.10.4
 
