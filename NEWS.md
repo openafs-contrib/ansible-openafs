@@ -1,5 +1,10 @@
 OpenAFS Ansible Collection
 
+November 25, 2026 - version 1.11.2
+
+* Add openSUSE Leap 16 support to the `openafs_devel` and
+  `openafs_devel_kernel` roles.
+
 November 25, 2026 - version 1.11.1
 
 * Fix the `openafs_store_facts` module on managed nodes running python 2.7.
