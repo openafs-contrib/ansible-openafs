@@ -1,5 +1,14 @@
 OpenAFS Ansible Collection
 
+November 25, 2026 - version 1.11.1
+
+* Fix the `openafs_store_facts` module on managed nodes running python 2.7.
+
+* Fix the `openafs_devel` role on AlmaLinux 8 and Rocky 8. Enable the
+  PowerTools repo to install `doxygen`, and remove the `perl-FindBin` and
+  `perl-Sys-Hostname` packages, which are not available with the default
+  perl module stream.
+
 November 25, 2026 - version 1.11.0
 
 * Require ansible-core 2.19 or later.
